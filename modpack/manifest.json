@@ -1,7 +1,7 @@
 {
   "instances": {
     "AGLR": {
-      "updatedAt": "2026-06-14T12:18:45.389Z",
+      "updatedAt": "2026-06-14T17:13:16.014Z",
       "files": [
         {
           "path": "mods/ad_astra-forge-1.20.1-1.15.20.jar",
@@ -260,12 +260,6 @@
           "hash": "1e817919a35b37cf30524aaec73f0ca5130452f23f168f844854df282eb8e51f",
           "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/curios-forge-5.14.1+1.20.1.jar",
           "size": 398066
-        },
-        {
-          "path": "mods/DistantHorizons-3.0.0-b-1.20.1-fabric-forge.jar",
-          "hash": "45de9d1e6812273f97beff8333e15a023a2face2a0091039f90b93431edae319",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/DistantHorizons-3.0.0-b-1.20.1-fabric-forge.jar",
-          "size": 29451818
         },
         {
           "path": "mods/drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar",
