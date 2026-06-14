@@ -1,0 +1,2260 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "artifacts"
+	group: "2A31B2C3D50E4F37"
+	icon: {
+		Count: 1
+		id: "artifacts:crystal_heart"
+		tag: {
+			abilities: {
+				heart: {
+					points: 0
+					stats: {
+						amount: 4.9963d
+					}
+				}
+			}
+		}
+	}
+	id: "5CB235302FB155C9"
+	order_index: 0
+	quest_links: [ ]
+	quests: [
+		{
+			description: ["Çıktığınız maceralarda bulabileceğiniz, bulmacalar çözerek ve tecrübe puanı harcayarak yükseltilebilen yadigarlar, hepsi çok kullanışlılar!"]
+			id: "43A881C689D6B3EB"
+			rewards: [{
+				id: "75E43916F69AAE8D"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "7EAB44027E9B30E7"
+				item: {
+					Count: 1
+					id: "ftbfiltersystem:smart_filter"
+					tag: {
+						"ftbfiltersystem:filter": "ftbfiltersystem:item_tag(rarcompat:mimic_loot)"
+					}
+				}
+				title: "Herhangi bir Yadigar yada Eski Kalıntı"
+				type: "item"
+			}]
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Bu botlar giydiğinizde belli bir süreliğine suyun üzerinde yürümenizi sağlar! Süreniz bittiğinde batarsınız."]
+			hide_dependency_lines: false
+			id: "293771D2CF7D7944"
+			rewards: [{
+				id: "2C3E71A86A769569"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "6A2FB4C706671411"
+				item: {
+					Count: 1
+					id: "relics:aqua_walker"
+					tag: {
+						abilities: {
+							walking: {
+								points: 0
+								stats: {
+									time: 33.83746d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Suda Yürüyen"
+			x: -2.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Amfibi Botu su ile temasa girdiğinizde hareketinizi etkiler, Amfibi Botu'nun 3 yeteneği vardır Fins (Yüzmeye devam ettikçe yüzme hızını arttırır), Slipping (Yağmurda koşmaya devam ettikçe koşma hızını arttırır.), Gills (Yüzerken yüzdelik bir şans ile hava kabarcığı tüketmemenizi sağlar.)"]
+			hide_dependency_lines: false
+			id: "05993925FE06E482"
+			rewards: [{
+				id: "63B882517B82A046"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "1C340D34E60B42D2"
+				item: {
+					Count: 1
+					id: "relics:amphibian_boot"
+					tag: {
+						abilities: {
+							gills: {
+								points: 0
+								stats: {
+									chance: 0.07191d
+								}
+							}
+							slipping: {
+								points: 0
+								stats: {
+									duration: 15.82053d
+									speed: 0.00799d
+								}
+							}
+							swimming: {
+								points: 0
+								stats: {
+									duration: 23.28677d
+									speed: 0.00709d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Amfibi Bot"
+			x: -1.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Bastion Yüzüğü piglinlerin saldırmasını engeller, 2 yeteneği vardır Recognition (Bir pigline 5 blok yaklaşırsan eğer varsa 100 blok içerisindeki en yakın Bastion Remnantı işaretler.), Respect (Piglinlerle yapacağın her takas için %50 ihtimalle ekstra bir eşya geri dönüşü sağlar. Bunun kaç kere tetiklenebileceği yadigarı yükselterek arttırılabilir.)"]
+			hide_dependency_lines: false
+			id: "2DA58A0B6B5804F4"
+			rewards: [{
+				id: "6144CD879F64C65D"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "41315E43210AC9FB"
+				item: {
+					Count: 1
+					id: "relics:bastion_ring"
+					tag: {
+						abilities: {
+							trade: {
+								points: 0
+								stats: {
+									rolls: 0.68842d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Bastion Yüzüğü"
+			x: 0.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Alevli Şişe, sonsuz alev çemberleri oluşturmanı sağlayan bir yadigardır. Tek yeteneği vardır. Eternal Fire (Etrafındaki ateşleri kullanarak geçici bir uçuş alanı oluşturan bir yetenektir; bir bloğa sağ tıkladığında merkez belirlenir ve yakın çevrede ne kadar çok ateş varsa alan o kadar genişler, hiç ateş yoksa ise hiç oluşmaz. Bu alan içinde belirli bir hız ve yükseklik sınırıyla uçabilirsin; yadigar seviyesi arttıkça hem daha hızlı hareket eder hem de daha yükseğe çıkabilirsin. Kısacası, yeterli ateş kaynağı sağladığında bulunduğun bölgeyi kontrol edilebilir bir uçuş bölgesine çeviren taşınabilir bir sistemdir.)"]
+			hide_dependency_lines: false
+			id: "10059B0F41E30502"
+			rewards: [{
+				id: "356316B240BD8CF5"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "7ABC4FE715E85542"
+				item: {
+					Count: 1
+					id: "relics:blazing_flask"
+					tag: {
+						abilities: {
+							bonfire: {
+								points: 0
+								stats: {
+									height: 3.44499d
+									speed: 0.03076d
+									step: 1.5018d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Alevli Şişe"
+			x: 1.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Koro İnhibitörü'nü parmağına geçirdiğinde eline bir koro meyvesi alırsan direk baktığın yöne doğru partiküller çıktığını göreceksin bu partiküller meyveyi yediğinde ışınlanacağın yeri gösterir."]
+			hide_dependency_lines: false
+			id: "72DCC809D53E5F99"
+			rewards: [{
+				id: "48878D578C3BAD9C"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "5DF37FDBB911C2CD"
+				item: {
+					Count: 1
+					id: "relics:chorus_inhibitor"
+					tag: {
+						abilities: {
+							blink: {
+								points: 0
+								stats: {
+									cooldown: 6.14558d
+									distance: 30.11215d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Koro İnhibitörü"
+			x: 2.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Boğulmuş Kemer’i kemer slotuna takarak çeşitli su temalı yeteneklerin kilidini açarsın. 4 yeteneği vardır: Load Capacity ek charm slotları vererek daha fazla aksesuar takmanı sağlar, Dead Weight su altında yüzme hızını düşürür ve daha hızlı batmana neden olur (geliştirdikçe bu etki azalır), Water Flows su altındayken verdiğin hasarı büyük oranda artırır ve Water Attraction Riptide büyüsünü suya ihtiyaç duymadan her yerde kullanmanı sağlar."]
+			hide_dependency_lines: false
+			id: "6807741D5B1114CA"
+			rewards: [{
+				id: "1C63EE28482CD905"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "7876653CC8672376"
+				item: {
+					Count: 1
+					id: "relics:drowned_belt"
+					tag: {
+						abilities: {
+							anchor: {
+								points: 0
+								stats: {
+									sinking: 4.9328d
+									slowness: 0.43432d
+								}
+							}
+							pressure: {
+								points: 0
+								stats: {
+									damage: 1.45779d
+								}
+							}
+							riptide: {
+								points: 0
+								stats: {
+									cooldown: 5.815d
+								}
+							}
+							slots: {
+								points: 0
+								stats: {
+									charm: 1.85955d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Boğulmuş Kemer"
+			x: -2.0d
+			y: -4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Elytra Güçlendirici'yi envanterinde yakıtla doldurup Elytra ile uçarken kullanarak hız kazanırsın. Tek bir yeteneği vardır: Acceleration, Elytra ile uçarken yakıt tüketerek hızını kademeli olarak artırır; daha fazla kapasite daha uzun uçuş süresi sağlarken, hız geliştirmeleri maksimum uçuş hızını yükseltir."]
+			hide_dependency_lines: false
+			id: "0A60511927A9D810"
+			rewards: [{
+				id: "45D7514E99355256"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "3B42BAFF1EDCE7B3"
+				item: {
+					Count: 1
+					id: "relics:elytra_booster"
+					tag: {
+						abilities: {
+							boost: {
+								points: 0
+								stats: {
+									capacity: 67.44314d
+									speed: 1.44012d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Elytra Güçlendirici"
+			x: -1.0d
+			y: -4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Ender El’i kullanarak hem Enderman’lara karşı pasif koruma elde eder hem de hedeflerle yer değiştirebilirsin. 2 yeteneği vardır: Neutrality, Enderman’ların sana bakınca saldırmasını engeller ve tamamen pasif çalışır; End Transposition ise baktığın canlıyla anında yer değiştirmeni sağlar ve geliştirdikçe menzili büyük ölçüde artar."]
+			hide_dependency_lines: false
+			id: "4236A10933740FCD"
+			rewards: [{
+				id: "43B6EF963C4B826E"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "330816FD168B9448"
+				item: {
+					Count: 1
+					id: "relics:enders_hand"
+					tag: {
+						abilities: {
+							swap: {
+								points: 0
+								stats: {
+									distance: 20.52228d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Ender El"
+			x: 0.0d
+			y: -4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Kutsal Madalyon'u kullanarak iyileştirme ve hasarı kontrol edebilirsin. 3 yeteneği vardır: Faith, iki mod arasında geçiş yaparak ya çevrendeki varlıkların iyileşmesini çalıp kendine verir ya da kendi iyileşmeni düşmanlara hasar olarak gönderir; Penitence, undead düşmanları yakar ve onlara verdiğin hasarı büyük ölçüde artırır; Ascension ise öldürdüğün her düşmanla biriken geçici ölümsüzlük sağlayarak seni belirli bir süre boyunca öldürülemez hale getirir."]
+			hide_dependency_lines: false
+			id: "2D4BA3BAFF845714"
+			rewards: [{
+				id: "7B45A3957917F5B7"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "6EE6070D0B32B9D6"
+				item: {
+					Count: 1
+					id: "relics:holy_locket"
+					tag: {
+						abilities: {
+							belief: {
+								points: 0
+								stats: {
+									amount: 0.16779d
+									capacity: 8.93855d
+									count: 2.56841d
+									radius: 5.64624d
+								}
+							}
+							blessing: {
+								points: 0
+								stats: {
+									consumption: 7.02641d
+								}
+								temp: {
+									ticking: 1b
+								}
+							}
+							repentance: {
+								points: 0
+								stats: {
+									damage: 0.18351d
+									radius: 3.64874d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Kutsal Madalyon"
+			x: 1.0d
+			y: -4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["At Flütü'nü kullanarak atını saklayıp istediğin zaman çağırabilirsin. 2 yeteneği vardır: Portable Stall, atını taşınabilir bir depoda saklamanı sağlar ve temel özelliktir; Plot to Treatment ise depodayken atın zamanla can yenilemesini sağlar ve geliştirdikçe iyileşme hızı artar."]
+			hide_dependency_lines: false
+			id: "03ECAA7CD2526461"
+			rewards: [{
+				id: "56F6C16C7A3C8D36"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "1C39A2CD509F5803"
+				item: {
+					Count: 1
+					id: "relics:horse_flute"
+					tag: {
+						abilities: {
+							heal: {
+								points: 0
+								stats: {
+									amount: 0.0882d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "At Flütü"
+			x: 2.0d
+			y: -4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Avcı Kemeri’ni takarak hem ekstra slot hem de evcil hayvan gücü elde edersin. 2 yeteneği vardır: Load Capacity, daha fazla charm slotu vererek aynı anda daha çok pasif eşya kullanmanı sağlar; Training ise sahip olduğun evcil hayvanların verdiği hasarı büyük oranda artırarak onları güçlü birer saldırı aracına dönüştürür."]
+			hide_dependency_lines: false
+			id: "67A38E2DA57BD2EC"
+			rewards: [{
+				id: "133D79FD3A275858"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "037F14F25B78AF4E"
+				item: {
+					Count: 1
+					id: "relics:hunter_belt"
+					tag: {
+						abilities: {
+							slots: {
+								points: 0
+								stats: {
+									charm: 1.56262d
+								}
+							}
+							training: {
+								points: 0
+								stats: {
+									damage: 1.79837d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Avcı Kemeri"
+			x: -2.0d
+			y: -5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Uzay Ayırıcı'yı kullanarak mekanlar arasında anında köprüler kurabilirsiniz. Tek yeteneği vardır: Dissection, baktığınız iki nokta arasında canlıları anında ışınlayan çift yönlü portallar açmanızı sağlar; geliştikçe 112 blok uzağa kadar uzanabilen ve 60 saniye boyunca aktif kalan bu sessiz geçitler, hem taktiksel geri çekilmeler hem de zorlu arazi keşifleri için rakipsiz bir hareket özgürlüğü sunar."]
+			hide_dependency_lines: false
+			id: "66A8B40DD409AAFB"
+			rewards: [{
+				id: "39D7B3374B9700BA"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "10EC3716E38EE19B"
+				item: {
+					Count: 1
+					id: "relics:space_dissector"
+					tag: {
+						abilities: {
+							dissection: {
+								points: 0
+								stats: {
+									distance: 24.25183d
+									time: 8.32235d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Uzay Ayırıcı"
+			x: 1.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Buz Kıran’ı kullanarak hem pasif dayanıklılık hem de güçlü bir alan saldırısı kazanırsın. 2 yeteneği vardır: Sustainability, geri itilmeye karşı direnç verir, düşüş hızını artırır ve buz üzerinde kaymayı tamamen kaldırır; Earthquake ise düşerken aktif edildiğinde yere çarptığında düşme hasarını yok edip etrafındaki düşmanlara hasar veren ve onları geri savuran bir şok dalgası oluşturur."]
+			hide_dependency_lines: false
+			id: "0A735A7C223943D4"
+			rewards: [{
+				id: "4056F5C8B4349B40"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "207AC4997F99DBC1"
+				item: {
+					Count: 1
+					id: "relics:ice_breaker"
+					tag: {
+						abilities: {
+							impact: {
+								points: 0
+								stats: {
+									damage: 2.81316d
+									size: 4.32917d
+								}
+							}
+							sustainability: {
+								points: 0
+								stats: {
+									modifier: 0.63563d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Buz Kıran"
+			x: -1.0d
+			y: -5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Buz Pateni’ni kullanarak buz üzerinde hızlanır ve bu hızı avantaja çevirirsin. 2 yeteneği vardır: Skating, buz üzerinde koşarken zamanla biriken büyük bir hız artışı sağlar ve hareketini akıcı hale getirir; Ram ise kazandığın hızla düşmanlara çarptığında kayma sürene bağlı olarak hasar verip onları geri savurmanı sağlar."]
+			hide_dependency_lines: false
+			id: "0D9322BD4596FF13"
+			rewards: [{
+				id: "51CF7FF53E3B0B2E"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "1AB00F64D5C3798F"
+				item: {
+					Count: 1
+					id: "relics:ice_skates"
+					tag: {
+						abilities: {
+							ram: {
+								points: 0
+								stats: {
+									damage: 0.08586d
+								}
+							}
+							skating: {
+								points: 0
+								stats: {
+									duration: 44.54058d
+									speed: 0.02684d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Buz Patenleri"
+			x: 0.0d
+			y: -5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Sonsuz Jambon’u kullanarak hem sürekli yenilenen bir yemek kaynağı elde eder hem de ekstra güçler kazanırsın. 3 yeteneği vardır: Regeneration, jambonun zamanla kendini yenileyip açlık doldurmasını sağlar; Marinade, iksirleri jambona ekleyerek yediğinde bu etkileri almanı sağlar; Meat Bat ise jambonu bir silaha çevirerek düşmanlara vurduğunda büyük hasar verip onları sersemletmeni sağlar."]
+			hide_dependency_lines: false
+			id: "062B3E020DE35D04"
+			rewards: [{
+				id: "75F74BCC6A56ED45"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "261664A3808E532D"
+				item: {
+					Count: 1
+					id: "relics:infinity_ham"
+					tag: {
+						abilities: {
+							autophagy: {
+								points: 0
+								stats: {
+									feed: 1.05501d
+								}
+							}
+							infusion: {
+								points: 0
+								stats: {
+									duration: 1.33939d
+								}
+							}
+						}
+						pieces: 10
+					}
+				}
+				type: "item"
+			}]
+			title: "Sonsuz Jambon"
+			x: 1.0d
+			y: -5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Denizanası Kolye’yi kullanarak su içinde süzülürken düşmanlara temas ederek zarar verebilirsin. 3 yeteneği vardır: Power over the sea, suyun içinde batmanı engelleyerek yüzeye yakın süzülmeni sağlar; Electrical Discharge, düşmanlara dokunduğunda elektrik hasarı vererek savaşmayı kolaylaştırır; Paralysis ise bu elektrik etkisine sersemletme ekleyerek düşmanları birkaç saniye hareketsiz bırakmanı sağlar."]
+			hide_dependency_lines: false
+			id: "47E32D9896A1BFFB"
+			rewards: [{
+				id: "713BF56A379491B0"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "1C19226E08A18968"
+				item: {
+					Count: 1
+					id: "relics:jellyfish_necklace"
+					tag: {
+						abilities: {
+							paralysis: {
+								points: 0
+								stats: {
+									duration: 1.39931d
+								}
+							}
+							shock: {
+								points: 0
+								stats: {
+									damage: 1.86089d
+								}
+								temp: {
+									ticking: 1b
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Denizanası Kolyesi"
+			x: 2.0d
+			y: -5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Deri Kemer’i kullanarak daha fazla charm aksesuarı takabilirsin. Tek yeteneği vardır: Load Capacity, her seviye ekstra charm slotu vererek aynı anda daha fazla yardımcı eşya kullanmanı sağlar ve maksimum seviyede toplam slot sayını ciddi şekilde artırarak diğer Relic’lerin etkisini güçlendirir."]
+			hide_dependency_lines: false
+			id: "6BCB81460CF85053"
+			rewards: [{
+				id: "5F8A48AAFDEB916A"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "2F7F4B249D601878"
+				item: {
+					Count: 1
+					id: "relics:leather_belt"
+					tag: {
+						abilities: {
+							slots: {
+								points: 0
+								stats: {
+									charm: 1.90338d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Deri Kemer"
+			x: -2.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Büyülü Ayna’yı kullanarak spawn noktasına hızlı ve güvenli şekilde ışınlanabilirsin. Tek yeteneği vardır: Wormhole, kısa bir kanal süresi sonrası seni belirlenen mesafe içinde spawn noktanıza ışınlar ve geliştikçe menzili 6.000 bloğa kadar çıkarırken bekleme süresini 30 saniyeye kadar düşürür, böylece hem acil kaçış hem de hızlı geri dönüş aracı haline gelir."]
+			hide_dependency_lines: false
+			id: "5D445935FA2B278D"
+			rewards: [{
+				id: "55EE523AF66D2444"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "7990B25C38CC2501"
+				item: {
+					Count: 1
+					id: "relics:magic_mirror"
+					tag: {
+						abilities: {
+							teleport: {
+								points: 0
+								stats: {
+									cooldown: 67.38784d
+									distance: 722.06574d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Büyülü Ayna"
+			x: -3.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Magma Yürüyü’cü kullanarak lavın üzerinde güvenli şekilde yürüyebilir ve Nether’da kolayca seyahat edebilirsin. 2 yeteneği vardır: Heat Resistance, Magma Block gibi sıcak zeminlerden gelen hasarı tamamen engeller; Fiery Tread ise lav üzerinde sınırlı süre batmadan durmanı sağlar, süre aşıldığında ısınma kaynaklı hasar verir ve lavdan uzaklaşarak tekrar soğuyabilirsin."]
+			hide_dependency_lines: false
+			id: "51CC0A7E2C23A900"
+			rewards: [{
+				id: "3AF40335C6D23173"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "722E853652C6DD15"
+				item: {
+					Count: 1
+					id: "relics:magma_walker"
+					tag: {
+						abilities: {
+							pace: {
+								points: 0
+								stats: {
+									time: 21.5362d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Magma Yürüyücü"
+			x: 0.0d
+			y: -6.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Geceyarısı Cübbe’si kullanarak karanlıkta görünmez olup hız kazanabilir ve düşmanlara ani yüksek hasarlı saldırılar yapabilirsin. 2 yeteneği vardır: Vanish, yeterince karanlıkta seni görünmez yapar ve hareket hızını artırır; Betrayal ise görünmezken yaptığın ilk saldırıyı güçlendirir, büyük hasar verir ve seni ortaya çıkararak çevrende kaçman gereken bir alan oluşturur."]
+			hide_dependency_lines: false
+			id: "336D159D21B5FDF0"
+			rewards: [{
+				id: "11A6485312081B69"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "246A64EBFC2D22E9"
+				item: {
+					Count: 1
+					id: "relics:midnight_robe"
+					tag: {
+						abilities: {
+							backstab: {
+								points: 0
+								stats: {
+									damage: 1.45632d
+									distance: 16.71456d
+								}
+							}
+							vanish: {
+								points: 0
+								stats: {
+									light: 1.59271d
+									speed: 0.23803d
+								}
+								temp: {
+									ticking: 1b
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Geceyarısı Cübbesi"
+			x: 3.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Öfke Eldiven'i kullanarak rakiplerinize baskı kurup hasar potansiyelinizi zirveye taşıyabilirsiniz. Toplamda 3 yeteneği vardır: Berserker Rage, saldırı yaptıkça hasarınızı artırırken aldığınız hasarı da yükselten ana mekanizmadır; Phlebotomy, düşük can değerlerinde size hız ve yenilenme sağlayarak hayatta kalmanızı destekler; Spurt ise biriktirilen yükleri harcayarak düşmanların arasından fırlamanızı ve onlara ağır hasar, kanama ve yanma etkileri bırakmanızı sağlayan nihai saldırı yeteneğidir."]
+			hide_dependency_lines: false
+			id: "27FB9D4D830D4E86"
+			rewards: [{
+				id: "2BD3D0E960360FCE"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "174FB594BB089812"
+				item: {
+					Count: 1
+					id: "relics:rage_glove"
+					tag: {
+						abilities: {
+							phlebotomy: {
+								points: 0
+								stats: {
+									attack_speed: 0.00802d
+									heal: 1.2E-4d
+									movement_speed: 0.02016d
+								}
+							}
+							rage: {
+								points: 0
+								stats: {
+									dealt_damage: 0.05942d
+									duration: 3.20202d
+									incoming_damage: 0.04877d
+								}
+							}
+							spurt: {
+								points: 0
+								stats: {
+									cooldown: 18.15322d
+									damage: 0.20183d
+									distance: 7.17303d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Öfke Eldiveni"
+			x: 2.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Yansıtan Kolye'yi kullanarak savunmanızı en güçlü saldırınıza dönüştürebilirsiniz. Tek bir yeteneği vardır: Infernal Hatred, aldığınız hasarı depolar ve 5 saniye boyunca darbe almadığınızda veya kapasite dolduğunda etrafa obsidyen parçaları saçarak patlar; depolanan hasar miktarı arttıkça parçaların verdiği zarar ve sersemletme süresi de katlanarak artar, bu da sizi kalabalık düşman gruplarına karşı ölümcül bir canlı bombaya dönüştürür."]
+			hide_dependency_lines: false
+			id: "54C1F46540C45360"
+			rewards: [{
+				id: "06158D6FA38136EE"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "4CE2BEC95B4FD036"
+				item: {
+					Count: 1
+					id: "relics:reflection_necklace"
+					tag: {
+						abilities: {
+							explode: {
+								points: 0
+								stats: {
+									capacity: 54.89454d
+									damage: 0.48007d
+									stun: 0.24036d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Yansıtan Kolye"
+			x: -1.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Tekerlekli Paten'i kullanarak seyahat sürenizi minimuma indirebilirsiniz. Tek bir yeteneği vardır: Acceleration, depar attığınız her saniye için hızınızı katlayarak artırır; belirli bir süre sonra maksimum hıza ulaştığınızda blokların kayganlaşmasıyla kontrolü zor ama son derece hızlı bir hareket kabiliyeti kazandırır ve engellerin üzerinden zıplamadan geçmenizi sağlar."]
+			hide_dependency_lines: false
+			id: "3C121ABCD431F5E5"
+			rewards: [{
+				id: "34C96EAF4AD509F7"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "297ACE4E7FC1DAD4"
+				item: {
+					Count: 1
+					id: "relics:roller_skates"
+					tag: {
+						abilities: {
+							skating: {
+								points: 0
+								stats: {
+									duration: 17.55281d
+									speed: 0.00437d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Tekerlekli Paten"
+			x: -0.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Gölge Kılıcı'nı kullanarak tek bir darbeyi tüm odayı temizleyen bir saldırıya dönüştürebilirsiniz. İki yeteneği vardır: Mayhem, hasar verdiğinizde düşmanlar arasında 10 kez sekebilen mermiler fırlatmanızı sağlar; Cloning ise bu mermilerin her sekmede kendilerini kopyalamasına imkan tanıyarak çatışma alanını kontrol edilemez ve durdurulamaz bir bıçak yağmuruna çevirir."]
+			hide_dependency_lines: false
+			id: "4D9B0EE85ACA5A45"
+			rewards: [{
+				id: "760613938C67C215"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "300EA45C27E75747"
+				item: {
+					Count: 1
+					id: "relics:shadow_glaive"
+					tag: {
+						abilities: {
+							glaive: {
+								points: 0
+								stats: {
+									bounces: 3.81688d
+									damage: 3.2019d
+									radius: 4.52148d
+									recharge: 23.83633d
+								}
+							}
+							saw: {
+								points: 0
+								stats: {
+									damage: 0.75956d
+									speed: 19.66321d
+								}
+							}
+						}
+						charges: 8
+					}
+				}
+				type: "item"
+			}]
+			title: "Gölge Kılıcı"
+			x: 0.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Balıkçı Şapka’sını kullanarak her avlanma seansından maksimum kazançla ayrılabilirsiniz. Tek bir yeteneği vardır: Generous Catch, başarılı her olta çekişinde arka planda yeni ganimet zarları atarak ekstra eşyalar düşürme şansı tanır; ucu açık bir zincirleme mekanizmasına sahip olan bu yetenek, maksimum seviyede %70 ihtimalle üst üste tetiklenerek tek bir seferde onlarca balık ve nadir hazineyi önünüze serebilir."]
+			hide_dependency_lines: false
+			id: "24F50A39AD56A4EB"
+			rewards: [{
+				id: "3ED165B2ADD5719C"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "13B4B9935FAB2CA6"
+				item: {
+					Count: 1
+					id: "artifacts:anglers_hat"
+					tag: {
+						abilities: {
+							catch: {
+								points: 0
+								stats: {
+									chance: 0.16128d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Balıkçı Şapkası"
+			x: 0.0d
+			y: 1.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Spor Çuvalı’nı kullanarak köşeye sıkıştığınız anları bir avantaja dönüştürebilirsiniz. Tek yeteneği olan Spore Mist, sağlığınız %50’nin altına indiğinde çevrenize eksik canınızın %75’ine kadar hasar verebilen güdümlü sporlar saçar; bu sporlar düşmanları hem hırpalar hem de iyileşmelerini kilitleyerek en zayıf anınızda bile sizi savaşın en tehlikeli figürü haline getirir."]
+			hide_dependency_lines: false
+			id: "171EC064AEA0E5D5"
+			rewards: [{
+				id: "4B160EDBC552C59B"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "1FB7EF9A3251A9B0"
+				item: {
+					Count: 1
+					id: "relics:spore_sack"
+					tag: {
+						abilities: {
+							buffer: {
+								points: 0
+								stats: {
+									capacity: 4.95196d
+									chance: 0.05792d
+								}
+							}
+							explosion: {
+								points: 0
+								stats: {
+									size: 0.08083d
+								}
+							}
+							multiplying: {
+								points: 0
+								stats: {
+									amount: 0.1486d
+									chance: 0.07865d
+									size: 0.06985d
+								}
+							}
+							spore: {
+								points: 0
+								stats: {
+									cooldown: 14.86707d
+									damage: 0.37113d
+									duration: 3.81776d
+									size: 0.19192d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Spor Çuvalı"
+			x: 0.5d
+			y: -1.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Yün Eldiven'i kullanarak sıradan karı ölümcül bir silaha dönüştürebilirsiniz. Tek bir yeteneği vardır: Mold, elleriniz boşken kar toplayarak devasa boyutlara ulaşabilen kar topları yapmanıza olanak tanır; birim başına artan hasar, sersemletme ve dondurma etkileriyle bu kar topları, özellikle maksimum boyuta ulaştığında en güçlü düşmanları bile saniyelerce etkisiz hale getirebilecek yıkıcı bir güce ulaşır."]
+			hide_dependency_lines: false
+			id: "3901DB9FF3B541B1"
+			rewards: [{
+				id: "059E1DA9542E89BE"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "34081CA2F94E3677"
+				item: {
+					Count: 1
+					id: "relics:wool_mitten"
+					tag: {
+						abilities: {
+							mold: {
+								points: 0
+								stats: {
+									damage: 0.20491d
+									freeze: 1.06627d
+									size: 16.9441d
+									stun: 0.03592d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Yün Eldiven"
+			x: -0.5d
+			y: -1.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Panzehir Kabı'nı kullanarak statü efektlerinin kontrolünü tamamen elinize alabilirsiniz. İki yeteneği vardır: Poison Resistance, üzerinize gelen tüm zararlı efektlerin süresini pasif olarak %80'e kadar kısaltarak sizi debuff'lara karşı korur; Alchemical Touch ise düşmanlara yaptığınız tam şarjlı vuruşlarla onların sahip olduğu olumlu etkilerden saniyeler çalarak aynı güçleri anında size aktarır ve düşmanı zayıflatırken sizi amansız bir güce ulaştırır."]
+			hide_dependency_lines: false
+			id: "717BED3672E31336"
+			rewards: [{
+				id: "49389C9F043C8849"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "5DCA84F50F197CF9"
+				item: {
+					Count: 1
+					id: "artifacts:antidote_vessel"
+					tag: {
+						abilities: {
+							antidote: {
+								points: 0
+								stats: {
+									amount: 0.31531d
+								}
+							}
+							devourer: {
+								points: 0
+								stats: {
+									duration: 1.09618d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Panzehir Kabı"
+			x: 1.0d
+			y: 1.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Tavşan Botları'nı kullanarak dünyayı dikey olarak kolayca fethedebilirsiniz. Tek bir yeteneği vardır: Jumper, zıplama tuşuna basılı tuttuğunuz sürece sizi yukarı doğru iterek metrelerce yükseğe fırlatır; geliştikçe havada kalma sürenizi artırırken, iniş anında düşüş mesafenizi pasif olarak 18 bloğa kadar silerek en ekstrem atlayışlarda bile yere güvenle basmanızı sağlar."]
+			hide_dependency_lines: false
+			id: "24EF7DB7FF2E54B9"
+			rewards: [{
+				id: "6A71F1B5F9A048BA"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "5B796A16E3559BA0"
+				item: {
+					Count: 1
+					id: "artifacts:bunny_hoppers"
+					tag: {
+						abilities: {
+							hold: {
+								points: 0
+								stats: {
+									duration: 4.42213d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Tavşan Botları"
+			x: -2.0d
+			y: 2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Batma Tılsımı’nı kullanarak derin okyanusları tehlikesizce fethedebilirsiniz. İki yeteneği vardır: Anchor, su altındaki batma hızınızı iki katına çıkararak tabana en kısa sürede ulaşmanızı sağlayan pasif bir mekanizmadır; Diver ise su tabanında ayaklarınız yere bastığı sürece hava tüketimini tamamen kilitleyen ve saniyede 1.2 saniyeye kadar nefesinizi yenileyen, böylece yüzeye hiç çıkmadan sınırsız süre su altında kalmanıza imkan tanıyan hayati bir yetenektir."]
+			hide_dependency_lines: false
+			id: "2B192FE8B6301FA7"
+			rewards: [{
+				id: "099488016128CDAC"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "6DCDB558175F9552"
+				item: {
+					Count: 1
+					id: "artifacts:charm_of_sinking"
+					tag: {
+						abilities: {
+							dipping: {
+								points: 0
+								stats: {
+									air: 0.25039d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Batma Tılsımı"
+			x: -1.0d
+			y: 1.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Koro Totemi’ni kullanarak köşeye sıkıştığınız anlarda düşmanlarınızı kendinizden uzak tutabilirsiniz. Tek yeteneği vardır: Temporal Loop, size yapılan her saldırıda, eksik canınızın yüzdesine bağlı olarak saldıran kişiyi rastgele bir noktaya ışınlar; geliştikçe %7 tetiklenme şansına ve 14 blokluk bir yarıçapa ulaşarak, canınız kritik seviyelere indiğinde her darbede düşmanları etrafa saçmayı garanti eder ve yakın dövüşçülere karşı hayat kurtaran bir savunma mekanizması oluşturur. "]
+			hide_dependency_lines: false
+			id: "6CE8BB51139B855B"
+			rewards: [{
+				id: "3E1482F42A9D851D"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "7BA7C9C183FA6A6D"
+				item: {
+					Count: 1
+					id: "artifacts:chorus_totem"
+					tag: {
+						abilities: {
+							past: {
+								points: 0
+								stats: {
+									chance: 0.02511d
+									radius: 5.51098d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Koro Totemi"
+			x: 1.0d
+			y: 2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Şişedeki Bulut’u kullanarak dikey hareketliliğinizi en üst seviyeye çıkarabilirsiniz. Tek yeteneği olan Air Jump, havada süzülürken ek zıplamalar yapmanıza imkan tanır; geliştikçe 8 ek zıplamaya kadar ulaşarak Nether gibi zorlu arazilerde kolayca gezinmenizi, Elytra ile hızlıca irtifa kazanmanızı ve en sarp yamaçları oyun parkına çevirmenizi sağlar."]
+			hide_dependency_lines: false
+			id: "0F80B5AE073E658A"
+			rewards: [{
+				id: "4415F4C8EB3A8CF7"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "7CAA68FB4B6A78C9"
+				item: {
+					Count: 1
+					id: "artifacts:cloud_in_a_bottle"
+					tag: {
+						abilities: {
+							jump: {
+								points: 0
+								stats: {
+									count: 2.87737d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Şişedeki Bulut"
+			x: 2.0d
+			y: 2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Kovboy Şapkası’nı kullanarak vahşi doğanın mutlak hakimi olabilirsiniz. İki yeteneği vardır: Gallop, bindiğiniz tüm canlıların hızını, zıplama yüksekliğini ve düşüş direncini %75'e kadar artıran pasif bir güçlendirmedir; Lasso ise Ender Dragon veya Warden gibi devasa boss'lar hariç baktığınız her yaratığa anında binip onu 12.5 saniyeye kadar kontrol etmenizi sağlayan aktif bir kement yeteneğidir."]
+			hide_dependency_lines: false
+			id: "459A5F3D553BB70D"
+			rewards: [{
+				id: "2A684F7F14C76910"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "574A7A5C4D0404A5"
+				item: {
+					Count: 1
+					id: "artifacts:cowboy_hat"
+					tag: {
+						abilities: {
+							cowboy: {
+								points: 0
+								stats: {
+									speed: 0.26377d
+								}
+							}
+							overlord: {
+								points: 0
+								stats: {
+									time: 3.04476d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Kovboy Şapkası"
+			x: -1.0d
+			y: 2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Haç Kolye’yi kullanarak savaş alanındaki dayanıklılığınızı en üst seviyeye çıkarabilirsiniz. Tek yeteneği olan Invincibility, hasar aldıktan sonra oyunun oyuncuya otomatik olarak tanıdığı kısa dokunulmazlık penceresini pasif olarak genişletir; geliştikçe bu süreyi normalin üzerine 1.5 saniye daha ekleyerek uzatır ve en kaotik dövüşlerde bile sersemlemeden pozisyon almanıza ya da güvenle kaçmanıza olanak tanır."]
+			hide_dependency_lines: false
+			id: "7EE2EAFFCD14085E"
+			rewards: [{
+				id: "54BEA72747433D86"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "771E53A8FC91A384"
+				item: {
+					Count: 1
+					id: "artifacts:cross_necklace"
+					tag: {
+						abilities: {
+							invulnerability: {
+								points: 0
+								stats: {
+									modifier: 0.31014d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Haç Kolye"
+			x: 0.0d
+			y: 2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Kristal Kalp’i kullanarak hayatta kalma sınırlarınızı muazzam bir boyuta taşıyabilirsiniz. Tek yeteneği vardır: Will to Live, kuşanıldığı sürece oyuncunun maksimum sağlık puanını pasif olarak artırır; geliştikçe ve başlangıç zarına bağlı olarak can barınıza fazladan 18 sağlık puanı (9 kalp) ekleyebilir, böylece en ölümcül boss savaşlarında bile darbelere göğüs germenizi sağlayarak sizi yıkılmaz bir savaşçı yapar."]
+			hide_dependency_lines: false
+			id: "28915C6AE8AED0BF"
+			rewards: [{
+				id: "79A70FA58FCDD25B"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "78EBCF98D0E6F127"
+				item: {
+					Count: 1
+					id: "artifacts:crystal_heart"
+					tag: {
+						abilities: {
+							heart: {
+								points: 0
+								stats: {
+									amount: 2.76349d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Kristal Kalp"
+			x: 0.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Kazı Pençeleri’ni kullanarak maden turlarınızı son derece verimli bir hale getirebilirsiniz. İki yeteneği vardır: Pickaxe Hands, Obsidian hariç dünyadaki tüm blokların kazma gereksinimini pasif olarak bir kademe düşürerek erkenden değerli madenleri toplamanıza yol açar; Fast Mining ise takımyıldız bulmacası çözüldükten sonra aktifleşen, kazı hızınızı %175'e kadar yükselten ve Efficiency büyüsüyle birleştiğinde önünüzdeki tüm taşları adeta kağıt gibi yırtıp geçen güçlü bir hız yeteneğidir."]
+			hide_dependency_lines: false
+			id: "2615EF6ECE05EA0D"
+			rewards: [{
+				id: "5B9B28AA4FBE4740"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "508FFB41E93B5C09"
+				item: {
+					Count: 1
+					id: "artifacts:digging_claws"
+					tag: {
+						abilities: {
+							fast_mining: {
+								points: 0
+								stats: {
+									modifier: 0.18648d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Kazı Pençeleri"
+			x: 1.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Vahşi Pençeler’i kullanarak savaş ritminizi amansız bir güce dönüştürebilirsiniz. Tek yeteneği olan Beast’s Fury, 3 saniye içinde yaptığınız her başarılı ve tam şarjlı saldırıda bir yük biriktirerek saldırı hızınızı yük başına %33'e kadar artırır; geliştikçe ve kombolarınız uzadıkça %165'in üzerinde devasa hız bonuslarına ulaşarak zindanlarda ve boss savaşlarında önünüzü tamamen temizlemenizi sağlar."]
+			hide_dependency_lines: false
+			id: "2388202BDAE71DD7"
+			rewards: [{
+				id: "797A643EF52E3AC8"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "799A4DD0039D168E"
+				item: {
+					Count: 1
+					id: "artifacts:feral_claws"
+					tag: {
+						abilities: {
+							claws: {
+								points: 0
+								stats: {
+									modifier: 0.10818d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Vahşi Pençeler"
+			x: 2.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Ateş Eldiveni’ni kullanarak savaş alanını bir alev çemberine alabilirsiniz. Tek yeteneği vardır: Fire Wave, takımyıldız bulmacası çözüldükten sonra aktifleşen ve her saldırıda yakındaki düşmanlara kilitlenen büyüleyici kıvılcımlar salan bir yetenektir; ucu açık bir şans zinciriyle çalışan bu mekanizma, maksimum seviyede %75 ihtimalle üst üste tetiklenerek tek bir vuruşta onlarca düşmanı 10 saniye boyunca tutuşturabilir ve silah hasarınızın %50'sini kıvılcım başına rakiplere dağıtabilir."]
+			hide_dependency_lines: false
+			id: "4CFDFB5CEC328EC8"
+			rewards: [{
+				id: "59DBE11AE6FD0A36"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "3E7CC7B9A303C675"
+				item: {
+					Count: 1
+					id: "artifacts:fire_gauntlet"
+					tag: {
+						abilities: {
+							caster: {
+								points: 0
+								stats: {
+									chance: 0.2271d
+									damage: 0.12335d
+									duration: 30.29333d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Ateş Eldiveni"
+			x: -1.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Alev Kolyesi’ni kullanarak aldığınız hasarları düşmanlarınız için ölümcül bir tuzağa dönüştürebilirsiniz. Tek yeteneği vardır: Fiery Defense, takımyıldız araştırması tamamlandıktan sonra aktifleşen ve size vuran rakipleri pasif olarak ateşe veren bir yetenektir; bekleme süresi olmaksızın her darbede bağımsız çalışan bu mekanizma, maksimum seviyede %60 ihtimalle tetiklenerek saldırganları tam 12 saniye boyunca yakabilir ve siz sadece savunma yaparken bile rakiplerinize muazzam bir alev hasarı verir."]
+			hide_dependency_lines: false
+			id: "5473508958B8F4DB"
+			rewards: [{
+				id: "2D016AA1A9D993B4"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "1F40162AAE010BA3"
+				item: {
+					Count: 1
+					id: "artifacts:flame_pendant"
+					tag: {
+						abilities: {
+							fire: {
+								points: 0
+								stats: {
+									chance: 0.24075d
+									time: 2.59906d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Alev Kolyesi"
+			x: -2.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Kedi Terlikleri’ni kullanarak dünyadaki en ölümcül kazalardan ve yaratıklardan tamamen sıyrılabilirsiniz. Üç yeteneği vardır: Cat’s Gaze, 5 blok yakındaki Creeper ve Phantom'ları pasif olarak sizden kaçıran kalıcı bir korumadır; Soft Paws, zıplama ve düşüş aktivitelerinizde güvenli mesafeyi 20 blok daha uzatarak yeraltı keşiflerini tehlikesiz hale getirir; Nine Lives ise Relic 5. seviyede açılan, ölümcül bir darbe aldığınızda %35'e kadar ihtimalle canınızı 1 puanda sabitleyip sizi mutlak ölümden kurtaran hayati bir yetenektir."]
+			hide_dependency_lines: false
+			id: "7DAE9999999CE4E5"
+			rewards: [{
+				id: "4B3FC5F0A93EFB09"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "3B0AA4897AB5CF6A"
+				item: {
+					Count: 1
+					id: "artifacts:kitty_slippers"
+					tag: {
+						abilities: {
+							fall: {
+								points: 0
+								stats: {
+									modifier: 2.87941d
+								}
+							}
+							resurrected: {
+								points: 0
+								stats: {
+									chance: 0.05688d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Kedi Terlikler :3"
+			x: -0.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Gece Görüş Gözlüğü’nü kullanarak en karanlık yeraltı dünyasını bile tamamen görünür kılabilirsiniz. Tek yeteneği vardır: Gamma Vision, etrafınızı sürekli olarak Gece Görüşü efektiyle parlatan, açılıp kapatılabilir bir mekanizmadır; geliştikçe Körlük ve Karanlık efektlerinin görüş mesafenizi kısıtlamasını pasif olarak %90'a kadar azaltır, hatta en düşük seviyelerinde bile Körlük büyüsünü dokuz kat daha güçlü baskılayarak sislerin arkasını net bir şekilde görmenizi sağlar."]
+			hide_dependency_lines: false
+			id: "35D5EA2BBBA7E691"
+			rewards: [{
+				id: "7CF9A44680AD7D06"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "641C98047D0EC485"
+				item: {
+					Count: 1
+					id: "artifacts:night_vision_goggles"
+					tag: {
+						abilities: {
+							vision: {
+								points: 0
+								stats: {
+									amount: 0.12636d
+								}
+								temp: {
+									ticking: 1b
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Gece Görüş Gözlüğü"
+			x: 2.5d
+			y: 4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Obsidyen Kafatası’nı kullanarak lavların ve ateşli düşmanların yarattığı tehditleri tamamen etkisiz hale getirebilirsiniz. Tek yeteneği vardır: Heat Resistance, takımyıldız bulmacası çözüldükten sonra aktifleşen ve ateş kaynaklarından gelen tüm hasarı pasif olarak emen hayati bir kalkan mekanizmasıdır; geliştikçe bu koruma süresini tam 12 saniyeye kadar uzatır ve Cataclysm modundaki Netherite Monstrosity gibi ateş tabanlı boss dövüşlerinde hayatta kalmanızı sağlayan taşınabilir bir yangın söndürücü görevi görür."]
+			hide_dependency_lines: false
+			id: "7608A85196448DD1"
+			rewards: [{
+				id: "63AE56E5ECA005E6"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "5625AECA06448B12"
+				item: {
+					Count: 1
+					id: "artifacts:obsidian_skull"
+					tag: {
+						abilities: {
+							hell: {
+								points: 0
+								stats: {
+									duration: 41.81497d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Obsidyen Kafatası"
+			x: 1.5d
+			y: 4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Soğan Halkası’nı kullanarak maden turlarınızı lezzetli bir hız patlamasına çevirebilirsiniz. İki yeteneği vardır: Miner’s Hunger, mevcut doygunluk biriminiz başına kazma hızınızı %4.5'e kadar artıran pasif bir güçlendirmedir; Raw Appetite ise Relic 5. seviyede açılan, blok kırdıkça %30 ihtimalle açlık ve doygunluk puanı kazandırarak hem karnınızı doyuran hem de kazma hızınızı tetikleyen tamamlayıcı bir yetenektir."]
+			hide_dependency_lines: false
+			id: "7200E4C88A0642F6"
+			rewards: [{
+				id: "31D7C718C3451A43"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "2FF8347D705F60FB"
+				item: {
+					Count: 1
+					id: "artifacts:onion_ring"
+					tag: {
+						abilities: {
+							onion: {
+								points: 0
+								stats: {
+									amount: 0.01133d
+								}
+							}
+							saturation: {
+								points: 0
+								stats: {
+									chance: 0.10088d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Soğan Halkası"
+			x: -2.5d
+			y: 5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Panik Kolyesi’ni kullanarak tehlikeli savaş anlarında hız avantajını tamamen elinize alabilirsiniz. Tek yeteneği olan Panic, 16 blokluk bir yarıçap içinde size saldırmaya kilitlenen her bir yaratık başına hareket hızınızı pasif olarak %4'e kadar artırır; dar mağara tünellerinde duvarların arkasındaki düşmanları bile hesaba katarak hız bonusunu üst üste biriktirir ve ekran açısını (FOV) genişleten belirgin bir adrenalin efektiyle en kaotik durumlardan bile kolayca kaçmanıza yol açar."]
+			hide_dependency_lines: false
+			id: "20D7CB8AE4232023"
+			rewards: [{
+				id: "26824EB625530632"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "2AAAC414E05C3CAD"
+				item: {
+					Count: 1
+					id: "artifacts:panic_necklace"
+					tag: {
+						abilities: {
+							panic: {
+								points: 0
+								stats: {
+									movement: 0.18047d
+									radius: 7.28632d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Panik Kolyesi"
+			x: -2.5d
+			y: 4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Kazma Isıtıcısı’nı kullanarak madencilik ve ham madde toplama sürecinizi tamamen otomatiğe bağlayabilirsiniz. Tek yeteneği olan Heat Concentration, mümkün olan her bloğu kırıldığı an eriten ve ALT tuşuna basılı tutularak açılıp kapatılabilen bir mekanizmadır; geliştikçe 75 birimlik devasa bir enerji deposuna ulaşır ve saniyede bir birim yenilenerek en hızlı kazma hızlarında bile duraksamadan sürekli bir döküm işlemi gerçekleştirmenizi sağlar."]
+			hide_dependency_lines: false
+			id: "099360BD4FB9E018"
+			rewards: [{
+				id: "332945B110EC7238"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "0F7B017198A94E19"
+				item: {
+					Count: 1
+					id: "artifacts:pickaxe_heater"
+					tag: {
+						abilities: {
+							heater: {
+								points: 0
+								stats: {
+									capacity: 22.59004d
+									duration: 132.96369d
+								}
+								temp: {
+									ticking: 1b
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Kazma Isıtıcısı"
+			x: -1.5d
+			y: 4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Plastik İçecek Şapkası’nı kullanarak iksir ve içecek kullanımınızı bir üst seviyeye taşıyabilirsiniz. İki yeteneği vardır: Quick Drink, iksir ve süt kovası gibi içme animasyonu olan eşyaları %100 daha hızlı tüketmenizi sağlayarak savaşlarda zaman kazandırır; Life-Giving Sip ise Relic 5. seviyede açılan ve her sıvı tüketiminde açlık barınızı 7.5 puana kadar doldurarak yemek yeme ihtiyacınızı azaltan tamamlayıcı bir yetenektir."]
+			hide_dependency_lines: false
+			id: "180B60B38B4C945F"
+			rewards: [{
+				id: "5BBA2E2AE821C40C"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "02A6396BF263A738"
+				item: {
+					Count: 1
+					id: "artifacts:plastic_drinking_hat"
+					tag: {
+						abilities: {
+							drinking: {
+								points: 0
+								stats: {
+									speed: 0.18146d
+								}
+							}
+							nutrition: {
+								points: 0
+								stats: {
+									hunger: 2.10927d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Plastik İçecek Şapkası"
+			x: -0.5d
+			y: 4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Cep Pistonu’nu kullanarak hem savunma hem de verimlilik kapasitenizi artırabilirsiniz. İki yeteneği vardır: Concentrated Strike, yakın dövüş saldırılarınızın geri itme gücünü %100 artırarak düşman kontrolünü kolaylaştırır; Long Reach ise Relic 5. seviyede açılan ve dünyayla etkileşim menzilinizi %100 artıran (yaklaşık 12 bloğa kadar saldırı ve inşa imkanı) hayati bir yetenektir. Özellikle inşa yaparken veya moblara yaklaşmadan vurmak istediğinizde oyunun kurallarını değiştirir."]
+			hide_dependency_lines: false
+			id: "4D075C87242D975B"
+			rewards: [{
+				id: "6D3F484076302B0D"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "44E592524D3C23D8"
+				item: {
+					Count: 1
+					id: "artifacts:pocket_piston"
+					tag: {
+						abilities: {
+							discarding: {
+								points: 0
+								stats: {
+									interaction: 0.30441d
+								}
+							}
+							interaction: {
+								points: 0
+								stats: {
+									range: 0.34949d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Cep Pistonu"
+			x: 0.5d
+			y: 4.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Güç Eldiveni’ni kullanarak saldırı gücünüzü akıl almaz boyutlara taşıyabilirsiniz. Tek yeteneği olan Power Strike, takımyıldız araştırması tamamlandıktan sonra aktifleşen ve her 5 saniyede bir dolan pasif bir şarj mekanizmasıdır; bu şarj doluyken yaptığınız ilk saldırıda turuncu ve kırmızı kıvılcımlar eşliğinde silah hasarınızı %500 artırarak çoğu yaratığı tek hamlede yere sermenize, en zorlu düşmanlara ise ağır kayıplar verdirmenize olanak tanır."]
+			hide_dependency_lines: false
+			id: "600385D986CAAA58"
+			rewards: [{
+				id: "488CD1FFD97B04EA"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "79F4FF151E879606"
+				item: {
+					Count: 1
+					id: "artifacts:power_glove"
+					tag: {
+						abilities: {
+							power: {
+								points: 0
+								stats: {
+									amount: 0.84277d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Güç Eldiveni"
+			x: -0.5d
+			y: 5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Köklü Botlar’ı kullanarak özellikle düzlük biyomlarda açlık sorununu tamamen ortadan kaldırabilirsiniz. Tek yeteneği olan Herbivory, ALT tuşuyla açılıp kapatılabilen ve bastığınız çimen bloklarını toprağa dönüştürerek size açlık puanı kazandıran bir mekanizmadır; geliştikçe bu işlemi her 1.7 saniyede bir gerçekleştirerek hem canınızın hızla dolmasını sağlar hem de en uzun yolculuklarda bile karnınızın her zaman tok kalmasını garantiler."]
+			hide_dependency_lines: false
+			id: "6B895960457959BE"
+			rewards: [{
+				id: "73A96E83369DAC91"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "56C3303C1A2A415E"
+				item: {
+					Count: 1
+					id: "artifacts:rooted_boots"
+					tag: {
+						abilities: {
+							devouring: {
+								points: 0
+								stats: {
+									frequency: 133.10686d
+								}
+								temp: {
+									ticking: 1b
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Köklü Botlar"
+			x: -1.5d
+			y: 5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Koşu Ayakkabıları’nı kullanarak haritalar arası seyahat sürelerinizi neredeyse sıfıra indirebilirsiniz. Tek yeteneği olan Wide Stride, takımyıldız bulmacası çözüldükten sonra aktifleşen ve koşu hızınızı doğrudan artıran pasif bir mekanizmadır; geliştikçe bu bonusu %240 gibi akıl almaz bir seviyeye ulaştırarak hem keşif yaparken zaman kazanmanıza hem de savaş alanındaki tüm tehlikelerden göz açıp kapayıncaya kadar kaçmanıza olanak tanır."]
+			hide_dependency_lines: false
+			id: "72E0DCC67C840F27"
+			rewards: [{
+				id: "49D72E87090CBAB2"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "373E5B20768C755F"
+				item: {
+					Count: 1
+					id: "artifacts:running_shoes"
+					tag: {
+						abilities: {
+							runner: {
+								points: 0
+								stats: {
+									speed: 0.74171d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Koşu Ayakkabıları"
+			x: 0.5d
+			y: 5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Görünmezlik Atkısı’nı kullanarak düşman hatlarının arkasına tamamen görünmez bir şekilde sızabilirsiniz. Tek yeteneği olan Silent Step, kuşanıldığı an kalıcı görünmezlik veren pasif bir mekanizmadır; dünyayla bir etkileşime girdiğinizde görünmezliğiniz geçici olarak devre dışı kalır ancak yetenek geliştikçe bu geri gelme süresi (cooldown) 2.5 saniyeye kadar düşerek en ufak bir duraksamada yeniden gölgelere karışmanıza olanak tanır."]
+			hide_dependency_lines: false
+			id: "1ADB420F028C0464"
+			rewards: [{
+				id: "53CD62CA94190987"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "46DF08EF6D561CA7"
+				item: {
+					Count: 1
+					id: "artifacts:scarf_of_invisibility"
+					tag: {
+						abilities: {
+							invisible: {
+								points: 0
+								stats: {
+									time: 100.75167d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Görünmezlik Atkısı"
+			x: 1.5d
+			y: 5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Şok Kolyesi’ni kullanarak hem elektrikli saldırılara karşı dokunulmaz olabilir hem de pasif bir savunma kalkanı oluşturabilirsiniz. İki yeteneği vardır: Electric Resistance, takımyıldız bulmacası çözüldükten sonra aktifleşen ve yıldırım hasarını sıfırlayan kalıcı bir korumadır; Lightning Defense ise size vuran rakiplere %40 ihtimalle 9 birim (4.5 kalp) hasar veren bir yıldırım çarptırma mekanizmasıdır. Maksimum seviyeye ulaştığında, sıradan yaratıkları sadece size vurdukları için tek seferde öldürebilecek potansiyele sahiptir."]
+			hide_dependency_lines: false
+			id: "2341E8FAD0024692"
+			rewards: [{
+				id: "7843DC40C7112B0C"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "6F8F01D3C01C81F1"
+				item: {
+					Count: 1
+					id: "artifacts:shock_pendant"
+					tag: {
+						abilities: {
+							lightning: {
+								points: 0
+								stats: {
+									chance: 0.14712d
+									damage: 1.719d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Şok Kolyesi"
+			x: 2.5d
+			y: 5.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Şnorkel’i kullanarak derin deniz keşiflerinizi çok daha güvenli ve net bir hale getirebilirsiniz. İki yeteneği vardır: Clear Vision, suya girdiğiniz an devreye giren ve su altındaki sisi tamamen kaldırarak görüşünüzü netleştiren yükseltilemez pasif bir yetenektir; Breath Control ise takımyıldız araştırması tamamlandıktan sonra aktifleşen, suya her daldığınızda bekleme süresi olmaksızın size 30 saniyeye kadar suda nefes alma efekti veren ana yetenektir."]
+			hide_dependency_lines: false
+			id: "4CCA97E53755023F"
+			rewards: [{
+				id: "6BA9F8FEEBCC0E3C"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "35252392E4CB7EAE"
+				item: {
+					Count: 1
+					id: "artifacts:snorkel"
+					tag: {
+						abilities: {
+							diving: {
+								points: 0
+								stats: {
+									duration: 7.26976d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Şnorkel"
+			x: -1.5d
+			y: 6.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Kar Ayakkabıları’nı kullanarak en zorlu kış biyomlarında bile özgürce ve hızla hareket edebilirsiniz. İki yeteneği vardır: Light Step, toz karların içine batmanızı ve donma hasarı almanızı tamamen engelleyen, alındığı an maksimum güçte açılan pasif bir korumadır; Snow Walker ise karlı zeminlerde koşarken hareket hızınızı %80'e kadar artıran geliştirilebilir bir yetenektir. Karlı arazileri rakipleriniz için aşılmaz bir engel, kendiniz içinse jet hızında bir kaçış rotası yapmak istediğinizde mükemmel çalışır."]
+			hide_dependency_lines: false
+			id: "2A163CB2C8F42623"
+			rewards: [{
+				id: "37466FDD2E6CD9EC"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "0AC930C0DC6EDC84"
+				item: {
+					Count: 1
+					id: "artifacts:snowshoes"
+					tag: {
+						abilities: {
+							speed: {
+								points: 0
+								stats: {
+									amount: 0.31216d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Kar Ayakkabıları"
+			x: -0.5d
+			y: 6.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Sarsılmaz Çiviler’i kullanarak hem dikey arazilerde mutlak kontrole sahip olabilir hem de savaş alanında sarsılmaz bir duruş sergileyebilirsiniz. İki yeteneği vardır: Clinging Claws, alındığı an maksimum güçte açılan, dik duvarlara doğru yürüyerek tutunmanızı ve sıfır hasarla aşağı kaymanızı sağlayan pasif bir mekanizmadır; Grip ise %75'e kadar geliştirilebilen, buzlu zeminlerde kaymanızı önlerken Demir Golem, Warden veya Ejderha gibi güçlü düşmanların sizi geriye fırlatmasını neredeyse tamamen engelleyen bir taban kavrama yeteneğidir."]
+			hide_dependency_lines: false
+			id: "71F49D17F0920028"
+			rewards: [{
+				id: "33694A22A18CC166"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "35F0F2FA7991B409"
+				item: {
+					Count: 1
+					id: "artifacts:steadfast_spikes"
+					tag: {
+						abilities: {
+							resistance: {
+								points: 0
+								stats: {
+									modifier: 0.25302d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Sarsılmaz Çiviler"
+			x: 0.5d
+			y: 6.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Batıl İnanç Şapkası’nı kullanarak nadir materyal toplama süreçlerinizi inanılmaz derecede hızlandırabilirsiniz. Tek yeteneği olan Big Loot, bir yaratık öldürüldüğünde %70'e varan bir ihtimalle fazladan bir Ganimet seviyesi tetikleyen zincirleme bir mekanizmadır; şans eseri başarılı olan her zarda sistem bir kez daha dener ve ilk başarısız zara kadar tüm Ganimet seviyelerini üst üste ekler. Özellikle Wither İskeleti Kafası avlarken veya modlu boss'ları çağırmak için gereken nadir eşyaları toplarken oyunun kurallarını tamamen değiştirir."]
+			hide_dependency_lines: false
+			id: "1757493A0967F244"
+			rewards: [{
+				id: "22E3CC28275A5F17"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "2C9E4CEFDD7E7146"
+				item: {
+					Count: 1
+					id: "artifacts:superstitious_hat"
+					tag: {
+						abilities: {
+							looting: {
+								points: 0
+								stats: {
+									chance: 0.18226d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Batıl İnanç Şapkası"
+			x: 1.5d
+			y: 6.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Diken Kolyesi’ni kullanarak ani baskınlarda veya kalabalık yaratık gruplarına karşı harika bir pasif savunma hattı kurabilirsiniz. Tek yeteneği olan Poisonous Defense, kolye yuvasına takıldığı an aktifleşen ve size vuran rakiplere karşı %50 ihtimalle tetiklenen bir misilleme mekanizmasıdır; tetiklendiğinde alınan hasarın %30'unu anında düşmana yansıtır ve onu 16 saniye boyunca zehirler. Sizi tek hamlede öldürebilecek kadar güçlü canavarlara veya patlayıp yok olan Creeper'lara karşı etkisiz olsa da, uzun süren kaotik savaşlarda dengeleri tamamen sizin lehinize çevirir."]
+			hide_dependency_lines: false
+			id: "773B72686ECFA91B"
+			rewards: [{
+				id: "291168A3E13AD7D5"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "61EEEA7228E7A969"
+				item: {
+					Count: 1
+					id: "artifacts:thorn_pendant"
+					tag: {
+						abilities: {
+							poison: {
+								points: 0
+								stats: {
+									chance: 0.16252d
+									multiplier: 0.06076d
+									time: 2.752d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Diken Kolyesi"
+			x: 2.5d
+			y: 6.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Şemsiye’yi kullanarak hem dikey hareketliliğinizi zirveye çıkarabilir hem de mükemmel bir alan kontrolü sağlayabilirsiniz. İki yeteneği vardır: Soft Fall, elinizde tuttuğunuz an düşme hızınızı azaltıp hasarı sıfırlayan ve havada sol tıkla kendinizi arka arkaya 10 kez geriye doğru fırlatmanızı sağlayan dinamik bir mekanizmadır; Air Shield ise Relic 5. seviyede açılan ve sağ tıkla kullanıldığında etrafınızdaki hedefleri 6 blok öteye kadar savuran güçlü bir hava kalkanıdır."]
+			hide_dependency_lines: false
+			id: "7E1827B8663B0127"
+			rewards: [{
+				id: "5FBD0CF88D4E01AF"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "156DD511DB51B120"
+				item: {
+					Count: 1
+					id: "artifacts:umbrella"
+					tag: {
+						abilities: {
+							glider: {
+								points: 0
+								stats: {
+									cooldown: 1.65653d
+									count: 1.38869d
+								}
+							}
+							shield: {
+								points: 0
+								stats: {
+									knockback: 1.43129d
+								}
+							}
+						}
+						charge: 1
+					}
+				}
+				type: "item"
+			}]
+			title: "Şemsiye"
+			x: 3.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Evrensel Çekici’yi kullanarak çevrenizdeki tüm eşyaları manyetik bir alanla yönetebilirsiniz. Tek yeteneği olan Magnetism, üç farklı modu bulunan ve ALT tuşuyla kontrol edilen bir mekanizmadır: Kırmızı \"Attraction\" modu eşyaları 15 blok öteden size çekerken, mavi \"Repulsion\" modu onları uzağa iter; mor \"Neutrality\" modu ise tüm etkiyi devre dışı bırakır. Özellikle madenlerde lavın içine düşebilecek değerli eşyaları havada kapmak veya inşaat sırasında düşen blokları kurtarmak için benzersiz bir kolaylık sunar."]
+			hide_dependency_lines: false
+			id: "679121DD8EB65FB5"
+			rewards: [{
+				id: "09ED7D1B7C4F94E4"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "07CF34331F1E7CE3"
+				item: {
+					Count: 1
+					id: "artifacts:universal_attractor"
+					tag: {
+						abilities: {
+							attractor: {
+								points: 0
+								stats: {
+									radius: 4.29788d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Evrensel Çekici"
+			x: -3.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Vampir Eldiveni’ni kullanarak savaşlardaki dayanıklılığınızı zirveye taşıyabilirsiniz. Tek yeteneği olan Life Steal, kılıç veya balta gibi silahlarla verdiğiniz hasarın belirli bir yüzdesini doğrudan sizin can barınıza ekleyen pasif bir mekanizmadır; geliştikçe can çalma oranını %40'a kadar çıkararak verdiğiniz her yüksek hasarlı darbede kendinizi devasa miktarlarda iyileştirmenize olanak tanır. Özellikle boss savaşlarında veya kalabalık yaratık gruplarının ortasındayken ölümü reddetmek isteyen her savaşçı için vazgeçilmez bir ekipmandır."]
+			hide_dependency_lines: false
+			id: "335319EF5326E239"
+			rewards: [{
+				id: "2E37F58E6DFE8B7C"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "2E377692B1310075"
+				item: {
+					Count: 1
+					id: "artifacts:vampiric_glove"
+					tag: {
+						abilities: {
+							vampire: {
+								points: 0
+								stats: {
+									amount: 0.18542d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Vampir Eldiveni"
+			x: 3.0d
+			y: 2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Köylü Şapkası’nı kullanarak köyler üzerindeki mutlak hakimiyetinizi kurabilir ve ticaret ekonomisini tamamen elinizde tutabilirsiniz. İki yeteneği vardır: Innocent Appearance, alındığı an maksimum güçte açılan, köylülere veya Demir Golemlere saldırsanız dahi golemlerin size karşı agresifleşmesini engelleyen pasif bir korumadır; Trade Secret ise köylülerin takas fiyatlarında %80'e varan indirimler sağlayan geliştirilebilir bir ticari avantajdır. Özellikle zümrüt ve büyü kitabı çiftliklerinde zengin olmak için mükemmel bir yardımcıdır."]
+			hide_dependency_lines: false
+			id: "741F2E4DF455EA40"
+			rewards: [{
+				id: "47F25FE3F9D6498B"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "6D00358E63911966"
+				item: {
+					Count: 1
+					id: "artifacts:villager_hat"
+					tag: {
+						abilities: {
+							discount: {
+								points: 0
+								stats: {
+									multiplier: 16.71948d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Köylü Şapkası"
+			x: -3.0d
+			y: 2.0d
+		}
+		{
+			dependencies: ["43A881C689D6B3EB"]
+			description: ["Şaka Yastığı’nı kullanarak etrafınızdaki alanı hem fiziksel hem de biyolojik olarak kontrol edebilirsiniz. Tek yeteneği olan Flatulence, kafa (Head) yuvasına takıldığında devreye giren ve %70 ihtimalle tetiklenen bir alan etkili (AoE) savunma mekanizmasıdır. Eğilme tuşuna (Shift) seri bir şekilde basıldığında veya darbe alındığında ortaya çıkan bu efekt, komik bir ses eşliğinde rakipleri uzağa fırlatır ve 10 saniye süren şiddetli bir mide bulantısı (nausea) uygulayarak onları savaş alanında sersemletir."]
+			hide_dependency_lines: false
+			id: "5CACE8385F079F09"
+			rewards: [{
+				id: "34697BA5683B5A3B"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "6D5FA97CBB1789D9"
+				item: {
+					Count: 1
+					id: "artifacts:whoopee_cushion"
+					tag: {
+						abilities: {
+							push: {
+								points: 0
+								stats: {
+									chance: 0.30503d
+									radius: 3.71788d
+								}
+							}
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Şaka Yastığı"
+			x: -2.5d
+			y: 6.0d
+		}
+	]
+	title: "Artifacts/Relics"
+}

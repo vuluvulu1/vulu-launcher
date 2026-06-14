@@ -1,0 +1,11 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "valkyrien_skies"
+	group: "2127A84FC6BA7017"
+	id: "3FBAC1C97F132A61"
+	order_index: 2
+	quest_links: [ ]
+	quests: [ ]
+	title: "Valkyrien Skies"
+}

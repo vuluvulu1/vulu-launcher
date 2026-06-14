@@ -1,0 +1,579 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "thermal_series"
+	group: "2127A84FC6BA7017"
+	icon: "thermal:tinker_bench"
+	id: "0747642BA4760500"
+	images: [{
+		height: 26.7691888949374d
+		image: "kubejs:item/thermalseriesmainnejatbaba"
+		rotation: 0.0d
+		width: 50.0d
+		x: 0.0d
+		y: 0.0d
+	}]
+	order_index: 0
+	quest_links: [ ]
+	quests: [
+		{
+			description: ["Biraz kalay, biraz demir ve karşınızda makine çerçevesi. Thermal Series'deki tüm makineleri üretmek için gerekli olan o çerçeve. Her şeyin başlangıcı!"]
+			id: "0EF33AB2F985B721"
+			rewards: [{
+				id: "5506AF0454957082"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "6FB152FCC1BAA5FD"
+				item: "thermal:machine_frame"
+				type: "item"
+			}]
+			title: "Makine Çerçevesi"
+			x: -9.780102040816374d
+			y: -1.3956745136813211d
+		}
+		{
+			description: ["Stirling Dinamo'su ile fosil yakıtları kullanarak FE (Forge Energy) yani elektrik elde ediyoruz"]
+			id: "63A69381ADC21A86"
+			rewards: [{
+				id: "1D2D083FD77FC197"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "1C3187B29BA6B2E2"
+				item: "thermal:dynamo_stirling"
+				type: "item"
+			}]
+			title: "Elektrik Üretimi"
+			x: -8.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["63A69381ADC21A86"]
+			description: ["Tabikide elektrik üretiminin tek yolu fosil yakıtlar değil envai çeşit dinamo var."]
+			hide_dependency_lines: false
+			id: "300924B73F4990A9"
+			rewards: [{
+				id: "1768E38C92922416"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "44E60BEB22B73CED"
+				title: "Diğer Elektrik Üretim Yöntemleri"
+				type: "checkmark"
+			}]
+			x: -25.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["300924B73F4990A9"]
+			description: ["Adındanda anlaşılacağı gibi lav kullanarak enerji üretmeyi sağlayan dinamo."]
+			hide_dependency_lines: false
+			id: "1830B39D56AF24F9"
+			rewards: [{
+				id: "70C8282C93498C3D"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "397715E083EA592F"
+				item: "thermal:dynamo_magmatic"
+				type: "item"
+			}]
+			title: "Magmatik Dinamo"
+			x: -26.5d
+			y: 1.0d
+		}
+		{
+			dependencies: ["300924B73F4990A9"]
+			description: ["Adındanda anlaşılabileceği gibi değerli cevherleri (elmas, zümrüt, kuvars...) kullanarak enerji üretmeyi sağlayan dinamo."]
+			id: "762C3359F0AD1732"
+			tasks: [{
+				id: "7D02045265072F3A"
+				item: "thermal:dynamo_lapidary"
+				type: "item"
+			}]
+			title: "Mücevher Dinamosu"
+			x: -25.5d
+			y: 1.0d
+		}
+		{
+			dependencies: ["300924B73F4990A9"]
+			description: ["Gurme Dinamo doğadaki canlıları (bitki olabilir, hayvan olabilir farketmez) yakarak elektrik üretmeni sağlar."]
+			id: "0F5FF03EC1C365CD"
+			rewards: [{
+				id: "6387DF1C46DA2C64"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "53405EF950AA58A3"
+				item: "thermal:dynamo_gourmand"
+				type: "item"
+			}]
+			title: "Gurme Dinamo"
+			x: -26.0d
+			y: 2.0d
+		}
+		{
+			dependencies: ["63A69381ADC21A86"]
+			description: ["Ürettiğiniz enerjiyi depolamanızı sağlayan yükseltilebilir bir batarya."]
+			id: "6AD45DD20AF29DA6"
+			rewards: [{
+				id: "67512CF9B15DDF16"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "0D3F4424D9D63D78"
+				item: {
+					Count: 1
+					id: "thermal:energy_cell"
+					tag: {
+						BlockEntityTag: {
+							Energy: 0
+							EnergyMax: 1000000
+							EnergyRecv: 1000
+							EnergySend: 1000
+						}
+					}
+				}
+				type: "item"
+			}]
+			title: "Redstone Flux Bataryası"
+			x: -26.5d
+			y: -2.5d
+		}
+		{
+			dependencies: ["0EF33AB2F985B721"]
+			description: ["Öğütücü, içerisine koyduğunuz madeni öğütüp toz haline getirir, eğer içine koyduğunuz maden cevher halindeyse bir değil iki toz haline gelir."]
+			id: "282423D9D6AAD705"
+			rewards: [{
+				id: "16C820E82594FDD5"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "15E8CEEB50B49804"
+				item: "thermal:machine_pulverizer"
+				type: "item"
+			}]
+			title: "Öğütücü"
+			x: 0.0d
+			y: -5.5d
+		}
+		{
+			dependencies: ["282423D9D6AAD705"]
+			description: ["Redstone Fırını, içerisine koyduğunuz pişirilecek malzemeyi elektrik kullanarak pişirir."]
+			id: "548BA715E592471E"
+			rewards: [{
+				id: "3CB65E3E95DDB5ED"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "595060B525D6503D"
+				item: "thermal:machine_furnace"
+				type: "item"
+			}]
+			title: "Redstone Fırını"
+			x: 2.5d
+			y: -5.5d
+		}
+		{
+			dependencies: ["0EF33AB2F985B721"]
+			description: ["Testere sayesinde tek bir kütükten 4 değil 6 adet odun elde edersiniz"]
+			hide_dependency_lines: true
+			id: "512118ABFE46B199"
+			rewards: [{
+				id: "62A90FF218867635"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "36EF2D4FE7D57A90"
+				item: "thermal:machine_sawmill"
+				type: "item"
+			}]
+			title: "Testere"
+			x: -7.0d
+			y: 2.0d
+		}
+		{
+			dependencies: ["548BA715E592471E"]
+			description: ["İndüksiyon Fırını, çeşitli madenleri alaşım haline getirerek kullanmanızı sağlar."]
+			id: "389EF2A9A0586D26"
+			rewards: [{
+				id: "610C566815D6DE63"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "04743EE45A2BF937"
+				item: "thermal:machine_smelter"
+				type: "item"
+			}]
+			title: "İndüksiyon Fırını"
+			x: 4.0d
+			y: -4.5d
+		}
+		{
+			dependencies: ["0EF33AB2F985B721"]
+			description: ["Fotojenik İzolatör, elektrik ve su kullanarak içerisine koyacağınız bitkiyi çoğaltır."]
+			hide_dependency_lines: true
+			id: "52004F5D9AACA048"
+			rewards: [{
+				id: "21684CDA76F41A7B"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "3E5209D217FEF11E"
+				item: "thermal:machine_insolator"
+				type: "item"
+			}]
+			title: "Fotojenik İzolatör"
+			x: -3.5d
+			y: 2.0d
+		}
+		{
+			dependencies: ["0EF33AB2F985B721"]
+			description: ["Santrifüj Ayırıcı, içerisine koyacağınız bloğu parçalarına ayırır. (örn yeşil yün=beyaz yün ve yeşil boya, mavi çiçek=3 tane mavi boya....)"]
+			hide_dependency_lines: true
+			id: "6047C4575283C433"
+			rewards: [{
+				id: "0008B438B8FBB7E8"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "0DF0DF9B0C2743EC"
+				item: "thermal:machine_centrifuge"
+				type: "item"
+			}]
+			title: "Santrifüj Ayırıcı"
+			x: -2.0d
+			y: 2.0d
+		}
+		{
+			dependencies: ["389EF2A9A0586D26"]
+			description: ["Çoklu Servo Press, eşyaları sıkıştırmanı sağlar."]
+			id: "1ED51334E17CBF15"
+			rewards: [{
+				id: "6A609EFD216E5B8E"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "592480AFA7FC1C42"
+				item: "thermal:machine_press"
+				type: "item"
+			}]
+			title: "Çoklu Servo Press"
+			x: 5.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["0EF33AB2F985B721"]
+			description: ["Magma Potası, sıvıya dönüşebilecek eşyaları sıvıya dönüştürmeni sağlar."]
+			hide_dependency_lines: true
+			id: "547CA12325640FA2"
+			rewards: [{
+				id: "53F49C56194774A3"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "28374A12A07759D6"
+				item: "thermal:machine_crucible"
+				type: "item"
+			}]
+			title: "Magma Potası"
+			x: -5.5d
+			y: 2.0d
+		}
+		{
+			dependencies: [
+				"0EF33AB2F985B721"
+				"63A69381ADC21A86"
+			]
+			dependency_requirement: "one_completed"
+			description: ["Bu yükseltme makinenin veya enerji bataryasının temel özelliklerini ve diğer ekleyeceğiniz yükseltmelerin etkilerini 2 katına çıkarır."]
+			hide_dependency_lines: true
+			id: "5F81269D0A8FB69B"
+			rewards: [{
+				id: "5A7306A8A48EA112"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "7DBCCDE1A5FE2C36"
+				item: "thermal:upgrade_augment_1"
+				type: "item"
+			}]
+			title: "Sertleştirilmiş Makine Bileşenleri"
+			x: -27.5d
+			y: 4.0d
+		}
+		{
+			dependencies: [
+				"0EF33AB2F985B721"
+				"63A69381ADC21A86"
+			]
+			dependency_requirement: "one_completed"
+			description: ["Bu yükseltme makinenin veya enerji bataryasının temel özelliklerini ve diğer ekleyeceğiniz yükseltmelerin etkilerini 3 katına çıkarır."]
+			hide_dependency_lines: true
+			id: "29EE59806514FE4E"
+			rewards: [{
+				id: "3CCDBAADA30D8318"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "189DE809F15C05CB"
+				item: "thermal:upgrade_augment_2"
+				type: "item"
+			}]
+			title: "Güçlendirilmiş Makine Bileşenleri"
+			x: -26.5d
+			y: 4.0d
+		}
+		{
+			dependencies: [
+				"0EF33AB2F985B721"
+				"63A69381ADC21A86"
+			]
+			dependency_requirement: "one_completed"
+			description: ["Bu yükseltme makinenin veya enerji bataryasının temel özelliklerini ve diğer ekleyeceğiniz yükseltmelerin etkilerini 4 katına çıkarır."]
+			hide_dependency_lines: true
+			id: "6186B3E6C4A66904"
+			rewards: [{
+				id: "5A2B47947E7722DE"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "3B740A3BAC9CFC6E"
+				item: "thermal:upgrade_augment_3"
+				type: "item"
+			}]
+			title: "Yankılanan Makine Bileşenleri"
+			x: -25.5d
+			y: 4.0d
+		}
+		{
+			dependencies: [
+				"6AD45DD20AF29DA6"
+				"0EF33AB2F985B721"
+			]
+			dependency_requirement: "one_completed"
+			description: ["Bu yükseltme, kullandığınız makinenin enerji kapasitesini ve enerji aktarım kapasitesini 4 katına çıkarır."]
+			hide_dependency_lines: true
+			id: "6ABDF4B8D26ACC21"
+			rewards: [{
+				id: "2546288BCEB90D63"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "414D0DEB0375F0A5"
+				item: "thermal:rf_coil_augment"
+				type: "item"
+			}]
+			title: "Genişletilmiş RF Bobini"
+			x: -28.0d
+			y: 5.0d
+		}
+		{
+			dependencies: [
+				"6AD45DD20AF29DA6"
+				"0EF33AB2F985B721"
+			]
+			dependency_requirement: "one_completed"
+			description: ["Bu yükseltme, kullandığınız makinenin enerji kapasitesini 6 katına ve enerji aktarım kapasitesini 2 katına çıkarır."]
+			hide_dependency_lines: true
+			id: "5A591218EB5B0AC7"
+			rewards: [{
+				id: "4B90763DF337D39B"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "18963F40D0DFBC60"
+				item: "thermal:rf_coil_storage_augment"
+				type: "item"
+			}]
+			title: "Stabilize RF Bobini"
+			x: -27.0d
+			y: 5.0d
+		}
+		{
+			dependencies: [
+				"6AD45DD20AF29DA6"
+				"0EF33AB2F985B721"
+			]
+			dependency_requirement: "one_completed"
+			description: ["Bu yükseltme, kullandığınız makinenin enerji kapasitesini 2 katına ve enerji aktarım kapasitesini 6 katına çıkarır."]
+			hide_dependency_lines: true
+			id: "10ED9768D9D6E42F"
+			rewards: [{
+				id: "5950E0CFBD23BC77"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "046F180218A92291"
+				item: "thermal:rf_coil_xfer_augment"
+				type: "item"
+			}]
+			title: "Yüksek Flux RF Bobini"
+			x: -26.0d
+			y: 5.0d
+		}
+		{
+			dependencies: [
+				"6AD45DD20AF29DA6"
+				"0EF33AB2F985B721"
+			]
+			dependency_requirement: "one_completed"
+			description: ["Bu yükseltme makinenin işlem hızını arttırır ancak enerji kullanım verimliliğini düşürür."]
+			hide_dependency_lines: true
+			id: "412DAF10697CA8ED"
+			rewards: [{
+				id: "66435AF31AD173C3"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "611B25F6A7D56D1B"
+				item: "thermal:machine_speed_augment"
+				type: "item"
+			}]
+			title: "Flux Bağlantı Yükselticisi"
+			x: -27.5d
+			y: 6.0d
+		}
+		{
+			dependencies: [
+				"6AD45DD20AF29DA6"
+				"0EF33AB2F985B721"
+			]
+			dependency_requirement: "one_completed"
+			description: ["Bu yükseltme makinenin enerji kullanım verimliliğini arttırır ancak işlem hızını düşürür."]
+			hide_dependency_lines: true
+			id: "2AA0F28D411417B4"
+			rewards: [{
+				id: "09E5E8936FA89E66"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "4959ECD6B637D53A"
+				item: "thermal:machine_efficiency_augment"
+				type: "item"
+			}]
+			title: "Flux Verimliliği Yükselticisi"
+			x: -26.5d
+			y: 6.0d
+		}
+		{
+			dependencies: [
+				"6AD45DD20AF29DA6"
+				"0EF33AB2F985B721"
+			]
+			dependency_requirement: "one_completed"
+			description: ["Bu yükseltme makinenin birincil olmayan çıkış oranını arttırır."]
+			hide_dependency_lines: true
+			id: "2E4C0883B6CA90DF"
+			rewards: [{
+				id: "0C71F2DBCFC36114"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "65FAC351DBE6AF1A"
+				item: "thermal:machine_output_augment"
+				type: "item"
+			}]
+			title: "Ek İşlem Yükselticisi"
+			x: -25.5d
+			y: 6.0d
+		}
+		{
+			dependencies: ["63A69381ADC21A86"]
+			description: ["Bu yükseltme makinenin çıktısını arttırır ancak yakıt verimliliğini düşürür."]
+			hide_dependency_lines: false
+			id: "5706C8E9891700C1"
+			rewards: [{
+				id: "06D10CBE15287E9A"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "1EB370EACD12F8CF"
+				item: "thermal:dynamo_output_augment"
+				type: "item"
+			}]
+			title: "Ek Reaksiyon Yükselticisi"
+			x: -23.5d
+			y: -0.5d
+		}
+		{
+			dependencies: ["63A69381ADC21A86"]
+			description: ["Yakıt verimliliğini arttırır."]
+			hide_dependency_lines: false
+			id: "58309A5172E894FC"
+			rewards: [{
+				id: "26C2CFEB2EBCB6F2"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "742AD28A26D4DAA3"
+				item: "thermal:dynamo_fuel_augment"
+				type: "item"
+			}]
+			title: "Çoklu Çevrimli Enjektör"
+			x: -23.5d
+			y: -1.5d
+		}
+		{
+			description: ["Thermal Series'de ihtiyacın olacak olan o materyaller."]
+			id: "1CE9EF771F1CD6E3"
+			rewards: [{
+				id: "67507112467557DC"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [
+				{
+					id: "583E133FF6C604F3"
+					item: "thermal:raw_tin"
+					type: "item"
+				}
+				{
+					id: "5E6494D891C948BF"
+					item: "thermal:raw_lead"
+					type: "item"
+				}
+				{
+					id: "7E6479A2153C2DB1"
+					item: "thermal:raw_silver"
+					type: "item"
+				}
+				{
+					id: "680B6BF2979B6EB6"
+					item: "thermal:raw_nickel"
+					type: "item"
+				}
+			]
+			title: "Basit Materyaller"
+			x: -4.5d
+			y: -4.0d
+		}
+	]
+	title: "Thermal Series"
+}

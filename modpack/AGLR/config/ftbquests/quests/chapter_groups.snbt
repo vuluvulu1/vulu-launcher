@@ -1,0 +1,9 @@
+{
+	chapter_groups: [
+		{ id: "2EDD020CFC7369F0", title: "Başlangıç" }
+		{ id: "5F08EE6D8BB37C12", title: "Büyücülük" }
+		{ id: "78265E0421B10837", title: "Depolama" }
+		{ id: "2127A84FC6BA7017", title: "Teknoloji" }
+		{ id: "2A31B2C3D50E4F37", title: "Macera" }
+	]
+}

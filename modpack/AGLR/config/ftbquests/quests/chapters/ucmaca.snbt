@@ -1,0 +1,535 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "ucmaca"
+	group: "2127A84FC6BA7017"
+	icon: "immersive_aircraft:engine"
+	id: "70A749DD6AE77A04"
+	images: [{
+		height: 12.0d
+		image: "kubejs:item/ucak"
+		rotation: 0.0d
+		width: 25.0d
+		x: 1.0d
+		y: -2.0d
+	}]
+	order_index: 1
+	quest_links: [ ]
+	quests: [
+		{
+			description: ["Bu eşyalar Immersive Aircraft modunun temel eşyalarıdır."]
+			icon: "immersive_aircraft:industrial_gears"
+			id: "69E78740A347A319"
+			rewards: [{
+				id: "5065B08C2E87B5A5"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [
+				{
+					id: "5C35E4F60F86014B"
+					item: { Count: 6, id: "immersive_aircraft:sail" }
+					type: "item"
+				}
+				{
+					id: "3297706FD74409F8"
+					item: { Count: 2, id: "immersive_aircraft:hull" }
+					type: "item"
+				}
+				{
+					id: "6D60E4AF2C0CEFB6"
+					item: "immersive_aircraft:engine"
+					type: "item"
+				}
+				{
+					id: "4DDF695B8915039B"
+					item: "immersive_aircraft:boiler"
+					type: "item"
+				}
+				{
+					id: "2C7840D16187EABC"
+					item: "immersive_aircraft:propeller"
+					type: "item"
+				}
+			]
+			title: "Temel Malzemeler"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			description: [
+				"En temel gemi olan Hava Gemisi sırtında bir öküz varmış gibi yavaş olmasına rağmen ayağını yerden kesecektir.                                     "
+				"{@pagebreak}"
+				" Bu geminin 1 adet yakıt yuvası, 3 adet yükseltme yuvası, 1 adet silah yuvası, 1 adet banner yuvası ve 1 adet boya yuvası vardır."
+			]
+			hide_dependency_lines: true
+			id: "54AFC794D0DF0B5B"
+			rewards: [{
+				id: "76785841DC008DF8"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Hava Gemisi\" üret."
+			tasks: [{
+				id: "7EB7BE58130FB48E"
+				item: "immersive_aircraft:airship"
+				type: "item"
+			}]
+			title: "Hava Gemisi"
+			x: 1.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["54AFC794D0DF0B5B"]
+			description: [
+				"Hava Gemisi'ni beğendin mi? bu gemi de Hava Gemisi fakat ne artısı biliyor musun?     &4SANDIKLARI VAR!!!!!"
+				"{@pagebreak}"
+				"Bu gemide 1 adet yakıt yuvası, 4 adet yükseltme yuvası, 1 adet banner yuvası, 1 boya yuvası vardır."
+			]
+			hide_dependency_lines: true
+			id: "21F183A4D894634A"
+			rewards: [{
+				id: "40EB0CE7920FC03A"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Kargo Hava Gemisi\" üret."
+			tasks: [{
+				id: "4CD5313900C712E6"
+				item: "immersive_aircraft:cargo_airship"
+				type: "item"
+			}]
+			title: "Kargo Gemisi"
+			x: 3.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["21F183A4D894634A"]
+			description: [
+				"Hava Gemisi'nin büyük abisi ile tanışın! "
+				"Bu büyük arkadaşımız sizin tüm ihtiyaçlarınızı karşılacaktır."
+				"{@pagebreak}"
+				"3 yakıt yuvası, 6 yükseltme yuvası, 2 silah yuvası, 1 boya yuvası, 1  roket yuvası ve KALLAVİ depolamasıyla göklere hükmedin!"
+			]
+			hide_dependency_lines: true
+			id: "3E18A71B36EFD7E4"
+			rewards: [{
+				id: "6C229378D60E85E7"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Savaş Gemisi\" üret."
+			tasks: [{
+				id: "00D601B075D60CEC"
+				item: "immersive_aircraft:warship"
+				type: "item"
+			}]
+			title: "Göklerin Fatihi"
+			x: 4.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["69E78740A347A319"]
+			description: [
+				"Hızlı olmasına rağmen kontrolü zor olan bir uçak."
+				"{@pagebreak}"
+				"Bu uçak 1 adet yakıt yuvası, 1 adet roket, 4 adet yükseltme yuvası, 1 adet banner yuvası, 1 adet silah yuvasına sahip."
+			]
+			hide_dependency_lines: true
+			id: "0905E996AA610300"
+			rewards: [{
+				id: "6F80FD605FAE53C8"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Çift Kanatlı\" üret"
+			tasks: [{
+				id: "26A9025C7751C856"
+				item: "immersive_aircraft:biplane"
+				type: "item"
+			}]
+			title: "Çift Kanatlı"
+			x: 0.0d
+			y: 1.5d
+		}
+		{
+			dependencies: ["69E78740A347A319"]
+			description: [
+				"Bir mühendislik harikası olan bu uçağımız bambulardan yapılma! "
+				"{@pagebreak}"
+				"Bambu bir uçakta çok bir şey bekleme ama yine de bu gemimizin 1 adet yakıt yuvası, 1 adet silah yuvası ve bir adet yükseltme yuvası var."
+			]
+			hide_dependency_lines: true
+			id: "3727CEE638D4BE6F"
+			rewards: [{
+				id: "2A180BCF1597E54F"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Quadrocopter\" üret."
+			tasks: [{
+				id: "03981FD146F84AE2"
+				item: "immersive_aircraft:quadrocopter"
+				type: "item"
+			}]
+			title: "Mühendislik Harikası"
+			x: 1.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["69E78740A347A319"]
+			description: [
+				"Bu uçağı çalıştırmak için, uçağa ıkınman(ittirmen) gerekiyor. Diğer bir deyişle binince ileri gitmelisin. Gerekli hıza ulaştığında uçak kendiliğinden havalanacaktır."
+				"{@pagebreak}"
+				"Bu geminin 3 yükseltme ve 1 silah yuvası vardır."
+			]
+			hide_dependency_lines: true
+			id: "6FDF2089ECA3E335"
+			rewards: [{
+				id: "02A623EFA651BB99"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Gyrodyne\" üret."
+			tasks: [{
+				id: "457C75B041AE8467"
+				item: "immersive_aircraft:gyrodyne"
+				type: "item"
+			}]
+			title: "Jirodin"
+			x: -1.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["69E78740A347A319"]
+			description: [
+				"3 adet koltuğu olan bu uçağımız suda zorlanmadan iniş yapmak için dubalarla donatılmıştır."
+				"{@pagebreak}"
+				"Bu gemi 1 adet yakıt yuvası, 2 adet silah yuvası, 4 adet yükseltme yuvası ve 1 roket yuvasına sahiptir."
+			]
+			hide_dependency_lines: true
+			id: "707379F4DF220951"
+			rewards: [{
+				id: "25E9C7A91B3937B5"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Su Sekici\" üret."
+			tasks: [{
+				id: "54FBBB9D4150692A"
+				item: "immersive_aircraft:bamboo_hopper"
+				type: "item"
+			}]
+			title: "Vraaaak!"
+			x: -1.5d
+			y: 0.0d
+		}
+		{
+			description: ["Bu top barut ile çalışan bir gemi silahı. Gemilerdeki silah yuvalarına takılabilir."]
+			hide_dependency_lines: true
+			id: "0786EADCB8A3E14F"
+			rewards: [{
+				id: "45B4137F194BAFC6"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Döner Top\" üret."
+			tasks: [{
+				id: "128A366961D24BD5"
+				item: "immersive_aircraft:rotary_cannon"
+				type: "item"
+			}]
+			title: "Döner Top"
+			x: -1.5d
+			y: -1.5d
+		}
+		{
+			description: ["Bu arbalet oldukça güçlü bir saldırı silahıdır, kullanmak için ok gerektirir. Gemilerin silah yuvalarına takılabilir."]
+			hide_dependency_lines: true
+			id: "2059CF4344148061"
+			rewards: [{
+				id: "2BB42A3470D950C5"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Ağır Arbalet\" üret."
+			tasks: [{
+				id: "64EA536AFEBC9D4A"
+				item: "immersive_aircraft:heavy_crossbow"
+				type: "item"
+			}]
+			title: "Ağır Arbalet"
+			x: 0.0d
+			y: -1.5d
+		}
+		{
+			description: ["Orjinal Minecraft teleskopunun biraz hantal hali. Gemilerin silah yuvalarına takılabilir."]
+			hide_dependency_lines: true
+			id: "6AB162AE028F33FA"
+			require_sequential_tasks: false
+			rewards: [{
+				id: "759120F99BC9A4A6"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Teleskop\" üret."
+			tasks: [{
+				id: "3E7BC53E4502C70E"
+				item: "immersive_aircraft:telescope"
+				type: "item"
+			}]
+			title: "Teleskop"
+			x: 1.5d
+			y: -1.5d
+		}
+		{
+			description: ["Bu gemi silahımız etrafını patlatmayan fakat hasar veren bombalar atmanızı sağlamaktadır. Gemilerin silah yuvalarına takılabilir."]
+			id: "4257EAC239F2437E"
+			rewards: [{
+				id: "2BF2DCBE191FE835"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Bomba Bölmesi\" üret."
+			tasks: [{
+				id: "219E40DEA56EA628"
+				item: "immersive_aircraft:bomb_bay"
+				type: "item"
+			}]
+			title: "Tarihçi agalar anladı"
+			x: 3.0d
+			y: -1.5d
+		}
+		{
+			description: ["Bu pervane uçarkenki sürtünmenizi %75 azaltır. Gemilerdeki yükseltme yuvalarına takılabilir."]
+			id: "6C574AD33F418FF0"
+			rewards: [{
+				id: "764BF5BB3C686D13"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Gelişmiş Pervane\" üret."
+			tasks: [{
+				id: "17453059C07B4B36"
+				item: "immersive_aircraft:enhanced_propeller"
+				type: "item"
+			}]
+			title: "Gelişmiş Pervane"
+			x: 4.5d
+			y: -1.5d
+		}
+		{
+			description: [
+				"Bu motor, motor gücünü %20 azaltır ancak yakıt tüketimini %75 azaltır."
+				"Gemilerinizin yükseltme yuvalarına takılabilir."
+			]
+			id: "6AC378113893A463"
+			rewards: [{
+				id: "76E70A3E7A2E0B0A"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Ekonomik Motor\" üret."
+			tasks: [{
+				id: "1879E00E194ADAF9"
+				item: "immersive_aircraft:eco_engine"
+				type: "item"
+			}]
+			title: "Ekonomik Motor"
+			x: 4.5d
+			y: -3.0d
+		}
+		{
+			description: [
+				"Bu motor, motor gücünü %40 arttırır fakat yakıt tüketimini de %30 arttırmaktadır."
+				"Gemilerinizin yükseltme yuvalarına takılabilir."
+			]
+			id: "0CA482113D78A36B"
+			rewards: [{
+				id: "1419AF73D028A20C"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Nether Motoru\" üret."
+			tasks: [{
+				id: "636124D18504C620"
+				item: "immersive_aircraft:nether_engine"
+				type: "item"
+			}]
+			title: "Nether Motoru"
+			x: 3.0d
+			y: -3.0d
+		}
+		{
+			description: [
+				"Bu kazan motor gücünüzü %25 arttırır fakat yakıt ihtiyacınızı da %50 arttırır."
+				"Gemilerinizin yükseltme yuvalarına takılabilir."
+			]
+			id: "3CA959D1A73DA7B3"
+			rewards: [{
+				id: "55DE6BC1F063EC01"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Çelik Kazan\" üret."
+			tasks: [{
+				id: "60419AEA59AB2F2F"
+				item: "immersive_aircraft:steel_boiler"
+				type: "item"
+			}]
+			title: "Çelik Kazan"
+			x: 1.5d
+			y: -3.0d
+		}
+		{
+			description: [
+				"Gemilerinizin yakıt ihtiyacını %20 azaltır."
+				"Gemilerin yükseltme yuvalarına takılabilir."
+			]
+			id: "5D74DAC051E43DF0"
+			rewards: [{
+				id: "6F0C701A174779B0"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Endrüstriyel Dişli\" üret."
+			tasks: [{
+				id: "56BCB17476C19F59"
+				item: "immersive_aircraft:industrial_gears"
+				type: "item"
+			}]
+			title: "Endüstriyel Dişli"
+			x: 0.0d
+			y: -3.0d
+		}
+		{
+			description: [
+				"Bu borular motor gücünüzü %10 arttırıyor, nasıl arttırıyor sormayın. "
+				"Gemilerin yükseltme yuvalarına takılabilir"
+			]
+			id: "05295CFC9691082C"
+			rewards: [{
+				id: "41B6DF85C3561E12"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"HARD Boru\" üret."
+			tasks: [{
+				id: "1A7DF5BD978E1724"
+				item: "immersive_aircraft:sturdy_pipes"
+				type: "item"
+			}]
+			title: "HARD Boru"
+			x: -1.5d
+			y: -3.0d
+		}
+		{
+			description: [
+				"%3 stabilitenizi arttırır ve rüzgar etkisini %100 azaltmanızı sağlar."
+				"Gemilerinizin yükseltme yuvalarına takılabilir. "
+			]
+			id: "6CE1A496CED3372E"
+			rewards: [{
+				id: "1944C5B6B76A1E9C"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Jiroskop\" üret."
+			tasks: [{
+				id: "5DB8E13010C0BFB1"
+				item: "immersive_aircraft:gyroscope"
+				type: "item"
+			}]
+			title: "Jiroskop"
+			x: 6.0d
+			y: -1.5d
+		}
+		{
+			description: [
+				"Normal Jiroskopunun bir tık gelişmişidir."
+				"jiroskopla tek farkı işe elektronik bir gösterge paneli olmasıdır."
+				"Gemilerinizin yükseltme yuvalarına takılabilir. "
+			]
+			id: "2161DAA67D9DC360"
+			rewards: [{
+				id: "1FD19333B8FE332B"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Elektronik Jiroskop\" üret."
+			tasks: [{
+				id: "3029C4E53711BED3"
+				item: "immersive_aircraft:gyroscope_hud"
+				type: "item"
+			}]
+			title: "Elektronik Jiroskop"
+			x: 6.0d
+			y: -3.0d
+		}
+		{
+			description: [
+				"En gelişmiş Jiroskop türüdür."
+				"jiroskoptan tek farkı oldukça gelişmiş bir mekanik gösterge paneli olmasıdır."
+				"Gemilerinizin yükseltme yuvalarına takılabilir. "
+			]
+			id: "40197C280083C882"
+			rewards: [{
+				id: "60FE41E6830466AC"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Gelişmiş Jiroskop\" üret."
+			tasks: [{
+				id: "4651F227F1A4C09D"
+				item: "immersive_aircraft:gyroscope_dials"
+				type: "item"
+			}]
+			title: "Gelişmiş Jiroskop"
+			x: 7.5d
+			y: -1.5d
+		}
+		{
+			description: [
+				"Gemi dayanıklılığını %100 arttırır."
+				"Gemilerinizin yükseltme yuvalarına takılabilir. "
+			]
+			id: "724825638FB08FEF"
+			rewards: [{
+				id: "529003AE11AA39A2"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Gövde Güçlendirici\" üret."
+			tasks: [{
+				id: "518F7F87F0F75A65"
+				item: "immersive_aircraft:hull_reinforcement"
+				type: "item"
+			}]
+			title: "Gövde Güçlendirici"
+			x: 7.5d
+			y: -3.0d
+		}
+		{
+			description: [
+				"Kalkış hızını %50 arttırır."
+				"Gemilerinizin yükseltme yuvalarına takılabilir. "
+			]
+			id: "4F6D759FF56A698B"
+			rewards: [{
+				id: "6D2EC80BC7DB1DB7"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			subtitle: "Bir \"Gelişmiş İniş Aracı\" üret."
+			tasks: [{
+				id: "06B592DD43A16C46"
+				item: "immersive_aircraft:improved_landing_gear"
+				type: "item"
+			}]
+			title: "Gelişmiş İniş Aracı"
+			x: 8.5d
+			y: -2.0d
+		}
+	]
+	title: "Immersive Aircraft"
+}

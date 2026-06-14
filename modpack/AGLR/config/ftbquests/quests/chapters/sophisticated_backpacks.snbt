@@ -1,0 +1,592 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "sophisticated_backpacks"
+	group: "78265E0421B10837"
+	icon: "sophisticatedbackpacks:backpack"
+	id: "165B17AFDF2249A6"
+	order_index: 0
+	quest_links: [ ]
+	quests: [
+		{
+			dependencies: ["7268424407ED188C"]
+			description: ["Yükseltilebilir ve modüler bir çanta."]
+			id: "5A4010C5CE496BF0"
+			rewards: [{
+				id: "5CA770247DDEEF55"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "51C69C282F930784"
+				item: "sophisticatedbackpacks:backpack"
+				type: "item"
+			}]
+			title: "Çanta"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Demir Çanta'nın çantadan hiçbir farkı yok, SADECE daha büyük."]
+			id: "694D2DF701175CB2"
+			rewards: [{
+				id: "08CC6943D46757F8"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "2646EFF21725916C"
+				item: "sophisticatedbackpacks:iron_backpack"
+				type: "item"
+			}]
+			title: "Demir Çanta"
+			x: 2.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["694D2DF701175CB2"]
+			description: ["Altın Çanta'nın demir çantadan hiçbir farkı yok, SADECE daha büyük."]
+			id: "133A016A0330A7F1"
+			rewards: [{
+				id: "61AF5194797CFE72"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "282FFADC8E866B8E"
+				item: "sophisticatedbackpacks:gold_backpack"
+				type: "item"
+			}]
+			title: "Altın Çanta"
+			x: 4.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["133A016A0330A7F1"]
+			description: ["Elmas Çanta'nın altın çantadan hiçbir farkı yok, SADECE daha büyük."]
+			id: "4DAFB8E993C80AAA"
+			rewards: [{
+				id: "10B40870EB55556A"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "16561B64E6623AB6"
+				item: "sophisticatedbackpacks:diamond_backpack"
+				type: "item"
+			}]
+			title: "Elmas Çanta"
+			x: 6.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["4DAFB8E993C80AAA"]
+			description: ["Netherite Çanta'nın elmas çantadan hiçbir farkı yok, SADECE daha büyük."]
+			id: "27726D1ECC0C2434"
+			rewards: [{
+				id: "3D05777E910738F6"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "1DFDBCC8591D3E00"
+				item: "sophisticatedbackpacks:netherite_backpack"
+				type: "item"
+			}]
+			title: "Netherite Çanta"
+			x: 8.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Yapılandırılabilir bir filtreye dayalı olarak eşyaları otomatik olarak sırt çantasına toplar. Takıldığında, oyuncunun normalde alacağı öğeler doğrudan sırt çantasına gönderilir. Dünyaya yerleştirildiğinde, sırt çantası onunla temas eden yakındaki eşyaları toplar."]
+			hide_dependency_lines: true
+			id: "6A95D877CCD3CD14"
+			rewards: [{
+				id: "047E514933BD43AB"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "2135D7930A087388"
+				item: "sophisticatedbackpacks:pickup_upgrade"
+				type: "item"
+			}]
+			title: "Pikap Yükseltmesi"
+			x: 0.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Yakındaki öğeleri, yapılandırılabilir bir filtreye göre menzile düşerlerse doğrudan sırt çantasına ışınlar. Takıldığında, oyuncunun etrafındaki öğeler otomatik olarak sırt çantasına toplanır. Dünyaya yerleştirildiğinde, sırt çantası aynı aralıkta çevresinden eşyalar toplar."]
+			hide_dependency_lines: true
+			id: "27E0E18450C559CE"
+			rewards: [{
+				id: "400B003A1C76D817"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "43EBFBC8D2D06F55"
+				item: "sophisticatedbackpacks:magnet_upgrade"
+				type: "item"
+			}]
+			title: "Mıknatıs Yükseltmesi"
+			x: 1.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Hangi öğelerin arka pakete yerleştirilebileceğini veya otomasyon yoluyla çıkarılabileceğini kısıtlar."]
+			hide_dependency_lines: true
+			id: "3F6E9F4A8BDDE9D8"
+			rewards: [{
+				id: "373D35A5AA28864B"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "0C87780074D29197"
+				item: "sophisticatedbackpacks:filter_upgrade"
+				type: "item"
+			}]
+			title: "Filtre Yükseltmesi"
+			x: 2.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Filtre kriterlerine uyan öğeleri otomatik olarak yok eder ve istenmeyen öğelerin birikirmesini önler."]
+			hide_dependency_lines: true
+			id: "66A280A402710D7E"
+			rewards: [{
+				id: "036D35F7BB22A083"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "6C47B70CF3734E41"
+				item: "sophisticatedbackpacks:void_upgrade"
+				type: "item"
+			}]
+			title: "Boşluk Yükseltmesi"
+			x: 3.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Açken oyuncuyu otomatik olarak besler. Belirli gıda maddelerine izin vermek veya engellemek için filtrelenebilir."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "02CC1A17D29F66D8"
+			rewards: [{
+				id: "7C83AE67D0B4936B"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "42055D9BF6DBC8E2"
+				item: "sophisticatedbackpacks:feeding_upgrade"
+				type: "item"
+			}]
+			title: "Besleme Yükseltmesi"
+			x: 4.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantasındaki öğeleri otomatik olarak sıkıştırır. Belirli öğeleri sıkıştırmak için yapılandırılabilir ve diğer yükseltmeler ve otomasyon ile çalışabilir."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "02EA562B5ECE3855"
+			rewards: [{
+				id: "4E2DA64B4E3ADABC"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "2C461D3C451D52DF"
+				item: "sophisticatedbackpacks:compacting_upgrade"
+				type: "item"
+			}]
+			title: "Sıkıştırma Yükseltmesi"
+			x: 5.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantası ve saklama kapları arasında ürün aktarımını otomatikleştirir. Eğilip depolama bloklarına sağ tıklayarak kullanılır."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "6279B063AF3F1D95"
+			rewards: [{
+				id: "00E0B16EDBE2A8BA"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "554665AEC3FE55DA"
+				item: "sophisticatedbackpacks:restock_upgrade"
+				type: "item"
+			}]
+			title: "Yeniden Stoklama Yükseltmesi"
+			x: 0.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Eşyaları stoklara yatırmayı kolaylaştırır. Eğilip depolama bloklarına sağ tıklayarak çalışır."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "30BA1029B45B67B0"
+			rewards: [{
+				id: "1895A8AA6CF01ACA"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "72C40D85401D6B42"
+				item: "sophisticatedbackpacks:deposit_upgrade"
+				type: "item"
+			}]
+			x: 1.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantanızdan eşya çubuğunuzdaki eşyaları otomatik olarak yeniden stoklar. Belirli öğeler veya envanterinizdeki tüm öğeler için yapılandırılabilir."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "27A2E8D4812F015A"
+			rewards: [{
+				id: "0FEE80F206462042"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "4743B264AC9EF783"
+				item: "sophisticatedbackpacks:refill_upgrade"
+				type: "item"
+			}]
+			title: "Yeniden Doldurma Yükseltmesi"
+			x: 2.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Büyük depolama kapasitesi için sırt çantalarını sırt çantalarına depolamanı sağlar."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "579BBEFA849A50A2"
+			rewards: [{
+				id: "3C08FB2974B4C71F"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "50239C34321DE567"
+				item: "sophisticatedbackpacks:inception_upgrade"
+				type: "item"
+			}]
+			title: "Inception Yükseltmesi"
+			x: 3.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Görsel efektlerle madde işlemeyi otomatikleştirir. Manuel veya otomatik yakıt ve ürün ilavesi için yapılandırılabilir. "]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "035748382BF4E23B"
+			rewards: [{
+				id: "7EB16E6AD6C412FE"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [
+				{
+					id: "7FB5B536353CFD90"
+					item: "sophisticatedbackpacks:blasting_upgrade"
+					type: "item"
+				}
+				{
+					id: "6F8BB03CD8CAFDCD"
+					item: "sophisticatedbackpacks:smoking_upgrade"
+					type: "item"
+				}
+				{
+					id: "210BC0BFF520E7E8"
+					item: "sophisticatedbackpacks:smelting_upgrade"
+					type: "item"
+				}
+			]
+			title: "Eritme Yükseltmesi"
+			x: 4.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantasını yenilmez hale getirir, çanta boşluğa düşse bile yok olmaz."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "7DBD8EB4196EC4A2"
+			rewards: [{
+				id: "2CE0929AA51C7388"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "44279305463B1482"
+				item: "sophisticatedbackpacks:everlasting_upgrade"
+				type: "item"
+			}]
+			title: "Sonsuza Dek Yükseltmesi"
+			x: 5.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Taşınabilir çalışma masası ve taş kesme doğrudan sırt çantanızdan. Hazırlanmış öğeleri sırt çantasına veya oyuncu envanterine yönlendirmek için yapılandırılabilir. "]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "5F025CD1B0910C9B"
+			rewards: [{
+				id: "13BC6EBD91A4E686"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [
+				{
+					id: "13FC88497B7AFD8D"
+					item: "sophisticatedbackpacks:crafting_upgrade"
+					type: "item"
+				}
+				{
+					id: "0844409811AA256E"
+					item: "sophisticatedbackpacks:stonecutter_upgrade"
+					type: "item"
+				}
+			]
+			title: "Çalışma Masası ve Taş Kesici Yükseltmesi"
+			x: 6.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantanızda ürün depolama kapasitesini 1.5 kat artırır. (Bir slota 64 değilde 96 eşya depolanır)"]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "5689869F669AB9A1"
+			rewards: [{
+				id: "3D0F7F809B046EC9"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "58B1DA8EE408BDE9"
+				item: "sophisticatedbackpacks:stack_upgrade_starter_tier"
+				type: "item"
+			}]
+			title: "Stack Yükseltmesi 1"
+			x: 6.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantanızda ürün depolama kapasitesini 2 kat artırır. (Bir slota 64 değilde 128 eşya depolanır)"]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "446636399F3DB862"
+			rewards: [{
+				id: "028EED296EF75EBC"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "07A04A7C79CE50CA"
+				item: "sophisticatedbackpacks:stack_upgrade_tier_1"
+				type: "item"
+			}]
+			title: "Stack Yükseltmesi 2"
+			x: 6.5d
+			y: -2.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantanızda ürün depolama kapasitesini 4 kat artırır. (Bir slota 64 değilde 256 eşya depolanır)"]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "200B903A50CE4053"
+			rewards: [{
+				id: "00180DFBAF4BB183"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "7ED8778305C5D6AE"
+				item: "sophisticatedbackpacks:stack_upgrade_tier_2"
+				type: "item"
+			}]
+			title: "Stack Yükseltmesi 3"
+			x: 6.5d
+			y: -3.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantanızda ürün depolama kapasitesini 8 kat artırır. (Bir slota 64 değilde 512 eşya depolanır)"]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "1D733C1965F058A2"
+			tasks: [{
+				id: "126C2FEF8767E515"
+				item: "sophisticatedbackpacks:stack_upgrade_tier_3"
+				type: "item"
+			}]
+			title: "Stack Yükseltmesi 4"
+			x: 6.5d
+			y: -4.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantanızda ürün depolama kapasitesini 8 kat artırır. (Bir slota 64 değilde 1024 eşya depolanır)"]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "55288B858ED2F885"
+			rewards: [{
+				id: "7CE2F1FB69185132"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "0F4ADADA362C4A65"
+				item: "sophisticatedbackpacks:stack_upgrade_tier_4"
+				type: "item"
+			}]
+			title: "Stack Yükseltmesi 5"
+			x: 6.5d
+			y: -5.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Otomatik olarak kırdığın bloğa veya vurduğun düşmana göre uygun alet veya silaha geçer."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "74D18FD45E65C42D"
+			rewards: [{
+				id: "3DAA93E7980DC4B7"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "2E1D7E3FFEDCC02C"
+				item: "sophisticatedbackpacks:tool_swapper_upgrade"
+				type: "item"
+			}]
+			title: "Alet Değiştirici Yükseltme"
+			x: 7.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantasının sıvı depolamasına izin verir."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "2C016334CF98AA18"
+			rewards: [{
+				id: "72FEC568D1150124"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "168C8EFA760CDF95"
+				item: "sophisticatedbackpacks:tank_upgrade"
+				type: "item"
+			}]
+			title: "Tank Yükseltmesi"
+			x: 7.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantasında enerji depolamanı sağlar."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "1A408A3FF446D769"
+			rewards: [{
+				id: "2EEED236CAB21289"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "228502E34886463D"
+				item: "sophisticatedbackpacks:battery_upgrade"
+				type: "item"
+			}]
+			title: "Pil Yükseltmesi"
+			x: 0.5d
+			y: 2.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sıvıları çantanın içine ve dışına pompalar."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "61445CBECE05DFDA"
+			rewards: [{
+				id: "6F72CC3CC957C55F"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "7ED4D972FF135C7F"
+				item: "sophisticatedbackpacks:pump_upgrade"
+				type: "item"
+			}]
+			title: "Pompa Yükseltmesi"
+			x: 1.5d
+			y: 2.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Tank yükseltmesi ile xp depolamayı sağlar."]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "00970C0F633F2078"
+			rewards: [{
+				id: "0FED851E9747FD93"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "6A9E089928CE75BF"
+				item: "sophisticatedbackpacks:xp_pump_upgrade"
+				type: "item"
+			}]
+			title: "XP Pompası Yükseltmesi"
+			x: 2.5d
+			y: 2.5d
+		}
+		{
+			dependencies: ["5A4010C5CE496BF0"]
+			description: ["Sırt çantasının müzik diskleri çalmasına izin verir. "]
+			hide_dependency_lines: true
+			hide_dependent_lines: true
+			id: "133D8672BB6D89E1"
+			rewards: [{
+				id: "4057ACCA8675AC15"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "53CF001CE817769B"
+				item: "sophisticatedbackpacks:jukebox_upgrade"
+				type: "item"
+			}]
+			title: "Jukebox  Yükseltmesi"
+			x: 3.5d
+			y: 2.5d
+		}
+	]
+	title: "Sophisticated Backpacks"
+}

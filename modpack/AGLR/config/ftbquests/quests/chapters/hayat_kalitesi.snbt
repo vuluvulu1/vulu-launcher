@@ -1,0 +1,241 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "hayat_kalitesi"
+	group: "2EDD020CFC7369F0"
+	icon: "minecraft:gold_block"
+	id: "32530E32EAACC1A5"
+	order_index: 0
+	quest_links: [ ]
+	quests: [
+		{
+			description: ["Bu sekmede hayat kalitesini arttırıcak modlar yer alıyor direk tıklayıp ne olduklarına ve ne işe yaradıklarına bakabilirsiniz."]
+			hide_dependency_lines: false
+			id: "0437D7BAE1A21856"
+			subtitle: "Quality Of Life..."
+			tasks: [{
+				id: "4673576C187AA5AF"
+				title: "Başlangıç"
+				type: "checkmark"
+			}]
+			title: "Hayatın Kalitesi"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["0437D7BAE1A21856"]
+			description: ["Sırt çantaları, eşyaları taşımak için epey yararlı, üstelik çeşitli geliştirmelerle taşıyabildikleri eşya limiti, eşya eritme, yerden eşya çekme gibi gibi bir sürü özelliğede sahip olabilirler detaylı bilgi için \"Sophisticated Backpacks\" sekmesine bakabilirsin."]
+			id: "7268424407ED188C"
+			rewards: [{
+				id: "1B271483E3B925F7"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "359732E291306B40"
+				item: "sophisticatedbackpacks:backpack"
+				type: "item"
+			}]
+			title: "Sırt Çantaları"
+			x: -0.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["0437D7BAE1A21856"]
+			description: ["Çanta ile aynı mantık ama bu sefer fiziksel depolamalar için, aynı şekilde yükseltmeler ve geliştirmeler mevcut tekrardan detaylı bilgi için \"Sophisticated Storage\" sekmesine bakabilirsin."]
+			id: "35775A4B0BA1526A"
+			rewards: [{
+				id: "21A4B83D617AB5E3"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "04C8552FAC30B44D"
+				item: {
+					Count: 1
+					id: "ftbfiltersystem:smart_filter"
+					tag: {
+						"ftbfiltersystem:filter": "ftbfiltersystem:item_tag(sophisticatedstorage:base_tier_wooden_storage)"
+					}
+				}
+				title: "Herhangi bir sandık"
+				type: "item"
+			}]
+			title: "Geliştirilebilir Sandıklar"
+			x: 0.5d
+			y: -2.0d
+		}
+		{
+			dependencies: ["0437D7BAE1A21856"]
+			description: ["Keşif yaparak bulabileceğin yadigarlar, her biri farklı bir güçlendirme veriyor. Yadigarı yükseltmek için ya bulmacasını çözmen gerekiyor yada xp harcayarak açman gerekiyor. Detaylı bilgi için \"Artifacts\" sekmesine bakabilirsin."]
+			id: "0C1E92186F07F99E"
+			tasks: [{
+				id: "51F8EEEE7D0D2D71"
+				item: {
+					Count: 1
+					id: "ftbfiltersystem:smart_filter"
+					tag: {
+						"ftbfiltersystem:filter": "ftbfiltersystem:item_tag(artifacts:artifacts)"
+					}
+				}
+				title: "Herhangi bir yadigar"
+				type: "item"
+			}]
+			title: "Yadigarlar"
+			x: 1.5d
+			y: -1.0d
+		}
+		{
+			dependencies: ["0437D7BAE1A21856"]
+			description: ["Bu saksılar küçük birer çiftlik gibi çalışıyor içine normalde yaptığınız gibi toprak koyup üstüne tohumu ekiyorsunuz ve bitki büyüyüp saksının içindeki küçük alanda depolanıyor istersen hunili saksı yapıp bir sandık yada depolama sistemine bağlayıp farma bile dönüştürebilirsin. Bunların hepsi ağaçlar içinde geçerli."]
+			id: "2C0C4A6C87BF89CB"
+			rewards: [{
+				id: "7B6DE62F66A940DC"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "32D40A1077AAD21E"
+				item: {
+					Count: 1
+					id: "ftbfiltersystem:smart_filter"
+					tag: {
+						"ftbfiltersystem:filter": "ftbfiltersystem:item_tag(botanypots:all_botany_pots)"
+					}
+				}
+				title: "Herhangi bir botanik saksı"
+				type: "item"
+			}]
+			title: "Botanik Saksılar"
+			x: -1.5d
+			y: -1.0d
+		}
+		{
+			dependencies: ["0437D7BAE1A21856"]
+			description: ["Bu masalar \"Chipped\" modundan geliyor ve her bir masa kendi alanındaki blokları süsleyebiliyor örneğin Carpenter's Table (Marangoz Masası) odunları süslüyor gibi gibi. Bu masalar sayesinde oyundaki neredeyse tüm vanilla bloklar süslenebilir build yaparken çok işe yarıyorlar."]
+			id: "181D60D852995E69"
+			rewards: [{
+				id: "77278A335A5B5173"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "455F15D60772598B"
+				item: {
+					Count: 1
+					id: "ftbfiltersystem:smart_filter"
+					tag: {
+						"ftbfiltersystem:filter": "or(item(chipped:carpenters_table)item(chipped:glassblower)item(chipped:botanist_workbench)item(chipped:loom_table)item(chipped:mason_table)item(chipped:alchemy_bench)item(chipped:tinkering_table))"
+					}
+				}
+				title: "Herhangi bir süsleme masası"
+				type: "item"
+			}]
+			title: "Süslemece"
+			x: -2.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["0437D7BAE1A21856"]
+			description: ["Bu asalar özellikle büyük yapılar inşa ederken işe yarıyor, diyelim ki bir alanı doldurmanız gerekiyor çatı yada zemin gibi 5 tane yan yana koymanız gereken blok var, eğer envanterinizde baktığınız bloktan varsa bu 5 bloktan birine bu asa ile tıklarsanız 5 bloğu aynanda koyuyor. Çok kullanışlı."]
+			id: "0ED0F16C4D4CF544"
+			rewards: [{
+				id: "3D86AF73144017F4"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "0E0D640B098B9DFF"
+				item: {
+					Count: 1
+					id: "ftbfiltersystem:smart_filter"
+					tag: {
+						"ftbfiltersystem:filter": "or(item(constructionwand:stone_wand)item(constructionwand:iron_wand)item(constructionwand:diamond_wand)item(constructionwand:infinity_wand))"
+					}
+				}
+				type: "item"
+			}]
+			title: "İnşa Asaları"
+			x: -1.5d
+			y: 1.0d
+		}
+		{
+			dependencies: ["0437D7BAE1A21856"]
+			description: ["Normal fırınlar, ama her seviyede daha hızlanıyorlar ve yükseltmelerle daha kullanışlı hale geliyorlar. Detaylı bilgi için \"Iron Furnaces\" sekmesine bakın."]
+			id: "5E22E213544D21DD"
+			rewards: [{
+				id: "529DCF40ADA59D73"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "0BED1071048A694C"
+				item: {
+					Count: 1
+					id: "ftbfiltersystem:smart_filter"
+					tag: {
+						"ftbfiltersystem:filter": "ftbfiltersystem:item_tag(forge:furnaces)"
+					}
+				}
+				title: "Herhangi bir fırın"
+				type: "item"
+			}]
+			title: "Geliştirilebilir Fırınlar"
+			x: 2.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["0437D7BAE1A21856"]
+			description: ["Buda farklı bir süsleme modu bu aletle sadece blokları değil farklı eşyalarıda değiştirebiliyorsun."]
+			id: "222F674F81B83419"
+			rewards: [{
+				id: "022971A8DAF21297"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "5579ABE827E65647"
+				item: "handcrafted:hammer"
+				type: "item"
+			}]
+			title: "Daha Fazla Süslemece"
+			x: -3.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["0437D7BAE1A21856"]
+			description: ["Süzülmeni sağlayan bir glider."]
+			id: "485F5C3089D64D3A"
+			rewards: [{
+				id: "12D39CAD2874CB18"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "243506192F7B52D4"
+				item: "paraglider:paraglider"
+				type: "item"
+			}]
+			x: -0.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["0437D7BAE1A21856"]
+			description: ["Blokları çift tırnak tuşuna basılı tutarak kırarsan toplu şekilde kırabilirsin bu tuş ayarlardan herhangi başka bir tuşa atanabilir."]
+			id: "3EBF963113F8E8FF"
+			rewards: [{
+				id: "4718045BD4AADE79"
+				type: "xp_levels"
+				xp_levels: 1
+			}]
+			tasks: [{
+				id: "09C016EDC4239E20"
+				title: "Çoklu Blok Kırma"
+				type: "checkmark"
+			}]
+			x: 1.0d
+			y: 1.0d
+		}
+	]
+	title: "Hayat Kalitesi"
+}
