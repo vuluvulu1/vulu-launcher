@@ -1,7 +1,7 @@
 {
   "instances": {
     "AGLR": {
-      "updatedAt": "2026-06-14T17:14:18.494Z",
+      "updatedAt": "2026-06-14T19:05:58.948Z",
       "files": [
         {
           "path": "mods/ad_astra-forge-1.20.1-1.15.20.jar",
@@ -3111,7 +3111,8 @@
           "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/fancymenu_data/buddy/buddy_save.json",
           "size": 260
         }
-      ]
+      ],
+      "deletedFiles": []
     }
   }
 }
