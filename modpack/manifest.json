@@ -1,7 +1,7 @@
 {
   "instances": {
     "AGLR": {
-      "updatedAt": "2026-06-14T17:13:16.014Z",
+      "updatedAt": "2026-06-14T17:14:18.494Z",
       "files": [
         {
           "path": "mods/ad_astra-forge-1.20.1-1.15.20.jar",
@@ -3014,6 +3014,12 @@
           "hash": "280020998b29642866cdb2afa9b80d69af82378caf9da3666c147f4739da6fb7",
           "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/item/bozkurt_boxer_hd.png",
           "size": 77631
+        },
+        {
+          "path": "kubejs/assets/kubejs/textures/item/ChatGPT Image 10 Haz 2026 02_22_07.png",
+          "hash": "9be137b5e72bceae96ed474b7428d4762724d09c16af72de650ca044577ed860",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/item/ChatGPT Image 10 Haz 2026 02_22_07.png",
+          "size": 1765030
         },
         {
           "path": "kubejs/assets/kubejs/textures/item/enerjiuretimienejatbaba.png",
