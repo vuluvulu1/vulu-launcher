@@ -1,1 +1,3117 @@
-{"instances":{}}
+{
+  "instances": {
+    "AGLR": {
+      "updatedAt": "2026-06-14T12:18:45.389Z",
+      "files": [
+        {
+          "path": "mods/ad_astra-forge-1.20.1-1.15.20.jar",
+          "hash": "99e274894af7c3b01622a74775a9960b5857b35951888414e733f8c2ec683f26",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ad_astra-forge-1.20.1-1.15.20.jar",
+          "size": 7508861
+        },
+        {
+          "path": "mods/alltheleaks-1.1.1+1.20.1-forge.jar",
+          "hash": "7b8e945da294b745e6aed9f88f28e232a767e032d7c2b8137a8ef36421d9fb33",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/alltheleaks-1.1.1+1.20.1-forge.jar",
+          "size": 1187126
+        },
+        {
+          "path": "mods/allurement-1.20.1-4.0.0.jar",
+          "hash": "05abd3a63b80649148853f6418896649287e64c2a491630f158d2455689db48e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/allurement-1.20.1-4.0.0.jar",
+          "size": 637694
+        },
+        {
+          "path": "mods/AmbientEnvironment-forge-1.20.1-11.0.0.1.jar",
+          "hash": "4889e05ade9095a40886db99e33abbbc50ccd931ae5052db6180da896c68d75d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/AmbientEnvironment-forge-1.20.1-11.0.0.1.jar",
+          "size": 7336
+        },
+        {
+          "path": "mods/AmbientSounds_FORGE_v6.3.4_mc1.20.1.jar",
+          "hash": "1368504e00bc50ba268d0f73558176889000ce11cad42dbab12e33a59d645495",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/AmbientSounds_FORGE_v6.3.4_mc1.20.1.jar",
+          "size": 53428834
+        },
+        {
+          "path": "mods/appleskin-forge-mc1.20.1-2.5.1.jar",
+          "hash": "e12419e43e3babc810af289403c5cd96bd7f09809b389acc6bb2f122b4b2a426",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/appleskin-forge-mc1.20.1-2.5.1.jar",
+          "size": 47428
+        },
+        {
+          "path": "mods/Aquaculture-1.20.1-2.5.7.jar",
+          "hash": "4c96cf0dd3363a8e15f9ef6b6bfc00ac7d4791e8e9eeebe19b8092c59e800f8f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Aquaculture-1.20.1-2.5.7.jar",
+          "size": 601839
+        },
+        {
+          "path": "mods/architectury-9.2.14-forge.jar",
+          "hash": "218b471d0b8a1f6cda14cfc1beb9eeb0df54304500acc6c5613d9b88ec65d9af",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/architectury-9.2.14-forge.jar",
+          "size": 580602
+        },
+        {
+          "path": "mods/ars_additions-1.20.1-1.6.7.jar",
+          "hash": "35639890eefa1ed6635f83ca16b80aeddaa400f2b2340567499e34667a63b428",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ars_additions-1.20.1-1.6.7.jar",
+          "size": 1287601
+        },
+        {
+          "path": "mods/ars_elemental-1.20.1-0.6.7.9.jar",
+          "hash": "57cb38746f3751e902bdfbe9856d3e80d9badb7c9a52bc2806ee84be767817d8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ars_elemental-1.20.1-0.6.7.9.jar",
+          "size": 1584201
+        },
+        {
+          "path": "mods/ars_nouveau-1.20.1-4.12.7-all.jar",
+          "hash": "1f1debc282a0c379c1141f2840ea294eede6f6b544c589663f40bbe17b59a1af",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ars_nouveau-1.20.1-4.12.7-all.jar",
+          "size": 12430237
+        },
+        {
+          "path": "mods/artifacts-forge-9.5.19.jar",
+          "hash": "f1e4dc786866b6e4f2a48142f2acf63bb9bee54ac2f31621ad5d8f18ab54c7b0",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/artifacts-forge-9.5.19.jar",
+          "size": 850974
+        },
+        {
+          "path": "mods/athena-forge-1.20.1-3.1.2.jar",
+          "hash": "64eec9cffb8847a459536096ac396b135ffb07c7d9d13c6a47d9cd7b251276ab",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/athena-forge-1.20.1-3.1.2.jar",
+          "size": 91808
+        },
+        {
+          "path": "mods/balm-forge-1.20.1-7.3.38-all.jar",
+          "hash": "cbe8008218f0f574bc1f78b532cac5f978c33bf36ae2e14805340eab445fdb08",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/balm-forge-1.20.1-7.3.38-all.jar",
+          "size": 591397
+        },
+        {
+          "path": "mods/bellsandwhistles-0.4.5-1.20.x-Create6.0+.jar",
+          "hash": "90f102b26c410f9dfebf6ea5dfc0ec42b1ac5bde9d4634f5e038a5d17121eb2f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/bellsandwhistles-0.4.5-1.20.x-Create6.0+.jar",
+          "size": 199902
+        },
+        {
+          "path": "mods/bettercombat-forge-1.9.0+1.20.1.jar",
+          "hash": "49c69dccf2c641246b4e3deca81ebac21f0ee119e81fc713b838b8e33569eea1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/bettercombat-forge-1.9.0+1.20.1.jar",
+          "size": 1054339
+        },
+        {
+          "path": "mods/BiomesOPlenty-1.20.1-18.0.0.592.jar",
+          "hash": "c587b49931e62f89c2673936a5e7269c6daabb713dbcc30813cb0f76da37e01d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/BiomesOPlenty-1.20.1-18.0.0.592.jar",
+          "size": 21800460
+        },
+        {
+          "path": "mods/blueprint-1.20.1-7.1.3.jar",
+          "hash": "f21d3560ae3e5ee8c0482c43bcd78ea9909a23e5b2a38478b0b25f3d99270808",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/blueprint-1.20.1-7.1.3.jar",
+          "size": 1151213
+        },
+        {
+          "path": "mods/Bookshelf-Forge-1.20.1-20.2.15.jar",
+          "hash": "7980d4a0beed1dcd2c283cf65f3c93f6b0085833f3ac490014979c95f1dfaf67",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Bookshelf-Forge-1.20.1-20.2.15.jar",
+          "size": 343925
+        },
+        {
+          "path": "mods/Botania-1.20.1-451-FORGE.jar",
+          "hash": "741e221677eeae7061af14f18b042662f5de997ee8d8db2d7d04cc495bb4e51a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Botania-1.20.1-451-FORGE.jar",
+          "size": 12201393
+        },
+        {
+          "path": "mods/BotanyPots-Forge-1.20.1-13.0.43.jar",
+          "hash": "55c0a1457d4ca107d5b1b005310df32672dad59b2ce0c4ca150c525848eed474",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/BotanyPots-Forge-1.20.1-13.0.43.jar",
+          "size": 1050211
+        },
+        {
+          "path": "mods/BotanyTrees-Forge-1.20.1-9.0.20.jar",
+          "hash": "21d09b967c0555e910b5e1fa52fb96ec95053e396871a005bdf3115def2b6032",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/BotanyTrees-Forge-1.20.1-9.0.20.jar",
+          "size": 261756
+        },
+        {
+          "path": "mods/botarium-forge-1.20.1-2.3.4.jar",
+          "hash": "470810a364ff4ad4d4fcd4e55798263938fc893970eacecc58e8b741a392b1cf",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/botarium-forge-1.20.1-2.3.4.jar",
+          "size": 157633
+        },
+        {
+          "path": "mods/catalogue-forge-1.20.1-1.8.0.jar",
+          "hash": "58445fc445546ab0db677edb9bf45bb87b99370e6483ee9080d816a9109cb210",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/catalogue-forge-1.20.1-1.8.0.jar",
+          "size": 240394
+        },
+        {
+          "path": "mods/catjammies-1.20.1-1.6.2.jar",
+          "hash": "d26d3ea962a5d02e82907a5818596f7c68187e0bd76e05b7b55b307fe3637152",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/catjammies-1.20.1-1.6.2.jar",
+          "size": 8260
+        },
+        {
+          "path": "mods/chipped-forge-1.20.1-3.0.7.jar",
+          "hash": "300e02535342b710fb34409821de9d097b0d8b17f56a57a17d75d05c4c1c5b63",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/chipped-forge-1.20.1-3.0.7.jar",
+          "size": 15060263
+        },
+        {
+          "path": "mods/cloth-config-11.1.136-forge.jar",
+          "hash": "1e895e85cf5b1e1905ef3178ec155c8badfe22a1577b92c09143a5aa1f4ce0f2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/cloth-config-11.1.136-forge.jar",
+          "size": 1181413
+        },
+        {
+          "path": "mods/Clumps-forge-1.20.1-12.0.0.4.jar",
+          "hash": "1d1cfcf386f182b1d0bdbe4bd4fc57b96234e8c7468e95e1575ad4dd6433243a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Clumps-forge-1.20.1-12.0.0.4.jar",
+          "size": 20299
+        },
+        {
+          "path": "mods/cofh_core-1.20.1-11.0.2.56.jar",
+          "hash": "d7cd3ec8083e294e17cb50fe607b416c1dc83ce885e53ba3995d86e028f790e0",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/cofh_core-1.20.1-11.0.2.56.jar",
+          "size": 1509649
+        },
+        {
+          "path": "mods/configured-forge-1.20.1-2.2.3.jar",
+          "hash": "05dceddd57825f911135c929504ef320b75953d05e7dc918dba58a0574e5315f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/configured-forge-1.20.1-2.2.3.jar",
+          "size": 418929
+        },
+        {
+          "path": "mods/constructionwand-1.20.1-2.11.jar",
+          "hash": "b55ca6f0e734bad848adb06949675136f1d05cb4fb3efdde084c9842c40e1eec",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/constructionwand-1.20.1-2.11.jar",
+          "size": 210312
+        },
+        {
+          "path": "mods/Controlling-forge-1.20.1-12.0.2.jar",
+          "hash": "516308a93824119f6a1ebc75425aa21ee8f8de0c331942793a054ba6d9c24944",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Controlling-forge-1.20.1-12.0.2.jar",
+          "size": 115280
+        },
+        {
+          "path": "mods/coroutil-forge-1.20.1-1.3.7.jar",
+          "hash": "11448808a42c17425cf2ea39701841008683d6ad6e2838a34eef0253251a870f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/coroutil-forge-1.20.1-1.3.7.jar",
+          "size": 64187
+        },
+        {
+          "path": "mods/CraterLib-Forge-1.20-3.1.0.jar",
+          "hash": "2097c83a7e672bdb19f9605aa679c2a26e9859d6afb397abfa1da846d8baa640",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/CraterLib-Forge-1.20-3.1.0.jar",
+          "size": 1353699
+        },
+        {
+          "path": "mods/create-1.20.1-6.0.8.jar",
+          "hash": "6fbb910c367dbce8e4fc7e5bf64b6edd4de980906ed00af8e47e4af843c0d9b0",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/create-1.20.1-6.0.8.jar",
+          "size": 19170905
+        },
+        {
+          "path": "mods/createaddition-1.20.1-1.3.3.jar",
+          "hash": "9bf3ae15d86ec95d128542caf10e4b5498e49ca02f725b9302d6daecd5eae1db",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/createaddition-1.20.1-1.3.3.jar",
+          "size": 1577313
+        },
+        {
+          "path": "mods/createbigcannons-5.11.2-mc.1.20.1-forge.jar",
+          "hash": "f94c0a70ab5f9c1bff4e2757a06484ae5fa21462cf3a46b906bc903e7f7fa3b9",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/createbigcannons-5.11.2-mc.1.20.1-forge.jar",
+          "size": 4040940
+        },
+        {
+          "path": "mods/create_jetpack-forge-4.4.6.jar",
+          "hash": "6a746d1278696924eec33152a391c9c073b627c4a224e9b45d99cb42c5206337",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/create_jetpack-forge-4.4.6.jar",
+          "size": 638327
+        },
+        {
+          "path": "mods/CreativeCore_FORGE_v2.12.35_mc1.20.1.jar",
+          "hash": "2c5e9efe5b256b35be24dafea2f8e26e829793fc144e95eeceabf9f1f4e601f2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/CreativeCore_FORGE_v2.12.35_mc1.20.1.jar",
+          "size": 1143788
+        },
+        {
+          "path": "mods/cristellib-1.1.6-forge.jar",
+          "hash": "3856ad565ea45d6189452d813e2f021b365b686d3b1adae5f747c56a1e535d9f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/cristellib-1.1.6-forge.jar",
+          "size": 431318
+        },
+        {
+          "path": "mods/cryonicconfig-forge-1.0.0+mc1.20.1.jar",
+          "hash": "51ffc8832eec0fce716ecab9cd148ca7408b63963a1728b06df45d8cfb2eb04a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/cryonicconfig-forge-1.0.0+mc1.20.1.jar",
+          "size": 133781
+        },
+        {
+          "path": "mods/cupboard-1.20.1-3.7.jar",
+          "hash": "7c6069d42e3693dc4f80d06632f008fffe6f2507902dfca6c02bf035776ccaf3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/cupboard-1.20.1-3.7.jar",
+          "size": 31643
+        },
+        {
+          "path": "mods/curios-forge-5.14.1+1.20.1.jar",
+          "hash": "1e817919a35b37cf30524aaec73f0ca5130452f23f168f844854df282eb8e51f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/curios-forge-5.14.1+1.20.1.jar",
+          "size": 398066
+        },
+        {
+          "path": "mods/DistantHorizons-3.0.0-b-1.20.1-fabric-forge.jar",
+          "hash": "45de9d1e6812273f97beff8333e15a023a2face2a0091039f90b93431edae319",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/DistantHorizons-3.0.0-b-1.20.1-fabric-forge.jar",
+          "size": 29451818
+        },
+        {
+          "path": "mods/drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar",
+          "hash": "5dc8087df6d6d8849fe1df5a6a342268a6986731ee801cb46a58d725d9e1e204",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar",
+          "size": 285003
+        },
+        {
+          "path": "mods/dungeons-and-taverns-3.0.3.f[Forge].jar",
+          "hash": "251b531ff2882c61a4c2eba3bd7b1683aa22b6c2d459e27bfde04a2948c99e1e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/dungeons-and-taverns-3.0.3.f[Forge].jar",
+          "size": 13161907
+        },
+        {
+          "path": "mods/DungeonsAriseSevenSeas-1.20.x-1.0.2-forge.jar",
+          "hash": "4d8b2ee057d08cf13be96d05a08fc933e835d6c36395c692662871d4a1319be2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/DungeonsAriseSevenSeas-1.20.x-1.0.2-forge.jar",
+          "size": 248169
+        },
+        {
+          "path": "mods/embeddium-0.3.31+mc1.20.1.jar",
+          "hash": "eed3d1325f2acc2fd4e69bb495e5ccb91d962126ac5330f0582ebc2a3daf47fb",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/embeddium-0.3.31+mc1.20.1.jar",
+          "size": 1320675
+        },
+        {
+          "path": "mods/EuphoriaPatcher-1.8.6-r5.7.1-forge.jar",
+          "hash": "0cb6eeeb379c78459d28fa2f1e4ee44b0bdb43617dc6e9e202f3be4da1610a85",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/EuphoriaPatcher-1.8.6-r5.7.1-forge.jar",
+          "size": 2779410
+        },
+        {
+          "path": "mods/eureka-1201-1.6.2.jar",
+          "hash": "ee50b17c40f3c100176a809c8f242d9d366e5895d6a92b4c8482ecd9b3ac68be",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/eureka-1201-1.6.2.jar",
+          "size": 462837
+        },
+        {
+          "path": "mods/fabric-api-0.92.6+1.11.14+1.20.1.jar",
+          "hash": "9b140af437581d32e5ee17d20f8fe882000e6a34cba85c152ae5bccc9570cc03",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/fabric-api-0.92.6+1.11.14+1.20.1.jar",
+          "size": 3065813
+        },
+        {
+          "path": "mods/factory_blocks-forge-1.4.0+mc1.20.1.jar",
+          "hash": "a21e9ff2f8add29e7368e933015406f8a3c91dc103bbf16783ea3a3850f23a75",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/factory_blocks-forge-1.4.0+mc1.20.1.jar",
+          "size": 808664
+        },
+        {
+          "path": "mods/fallingleaves-1.20.1-2.1.2.jar",
+          "hash": "6202d8241f01e21278fd5de644fd2e992824069f2cf0fc9dc6a74ab2218015b6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/fallingleaves-1.20.1-2.1.2.jar",
+          "size": 124212
+        },
+        {
+          "path": "mods/fancymenu_forge_3.8.1_MC_1.20.1.jar",
+          "hash": "ba1ddf0f61def8ea87e7757ebb45f1390e1da0f7ebce1aff299b0a169b045858",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/fancymenu_forge_3.8.1_MC_1.20.1.jar",
+          "size": 4472193
+        },
+        {
+          "path": "mods/FarmersDelight-1.20.1-1.2.11.jar",
+          "hash": "9a2db05541f07e15a81d514f4f47627f1c738d0464c1885765aa460117909318",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/FarmersDelight-1.20.1-1.2.11.jar",
+          "size": 2963127
+        },
+        {
+          "path": "mods/FastLeafDecay-32.jar",
+          "hash": "ce48db06bfb5830c147969793771a8f8b5a5774b182543b906bc439efd4e9469",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/FastLeafDecay-32.jar",
+          "size": 9835
+        },
+        {
+          "path": "mods/ferritecore-6.0.1-forge.jar",
+          "hash": "9c2c9396a49e796d88497758caa4637d2bcbb433c318e2dd9cebcffbaf0f6c54",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ferritecore-6.0.1-forge.jar",
+          "size": 123034
+        },
+        {
+          "path": "mods/forbidden_arcanus-1.20.1-2.2.6.jar",
+          "hash": "f45d9d919b5e2ee2574fbfac340293420db80327c543dcf9c1b4fd3a79c8cc61",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/forbidden_arcanus-1.20.1-2.2.6.jar",
+          "size": 2783387
+        },
+        {
+          "path": "mods/FramedBlocks-9.4.3.jar",
+          "hash": "58f4a8d8fb759a9db8754d83461df1b7b2e94426888259286d3acc316e6c6589",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/FramedBlocks-9.4.3.jar",
+          "size": 4251314
+        },
+        {
+          "path": "mods/ftb-essentials-forge-2001.2.4.jar",
+          "hash": "e0022bfe29dc10e373947701dae1bc4ce75ee15fe21f6d89269677fbb9aebf73",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-essentials-forge-2001.2.4.jar",
+          "size": 157732
+        },
+        {
+          "path": "mods/ftb-filter-system-forge-20.0.1.jar",
+          "hash": "fcb7b312a010986a868a6645e4e395b2635383a2387297c7c134aa4250959e24",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-filter-system-forge-20.0.1.jar",
+          "size": 197884
+        },
+        {
+          "path": "mods/ftb-library-forge-2001.2.12.jar",
+          "hash": "f09335944fff8ca3ef37a40e0b125ffb6707759ede258c73f9ce9bac61bfbf96",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-library-forge-2001.2.12.jar",
+          "size": 780523
+        },
+        {
+          "path": "mods/ftb-quests-forge-2001.4.21.jar",
+          "hash": "b85384ac0435802f8a0afafcb62b37def97965fe3457e9e10ee6ec45e5896436",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-quests-forge-2001.4.21.jar",
+          "size": 1254018
+        },
+        {
+          "path": "mods/ftb-ranks-forge-2001.1.7.jar",
+          "hash": "ec654cb94b3be8217da91f114667d7b0170c7be2ed533ac7e4faa337d1f5b872",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-ranks-forge-2001.1.7.jar",
+          "size": 87362
+        },
+        {
+          "path": "mods/ftb-teams-forge-2001.3.2.jar",
+          "hash": "b1cb4d82ea9f137a87e12a7aaf3329619294b56f7d70337dfd557a76e10b6e07",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-teams-forge-2001.3.2.jar",
+          "size": 252579
+        },
+        {
+          "path": "mods/ftb-ultimine-forge-2001.1.8.jar",
+          "hash": "b80dde55b2c91fd27f09f15ed2aefb0756c7bd704316e488ae8a06b179e85730",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-ultimine-forge-2001.1.8.jar",
+          "size": 129653
+        },
+        {
+          "path": "mods/ftb-xmod-compat-forge-2.1.3.jar",
+          "hash": "16a8eb9de88d5c33d29cb076cc39dfb337b2c54348e1ef1efe9dd60cf85e5f72",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-xmod-compat-forge-2.1.3.jar",
+          "size": 129725
+        },
+        {
+          "path": "mods/fusion-1.2.12-forge-mc1.20.1.jar",
+          "hash": "5cb039922e08ae6b8705d50e484a8759579025fb4f48413fa62d2056505fb45e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/fusion-1.2.12-forge-mc1.20.1.jar",
+          "size": 544586
+        },
+        {
+          "path": "mods/geckolib-forge-1.20.1-4.8.3.jar",
+          "hash": "8b90e11871a58b63816e99c529e6c932bc88e6beb3fec97ad618e22217df3250",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/geckolib-forge-1.20.1-4.8.3.jar",
+          "size": 1039046
+        },
+        {
+          "path": "mods/gpumemleakfix-1.20.1-1.8.jar",
+          "hash": "a7019442f1b07b1a4a875fe404d04d162905cc7fd42e0b3c843aefc7b39efc46",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/gpumemleakfix-1.20.1-1.8.jar",
+          "size": 7997
+        },
+        {
+          "path": "mods/handcrafted-forge-1.20.1-3.0.6.jar",
+          "hash": "1da3c7c524bfb656bb370757af55f08f1678e8e1cb934e1c4c04aa773ed64a79",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/handcrafted-forge-1.20.1-3.0.6.jar",
+          "size": 7111059
+        },
+        {
+          "path": "mods/ImmediatelyFast-Forge-1.5.4+1.20.4.jar",
+          "hash": "da781a31b2c8d8a845ed48c89b6463f1df3f2c655de10d8d4f5bed8123ff68a8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ImmediatelyFast-Forge-1.5.4+1.20.4.jar",
+          "size": 538992
+        },
+        {
+          "path": "mods/immersive_aircraft-1.4.0+1.20.1-forge.jar",
+          "hash": "45dd68b6707b3eeae0c958d0242b29ec03cdd0d8fc88af20761661ebf3c456cd",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/immersive_aircraft-1.4.0+1.20.1-forge.jar",
+          "size": 2428368
+        },
+        {
+          "path": "mods/inventoryessentials-forge-1.20.1-8.2.14.jar",
+          "hash": "aa0d1ff9a73ae0b5532239b683a4825fc86e83b343eaad4e85b9c39ea2e77c07",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/inventoryessentials-forge-1.20.1-8.2.14.jar",
+          "size": 159489
+        },
+        {
+          "path": "mods/ironfurnaces-1.20.1-4.1.8.jar",
+          "hash": "e457052522cef1f8644b6929a64eab96de04ce9e6e32a715f1d68d79da26d66b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ironfurnaces-1.20.1-4.1.8.jar",
+          "size": 612921
+        },
+        {
+          "path": "mods/irons_lib-1.20.1-1.0.2.jar",
+          "hash": "7c1afcd2772aa1ced0c30678a6bf1bf9c605a482d18e2b03d51152e05d4a2800",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/irons_lib-1.20.1-1.0.2.jar",
+          "size": 392806
+        },
+        {
+          "path": "mods/irons_spellbooks-1.20.1-3.15.6.jar",
+          "hash": "61996bb3cdb9601d83376f81295967f19a6f036563bb5a0e0f672967344a6fa7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/irons_spellbooks-1.20.1-3.15.6.jar",
+          "size": 15178473
+        },
+        {
+          "path": "mods/Jade-1.20.1-Forge-11.13.2.jar",
+          "hash": "31949971a7a8d5a5bc95ad9d400cbedfd2d65ffbfb3cea7c0b2fa3b47431a0a5",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Jade-1.20.1-Forge-11.13.2.jar",
+          "size": 552486
+        },
+        {
+          "path": "mods/jamlib-forge-1.3.6+1.20.1.jar",
+          "hash": "76dc35be8260113f31c6696ebd8397e70cf4a9f638225d6e4d51c05e85d0a424",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/jamlib-forge-1.3.6+1.20.1.jar",
+          "size": 190810
+        },
+        {
+          "path": "mods/jei-1.20.1-forge-15.20.0.112.jar",
+          "hash": "2d3a86f503dbde51afa5142951525c37e227016ce8d9e7dfd10bbdd9233f0204",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/jei-1.20.1-forge-15.20.0.112.jar",
+          "size": 1385600
+        },
+        {
+          "path": "mods/journeymap-1.20.1-5.10.3-forge.jar",
+          "hash": "8b2679b7b4881e0aa430fd24345ea446de919faf8a45bd2a71d37c7e8ff6ae1e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/journeymap-1.20.1-5.10.3-forge.jar",
+          "size": 7160405
+        },
+        {
+          "path": "mods/konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
+          "hash": "e78686b92c3761ec26eb9d3c53efdd3d6ca77981cbd3723995e1163b7103ae0b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
+          "size": 625185
+        },
+        {
+          "path": "mods/kotlinforforge-4.12.0-all.jar",
+          "hash": "6a66c6a68ec09f8717cdbf06883394f0ee24d7cd826b7134a0f81839e8e720ae",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/kotlinforforge-4.12.0-all.jar",
+          "size": 7442998
+        },
+        {
+          "path": "mods/kubejs-forge-2001.6.5-build.26.jar",
+          "hash": "1769312192fbf9d72f45054ba61130523bfb471b5f480a4bff8c210ec09400bb",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/kubejs-forge-2001.6.5-build.26.jar",
+          "size": 1658792
+        },
+        {
+          "path": "mods/Mantle-1.20.1-1.11.104.jar",
+          "hash": "6052e47c3981064bd5213728eaa3c5418289f6f85b07a1cd4dd1505239248838",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Mantle-1.20.1-1.11.104.jar",
+          "size": 1625005
+        },
+        {
+          "path": "mods/mcw-doors-1.1.5-mc1.20.1forge.jar",
+          "hash": "e975bdd5ed1d680e37fb2a6cda4f4eb5c42a837fa24b0cddabe7688df42c10af",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-doors-1.1.5-mc1.20.1forge.jar",
+          "size": 1246753
+        },
+        {
+          "path": "mods/mcw-furniture-3.4.1-mc1.20.1forge.jar",
+          "hash": "9f068315ac5ae7c4b76a6ac0679cde9be59d5cbf37488a477f13b95fe1cbc37d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-furniture-3.4.1-mc1.20.1forge.jar",
+          "size": 2174615
+        },
+        {
+          "path": "mods/mcw-mcwfences-1.2.1-mc1.20.1forge.jar",
+          "hash": "10deb617769e9674a767a3991af4c46afd081b5de42cee326f71ef2700a14313",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-mcwfences-1.2.1-mc1.20.1forge.jar",
+          "size": 708634
+        },
+        {
+          "path": "mods/mcw-mcwpaths-1.1.1-mc1.20.1forge.jar",
+          "hash": "9a809897462ca11c1920748b0fdf4555f05ef3650db1bd82016906795d068c9f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-mcwpaths-1.1.1-mc1.20.1forge.jar",
+          "size": 812573
+        },
+        {
+          "path": "mods/mcw-mcwstairs-1.0.2-mc1.20.1forge.jar",
+          "hash": "c952bf7b9eec89071d05da79f73459565847c65187b2f342fa0933c46605bfea",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-mcwstairs-1.0.2-mc1.20.1forge.jar",
+          "size": 554055
+        },
+        {
+          "path": "mods/mcw-mcwwindows-2.4.2-mc1.20.1forge.jar",
+          "hash": "7674d829d5a38d91ca68061e087fded92e976e3e461edcf75117e37a257e8f10",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-mcwwindows-2.4.2-mc1.20.1forge.jar",
+          "size": 1320692
+        },
+        {
+          "path": "mods/mcw-roofs-2.3.2-mc1.20.1forge.jar",
+          "hash": "3554317ad8d082a3d9fb5d8b387f5206e545323b4387ed1b93b7b3bf889def3f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-roofs-2.3.2-mc1.20.1forge.jar",
+          "size": 1864023
+        },
+        {
+          "path": "mods/mcw-trapdoors-1.1.5-mc1.20.1forge.jar",
+          "hash": "c2abff58334d79ea61278c6dffd941a4f4ceb5cffadf889359fd45a003738217",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-trapdoors-1.1.5-mc1.20.1forge.jar",
+          "size": 604510
+        },
+        {
+          "path": "mods/melody_forge_1.0.3_MC_1.20.1-1.20.4.jar",
+          "hash": "933e2a7e79c4594f965f7f7d00b1f28a98ec2a180ad8f9f90310a266fe5cf5d8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/melody_forge_1.0.3_MC_1.20.1-1.20.4.jar",
+          "size": 37178
+        },
+        {
+          "path": "mods/moonlight-1.20-2.16.30-forge.jar",
+          "hash": "056494483634004d4a82bcf95ef80ac0912ee0f88ccb7b29c7f71e6947aa71d1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/moonlight-1.20-2.16.30-forge.jar",
+          "size": 1389600
+        },
+        {
+          "path": "mods/MouseTweaks-forge-mc1.20.1-2.25.1.jar",
+          "hash": "6c27d16aa715ac6613a55fc463739e2c7b78279e4e4c4cede299e4a2d4a70f08",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/MouseTweaks-forge-mc1.20.1-2.25.1.jar",
+          "size": 76237
+        },
+        {
+          "path": "mods/MyServerIsCompatible-1.20-1.0.jar",
+          "hash": "74bd64fe43eefa4a81006184b7558ceff20f6579597c0c35baeb44e70cfaaf51",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/MyServerIsCompatible-1.20-1.0.jar",
+          "size": 3482
+        },
+        {
+          "path": "mods/mysticaloaktree-1.20-1.11.jar",
+          "hash": "217f791ed65773a26f0563e45e15bed025e95b91e77f114169706777e6fb72d7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mysticaloaktree-1.20-1.11.jar",
+          "size": 231836
+        },
+        {
+          "path": "mods/NoChatReports-FORGE-1.20.1-v2.2.2.jar",
+          "hash": "ef7fa5096dfd492c3d3ae7228888ca4b92ce07d9b8e302297ceb2ceb1f8d238c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/NoChatReports-FORGE-1.20.1-v2.2.2.jar",
+          "size": 272740
+        },
+        {
+          "path": "mods/Not Enough Recipe Book-FORGE-0.4.1+1.20.1.jar",
+          "hash": "8f05afb56310b21e91d2f1d1200a9c0d98a34a9689b9b6288a6507c0498b299d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Not Enough Recipe Book-FORGE-0.4.1+1.20.1.jar",
+          "size": 21667
+        },
+        {
+          "path": "mods/notenoughanimations-forge-1.12.2-mc1.20.1.jar",
+          "hash": "4adf8422b1a480ca26b44c7e6d9a5962f47ed8d1945017afdf06dbb62bdbba9e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/notenoughanimations-forge-1.12.2-mc1.20.1.jar",
+          "size": 1937545
+        },
+        {
+          "path": "mods/not_enough_glyphs-1.20.1-3.2.1.1.jar",
+          "hash": "db6e29a46abc6b47c69769213e92b6c23562c4b31a281661aef54d3420acfaa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/not_enough_glyphs-1.20.1-3.2.1.1.jar",
+          "size": 284404
+        },
+        {
+          "path": "mods/OctoLib-FORGE-0.5.0.1+1.20.1.jar",
+          "hash": "5bb146c691f2c5054752f006a61aab6335ecb1cd9718a9643733de5367971047",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/OctoLib-FORGE-0.5.0.1+1.20.1.jar",
+          "size": 424035
+        },
+        {
+          "path": "mods/oculus-mc1.20.1-1.8.0.jar",
+          "hash": "0945df0cba0f62b3901dd80c3268e5311b770ece78c78037a45db12ac0425fef",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/oculus-mc1.20.1-1.8.0.jar",
+          "size": 2851119
+        },
+        {
+          "path": "mods/Paraglider-forge-20.1.3.jar",
+          "hash": "3528e4d424682a415ae97b9597e5ed0567e5a194b4aeb30ae364e962da43b36a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Paraglider-forge-20.1.3.jar",
+          "size": 589055
+        },
+        {
+          "path": "mods/Patchouli-1.20.1-85-FORGE.jar",
+          "hash": "05f7b5d52f6b8f0fd7f8b4822fa07a192d1394d83a264309c9d221d6d4fd21c5",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Patchouli-1.20.1-85-FORGE.jar",
+          "size": 642732
+        },
+        {
+          "path": "mods/PickUpNotifier-v8.0.0-1.20.1-Forge.jar",
+          "hash": "b343d2068413d895deb45417f56d2c823fe07b173879c1b03575eebfc189011d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/PickUpNotifier-v8.0.0-1.20.1-Forge.jar",
+          "size": 102164
+        },
+        {
+          "path": "mods/Ping-Wheel-1.12.1-forge-1.20.1.jar",
+          "hash": "71692ad5d2b410ebcfbe3bb6bdf151c40ea75d012c75aff3c6c1a37abf9e8057",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Ping-Wheel-1.12.1-forge-1.20.1.jar",
+          "size": 157314
+        },
+        {
+          "path": "mods/player-animation-lib-forge-1.0.2-rc1+1.20.jar",
+          "hash": "90d9965cb9efdbda29fdc5610be3914cf7008bf5c392ff34f7ab25f96a852691",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/player-animation-lib-forge-1.0.2-rc1+1.20.jar",
+          "size": 181437
+        },
+        {
+          "path": "mods/PuzzlesLib-v8.1.33-1.20.1-Forge.jar",
+          "hash": "f3077a9f817629b8e8929c1951042d1a1adc62d30b72adebd54d2b074a4faf4f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/PuzzlesLib-v8.1.33-1.20.1-Forge.jar",
+          "size": 1342987
+        },
+        {
+          "path": "mods/Quark-4.0-462.jar",
+          "hash": "c90b96f049d92825c4a103721988c80d72e5ad380d17be46a0f53e114874c478",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Quark-4.0-462.jar",
+          "size": 14935230
+        },
+        {
+          "path": "mods/rarcompat-1.20.1-0.5.jar",
+          "hash": "2de2a9cfd21edf676072ca7432ff9acdd28f8e077fcac90a46d3dea8f82bf9f1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/rarcompat-1.20.1-0.5.jar",
+          "size": 409926
+        },
+        {
+          "path": "mods/refinedstorage-1.12.4.jar",
+          "hash": "d8ae3926c2121336efcd6956c43d91f21ce405b77ac7c7201c559d4c19f380d2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/refinedstorage-1.12.4.jar",
+          "size": 3300191
+        },
+        {
+          "path": "mods/refinedstorageaddons-0.10.0.jar",
+          "hash": "8371fe7932e88e3dd06401fd921a6ab2c52913287bd8994b096e47655c664491",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/refinedstorageaddons-0.10.0.jar",
+          "size": 33771
+        },
+        {
+          "path": "mods/relics-1.20.1-0.8.0.13.jar",
+          "hash": "2731d3b81533564c5d206faf94e4e8afaf928d97b47b720e5d6aaa017333096f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/relics-1.20.1-0.8.0.13.jar",
+          "size": 1521089
+        },
+        {
+          "path": "mods/resourcefulconfig-forge-1.20.1-2.1.3.jar",
+          "hash": "c404b9e5cf8595427a72d4ca6ee5730289168762b463f169be3ae5dfe3727ded",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/resourcefulconfig-forge-1.20.1-2.1.3.jar",
+          "size": 136923
+        },
+        {
+          "path": "mods/resourcefullib-forge-1.20.1-2.1.29.jar",
+          "hash": "b13afb95231d88e1caea5a045967e0fc291b29020b0d26ad39e6f9e9a551fee8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/resourcefullib-forge-1.20.1-2.1.29.jar",
+          "size": 432753
+        },
+        {
+          "path": "mods/rhino-forge-2001.2.3-build.10.jar",
+          "hash": "fed2211429301bf043864183cab9ab8e92d4cc4dbb9e488ce6c75217c54584a6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/rhino-forge-2001.2.3-build.10.jar",
+          "size": 1798244
+        },
+        {
+          "path": "mods/rightclickharvest-forge-4.6.1+1.20.1.jar",
+          "hash": "e7ae955174869497a7aa855cf859aba6f37abbb2a93b53e9e05935cf7709cc0a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/rightclickharvest-forge-4.6.1+1.20.1.jar",
+          "size": 288408
+        },
+        {
+          "path": "mods/ritchiesprojectilelib-2.1.1-mc.1.20.1-forge.jar",
+          "hash": "5531ec454792f98993fa29d55f8810444ba3e9ef8f04331c5811b84ec8d0c3dc",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ritchiesprojectilelib-2.1.1-mc.1.20.1-forge.jar",
+          "size": 78625
+        },
+        {
+          "path": "mods/Searchables-forge-1.20.1-1.0.3.jar",
+          "hash": "c1a76e93886210574d3f298c0461241fb711e52ac22c7a04d3236840f29e6576",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Searchables-forge-1.20.1-1.0.3.jar",
+          "size": 77732
+        },
+        {
+          "path": "mods/SimpleDiscordLink-Universal-3.4.0.jar",
+          "hash": "7c9dc5cf71595cd1fab6b0b20f8b350b4d73552fb5c8c1d030f4938115565197",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/SimpleDiscordLink-Universal-3.4.0.jar",
+          "size": 10067135
+        },
+        {
+          "path": "mods/SimpleRPC-4.1.0+hotfix.1.jar",
+          "hash": "57b072f82a8fc4f252f349bae102cd9f7f87003696e6441584a8fea6d2b06e75",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/SimpleRPC-4.1.0+hotfix.1.jar",
+          "size": 714318
+        },
+        {
+          "path": "mods/sophisticatedbackpacks-1.20.1-3.24.35.1675.jar",
+          "hash": "df1c4c879c8ab812725fee94b499f2381c3b65d97d70545519d41f9047dfe727",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/sophisticatedbackpacks-1.20.1-3.24.35.1675.jar",
+          "size": 1018674
+        },
+        {
+          "path": "mods/sophisticatedcore-1.20.1-1.3.21.1676.jar",
+          "hash": "194c14e3f32efbd3d5f17bd5b669d535f6ffda14cc11aa9551236b7d869bb210",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/sophisticatedcore-1.20.1-1.3.21.1676.jar",
+          "size": 1435469
+        },
+        {
+          "path": "mods/sophisticatedstorage-1.20.1-1.4.36.1621.jar",
+          "hash": "9d99bb5c08d552d062c72ba7711bb0504d2475878c263da99734b70a19d7e183",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/sophisticatedstorage-1.20.1-1.4.36.1621.jar",
+          "size": 1672209
+        },
+        {
+          "path": "mods/structureessentials-1.20.1-4.9.jar",
+          "hash": "8702ec8a82920920fefb25d47cb9150f59eaea8a5dfe3f344dfedd0adf044637",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/structureessentials-1.20.1-4.9.jar",
+          "size": 62733
+        },
+        {
+          "path": "mods/supplementaries-1.20-3.1.43-forge.jar",
+          "hash": "6132fc23a2fe1da0ca57439b35526ee9a1a8d898397ff8e61b2d08fb951cdf6a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/supplementaries-1.20-3.1.43-forge.jar",
+          "size": 13667742
+        },
+        {
+          "path": "mods/suppsquared-1.20-1.1.29.jar",
+          "hash": "a972bcd468df4151d26bdfe5602e6e16fbd22efa23ba222e136d8b90c533d6bd",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/suppsquared-1.20-1.1.29.jar",
+          "size": 922956
+        },
+        {
+          "path": "mods/TConstruct-1.20.1-3.11.2.166.jar",
+          "hash": "653b49d73481a1325ba78adc7273dee6c765a51bafdf264a7510576d6ef91c43",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/TConstruct-1.20.1-3.11.2.166.jar",
+          "size": 21572031
+        },
+        {
+          "path": "mods/TerraBlender-forge-1.20.1-3.0.1.10.jar",
+          "hash": "c109016f46ca9bdae69976bf080bbf2e8e5968cb66c0a78845f8ca6af5dbbeb1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/TerraBlender-forge-1.20.1-3.0.1.10.jar",
+          "size": 107532
+        },
+        {
+          "path": "mods/thermal_dynamics-1.20.1-11.0.1.23.jar",
+          "hash": "1eb755e77b8bbdf5fef16c1b725002d2b47520b544e49f1274724986ab677ca0",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/thermal_dynamics-1.20.1-11.0.1.23.jar",
+          "size": 622948
+        },
+        {
+          "path": "mods/thermal_expansion-1.20.1-11.0.1.29.jar",
+          "hash": "f44d9e2476deb0ce2700c3837aa6e99c6a6bc95bc2d89d69ebe34b6c3a612633",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/thermal_expansion-1.20.1-11.0.1.29.jar",
+          "size": 574141
+        },
+        {
+          "path": "mods/thermal_foundation-1.20.1-11.0.6.70.jar",
+          "hash": "8cb610abb3c835b47f9b4ec19be6a54104d1f61230b67a9d5bfd097c5ac45823",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/thermal_foundation-1.20.1-11.0.6.70.jar",
+          "size": 4549423
+        },
+        {
+          "path": "mods/thermal_innovation-1.20.1-11.0.1.23.jar",
+          "hash": "cb9ae2b7184b01441687a9fd7ca534d861b37b46934003dc14f2675bc844150f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/thermal_innovation-1.20.1-11.0.1.23.jar",
+          "size": 225344
+        },
+        {
+          "path": "mods/thermal_integration-1.20.1-11.0.1.27.jar",
+          "hash": "c0b8004499a5c4f8cb42abad96c6be1f8ee49af6f756a72cef7c828199c570d4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/thermal_integration-1.20.1-11.0.1.27.jar",
+          "size": 333350
+        },
+        {
+          "path": "mods/toms_storage-1.20-1.7.1.jar",
+          "hash": "08552be86f960111e501227707dc089c91b8a55f6c1be09baee188338576ff9b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/toms_storage-1.20-1.7.1.jar",
+          "size": 520148
+        },
+        {
+          "path": "mods/Towns-and-Towers-1.12-Fabric+Forge.jar",
+          "hash": "9c8115af7109579da990249fdd67b38323a45be70f8a3a962b61da69c7021984",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Towns-and-Towers-1.12-Fabric+Forge.jar",
+          "size": 2864275
+        },
+        {
+          "path": "mods/twilightforest-1.20.1-4.3.2508-universal.jar",
+          "hash": "0bdc89263616d1b35c32ef82c5e9c14cbd20368e2fe8b468c72a28320be7a778",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/twilightforest-1.20.1-4.3.2508-universal.jar",
+          "size": 23332091
+        },
+        {
+          "path": "mods/valhelsia_core-forge-1.20.1-1.1.2.jar",
+          "hash": "d52ae1941c76ff57ee61943b38b5ae95a1e4bffa39604946bee1cfe52964f690",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/valhelsia_core-forge-1.20.1-1.1.2.jar",
+          "size": 203313
+        },
+        {
+          "path": "mods/valkyrienskies-120-2.4.11.jar",
+          "hash": "f99f24de62015451a047f90484cf9d25970cac350105b581c22b2d5247ebfd53",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/valkyrienskies-120-2.4.11.jar",
+          "size": 27752937
+        },
+        {
+          "path": "mods/voicechat-forge-1.20.1-2.6.16.jar",
+          "hash": "5e43dbd4db21a3f3c6d97182a342cc602f8f3c70669ed63cfc37e42bfd84c1c9",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/voicechat-forge-1.20.1-2.6.16.jar",
+          "size": 4903006
+        },
+        {
+          "path": "mods/watut-forge-1.20.1-1.2.3.jar",
+          "hash": "19a7291187e1074dac0ade56f95cdb84936e8563c55afdc0b86c90ea7cd80a9e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/watut-forge-1.20.1-1.2.3.jar",
+          "size": 435496
+        },
+        {
+          "path": "mods/waystones-forge-1.20.1-14.1.20.jar",
+          "hash": "5ecc6535596b5954f6293224be6b35805c64f4d4aedc2b9e32d9508dd529cabd",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/waystones-forge-1.20.1-14.1.20.jar",
+          "size": 533738
+        },
+        {
+          "path": "mods/YungsApi-1.20-Forge-4.0.6.jar",
+          "hash": "101c30d01d0cf9d86190f578eb1e43bd06b64092e95662a00ef52946f472c7b1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/YungsApi-1.20-Forge-4.0.6.jar",
+          "size": 370524
+        },
+        {
+          "path": "mods/YungsBetterMineshafts-1.20-Forge-4.0.4.jar",
+          "hash": "6632e7bcc58325098e85bcb755483de7cb3af92a5ea548f3b5c0162cbf0dc1dc",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/YungsBetterMineshafts-1.20-Forge-4.0.4.jar",
+          "size": 492998
+        },
+        {
+          "path": "mods/YungsBetterStrongholds-1.20-Forge-4.0.3.jar",
+          "hash": "054b0a1be86510ed6bd05de66a29200f13f5603c0c9eb7e62074ddc3d19cb0e4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/YungsBetterStrongholds-1.20-Forge-4.0.3.jar",
+          "size": 473564
+        },
+        {
+          "path": "mods/YungsCaveBiomes-1.20.1-Forge-2.0.5.jar",
+          "hash": "b799668cbbc0903e885f5b638119d0221186e5dbfe812eaf391f86ab8a97bd42",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/YungsCaveBiomes-1.20.1-Forge-2.0.5.jar",
+          "size": 13014967
+        },
+        {
+          "path": "mods/Zeta-1.0-31.jar",
+          "hash": "cd1786902a79434f8fd762d741019d9c8a79725fef7e30a89c153c934e1e6a9e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Zeta-1.0-31.jar",
+          "size": 1006518
+        },
+        {
+          "path": "mods/zmedievalmusic-1.20.1-2.2.jar",
+          "hash": "afe5d3d0b6623fb2df6622a76e8fc93d8ab8b32cd9384ca138dec1944049ac84",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/zmedievalmusic-1.20.1-2.2.jar",
+          "size": 304415885
+        },
+        {
+          "path": "config/ad_astra-client.jsonc",
+          "hash": "eff1be886673bc30e4dde7030f6970915c5c1c648d671f81bae5c941025705b3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ad_astra-client.jsonc",
+          "size": 493
+        },
+        {
+          "path": "config/ad_astra.jsonc",
+          "hash": "52e9c20de34fd2fd4c0410697538922c8a63591da58117c40c88c681e08f7264",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ad_astra.jsonc",
+          "size": 3039
+        },
+        {
+          "path": "config/alltheleaks.json",
+          "hash": "ed68f0c0b35f9ebbb3d3f93a4913e314b04bfdeab480fc7683bd6ae392cd2e0e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/alltheleaks.json",
+          "size": 278
+        },
+        {
+          "path": "config/allurement-client.toml",
+          "hash": "41c4ca4a2dc0e88d4ac245f61e81b55b4811d2529aa482e452ee1d68aa68aceb",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/allurement-client.toml",
+          "size": 217
+        },
+        {
+          "path": "config/allurement-common.toml",
+          "hash": "7e172760e0b295705251d4bbeedc7c08bc691836f04bfd84a8ae53804ece0c82",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/allurement-common.toml",
+          "size": 6074
+        },
+        {
+          "path": "config/ambientsounds-client.json",
+          "hash": "ed1b398794e7b112f1a0c79531ebc9cd56457638c88af0794ebef277b1a45504",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ambientsounds-client.json",
+          "size": 4179
+        },
+        {
+          "path": "config/appleskin-client.toml",
+          "hash": "e6609ffbea927ee6390b1317bb6f3abb3f31ee591ca5c1d5e748f5e625fefea1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/appleskin-client.toml",
+          "size": 1361
+        },
+        {
+          "path": "config/aquaculture-common.toml",
+          "hash": "aff201054383adfd67347e968dd6aeaccd339454d51dd50983654b2c732acc31",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/aquaculture-common.toml",
+          "size": 825
+        },
+        {
+          "path": "config/ars_additions-common.toml",
+          "hash": "0f9e3d26d08ece8e030a4007ca2bcdea1cc59902b11adfc494e2bc72bad85c40",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_additions-common.toml",
+          "size": 398
+        },
+        {
+          "path": "config/ars_additions-server.toml",
+          "hash": "99d620393487af3e1e79640c2a1ff63a7bd2c863983cc2df0b62b729860a8965",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_additions-server.toml",
+          "size": 1578
+        },
+        {
+          "path": "config/ars_elemental-client.toml",
+          "hash": "4bd9d2578bae09e521a0de15abe903988ec9243f5f87607ca7bc26cf8fa289eb",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental-client.toml",
+          "size": 215
+        },
+        {
+          "path": "config/ars_elemental-common.toml",
+          "hash": "9c9e8b4fc6bb8fb2f057c54365854726ae302f19e204d5222da226c143f6965c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental-common.toml",
+          "size": 3145
+        },
+        {
+          "path": "config/ars_nouveau-client.toml",
+          "hash": "240343ce50d099b12dac2f16f787631af07488829bc0fe5d59ca364c8cb5bf48",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau-client.toml",
+          "size": 2333
+        },
+        {
+          "path": "config/ars_nouveau-common.toml",
+          "hash": "057319b3e47540397d68af85904fc79d64492fbb992fb9bd153a9aa86c1ca198",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau-common.toml",
+          "size": 2363
+        },
+        {
+          "path": "config/ars_nouveau-server.toml",
+          "hash": "8114e030f41c90caf3a94ba086a1e2a0349d1704e95760b751ecf2c19f2301c5",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau-server.toml",
+          "size": 1564
+        },
+        {
+          "path": "config/bettermineshafts-forge-1_20.toml",
+          "hash": "016afc8af06af822bdaa07681699b3c068ec26274116b30b359d5ff03ef9ce11",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/bettermineshafts-forge-1_20.toml",
+          "size": 3773
+        },
+        {
+          "path": "config/betterstrongholds-forge-1_20.toml",
+          "hash": "2e9c9d71e1f2ebcc7065fa6bb09f9b3b97e4cf0bb78067182faf56d1fc14886d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/betterstrongholds-forge-1_20.toml",
+          "size": 813
+        },
+        {
+          "path": "config/blueprint-client.toml",
+          "hash": "89ef9f568d793018db983b9f944e85876a4cebd408f8f4d2182b3c38fa44ef7e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/blueprint-client.toml",
+          "size": 770
+        },
+        {
+          "path": "config/blueprint-common.toml",
+          "hash": "d335fd00458005d989d55a6615073d5b390ea08d5e1d129229518f90d5d3ef9b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/blueprint-common.toml",
+          "size": 614
+        },
+        {
+          "path": "config/botania-client.toml",
+          "hash": "3e96d7f471846a8349c319e8ea876146e8216530b977f830c86b016b5a76ab89",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/botania-client.toml",
+          "size": 2403
+        },
+        {
+          "path": "config/botania-common.toml",
+          "hash": "07e55bb5645a21e30392969aa5b2f8295a2bba660942cb5afa5b34a21ac65dea",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/botania-common.toml",
+          "size": 2917
+        },
+        {
+          "path": "config/cofh_core-client.toml",
+          "hash": "c683eaf3dcb24312ce939ad6580490cde2dc5477349cd87e9b3ae45575f21a6b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/cofh_core-client.toml",
+          "size": 1091
+        },
+        {
+          "path": "config/cofh_core-common.toml",
+          "hash": "e254fd10199336dd0e0c1c3f20a8daa1fdf9ca026b02dd9c0064ae1f058b9393",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/cofh_core-common.toml",
+          "size": 656
+        },
+        {
+          "path": "config/configured-client.toml",
+          "hash": "a823c528792d2fda677b9a05956a8c609b6279386b6b4b840d992fa43b931698",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/configured-client.toml",
+          "size": 93
+        },
+        {
+          "path": "config/connectivity.json",
+          "hash": "6b95731807c56659d67f5c439439493834d0c42ad33baf23ef60d45bb7e73202",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/connectivity.json",
+          "size": 1763
+        },
+        {
+          "path": "config/connector.json",
+          "hash": "060e296a5fddce603e50034e3cdb6059c3a0e122d0aae3d85a0523341c82ea22",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/connector.json",
+          "size": 144
+        },
+        {
+          "path": "config/constructionwand-client.toml",
+          "hash": "49dab16d69ef53b3846431d403918762dc0b22a4efba307c80894eeec64a1118",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/constructionwand-client.toml",
+          "size": 846
+        },
+        {
+          "path": "config/continuity.json",
+          "hash": "00267a602028cbb037dcb0b5f803db31bed284235ca9c1ea189ad4179311a2f4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/continuity.json",
+          "size": 122
+        },
+        {
+          "path": "config/create-client.toml",
+          "hash": "7c40bc004ba478b13d0c99c2b644e50cf3a1d2d60d9b40df15822da8d8ad710c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/create-client.toml",
+          "size": 4397
+        },
+        {
+          "path": "config/create-common.toml",
+          "hash": "36a4d9f5da68f6801b83ce0c4a1a8805fbeffb0dd997f2d405465d7774522296",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/create-common.toml",
+          "size": 157
+        },
+        {
+          "path": "config/createaddition-common.toml",
+          "hash": "1f45a741dc79ba3ad0000884a5677bd76f0235ccb81d99957a181247e416cae6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/createaddition-common.toml",
+          "size": 4446
+        },
+        {
+          "path": "config/createbigcannons-client.toml",
+          "hash": "7f99881d4f9a024773d5afb0e0083b8860fee7458173bb0c59eced7c5cc062cf",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/createbigcannons-client.toml",
+          "size": 3412
+        },
+        {
+          "path": "config/create_connected-common.toml",
+          "hash": "8a0892dc26e5540f987ccfa440fae00d72830fc4f2cdfae820682779ea9c7a77",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/create_connected-common.toml",
+          "size": 1715
+        },
+        {
+          "path": "config/create_hypertube-client.toml",
+          "hash": "758713575b187195367bcc8f0459b5e079c689eaa846556df5d452f1411a5555",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/create_hypertube-client.toml",
+          "size": 206
+        },
+        {
+          "path": "config/create_jetpack-client.toml",
+          "hash": "3ef10cf780e735b417be86d1ef29bb72fc9257250a4d5224bf9168d4978e93c9",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/create_jetpack-client.toml",
+          "size": 286
+        },
+        {
+          "path": "config/create_jetpack-common.toml",
+          "hash": "7137572d1cd7562933ae555cfe3c973eb30f4e6600171e996b202d56df0076b8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/create_jetpack-common.toml",
+          "size": 434
+        },
+        {
+          "path": "config/cupboard.json",
+          "hash": "937698438af081495eebab187013f66570218e1443f35db8a2ca0b4cb6d9638b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/cupboard.json",
+          "size": 1304
+        },
+        {
+          "path": "config/curios-client.toml",
+          "hash": "ebc96c813d601e9c61b6929a8490e71fa990dc64918c19e1f9937bb275510abc",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/curios-client.toml",
+          "size": 706
+        },
+        {
+          "path": "config/curios-common.toml",
+          "hash": "5fe808869d46a4b80e1191fbe40f40a4d63987beda0eaeb2d89b909a990ea2ea",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/curios-common.toml",
+          "size": 161
+        },
+        {
+          "path": "config/DistantHorizons.toml",
+          "hash": "08c7b6043cebed88be52ab39d600c6145eca07233422701ae42525dc6802970f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/DistantHorizons.toml",
+          "size": 32634
+        },
+        {
+          "path": "config/embeddium-fingerprint.json",
+          "hash": "f08ce3d75d3b02030e6f556c53e4fdc0cee959f1eade8747c57b5ddecce656c3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/embeddium-fingerprint.json",
+          "size": 427
+        },
+        {
+          "path": "config/embeddium-mixins.properties",
+          "hash": "09ff183e061d93b79514bc171bf9118497578757e7a5c45946039487656e2619",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/embeddium-mixins.properties",
+          "size": 269
+        },
+        {
+          "path": "config/embeddium-options.json",
+          "hash": "b78e1a745d5080dc2e50dd192982aeb59f32b1645626b77ac38a2b725ea52122",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/embeddium-options.json",
+          "size": 851
+        },
+        {
+          "path": "config/enchdesc.json",
+          "hash": "69e1df6089b71c3c2fe2c7cf6760937094fd22434111f527229a9fcea3f90bc5",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/enchdesc.json",
+          "size": 189
+        },
+        {
+          "path": "config/entity_model_features.json",
+          "hash": "5ba15e6be08f7af62d0776ce1a570033d53e1be14fb5d573f22a6f7c76c8a52f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/entity_model_features.json",
+          "size": 1144
+        },
+        {
+          "path": "config/entity_texture_features.json",
+          "hash": "d8d72a9ac49bbe45921f1ace5a22c30b65802c5e70829343cf7acfd25f79b8dc",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/entity_texture_features.json",
+          "size": 1421
+        },
+        {
+          "path": "config/etf_warnings.json",
+          "hash": "a5ba22e63061c1fb67f0f895f17681351eaeccc225faef966c29ee630593275e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/etf_warnings.json",
+          "size": 28
+        },
+        {
+          "path": "config/fallingleaves-client.toml",
+          "hash": "2cd017af6632239398b694fadf8191d6073cf39585549876cc682843f521ecb3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fallingleaves-client.toml",
+          "size": 796
+        },
+        {
+          "path": "config/farmersdelight-client.toml",
+          "hash": "e5f8f5743c23e6c1e569070d720f91e66495e8da03550a0d37d9a07c6d543014",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/farmersdelight-client.toml",
+          "size": 369
+        },
+        {
+          "path": "config/farmersdelight-common.toml",
+          "hash": "ab93780fbfe30774558ac2ea7cedbc367f08b4d3aae0c300e1931acfba7c00cf",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/farmersdelight-common.toml",
+          "size": 4540
+        },
+        {
+          "path": "config/farsight.json",
+          "hash": "98a9f53e1e21247108a90e80b9cf4141fd7b432e219a262672ffedd5730afbab",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/farsight.json",
+          "size": 120
+        },
+        {
+          "path": "config/ferritecore-mixin.toml",
+          "hash": "c164439c632aa7c95c07edec5cfef74b8e2d5671a8445a781deeb4de7ad0c8b6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ferritecore-mixin.toml",
+          "size": 1516
+        },
+        {
+          "path": "config/flywheel-client.toml",
+          "hash": "a1f5418ea2735fe080ad97efa9718712496e309bf0e7e859c47b1dd56e751149",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/flywheel-client.toml",
+          "size": 623
+        },
+        {
+          "path": "config/fml.toml",
+          "hash": "506f0c4c714bf1528d45ab8202f303bde6ba5f9e53778c92a679efbc185afb12",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fml.toml",
+          "size": 1148
+        },
+        {
+          "path": "config/forbidden_arcanus-client.toml",
+          "hash": "4c3a3d564325ed9221403b137063018e57c4495f7848d42ffbcd29b30ac27535",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/forbidden_arcanus-client.toml",
+          "size": 384
+        },
+        {
+          "path": "config/forbidden_arcanus-common.toml",
+          "hash": "890d4932fb287408a158a2aed584f4cf675703aeafa90b1e7c1f2b8fc33e3c4f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/forbidden_arcanus-common.toml",
+          "size": 3128
+        },
+        {
+          "path": "config/forge-client.toml",
+          "hash": "0b1b3c45343435184c9dde3149b38afcdb97953e287686ecda54385f53ebcddc",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/forge-client.toml",
+          "size": 1628
+        },
+        {
+          "path": "config/framedblocks-client.toml",
+          "hash": "973a9e319c877b509ba81b548700217034d7d3c75c242ec6673ce004abfcf6cb",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/framedblocks-client.toml",
+          "size": 5520
+        },
+        {
+          "path": "config/framedblocks-common.toml",
+          "hash": "3df7937868159c8c2570d09c9ef9e0a1127dfbab70c3404c8fd069c7390d39ff",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/framedblocks-common.toml",
+          "size": 93
+        },
+        {
+          "path": "config/ftbxmodcompat.snbt",
+          "hash": "c3c65df1c677589cfb2c212b0e877e6104913557b121da8d9cec6c5327bd5d81",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ftbxmodcompat.snbt",
+          "size": 522
+        },
+        {
+          "path": "config/immediatelyfast.json",
+          "hash": "f2b7f219198f0a911d04b09f545f2c1256e8d114951443924878dc10963e16aa",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/immediatelyfast.json",
+          "size": 1060
+        },
+        {
+          "path": "config/immersive_aircraft.json",
+          "hash": "7e934f3c7ff3beaeb73d7242b68467fc62b779827c9cd3a79736fe79c93d4aec",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/immersive_aircraft.json",
+          "size": 1518
+        },
+        {
+          "path": "config/inventoryessentials-common.toml",
+          "hash": "4ce24147be991d8010e9b22d2469f4a5a0ac38ae1946fbc72e2dc6e0061c6a07",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/inventoryessentials-common.toml",
+          "size": 1126
+        },
+        {
+          "path": "config/ironfurnaces-client.toml",
+          "hash": "7a0f4bf61eccfebf18729b71053a8395341985e5d8f2d86190d2ee8d71766e6a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ironfurnaces-client.toml",
+          "size": 7308
+        },
+        {
+          "path": "config/ironfurnaces.toml",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ironfurnaces.toml",
+          "size": 0
+        },
+        {
+          "path": "config/irons_spellbooks-client.toml",
+          "hash": "b732893a7c386e35fb4f6b5432588154361dfbca3a8b1d185b3b99b586737d38",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/irons_spellbooks-client.toml",
+          "size": 3447
+        },
+        {
+          "path": "config/mantle-client.toml",
+          "hash": "fb2b6378aac5723f9bcb0fe195fefc42f675f59467c98ae65df13bd872949e95",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/mantle-client.toml",
+          "size": 891
+        },
+        {
+          "path": "config/modernfix-common.toml",
+          "hash": "fad9aea710ec3508eab562cd8f2b5f8e2dda6ee1c5fb1fe818f90ce253017f66",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/modernfix-common.toml",
+          "size": 107
+        },
+        {
+          "path": "config/modernfix-mixins.properties",
+          "hash": "a98afb4f389eb14bf8ce5d295492d9a0d548ec1b537c84d020b5bfdf5e7a2c8f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/modernfix-mixins.properties",
+          "size": 6433
+        },
+        {
+          "path": "config/moonlight-client.toml",
+          "hash": "47297d47ca3fa4525d1adbc7234b9b0dc2ee490b87216fe6002e34ff69acac08",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/moonlight-client.toml",
+          "size": 1027
+        },
+        {
+          "path": "config/moonlight-common.toml",
+          "hash": "02cd35fbcc371cf63303ae1264ad9f4613b3f73ace93417af825baf7d3ac7baf",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/moonlight-common.toml",
+          "size": 1023
+        },
+        {
+          "path": "config/MouseTweaks.cfg",
+          "hash": "4069ce1a439d8c37453c1b1e9f2037e0942674c7e48723a39b37eab245792ad4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/MouseTweaks.cfg",
+          "size": 135
+        },
+        {
+          "path": "config/nerb.yaml",
+          "hash": "dceda831a1a2585df3fb5f3baae348eb43a7179ced0609a8a47869dfb0243d71",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/nerb.yaml",
+          "size": 547
+        },
+        {
+          "path": "config/notenoughanimations.json",
+          "hash": "45121987f8bbbb948bd5096ffb02b1361c762b3e34836b3f9097a9a4ef7222d4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/notenoughanimations.json",
+          "size": 3357
+        },
+        {
+          "path": "config/oculus.properties",
+          "hash": "f1e7b3a2b65f18f8764baccce5f04eaba2801ccc44ce913c03547f59fc708eed",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/oculus.properties",
+          "size": 254
+        },
+        {
+          "path": "config/paraglider-common.toml",
+          "hash": "850ba09e81e04386b1c0c11b91e39fc8ea9a9ffccdb77b4d27dfcb08e09ad175",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/paraglider-common.toml",
+          "size": 1336
+        },
+        {
+          "path": "config/paraglider-player-states.toml",
+          "hash": "563ed87986d61ac5ea04d03d9d87233ac025acc6e416685888e70261eb4d90c3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/paraglider-player-states.toml",
+          "size": 1526
+        },
+        {
+          "path": "config/patchouli-client.toml",
+          "hash": "d289f4c7540e3e24bcf6bbf3f5a2aaaf87ccf58027d2213e40497fc627422068",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/patchouli-client.toml",
+          "size": 1091
+        },
+        {
+          "path": "config/pingwheel.json",
+          "hash": "6878009a9f7ca2309feb78f6884556493b6752232f7f87e12901dbb6946ab5ea",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/pingwheel.json",
+          "size": 410
+        },
+        {
+          "path": "config/pingwheel.server.json",
+          "hash": "821d5d12d0c096996c82d1a65349ac803adffcc25b89420a146c727fb92b381a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/pingwheel.server.json",
+          "size": 111
+        },
+        {
+          "path": "config/ponder-client.toml",
+          "hash": "56291af4bc3506692c79f5c0155c47cce8577d0aae6ed5930c9074d5cb9bc5c8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ponder-client.toml",
+          "size": 619
+        },
+        {
+          "path": "config/quark-common.toml",
+          "hash": "fedbbde3fe40c39afe3628c07d6ca35c40c8626a715d47a6048c34748b44f606",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/quark-common.toml",
+          "size": 82276
+        },
+        {
+          "path": "config/railways-client.toml",
+          "hash": "f3e6295841dd104d85bbc1bd529c09c4a3bd4a6d0a7cc859f1aa7f866481a10c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/railways-client.toml",
+          "size": 1979
+        },
+        {
+          "path": "config/railways-common.toml",
+          "hash": "1f660c8bd0c374799862392ef7a56253544f5adaf653e59386cd1eb34f94fa2f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/railways-common.toml",
+          "size": 337
+        },
+        {
+          "path": "config/refinedstorage-client.toml",
+          "hash": "1688fbd31e8cd3a63f9ca3f5aa407dc4c5725bb727e450df69a24fd45418181a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/refinedstorage-client.toml",
+          "size": 831
+        },
+        {
+          "path": "config/relics.yaml",
+          "hash": "4411078ac8d2107482e0f717576b1d9e1fa6c0938d11135a2541f4d8c2518278",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/relics.yaml",
+          "size": 521
+        },
+        {
+          "path": "config/resourceful-config-web.json",
+          "hash": "52984d10ac54d2433a2f77bd7b7fc4954800c487299862832d2082c1ecb16e30",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/resourceful-config-web.json",
+          "size": 196
+        },
+        {
+          "path": "config/rightclickharvest.json5",
+          "hash": "6eb5169563472ae96184c94e9f42ff7d76fdba403ed3190ffb308e817ea0a21e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/rightclickharvest.json5",
+          "size": 609
+        },
+        {
+          "path": "config/sdrp-common.json",
+          "hash": "d58c92a70bebecd969d22ea69078b4c2b146009793b4c2c715531e844e0ee8e1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/sdrp-common.json",
+          "size": 126
+        },
+        {
+          "path": "config/sidebar_buttons.json",
+          "hash": "f37500e8d3440dc1da3307f0fbbb3a0c181794c844efab9cfeb16564b4f22f3d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/sidebar_buttons.json",
+          "size": 236
+        },
+        {
+          "path": "config/sophisticatedbackpacks-common.toml",
+          "hash": "6674ec92f625296aa8accc93d71fdf1eecfc8050111c5ae7b6d9a94b4fe14506",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/sophisticatedbackpacks-common.toml",
+          "size": 122
+        },
+        {
+          "path": "config/sophisticatedcore-client.toml",
+          "hash": "3175ac14ac1da55ba706d1f0321c0b5620cd968a381e60323b283778e7b6d9e6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/sophisticatedcore-client.toml",
+          "size": 478
+        },
+        {
+          "path": "config/sophisticatedcore-common.toml",
+          "hash": "fadcde3e50a5b8e4025c3d43ba4163d228bf8329cf1fce07ca379180e6b4076a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/sophisticatedcore-common.toml",
+          "size": 10053
+        },
+        {
+          "path": "config/sophisticatedstorage-client.toml",
+          "hash": "86630c911ef13831fe61e44e88dcc2a38c3ed7d2cf198da405fcd5e8bec6bafa",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/sophisticatedstorage-client.toml",
+          "size": 403
+        },
+        {
+          "path": "config/sophisticatedstorage-common.toml",
+          "hash": "55a7b289f6d2ecb116d39b385fb8a883f8317734dd42f3be16af11380e26c0a3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/sophisticatedstorage-common.toml",
+          "size": 190
+        },
+        {
+          "path": "config/structureessentials.json",
+          "hash": "54826c1ce55156e6a3d19a22949d733668806c7ed4a77218cc1d26bb6c5fa7bd",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/structureessentials.json",
+          "size": 3787
+        },
+        {
+          "path": "config/supplementaries-client.toml",
+          "hash": "e216eacc44bb4d6127f11f75f1e60841d9bcc6d5c54535c6f1b22c8f2d3a459e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/supplementaries-client.toml",
+          "size": 9369
+        },
+        {
+          "path": "config/supplementaries-common.toml",
+          "hash": "4ca79cfa521663d93dce1f48f4fce79cf56f4069a2ebc9b231f724997bf9a10f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/supplementaries-common.toml",
+          "size": 24952
+        },
+        {
+          "path": "config/suppsquared-common.toml",
+          "hash": "2c20ac633c33b24a105115888730e73444ea6d11a291318de3cf5fa157f83685",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/suppsquared-common.toml",
+          "size": 88
+        },
+        {
+          "path": "config/tconstruct-client.toml",
+          "hash": "ead5290f0e85e9e803dba9a8bcf9a637fa16d3a7724f501ec45d60e1bd0501f2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/tconstruct-client.toml",
+          "size": 4248
+        },
+        {
+          "path": "config/tconstruct-common.toml",
+          "hash": "2f2d170508395a56ab6c83abe8feda4482638bec24bd971673e12efac584f9ac",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/tconstruct-common.toml",
+          "size": 7851
+        },
+        {
+          "path": "config/terrablender.toml",
+          "hash": "11ef4c2666fa094b456310710c2b5cb8babbd71982d4d187c9a80ad4011d8014",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/terrablender.toml",
+          "size": 552
+        },
+        {
+          "path": "config/thermal-client.toml",
+          "hash": "36436c2d8e9cc35f54f353529d30f300e54818368f32227e2246d22744152ba2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/thermal-client.toml",
+          "size": 535
+        },
+        {
+          "path": "config/thermal-common.toml",
+          "hash": "04cad12aeec270f08e1bba6751a8e466f12b0ab6102814c80eb910f0cb26a353",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/thermal-common.toml",
+          "size": 1036
+        },
+        {
+          "path": "config/thermal_integration-common.toml",
+          "hash": "eae3406965d400447e833c3e1498c80e9118b5209b7374af924a6c768f107041",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/thermal_integration-common.toml",
+          "size": 1467
+        },
+        {
+          "path": "config/toms_storage-common.toml",
+          "hash": "cb2644a6bbca7895ef4ff9a7237a51302839493c7d7e9ffbea74e8bc93494b64",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toms_storage-common.toml",
+          "size": 910
+        },
+        {
+          "path": "config/transition.json",
+          "hash": "6c0060c7301372bbc414f86a139b383e34fb620f0621badd71bb19efc3f26767",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/transition.json",
+          "size": 62
+        },
+        {
+          "path": "config/trender.json",
+          "hash": "fe0bed19bd0927b3d519816c73378730689080a8f07e66a6167c266ffde29dd2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/trender.json",
+          "size": 44
+        },
+        {
+          "path": "config/twilightforest-client.toml",
+          "hash": "7df74722394aa6f9b662317ad4840fc9b0a2e11c394ef6da2b3d9eabb62808d3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/twilightforest-client.toml",
+          "size": 1565
+        },
+        {
+          "path": "config/twilightforest-common.toml",
+          "hash": "2d8051f2d41dd6ee7b9e6570e84cd18a3e2d013c0890c95c0b66e7ecce0346b8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/twilightforest-common.toml",
+          "size": 7758
+        },
+        {
+          "path": "config/voicechat-client.toml",
+          "hash": "24a7b91377e08d0d8bc2805793c8150d473241aa816cbaa6fca9d254aa537ca5",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/voicechat-client.toml",
+          "size": 94
+        },
+        {
+          "path": "config/watut-client.toml",
+          "hash": "f30aba6a74c4656d7284081651de0fbc5281e1da8daf7535dae43543959f7fdf",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/watut-client.toml",
+          "size": 3236
+        },
+        {
+          "path": "config/watut-common.toml",
+          "hash": "17a113c1bf3c30dca221ee72b7285cf1cee3aea24fd5a48d82c47398e2eaa726",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/watut-common.toml",
+          "size": 154
+        },
+        {
+          "path": "config/watut-item-arm-adjustments.json",
+          "hash": "543e09f71cda1d97d238ac4150e43e50868cf781027c88d68fc714f261d88982",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/watut-item-arm-adjustments.json",
+          "size": 3367
+        },
+        {
+          "path": "config/watut-server.toml",
+          "hash": "690202e25181bb7ab70d0cd61cf05fa84d45117764dc3bf3498457dc13309c65",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/watut-server.toml",
+          "size": 2880
+        },
+        {
+          "path": "config/waystones-common.toml",
+          "hash": "4cf1d13d8827bcdce75acadb1f3ea24732fd6fa6575ec8a261a37b21c481674d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/waystones-common.toml",
+          "size": 6956
+        },
+        {
+          "path": "config/YungsCaveBiomes-forge-1_20_1.toml",
+          "hash": "955214f2a4d0b3ac1f77b6e4cd141a4eedc746888cd92c5d0f38a16bc58490a5",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/YungsCaveBiomes-forge-1_20_1.toml",
+          "size": 2622
+        },
+        {
+          "path": "config/zeta-common.toml",
+          "hash": "684816927033626b990f8e277a43c0e24f6ef650cb38f9fee935f974fffd7392",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/zeta-common.toml",
+          "size": 1912
+        },
+        {
+          "path": "config/arsomega/glyph_flatten.toml",
+          "hash": "151868db5c3052524934efa4263fde8d9ab05f04c288d9ee1a17c3e0bd4c4e3b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/arsomega/glyph_flatten.toml",
+          "size": 907
+        },
+        {
+          "path": "config/arsomega/glyph_propagate_projectile.toml",
+          "hash": "04473ed9790f5f826f8097f3cbd5a9e2ae14f3f041ec52490666869832ee931e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/arsomega/glyph_propagate_projectile.toml",
+          "size": 788
+        },
+        {
+          "path": "config/arsomega/glyph_propagate_self.toml",
+          "hash": "04473ed9790f5f826f8097f3cbd5a9e2ae14f3f041ec52490666869832ee931e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/arsomega/glyph_propagate_self.toml",
+          "size": 788
+        },
+        {
+          "path": "config/arsomega/glyph_propagate_underfoot.toml",
+          "hash": "04473ed9790f5f826f8097f3cbd5a9e2ae14f3f041ec52490666869832ee931e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/arsomega/glyph_propagate_underfoot.toml",
+          "size": 788
+        },
+        {
+          "path": "config/ars_additions/glyph_mark.toml",
+          "hash": "1d1463dc67f41260e86af49efb83aff38cd84a46693e097f9cec09c3010b1891",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_additions/glyph_mark.toml",
+          "size": 780
+        },
+        {
+          "path": "config/ars_additions/glyph_recall.toml",
+          "hash": "14af58551488cb7eab8a886be3d272c69ecbbe19dfa81d878d19ec3666780971",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_additions/glyph_recall.toml",
+          "size": 652
+        },
+        {
+          "path": "config/ars_additions/glyph_retaliate.toml",
+          "hash": "12d23893eeba2114ce9c47f8131015dab42d0e9ad2fc507535ee50f15617acf0",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_additions/glyph_retaliate.toml",
+          "size": 652
+        },
+        {
+          "path": "config/ars_elemental/glyph_aerial_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_aerial_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_aquatic_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_aquatic_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_arc_projectile.toml",
+          "hash": "2936a2acfa92d67e5e5bc7f0fbc4a7d6278b872e17e919777a01f055fd64efd1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_arc_projectile.toml",
+          "size": 733
+        },
+        {
+          "path": "config/ars_elemental/glyph_bubble_shield.toml",
+          "hash": "6a82d0871294965b37ce95eb9d1d261bf60941f2e43c6dbfbeba7cccae0ae244",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_bubble_shield.toml",
+          "size": 1044
+        },
+        {
+          "path": "config/ars_elemental/glyph_charm.toml",
+          "hash": "be624c15e8e96b3ef03b28789c29a10b1cf807b8de3b32939d505f435ed99bb7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_charm.toml",
+          "size": 1029
+        },
+        {
+          "path": "config/ars_elemental/glyph_conjure_terrain.toml",
+          "hash": "851b3b13af08760619433c068b54a898653cdf0ad9be9cb0948da1793ec506ec",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_conjure_terrain.toml",
+          "size": 816
+        },
+        {
+          "path": "config/ars_elemental/glyph_discharge.toml",
+          "hash": "e4e4bd90a15ae27a1add4b995d54a270d7770c49c60d7889f2d7d51c372224f2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_discharge.toml",
+          "size": 1039
+        },
+        {
+          "path": "config/ars_elemental/glyph_envenom.toml",
+          "hash": "c92d63f93ea349505edd4819e699d781823368d5d86bf732a8d06ebeeb22fbe2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_envenom.toml",
+          "size": 918
+        },
+        {
+          "path": "config/ars_elemental/glyph_fiery_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_fiery_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_homing_projectile.toml",
+          "hash": "81afebad66dcb8d0563d4d11c9e91bbf8af26f0e84dd8849613c206cb71c2a1e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_homing_projectile.toml",
+          "size": 761
+        },
+        {
+          "path": "config/ars_elemental/glyph_insect_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_insect_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_life_link.toml",
+          "hash": "be911ca90e6dfffef4a2e33a65f1fb6184b3a0ec06aa1cbfd42d311c1aa71f67",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_life_link.toml",
+          "size": 919
+        },
+        {
+          "path": "config/ars_elemental/glyph_not_aerial_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_not_aerial_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_not_aquatic_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_not_aquatic_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_not_fiery_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_not_fiery_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_not_insect_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_not_insect_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_not_summon_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_not_summon_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_not_undead_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_not_undead_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_phantom_grasp.toml",
+          "hash": "1e422d3ab2f0ba0b150e662dcd4b15c62d8a29a107a5a0771d7cb056cf972010",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_phantom_grasp.toml",
+          "size": 939
+        },
+        {
+          "path": "config/ars_elemental/glyph_poison_spores.toml",
+          "hash": "5738ce62d02458cbcb3499c3714b7ee16333de00a887638ef7780d996f4c889b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_poison_spores.toml",
+          "size": 1038
+        },
+        {
+          "path": "config/ars_elemental/glyph_propagator_arc.toml",
+          "hash": "8c779d1dbc1026d2b7884b53ef33e9bf2d3b34db57a952441f30d053861f6e5c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_propagator_arc.toml",
+          "size": 788
+        },
+        {
+          "path": "config/ars_elemental/glyph_propagator_homing.toml",
+          "hash": "209cfaa9866d6cd84ec4a3c0059b32be23c485c5aa092b11bb0e2ab044d6b116",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_propagator_homing.toml",
+          "size": 788
+        },
+        {
+          "path": "config/ars_elemental/glyph_spark.toml",
+          "hash": "2b5ac75aaa3bb91b4ba43127d43202daafb5d7e560944a885560e936c3dc60a4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_spark.toml",
+          "size": 1039
+        },
+        {
+          "path": "config/ars_elemental/glyph_spike.toml",
+          "hash": "2ed55ab427d19dd6dc6b22dc17e3112b99f5efb1e6fa57f57b1510bc0ba37b6b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_spike.toml",
+          "size": 907
+        },
+        {
+          "path": "config/ars_elemental/glyph_summon_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_summon_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_undead_filter.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_undead_filter.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_elemental/glyph_watery_grave.toml",
+          "hash": "40ea0d3527a978b0f45c0202cd591add79b7050e034605ccc6ea678b8f307a3e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_elemental/glyph_watery_grave.toml",
+          "size": 1039
+        },
+        {
+          "path": "config/ars_nouveau/burst.toml",
+          "hash": "ab9c0668a4e18f21f0c40cbcf60d7629082edf3c65d9d098b6826e9b8cdd750b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/burst.toml",
+          "size": 833
+        },
+        {
+          "path": "config/ars_nouveau/glyph_accelerate.toml",
+          "hash": "52088c7f85bfe74de6b1626dfc4a13cd66c841ee3824899e1a21a19cae130349",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_accelerate.toml",
+          "size": 324
+        },
+        {
+          "path": "config/ars_nouveau/glyph_amplify.toml",
+          "hash": "04148b51f823c2eba0ebd59621029dcb0652c2fe51372982cc408029217724ad",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_amplify.toml",
+          "size": 324
+        },
+        {
+          "path": "config/ars_nouveau/glyph_animate_block.toml",
+          "hash": "f8bcd050ca15e4cbeab90c16365e177d275c6a988f8586b8a50cb5ac76103b69",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_animate_block.toml",
+          "size": 915
+        },
+        {
+          "path": "config/ars_nouveau/glyph_aoe.toml",
+          "hash": "f0d73aea27bbdcf2f74f1710192c3817c6ff64b9c0a2732d55a690d52dc55df4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_aoe.toml",
+          "size": 324
+        },
+        {
+          "path": "config/ars_nouveau/glyph_blink.toml",
+          "hash": "27036cc3eda610ad1d0748ddfb9096ed137efcd62c38de082513ffc8f1bb98a7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_blink.toml",
+          "size": 888
+        },
+        {
+          "path": "config/ars_nouveau/glyph_bounce.toml",
+          "hash": "30c5c4728ac879e44a34a8c9c2b7b69f756e3d47311a69fc69c539ad59775334",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_bounce.toml",
+          "size": 919
+        },
+        {
+          "path": "config/ars_nouveau/glyph_break.toml",
+          "hash": "bb1bdff49f9c9c3b7868fedddd6dc0587e7997a4739bca654e9be2fc17821ce4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_break.toml",
+          "size": 815
+        },
+        {
+          "path": "config/ars_nouveau/glyph_cold_snap.toml",
+          "hash": "6fc3332105a62c079607bf5b60c9f214fb4ebdf5cd927dad278724b5a4ed1927",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_cold_snap.toml",
+          "size": 1065
+        },
+        {
+          "path": "config/ars_nouveau/glyph_conjure_water.toml",
+          "hash": "4712bdfe6651bda49ddaea74679e1099a500964b3221ed37cdda3f6751f11309",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_conjure_water.toml",
+          "size": 920
+        },
+        {
+          "path": "config/ars_nouveau/glyph_craft.toml",
+          "hash": "da87677cf58a2bcf988f9ba7f53a16a69c90f9c3410e3f9e91f8cc5835df42ba",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_craft.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_crush.toml",
+          "hash": "151868db5c3052524934efa4263fde8d9ab05f04c288d9ee1a17c3e0bd4c4e3b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_crush.toml",
+          "size": 907
+        },
+        {
+          "path": "config/ars_nouveau/glyph_cut.toml",
+          "hash": "ea0b2bb20d0af4d5c1fec7dc81e739d5f8ce2e8ff899c9454e597d25f358ca69",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_cut.toml",
+          "size": 906
+        },
+        {
+          "path": "config/ars_nouveau/glyph_dampen.toml",
+          "hash": "1ea4b1f69ba10b222bd2fbbfab419814a92a53a3552c4d59fb4f23817b426c3e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_dampen.toml",
+          "size": 323
+        },
+        {
+          "path": "config/ars_nouveau/glyph_decelerate.toml",
+          "hash": "7f58a4bcf1709eb2c7f79b7cdaa0ece892d341dfdaa781c26ac1b951510c45cc",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_decelerate.toml",
+          "size": 323
+        },
+        {
+          "path": "config/ars_nouveau/glyph_delay.toml",
+          "hash": "34ecb52d4bce80ae1629b17d2f35da6e9816b0d2134ff1cf29f9b72ca6b6bcd3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_delay.toml",
+          "size": 976
+        },
+        {
+          "path": "config/ars_nouveau/glyph_dispel.toml",
+          "hash": "978214f42431cd238adc4e732695e23beaf46a07b5d50f66ea92de38f3e38458",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_dispel.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_duration_down.toml",
+          "hash": "f06aac76746bc3c8fc5833a96301e08a7e6d7e873532a6e419530e49e01add10",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_duration_down.toml",
+          "size": 324
+        },
+        {
+          "path": "config/ars_nouveau/glyph_ender_inventory.toml",
+          "hash": "3a1400095fb2b321c66b892ea7dd94244799243db9d490fd9cddf18ed1738417",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_ender_inventory.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_evaporate.toml",
+          "hash": "da87677cf58a2bcf988f9ba7f53a16a69c90f9c3410e3f9e91f8cc5835df42ba",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_evaporate.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_exchange.toml",
+          "hash": "3a1400095fb2b321c66b892ea7dd94244799243db9d490fd9cddf18ed1738417",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_exchange.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_explosion.toml",
+          "hash": "2672fc425d16af7a3c2caf48e99eb79d39da6d13d56f05b765e72d6c0d6ffc43",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_explosion.toml",
+          "size": 1117
+        },
+        {
+          "path": "config/ars_nouveau/glyph_extend_time.toml",
+          "hash": "52088c7f85bfe74de6b1626dfc4a13cd66c841ee3824899e1a21a19cae130349",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_extend_time.toml",
+          "size": 324
+        },
+        {
+          "path": "config/ars_nouveau/glyph_extract.toml",
+          "hash": "570801a5ea7437d915a11866ba24a81043436ec7244a64a259f2da0f61602268",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_extract.toml",
+          "size": 324
+        },
+        {
+          "path": "config/ars_nouveau/glyph_fangs.toml",
+          "hash": "3e7bd498be4f9a17787bc2a315e3816da60d552fd181b1ca4d1109280ec3cdb4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_fangs.toml",
+          "size": 907
+        },
+        {
+          "path": "config/ars_nouveau/glyph_fell.toml",
+          "hash": "e77cf7c9b790b2b3b1d2ceb93381270bd71d8067306f917eb93d10d88790b207",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_fell.toml",
+          "size": 921
+        },
+        {
+          "path": "config/ars_nouveau/glyph_firework.toml",
+          "hash": "855caef5eb8da7a171d06dd11d145f8e4c20cbd742dc6ff6eb03e252bd599821",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_firework.toml",
+          "size": 816
+        },
+        {
+          "path": "config/ars_nouveau/glyph_flare.toml",
+          "hash": "f4703831699479c14466c1553aebc001257080322c39aea5a36a180c2edb1369",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_flare.toml",
+          "size": 975
+        },
+        {
+          "path": "config/ars_nouveau/glyph_fortune.toml",
+          "hash": "335f371cab1c999bb7ac50a1203fdda843201766d3d5175117d73720d822136e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_fortune.toml",
+          "size": 324
+        },
+        {
+          "path": "config/ars_nouveau/glyph_freeze.toml",
+          "hash": "7f51de085bd646c15990582256ba9fbbee72b7ba03ccf3b6e84d5b7862c07929",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_freeze.toml",
+          "size": 950
+        },
+        {
+          "path": "config/ars_nouveau/glyph_glide.toml",
+          "hash": "1147e5a83ddfca838ca50fea3a866fb5ab5f4294f16b030495d2e29050396e2b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_glide.toml",
+          "size": 923
+        },
+        {
+          "path": "config/ars_nouveau/glyph_gravity.toml",
+          "hash": "3e48f1291aa847518e858f3cde4ddaefcdf6eac3a7b1f9e6e95993c91a4e8bf5",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_gravity.toml",
+          "size": 919
+        },
+        {
+          "path": "config/ars_nouveau/glyph_grow.toml",
+          "hash": "b2c9014df9d1d87246d465839f6ba19c59ce400a1b83e19212b35b0b88b6a0f7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_grow.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_gust.toml",
+          "hash": "fcbadd937327eb9ea9545d2251d34b744f37f7156cf3a85dbd7a10899258e1f5",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_gust.toml",
+          "size": 915
+        },
+        {
+          "path": "config/ars_nouveau/glyph_harm.toml",
+          "hash": "eedfd9803434311271c4a35d5be371f0f77ee7ddf3362e0f0a3752351e9717dc",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_harm.toml",
+          "size": 1037
+        },
+        {
+          "path": "config/ars_nouveau/glyph_harvest.toml",
+          "hash": "a00b12536e97c3b601004c8f750d37c01165d16b5d86edd753daa43f040cd6e6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_harvest.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_heal.toml",
+          "hash": "b8994d01e1539bfd3a8cb092654deff8b9c68869d7d33b8094d154fcb479b284",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_heal.toml",
+          "size": 910
+        },
+        {
+          "path": "config/ars_nouveau/glyph_hex.toml",
+          "hash": "6f12843a50141377f8ab5cd8f3f14d5f9d0d3044fd182047ef014fdb9ba4925e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_hex.toml",
+          "size": 949
+        },
+        {
+          "path": "config/ars_nouveau/glyph_ignite.toml",
+          "hash": "23deef7ab7dcf1bceac31fdd3280e02f9c367e4e72e41dff0ce8ddf77f268f75",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_ignite.toml",
+          "size": 918
+        },
+        {
+          "path": "config/ars_nouveau/glyph_infuse.toml",
+          "hash": "e67196fd1af79cf7952eeaa60d2a6153f3e76165b66e97fc66958242faa0db1c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_infuse.toml",
+          "size": 847
+        },
+        {
+          "path": "config/ars_nouveau/glyph_intangible.toml",
+          "hash": "dd1c00ff4bdca3fac774e833ed14be62ceb7381eb883ac5675aac89ca2fa0142",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_intangible.toml",
+          "size": 909
+        },
+        {
+          "path": "config/ars_nouveau/glyph_interact.toml",
+          "hash": "a00b12536e97c3b601004c8f750d37c01165d16b5d86edd753daa43f040cd6e6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_interact.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_invisibility.toml",
+          "hash": "e8ef01d916404a9ef0c60144fc14724899a0dcd4f4a8d3e470bac06a39816d87",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_invisibility.toml",
+          "size": 919
+        },
+        {
+          "path": "config/ars_nouveau/glyph_launch.toml",
+          "hash": "dbf57b752c1f4386e95fe17a16b058159f09e84f4a143e513c67ed1d764ac2e7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_launch.toml",
+          "size": 912
+        },
+        {
+          "path": "config/ars_nouveau/glyph_leap.toml",
+          "hash": "6f1bede090a76b6380bc766049dc2705d514a0cb6a6d90c2a2a822742d449029",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_leap.toml",
+          "size": 1005
+        },
+        {
+          "path": "config/ars_nouveau/glyph_light.toml",
+          "hash": "7486d427238f29b56ebacc349f6a1edba6897fa1e7ee91bd2ab0a103b648dfa2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_light.toml",
+          "size": 948
+        },
+        {
+          "path": "config/ars_nouveau/glyph_lightning.toml",
+          "hash": "62bb6751c4be50667aa177c4f4da47b0f6bbd19ad0d98353b03ef3bf1eb6f1d8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_lightning.toml",
+          "size": 998
+        },
+        {
+          "path": "config/ars_nouveau/glyph_linger.toml",
+          "hash": "54c3fe8c776d11071278d112fc1266c2d2aa1d4e9254adeb3980d4e45cfd6017",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_linger.toml",
+          "size": 781
+        },
+        {
+          "path": "config/ars_nouveau/glyph_name.toml",
+          "hash": "355d669ae971bafb031818ba96458e9e06e2f5f1a843d34e1882807641b04f05",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_name.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_orbit.toml",
+          "hash": "3929d1f3121d8b4a25b0074e682f20b93d769b9889b7eed98591ecd776b7dc1d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_orbit.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_phantom_block.toml",
+          "hash": "870df44b677276589055f4e3c10507520e8025a1152f7cb5e2af22c30936ebb6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_phantom_block.toml",
+          "size": 815
+        },
+        {
+          "path": "config/ars_nouveau/glyph_pickup.toml",
+          "hash": "a00b12536e97c3b601004c8f750d37c01165d16b5d86edd753daa43f040cd6e6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_pickup.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_pierce.toml",
+          "hash": "868c9e906cf57c2ec6cd6f73166ab964477085f5a2a0fb0e5c186bdb3ea90bcf",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_pierce.toml",
+          "size": 324
+        },
+        {
+          "path": "config/ars_nouveau/glyph_place_block.toml",
+          "hash": "a00b12536e97c3b601004c8f750d37c01165d16b5d86edd753daa43f040cd6e6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_place_block.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_projectile.toml",
+          "hash": "6cb5b952c5e32b4cd7e2288df16d533c66c113fb3d43bdeb986222d67e959032",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_projectile.toml",
+          "size": 732
+        },
+        {
+          "path": "config/ars_nouveau/glyph_pull.toml",
+          "hash": "0704548f042742ff78f550d70f88d76afb5e64b4f243d15153332b47a10b29b3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_pull.toml",
+          "size": 917
+        },
+        {
+          "path": "config/ars_nouveau/glyph_randomize.toml",
+          "hash": "2efadf2172adbeb679709475a32017267109863b037c730b0690a400346c700b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_randomize.toml",
+          "size": 323
+        },
+        {
+          "path": "config/ars_nouveau/glyph_redstone_signal.toml",
+          "hash": "c8e6f726b377cef6d69cc00540c6aecc694eb151f49cc7be1971681b7762800e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_redstone_signal.toml",
+          "size": 906
+        },
+        {
+          "path": "config/ars_nouveau/glyph_rotate.toml",
+          "hash": "a00b12536e97c3b601004c8f750d37c01165d16b5d86edd753daa43f040cd6e6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_rotate.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_rune.toml",
+          "hash": "978214f42431cd238adc4e732695e23beaf46a07b5d50f66ea92de38f3e38458",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_rune.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_self.toml",
+          "hash": "205e733e8f8cab59ff046bf1f0bed986e862fec88ad9c22a9f53a7759f601875",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_self.toml",
+          "size": 651
+        },
+        {
+          "path": "config/ars_nouveau/glyph_sense_magic.toml",
+          "hash": "2af508f4de3a4138febe5be13074c5dce6374b1829e06338f98a452dc2c0f910",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_sense_magic.toml",
+          "size": 920
+        },
+        {
+          "path": "config/ars_nouveau/glyph_sensitive.toml",
+          "hash": "dbd275201e22845b9e6ed3b7b874ed0c9259ad755b394f31d84c3b1c71c3b6aa",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_sensitive.toml",
+          "size": 324
+        },
+        {
+          "path": "config/ars_nouveau/glyph_slowfall.toml",
+          "hash": "e8ef01d916404a9ef0c60144fc14724899a0dcd4f4a8d3e470bac06a39816d87",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_slowfall.toml",
+          "size": 919
+        },
+        {
+          "path": "config/ars_nouveau/glyph_smelt.toml",
+          "hash": "04473ed9790f5f826f8097f3cbd5a9e2ae14f3f041ec52490666869832ee931e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_smelt.toml",
+          "size": 788
+        },
+        {
+          "path": "config/ars_nouveau/glyph_snare.toml",
+          "hash": "cfae464122aa1f4175a3ec94137f05e1adaa19af3ea70921c5bc000ac97da980",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_snare.toml",
+          "size": 919
+        },
+        {
+          "path": "config/ars_nouveau/glyph_split.toml",
+          "hash": "a7395212cd9029c1f8ed6bccbbe9836445476f469e8e40af1999c09a19486b92",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_split.toml",
+          "size": 324
+        },
+        {
+          "path": "config/ars_nouveau/glyph_summon_decoy.toml",
+          "hash": "6125773f89b9e0381c4bcefd996215777ada37031aa1c61269fa35594a7294f3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_summon_decoy.toml",
+          "size": 915
+        },
+        {
+          "path": "config/ars_nouveau/glyph_summon_steed.toml",
+          "hash": "4ff5f67515cc5e46fc241c2d12707db4872b99e0894a43b7e3472153b64c20b7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_summon_steed.toml",
+          "size": 917
+        },
+        {
+          "path": "config/ars_nouveau/glyph_summon_undead.toml",
+          "hash": "a91b18c078a3f030756ec73ff847089b7137e3b3bcd75b9f6878fa73a903c782",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_summon_undead.toml",
+          "size": 915
+        },
+        {
+          "path": "config/ars_nouveau/glyph_summon_vex.toml",
+          "hash": "a91b18c078a3f030756ec73ff847089b7137e3b3bcd75b9f6878fa73a903c782",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_summon_vex.toml",
+          "size": 915
+        },
+        {
+          "path": "config/ars_nouveau/glyph_summon_wolves.toml",
+          "hash": "c6d0a464799d05dc8b746e977f94772fa30ea1586e97ae5c30375144176d370d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_summon_wolves.toml",
+          "size": 915
+        },
+        {
+          "path": "config/ars_nouveau/glyph_toss.toml",
+          "hash": "a00b12536e97c3b601004c8f750d37c01165d16b5d86edd753daa43f040cd6e6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_toss.toml",
+          "size": 787
+        },
+        {
+          "path": "config/ars_nouveau/glyph_touch.toml",
+          "hash": "653abbdb27e1223f42f67617c575335990007ecf5c47abb293b86227b41923f6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_touch.toml",
+          "size": 650
+        },
+        {
+          "path": "config/ars_nouveau/glyph_underfoot.toml",
+          "hash": "9119854cd822782a1f9c05f1e0f060484ff21fe8af2d5cd1cda189b2bed877ef",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_underfoot.toml",
+          "size": 651
+        },
+        {
+          "path": "config/ars_nouveau/glyph_wall.toml",
+          "hash": "ab161ccc4cbc88df70b140d19ebfb8eef4c2ec0f9ea0428d119c0e3d96b84146",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_wall.toml",
+          "size": 807
+        },
+        {
+          "path": "config/ars_nouveau/glyph_wind_shear.toml",
+          "hash": "47ea4f8ecd77e64f460e238c97cd0658129ae013f5cd57e42e6959791ece3c56",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_wind_shear.toml",
+          "size": 996
+        },
+        {
+          "path": "config/ars_nouveau/glyph_wither.toml",
+          "hash": "6f12843a50141377f8ab5cd8f3f14d5f9d0d3044fd182047ef014fdb9ba4925e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/glyph_wither.toml",
+          "size": 949
+        },
+        {
+          "path": "config/ars_nouveau/reset.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/reset.toml",
+          "size": 786
+        },
+        {
+          "path": "config/ars_nouveau/rewind.toml",
+          "hash": "764fe0b016c5d56b0fb58dcb98be0c15830d00a21aab26b76909f7b8ac55bfe5",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/rewind.toml",
+          "size": 1237
+        },
+        {
+          "path": "config/ars_nouveau/wololo.toml",
+          "hash": "978214f42431cd238adc4e732695e23beaf46a07b5d50f66ea92de38f3e38458",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ars_nouveau/wololo.toml",
+          "size": 787
+        },
+        {
+          "path": "config/artifacts/client.json5",
+          "hash": "dfae4a12bf924a5e12380032ff257ec535c6b003fef539a3893adb05c0a69c56",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/artifacts/client.json5",
+          "size": 551
+        },
+        {
+          "path": "config/artifacts/common.json5",
+          "hash": "736bec8c910558091bb749ac7adb013822a253a02f1f70637eb193952768d2b1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/artifacts/common.json5",
+          "size": 1584
+        },
+        {
+          "path": "config/bettercombat/client.json5",
+          "hash": "8b11818b19f97decfcb119cce4038bfe28e83fbf3d2173a5472df678fce1a842",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/bettercombat/client.json5",
+          "size": 554
+        },
+        {
+          "path": "config/bettercombat/fallback_compatibility.json",
+          "hash": "754feb4474a3f4d9fe6bd08f38c248fd5a796ed51f38d7d5704680250f3a34ca",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/bettercombat/fallback_compatibility.json",
+          "size": 2995
+        },
+        {
+          "path": "config/bettercombat/server.json5",
+          "hash": "cdf806c0ace89872a439f44f383132ed75003ae3445d55faa02a5f5b29aad4ef",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/bettercombat/server.json5",
+          "size": 5268
+        },
+        {
+          "path": "config/betterstrongholds/README.txt",
+          "hash": "13c5f6bd52bf778533a100453d8b295802f923109e0a2951446a00674113700b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/betterstrongholds/README.txt",
+          "size": 707
+        },
+        {
+          "path": "config/biomesoplenty/biome_toggles.json",
+          "hash": "6184168c00c4f45e874e0043304992c67beb5d5306e6150dec4f79dd4dd24b71",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/biomesoplenty/biome_toggles.json",
+          "size": 1999
+        },
+        {
+          "path": "config/biomesoplenty/generation.toml",
+          "hash": "9de600b6c85029f74a7549a6f7074065ac55310666c54bebd4c3bf573b0379d7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/biomesoplenty/generation.toml",
+          "size": 619
+        },
+        {
+          "path": "config/CoroUtil/General.toml",
+          "hash": "d86beab1176c367beeed3b8fb8a2a8dfbd8a1db7293f067c01bc38c73020e398",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/CoroUtil/General.toml",
+          "size": 133
+        },
+        {
+          "path": "config/cristellib/minecraftED.json5",
+          "hash": "8e01cc9b7e46f74fd60ce36d3459628b8198cb988051ae52f14cda36ef0fd869",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/cristellib/minecraftED.json5",
+          "size": 1476
+        },
+        {
+          "path": "config/cristellib/minecraftP.json5",
+          "hash": "8fe09b83f2fe6bf9d547e99b8d883aef42bf3d9e2e6f5bd43ec3fcd4c7f756da",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/cristellib/minecraftP.json5",
+          "size": 1752
+        },
+        {
+          "path": "config/drippyloadingscreen/options.txt",
+          "hash": "8d0edcad69219e217683bde3437b11318db348c7cce676c7c67de99b58f0ccd5",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/drippyloadingscreen/options.txt",
+          "size": 2465
+        },
+        {
+          "path": "config/euphoria_patcher/data.json",
+          "hash": "6e0f045908a15ec4c56e281185c9c12534e48de6e3c6b75039ae7ef6c22b7d8e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/euphoria_patcher/data.json",
+          "size": 163
+        },
+        {
+          "path": "config/euphoria_patcher/settings.toml",
+          "hash": "51804b29b4e69931eea7729ec75c9e696d2a7a3e43ec7dd339290da24047abb3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/euphoria_patcher/settings.toml",
+          "size": 2641
+        },
+        {
+          "path": "config/fabric/indigo-renderer.properties",
+          "hash": "9c35f4ea11aede0fcd8500e3b77f5e0b6aafcd00cc9d2cb9bdb32b617bc762da",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fabric/indigo-renderer.properties",
+          "size": 290
+        },
+        {
+          "path": "config/fancymenu/audio_element_controller_metas.json",
+          "hash": "196f6b3ae66c0d64cbc7183c985961846a7ac9d776ddf4cb6dc473fd23ea11a9",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/audio_element_controller_metas.json",
+          "size": 216
+        },
+        {
+          "path": "config/fancymenu/customizablemenus.txt",
+          "hash": "e42bca1c2df98eae4403b465f3a45d076b2d807b607aec78b2f7e62a3d4ade7a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/customizablemenus.txt",
+          "size": 1121
+        },
+        {
+          "path": "config/fancymenu/custom_gui_screens.txt",
+          "hash": "ff492043eaf454c46e949d5eef32ece90cc5a19feb50a161dd29a43b5732c880",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/custom_gui_screens.txt",
+          "size": 51
+        },
+        {
+          "path": "config/fancymenu/legacy_checklist.txt",
+          "hash": "9a25d3dc708e43eabafce5479a13c02dae15bc7f673afb2745b8b2ba48a97dc0",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/legacy_checklist.txt",
+          "size": 42
+        },
+        {
+          "path": "config/fancymenu/options.txt",
+          "hash": "c4a124cdb8798d9d8b3cdb5fee221c08d30b855a0b46ffc28adb9e581e9cd441",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/options.txt",
+          "size": 2264
+        },
+        {
+          "path": "config/fancymenu/user_variables.db",
+          "hash": "3d7d4cda73d6bde134a568ccbe4e8d2e7fbe701570012b71fa45acdb2258c823",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/user_variables.db",
+          "size": 23
+        },
+        {
+          "path": "config/irons_spellbooks_spell_config/global_config.json",
+          "hash": "7a8fd5e37e183cccd59a72a4af0b9e1fe1b4d930cd034b2f11da7307a8741580",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/irons_spellbooks_spell_config/global_config.json",
+          "size": 257
+        },
+        {
+          "path": "config/jade/hide-blocks.json",
+          "hash": "247df2699ebb5a0d4c9585aeeb267ef9388cd5bee2b13ca340f35124a135b35b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jade/hide-blocks.json",
+          "size": 191
+        },
+        {
+          "path": "config/jade/hide-entities.json",
+          "hash": "22b4560c3dc05da35a70bb6611da0ce04cff295ab8c663afd58e725c396a24b3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jade/hide-entities.json",
+          "size": 325
+        },
+        {
+          "path": "config/jade/jade.json",
+          "hash": "8a9c0403b385ca106d0c0b541ea2f2128bf39e3f9b05b342b176ca11834857a4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jade/jade.json",
+          "size": 974
+        },
+        {
+          "path": "config/jade/plugins.json",
+          "hash": "8f1c1f7fbc7cd1fc193450ab266be11c423e782a248e0b7b638a2dc615e0b814",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jade/plugins.json",
+          "size": 1960
+        },
+        {
+          "path": "config/jade/sort-order.json",
+          "hash": "dcd9ff922e1e620b119fd15c4f3905e3ef2827b1765d2875ad94c9eba3f5edb6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jade/sort-order.json",
+          "size": 1786
+        },
+        {
+          "path": "config/jamlib/known_suspicious_jars.txt",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jamlib/known_suspicious_jars.txt",
+          "size": 0
+        },
+        {
+          "path": "config/jei/blacklist.cfg",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jei/blacklist.cfg",
+          "size": 0
+        },
+        {
+          "path": "config/jei/ingredient-list-mod-sort-order.ini",
+          "hash": "428da411c6df2491df51a9e4aa2e4860a6b0e97878c3ba80fdec363de2dcea21",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jei/ingredient-list-mod-sort-order.ini",
+          "size": 1034
+        },
+        {
+          "path": "config/jei/ingredient-list-type-sort-order.ini",
+          "hash": "d8633c428f3dcf18d4d627de22ecb067d0c52637f3adf1162d584e1ca25999bf",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jei/ingredient-list-type-sort-order.ini",
+          "size": 398
+        },
+        {
+          "path": "config/jei/jei-client.ini",
+          "hash": "8c5ae3646c07bfd87fe9259333c2df2b7eb2670cd0c64c21f48f69e0a5629a18",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jei/jei-client.ini",
+          "size": 7991
+        },
+        {
+          "path": "config/jei/jei-colors.ini",
+          "hash": "5f37aacd70460fdc2631ff45e98e8a2ce4e52d3e9a50917edf40eeed1236952e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jei/jei-colors.ini",
+          "size": 1338
+        },
+        {
+          "path": "config/jei/jei-debug.ini",
+          "hash": "ee9bb0f0f8465629951fe9a532f3ebe3327671a12d4cc6395860d7f7494b970b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jei/jei-debug.ini",
+          "size": 918
+        },
+        {
+          "path": "config/jei/jei-mod-id-format.ini",
+          "hash": "326b4f9b813ca8183bfaeee184cf7248c7a75c4d85b59322e349c0e964c253f3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jei/jei-mod-id-format.ini",
+          "size": 463
+        },
+        {
+          "path": "config/jei/recipe-category-sort-order.ini",
+          "hash": "9aea454a473c5e49c52757ab516c0835f6bbdb52b37708371380c46f48cf499d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jei/recipe-category-sort-order.ini",
+          "size": 3216
+        },
+        {
+          "path": "config/NoChatReports/NCR-Client.json",
+          "hash": "edfe78d985fe67dce28104f3d87673e94c89134144451c291ecedcd2e2c3b480",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/NoChatReports/NCR-Client.json",
+          "size": 565
+        },
+        {
+          "path": "config/NoChatReports/NCR-Common.json",
+          "hash": "0eaad2630bd70ade719f7810e805810ada25379269ea194e43d3eea30c51dec0",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/NoChatReports/NCR-Common.json",
+          "size": 230
+        },
+        {
+          "path": "config/NoChatReports/NCR-Encryption.json",
+          "hash": "0f61ac30bfc78653a30d715f793e30a6a43d6715106706487efd0aea5d43a84c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/NoChatReports/NCR-Encryption.json",
+          "size": 520
+        },
+        {
+          "path": "config/NoChatReports/NCR-ServerPreferences.json",
+          "hash": "df32843b853e0a493ef3a9b1e39276818294353fbb0d833f7f61e77da0f5bca1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/NoChatReports/NCR-ServerPreferences.json",
+          "size": 24
+        },
+        {
+          "path": "config/NoChatReports/README.md",
+          "hash": "c52b76ccad2bd1063a22c7f6bb9e7c5db6b00fb53a6fd605585972ee0e5fc01f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/NoChatReports/README.md",
+          "size": 167
+        },
+        {
+          "path": "config/not_enough_glyphs/glyph_plow.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/not_enough_glyphs/glyph_plow.toml",
+          "size": 786
+        },
+        {
+          "path": "config/not_enough_glyphs/glyph_propagate_plane.toml",
+          "hash": "388c63d3dded85a70ab53fa9f5ab03e01e8c14eac3fcb35bdc0d7210853c0aaa",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/not_enough_glyphs/glyph_propagate_plane.toml",
+          "size": 919
+        },
+        {
+          "path": "config/not_enough_glyphs/glyph_trail.toml",
+          "hash": "409db87712641a768666dab5700977233c82b08b917d6e5c945579e8d340550c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/not_enough_glyphs/glyph_trail.toml",
+          "size": 734
+        },
+        {
+          "path": "config/pickupnotifier/pickupnotifier-client.toml",
+          "hash": "242a0f58407ecc71ff5e2c6cd2910001c089ee4e6130454c377115e8a8f3c83a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/pickupnotifier/pickupnotifier-client.toml",
+          "size": 3355
+        },
+        {
+          "path": "config/pickupnotifier/pickupnotifier-server.toml",
+          "hash": "6e18bfa2ec02629937474e436f3f44fb67d54fd6e6b47a7c9b4c5b3a3bd83916",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/pickupnotifier/pickupnotifier-server.toml",
+          "size": 485
+        },
+        {
+          "path": "config/simple-rpc/server-entries.toml",
+          "hash": "c0f805a22438339d68aacf46339f6f9d47cd9737ab0a6e4c8af3b772f7028849",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/simple-rpc/server-entries.toml",
+          "size": 150
+        },
+        {
+          "path": "config/simple-rpc/simple-rpc.toml",
+          "hash": "d411eabf1aedf54ef2d96d4955ca22bdc6101b39cc599c6c9acc257253e21172",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/simple-rpc/simple-rpc.toml",
+          "size": 6365
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_chaining.toml",
+          "hash": "b6ea43ac1acc6b3ad60768be24acf67feaa928ab6b52619d70103244da864d8a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_chaining.toml",
+          "size": 1690
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_animal.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_animal.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_block.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_block.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_entity.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_entity.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_is_baby.toml",
+          "hash": "e37fa21e0ce9fdf5999e32fcf8acf98fbdb4c0296ef53c63c46025dd8cacf449",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_is_baby.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_is_mature.toml",
+          "hash": "e37fa21e0ce9fdf5999e32fcf8acf98fbdb4c0296ef53c63c46025dd8cacf449",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_is_mature.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_item.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_item.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_living.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_living.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_living_not_monster.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_living_not_monster.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_living_not_player.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_living_not_player.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_monster.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_monster.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_filter_player.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_filter_player.toml",
+          "size": 786
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_ray.toml",
+          "hash": "2c25e8a06604e2e267e1d27e523cab1ae21560dd8cc6cb65243e97628f0ce821",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_ray.toml",
+          "size": 865
+        },
+        {
+          "path": "config/toomanyglyphs/glyph_reverse_direction.toml",
+          "hash": "7a9ab213f4738c55f96488d9fa5a90ee87344f2dcfc571a403c6f26b5fc19aa4",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/toomanyglyphs/glyph_reverse_direction.toml",
+          "size": 786
+        },
+        {
+          "path": "config/towns_and_towers/structure_enable_or_disable_new.json5",
+          "hash": "3aaa6ac8835dbbce97928c4d0d03f9957749a7a57a3f1668597310e9227900da",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/towns_and_towers/structure_enable_or_disable_new.json5",
+          "size": 3088
+        },
+        {
+          "path": "config/towns_and_towers/structure_rarity_new.json5",
+          "hash": "1f6cddbcb2d89fbcc774d7bdae9987ccb031ba8fe024307357076ca617b17eeb",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/towns_and_towers/structure_rarity_new.json5",
+          "size": 1581
+        },
+        {
+          "path": "config/valkyrienskies/valkyrienskies-client.toml",
+          "hash": "345e34a77c97820ad28f621f62b4725bbf0899725bb78ec5993b1728c5f4364e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/valkyrienskies/valkyrienskies-client.toml",
+          "size": 1154
+        },
+        {
+          "path": "config/valkyrienskies/valkyrienskies-common.toml",
+          "hash": "5ca055e1b8c770dbe0f9fe33c7e9ad0ed7571461454fb3e0584e8dbb1b9737c6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/valkyrienskies/valkyrienskies-common.toml",
+          "size": 194
+        },
+        {
+          "path": "config/voicechat/category-volumes.properties",
+          "hash": "94c1c4f70e5b995fbd71e86d4fa646030437fecae0685875b560a55fbd0d0e56",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/voicechat/category-volumes.properties",
+          "size": 46
+        },
+        {
+          "path": "config/voicechat/player-volumes.properties",
+          "hash": "0332261861a5ace96f503e85b0d48a8df74ea6c2f3545cd229543a6afb55ad96",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/voicechat/player-volumes.properties",
+          "size": 44
+        },
+        {
+          "path": "config/voicechat/translations.properties",
+          "hash": "693643b1d393cbb3ea7f062afc4474fcd66e4036c4f8d7c056434979cbf512d1",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/voicechat/translations.properties",
+          "size": 1182
+        },
+        {
+          "path": "config/voicechat/username-cache.json",
+          "hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/voicechat/username-cache.json",
+          "size": 2
+        },
+        {
+          "path": "config/voicechat/voicechat-client.properties",
+          "hash": "1ea726f3a9894d5b68e13fff01ef4466be14f914ffb645e2b229265e5f853ffb",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/voicechat/voicechat-client.properties",
+          "size": 5062
+        },
+        {
+          "path": "config/voicechat/voicechat-server.properties",
+          "hash": "ea97d3a2342fa427bf6875f6b192dade189782085d8771f57275f8cdca633719",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/voicechat/voicechat-server.properties",
+          "size": 2838
+        },
+        {
+          "path": "config/betterstrongholds/forge-1_20/armorstands.json",
+          "hash": "63914e7d367a4bc0a73828ff1474bb874f6ab217cb316014cd10fe49e1c98401",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/betterstrongholds/forge-1_20/armorstands.json",
+          "size": 1131
+        },
+        {
+          "path": "config/betterstrongholds/forge-1_20/itemframes.json",
+          "hash": "5c2f7063755bb15bbbd02fc1e8d341f4fc8a4c1f21eb8a126f1d5bfdec181b58",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/betterstrongholds/forge-1_20/itemframes.json",
+          "size": 680
+        },
+        {
+          "path": "config/betterstrongholds/forge-1_20/ores.json",
+          "hash": "21ee553f4f864f02c5931a11533fafe2020879b7d8cb1867bf1dd41bca69286e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/betterstrongholds/forge-1_20/ores.json",
+          "size": 346
+        },
+        {
+          "path": "config/betterstrongholds/forge-1_20/rareblocks.json",
+          "hash": "279bed05cfb80a01dae5f7c2463af944587870624374b74976ba6d3ab7a96896",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/betterstrongholds/forge-1_20/rareblocks.json",
+          "size": 238
+        },
+        {
+          "path": "config/betterstrongholds/forge-1_20/README.txt",
+          "hash": "5aad271e60a03218eb5207dd78df8d1d36c676f212bf823701e33646010d2f19",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/betterstrongholds/forge-1_20/README.txt",
+          "size": 2830
+        },
+        {
+          "path": "config/fancymenu/assets/aglr.png",
+          "hash": "589d7aed83f652d0cb30577a93beaeb5b029f1941b7d486eebecb0d67a288152",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/assets/aglr.png",
+          "size": 18833
+        },
+        {
+          "path": "config/fancymenu/assets/icon16x16.png",
+          "hash": "ecc276b63cfc4f99a071fffcaab0b3955b0f821587bbc3f471af258f768bf6ec",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/assets/icon16x16.png",
+          "size": 1414
+        },
+        {
+          "path": "config/fancymenu/assets/icon32x32.png",
+          "hash": "a9b463df448b57d88720ce1e0a37fc231e55a7ddb1acef1f49008788b923825b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/assets/icon32x32.png",
+          "size": 2941
+        },
+        {
+          "path": "config/fancymenu/assets/iconapple.icns",
+          "hash": "ad829783bd3d405d8f25fd17dc552053a82960b821db9309feac0f4e6a0f1278",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/assets/iconapple.icns",
+          "size": 81751
+        },
+        {
+          "path": "config/fancymenu/assets/mainmenu.png",
+          "hash": "d8a95959ce5dbd80abb0e943fc26a50a6f563318db4ad21222505ef62cdf3887",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/assets/mainmenu.png",
+          "size": 28791
+        },
+        {
+          "path": "config/fancymenu/assets/mcstartscreenson.gif",
+          "hash": "2cea57322793e5d598d652057b1dcab7d7a3d0d3d5392c8082b4e63cdc804e1c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/assets/mcstartscreenson.gif",
+          "size": 39447337
+        },
+        {
+          "path": "config/fancymenu/assets/skyrim-dragonborn.wav",
+          "hash": "b07513e653ef29518bef557b5a3d46758bd9dae10d7fba1164b269835d8f66f7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/assets/skyrim-dragonborn.wav",
+          "size": 41568078
+        },
+        {
+          "path": "config/fancymenu/assets/startscreensound.wav",
+          "hash": "447a22a6885bc3a6a0ba2f9daf42d2c6190ff2a6dc8017710de93136bfcf8fb9",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/assets/startscreensound.wav",
+          "size": 32956494
+        },
+        {
+          "path": "config/fancymenu/customization/drippy_loading_overlay_layout.txt",
+          "hash": "62e36a4c7ff39a0296504a01ced6b18c8a87b17259f06000f08ace2508d42b2c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/customization/drippy_loading_overlay_layout.txt",
+          "size": 7384
+        },
+        {
+          "path": "config/fancymenu/customization/pause_screen_layout.txt",
+          "hash": "99271ea673cd2323df87afe3c978d31dda3ae941da3d41311000754edab59fff",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/customization/pause_screen_layout.txt",
+          "size": 29337
+        },
+        {
+          "path": "config/fancymenu/customization/title_screen_layout.txt",
+          "hash": "90332ca4632731e96ad6ff32fa643e13720f99db5ec225fc1e1773b30cbd257c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/customization/title_screen_layout.txt",
+          "size": 37992
+        },
+        {
+          "path": "config/fancymenu/customization/universal_layout.txt",
+          "hash": "01a5114bf92132eb8d61e458e71cfe1304c23221201339f902e0b0acfddd90cc",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/customization/universal_layout.txt",
+          "size": 2310
+        },
+        {
+          "path": "config/fancymenu/ui_themes/dark.json",
+          "hash": "3f1263eaf693fdb6a315099b06797ac18830faa66c620916a80337a5082fd850",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/ui_themes/dark.json",
+          "size": 6218
+        },
+        {
+          "path": "config/fancymenu/ui_themes/light.json",
+          "hash": "3fcfc5f9957fbb86aea846c9ad49a24f47ca709c523c4018b584668e38b72f41",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/ui_themes/light.json",
+          "size": 6220
+        },
+        {
+          "path": "config/ftbquests/quests/chapter_groups.snbt",
+          "hash": "8bc9265957a50cc7f4fc1be307e2c3b5a0e2c11c50bb1430f420c7ce9d402762",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ftbquests/quests/chapter_groups.snbt",
+          "size": 283
+        },
+        {
+          "path": "config/ftbquests/quests/data.snbt",
+          "hash": "ed7875116d2c86b1e8c58e9a714c1566043be46ff1c927f8ab31b2a806c50acc",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ftbquests/quests/data.snbt",
+          "size": 530
+        },
+        {
+          "path": "config/irons_spellbooks_spell_config/irons_spellbooks/example.txt",
+          "hash": "26055978e8be96362afe56c5d2d039394e7c977e30df429443f49df7c5d3c06f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/irons_spellbooks_spell_config/irons_spellbooks/example.txt",
+          "size": 683
+        },
+        {
+          "path": "config/konkrete/locals/de_de.local",
+          "hash": "79a34cfd15c2d9c06498dc221be79279507d9b57666cd44f8d2c2cf95d3582ef",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/konkrete/locals/de_de.local",
+          "size": 369
+        },
+        {
+          "path": "config/konkrete/locals/en_us.local",
+          "hash": "fdf1864fd049b3f1b9af1f8db6c5125a627be7d06a451c778da3329843d3c39a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/konkrete/locals/en_us.local",
+          "size": 426
+        },
+        {
+          "path": "config/konkrete/locals/pl_pl.local",
+          "hash": "d38a7776e362e4de6082078d803c1c9358d9d40526edfe4bdfd29c552aef76d8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/konkrete/locals/pl_pl.local",
+          "size": 313
+        },
+        {
+          "path": "config/konkrete/locals/pt_br.local",
+          "hash": "dca55a2792451b31424cd5c24037141ec57cdca51955d062dd908fa9ca6a3e9c",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/konkrete/locals/pt_br.local",
+          "size": 322
+        },
+        {
+          "path": "config/fancymenu/layout_editor/widgets/element_layer_control.lewidget",
+          "hash": "051d700ea7ff1bd626063d60f9a9cd65a0af1fed5903706d1e70fce20bcb2495",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/layout_editor/widgets/element_layer_control.lewidget",
+          "size": 197
+        },
+        {
+          "path": "config/fancymenu/slideshows/mainslideshow/properties.txt",
+          "hash": "45d2f2dfa43deeca1cef0ccf2117bd57ae1d00a24b0746a45e70ff0e1678eb37",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/slideshows/mainslideshow/properties.txt",
+          "size": 182
+        },
+        {
+          "path": "config/ftbquests/quests/chapters/artifacts.snbt",
+          "hash": "cc0c78e5e6d8b485880d7f98509e9fa204bdc283aa607d3cff39b23522b26c37",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ftbquests/quests/chapters/artifacts.snbt",
+          "size": 69771
+        },
+        {
+          "path": "config/ftbquests/quests/chapters/hayat_kalitesi.snbt",
+          "hash": "06729f5ee30b85c424e2837cd8611703d52abdb7cc44a9ebb812e1e1c6fa8f1a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ftbquests/quests/chapters/hayat_kalitesi.snbt",
+          "size": 7500
+        },
+        {
+          "path": "config/ftbquests/quests/chapters/iron_spells_n_spellbooks.snbt",
+          "hash": "081a39f36c604ce5d6ece4ea4717f768bec0316fde670f194ff4a6f342081b7a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ftbquests/quests/chapters/iron_spells_n_spellbooks.snbt",
+          "size": 27948
+        },
+        {
+          "path": "config/ftbquests/quests/chapters/sophisticated_backpacks.snbt",
+          "hash": "d85bfdc16cce8d78485e11e4595377ce5adfdfe52737d28b83db59902a3e4522",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ftbquests/quests/chapters/sophisticated_backpacks.snbt",
+          "size": 15904
+        },
+        {
+          "path": "config/ftbquests/quests/chapters/thermal_series.snbt",
+          "hash": "16332aa2cea40d183f6f3dca3d871de6343c6f50db25facdb59369a635b27ac7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ftbquests/quests/chapters/thermal_series.snbt",
+          "size": 14419
+        },
+        {
+          "path": "config/ftbquests/quests/chapters/ucmaca.snbt",
+          "hash": "b719b5b654dff75de4eb9abb9edbc1b066fb9599795b43b1cc78877a8ae7a0d3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ftbquests/quests/chapters/ucmaca.snbt",
+          "size": 13733
+        },
+        {
+          "path": "config/ftbquests/quests/chapters/valkyrien_skies.snbt",
+          "hash": "1b8d0add11e6b8bd3d5b536306e0a7fb837c34d854b0cebe83b84c3eafe88d1e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/ftbquests/quests/chapters/valkyrien_skies.snbt",
+          "size": 231
+        },
+        {
+          "path": "config/fancymenu/slideshows/mainslideshow/images/image_1.jpeg",
+          "hash": "8a8cc955ad41f41875e301c0b4b110ec79308b81bba7c94eef3ab4198958bb32",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/slideshows/mainslideshow/images/image_1.jpeg",
+          "size": 65151
+        },
+        {
+          "path": "config/fancymenu/slideshows/mainslideshow/images/image_2.jpg",
+          "hash": "28e39597e40f8fd819780502cd773b140edef301278de291eda2f0178425117a",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/fancymenu/slideshows/mainslideshow/images/image_2.jpg",
+          "size": 5214
+        },
+        {
+          "path": "config/jei/world/local/New_World/bookmarks.ini",
+          "hash": "f553ea22038ad4ab2437f3663fd63ab038bc65d0a885712f8aac90c3f3307c57",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jei/world/local/New_World/bookmarks.ini",
+          "size": 437
+        },
+        {
+          "path": "config/jei/world/local/sdasda/bookmarks.ini",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/config/jei/world/local/sdasda/bookmarks.ini",
+          "size": 0
+        },
+        {
+          "path": "kubejs/README.txt",
+          "hash": "989f3737ae4621b8ff6730bce4cbeeee756921e7e510e0c281c8a350501d98af",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/README.txt",
+          "size": 1203
+        },
+        {
+          "path": "kubejs/client_scripts/example.js",
+          "hash": "152019ed6e0410a82805a95ea10f1ad1a17beaf2b50864d89b8fa9d172129ac7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/client_scripts/example.js",
+          "size": 126
+        },
+        {
+          "path": "kubejs/config/client.properties",
+          "hash": "f45835e4734ca6f56b7f7153b825f83cad48190fd59230b57aa19bc5d631ed9d",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/config/client.properties",
+          "size": 375
+        },
+        {
+          "path": "kubejs/config/common.properties",
+          "hash": "60e5773b35bd443f9ee8512187ad1fbc3c02163a73e4b715f6b69aa0c435db65",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/config/common.properties",
+          "size": 342
+        },
+        {
+          "path": "kubejs/server_scripts/example.js",
+          "hash": "a19b7c81a150bd965b153ded9c45ee7649eaad9e10d0a5ec1d662e7b15ceadb2",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/server_scripts/example.js",
+          "size": 126
+        },
+        {
+          "path": "kubejs/startup_scripts/example.js",
+          "hash": "395c96d3ddd178821db851f387e91560e606ea752177f66d2016f12bd0542b8f",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/startup_scripts/example.js",
+          "size": 127
+        },
+        {
+          "path": "kubejs/assets/kubejs/textures/block/example_block.png",
+          "hash": "783d78bd1ee61d3b32273670dff9d82c34cd74c5ae899a10f104f473828d5bbc",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/block/example_block.png",
+          "size": 247
+        },
+        {
+          "path": "kubejs/assets/kubejs/textures/item/alasimlarenejatbaba.png",
+          "hash": "cfc3a1f65dc1817a740b6a765c01f5a28dcc8dcbcacd15bcd0f0139425ff9e00",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/item/alasimlarenejatbaba.png",
+          "size": 85690
+        },
+        {
+          "path": "kubejs/assets/kubejs/textures/item/bozkurt_boxer_hd.png",
+          "hash": "280020998b29642866cdb2afa9b80d69af82378caf9da3666c147f4739da6fb7",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/item/bozkurt_boxer_hd.png",
+          "size": 77631
+        },
+        {
+          "path": "kubejs/assets/kubejs/textures/item/enerjiuretimienejatbaba.png",
+          "hash": "9aad50086bd64cfff81075e804b90f7cee0b6ec2512af9fa3c084bc217f1d2f3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/item/enerjiuretimienejatbaba.png",
+          "size": 72161
+        },
+        {
+          "path": "kubejs/assets/kubejs/textures/item/example_item.png",
+          "hash": "45a5f56eba6066ad05c70988a32b72c50cfeb6e35857739bd582007011ea002b",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/item/example_item.png",
+          "size": 372
+        },
+        {
+          "path": "kubejs/assets/kubejs/textures/item/iseyararmakinelernejatbaba.png",
+          "hash": "a9b76b984904d4bd9e86ce5e37cbbcf88acedb2564dc8ea6de6394e9cf17dde3",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/item/iseyararmakinelernejatbaba.png",
+          "size": 88872
+        },
+        {
+          "path": "kubejs/assets/kubejs/textures/item/madenislemenejatbaba.png",
+          "hash": "02922d89fc6ad2bc4bd66fd2db6ef4f5f223c24c0cfe62ed91d6c79efc3e5775",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/item/madenislemenejatbaba.png",
+          "size": 82353
+        },
+        {
+          "path": "kubejs/assets/kubejs/textures/item/thermalseriesmainnejatbaba.png",
+          "hash": "9d8648c660bb7cfe6b55002c254c6334ddea3047a270d5c7d1204f983196021e",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/item/thermalseriesmainnejatbaba.png",
+          "size": 1338692
+        },
+        {
+          "path": "kubejs/assets/kubejs/textures/item/ucak.png",
+          "hash": "6375fa6e55a00bc8ce4ce4f2e112a2aa78f423e590928bc303fdf7e2f32b84aa",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/kubejs/assets/kubejs/textures/item/ucak.png",
+          "size": 968493
+        },
+        {
+          "path": "defaultconfigs/ftbessentials-server.snbt",
+          "hash": "4444fa163e029565eb76f6aa55940e99cfcf21727778dd6fcca4f22e1b62e5f6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/defaultconfigs/ftbessentials-server.snbt",
+          "size": 237
+        },
+        {
+          "path": "defaultconfigs/ftblibrary/ftblibrary-client.snbt",
+          "hash": "ab6bcad040f138406197f70cfe9a041832feaddf7e87954d9a5f4b13b6a962f9",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/defaultconfigs/ftblibrary/ftblibrary-client.snbt",
+          "size": 157
+        },
+        {
+          "path": "defaultconfigs/ftbquests/client-config.snbt",
+          "hash": "4ce84f0da35036f810959086ea1043062993bf34ae704fc9cd4f1a67810090a6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/defaultconfigs/ftbquests/client-config.snbt",
+          "size": 163
+        },
+        {
+          "path": "defaultconfigs/ftbultimine/ftbultimine-client.snbt",
+          "hash": "0af4a5c9c743c56273b8594f9bf1f57a4adab850c4ac1356b615750b8bb649c6",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/defaultconfigs/ftbultimine/ftbultimine-client.snbt",
+          "size": 158
+        },
+        {
+          "path": "defaultconfigs/ftbultimine/ftbultimine-server.snbt",
+          "hash": "7dffdbaf75c63282e7a1c4f239a36b77be3c71d2c57368b435ffe135baf368b8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/defaultconfigs/ftbultimine/ftbultimine-server.snbt",
+          "size": 180
+        },
+        {
+          "path": "defaultconfigs/ftbxmodcompat/ftbxmodcompat.snbt",
+          "hash": "9e5046ac0b9f6d27945b689657835bff24310aec7b11f7461c972b514d0e0658",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/defaultconfigs/ftbxmodcompat/ftbxmodcompat.snbt",
+          "size": 154
+        },
+        {
+          "path": "fancymenu_data/last_world.fmdata",
+          "hash": "9587fc88136a7372349e50028b7161b439df838d870b86d61bc8fe540b3f1422",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/fancymenu_data/last_world.fmdata",
+          "size": 130
+        },
+        {
+          "path": "fancymenu_data/buddy/buddy_leveling.json",
+          "hash": "c79892b2e4d4e3d88bf708dd43000ede9759728a1f612d58acc26b7d984f8b50",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/fancymenu_data/buddy/buddy_leveling.json",
+          "size": 1619
+        },
+        {
+          "path": "fancymenu_data/buddy/buddy_save.json",
+          "hash": "60f472bb678fc66a64c62706bd3ff8e8ecb264599932e2d181842cade08722c8",
+          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/fancymenu_data/buddy/buddy_save.json",
+          "size": 260
+        }
+      ]
+    }
+  }
+}
