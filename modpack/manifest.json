@@ -1,902 +1,8 @@
 {
   "instances": {
     "AGLR": {
-      "updatedAt": "2026-06-14T19:15:24.535Z",
+      "updatedAt": "2026-06-16T20:26:16.091Z",
       "files": [
-        {
-          "path": "mods/ad_astra-forge-1.20.1-1.15.20.jar",
-          "hash": "99e274894af7c3b01622a74775a9960b5857b35951888414e733f8c2ec683f26",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ad_astra-forge-1.20.1-1.15.20.jar",
-          "size": 7508861
-        },
-        {
-          "path": "mods/alltheleaks-1.1.1+1.20.1-forge.jar",
-          "hash": "7b8e945da294b745e6aed9f88f28e232a767e032d7c2b8137a8ef36421d9fb33",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/alltheleaks-1.1.1+1.20.1-forge.jar",
-          "size": 1187126
-        },
-        {
-          "path": "mods/allurement-1.20.1-4.0.0.jar",
-          "hash": "05abd3a63b80649148853f6418896649287e64c2a491630f158d2455689db48e",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/allurement-1.20.1-4.0.0.jar",
-          "size": 637694
-        },
-        {
-          "path": "mods/AmbientEnvironment-forge-1.20.1-11.0.0.1.jar",
-          "hash": "4889e05ade9095a40886db99e33abbbc50ccd931ae5052db6180da896c68d75d",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/AmbientEnvironment-forge-1.20.1-11.0.0.1.jar",
-          "size": 7336
-        },
-        {
-          "path": "mods/AmbientSounds_FORGE_v6.3.4_mc1.20.1.jar",
-          "hash": "1368504e00bc50ba268d0f73558176889000ce11cad42dbab12e33a59d645495",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/AmbientSounds_FORGE_v6.3.4_mc1.20.1.jar",
-          "size": 53428834
-        },
-        {
-          "path": "mods/appleskin-forge-mc1.20.1-2.5.1.jar",
-          "hash": "e12419e43e3babc810af289403c5cd96bd7f09809b389acc6bb2f122b4b2a426",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/appleskin-forge-mc1.20.1-2.5.1.jar",
-          "size": 47428
-        },
-        {
-          "path": "mods/Aquaculture-1.20.1-2.5.7.jar",
-          "hash": "4c96cf0dd3363a8e15f9ef6b6bfc00ac7d4791e8e9eeebe19b8092c59e800f8f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Aquaculture-1.20.1-2.5.7.jar",
-          "size": 601839
-        },
-        {
-          "path": "mods/architectury-9.2.14-forge.jar",
-          "hash": "218b471d0b8a1f6cda14cfc1beb9eeb0df54304500acc6c5613d9b88ec65d9af",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/architectury-9.2.14-forge.jar",
-          "size": 580602
-        },
-        {
-          "path": "mods/ars_additions-1.20.1-1.6.7.jar",
-          "hash": "35639890eefa1ed6635f83ca16b80aeddaa400f2b2340567499e34667a63b428",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ars_additions-1.20.1-1.6.7.jar",
-          "size": 1287601
-        },
-        {
-          "path": "mods/ars_elemental-1.20.1-0.6.7.9.jar",
-          "hash": "57cb38746f3751e902bdfbe9856d3e80d9badb7c9a52bc2806ee84be767817d8",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ars_elemental-1.20.1-0.6.7.9.jar",
-          "size": 1584201
-        },
-        {
-          "path": "mods/ars_nouveau-1.20.1-4.12.7-all.jar",
-          "hash": "1f1debc282a0c379c1141f2840ea294eede6f6b544c589663f40bbe17b59a1af",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ars_nouveau-1.20.1-4.12.7-all.jar",
-          "size": 12430237
-        },
-        {
-          "path": "mods/artifacts-forge-9.5.19.jar",
-          "hash": "f1e4dc786866b6e4f2a48142f2acf63bb9bee54ac2f31621ad5d8f18ab54c7b0",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/artifacts-forge-9.5.19.jar",
-          "size": 850974
-        },
-        {
-          "path": "mods/athena-forge-1.20.1-3.1.2.jar",
-          "hash": "64eec9cffb8847a459536096ac396b135ffb07c7d9d13c6a47d9cd7b251276ab",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/athena-forge-1.20.1-3.1.2.jar",
-          "size": 91808
-        },
-        {
-          "path": "mods/balm-forge-1.20.1-7.3.38-all.jar",
-          "hash": "cbe8008218f0f574bc1f78b532cac5f978c33bf36ae2e14805340eab445fdb08",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/balm-forge-1.20.1-7.3.38-all.jar",
-          "size": 591397
-        },
-        {
-          "path": "mods/bellsandwhistles-0.4.5-1.20.x-Create6.0+.jar",
-          "hash": "90f102b26c410f9dfebf6ea5dfc0ec42b1ac5bde9d4634f5e038a5d17121eb2f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/bellsandwhistles-0.4.5-1.20.x-Create6.0+.jar",
-          "size": 199902
-        },
-        {
-          "path": "mods/bettercombat-forge-1.9.0+1.20.1.jar",
-          "hash": "49c69dccf2c641246b4e3deca81ebac21f0ee119e81fc713b838b8e33569eea1",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/bettercombat-forge-1.9.0+1.20.1.jar",
-          "size": 1054339
-        },
-        {
-          "path": "mods/BiomesOPlenty-1.20.1-18.0.0.592.jar",
-          "hash": "c587b49931e62f89c2673936a5e7269c6daabb713dbcc30813cb0f76da37e01d",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/BiomesOPlenty-1.20.1-18.0.0.592.jar",
-          "size": 21800460
-        },
-        {
-          "path": "mods/blueprint-1.20.1-7.1.3.jar",
-          "hash": "f21d3560ae3e5ee8c0482c43bcd78ea9909a23e5b2a38478b0b25f3d99270808",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/blueprint-1.20.1-7.1.3.jar",
-          "size": 1151213
-        },
-        {
-          "path": "mods/Bookshelf-Forge-1.20.1-20.2.15.jar",
-          "hash": "7980d4a0beed1dcd2c283cf65f3c93f6b0085833f3ac490014979c95f1dfaf67",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Bookshelf-Forge-1.20.1-20.2.15.jar",
-          "size": 343925
-        },
-        {
-          "path": "mods/Botania-1.20.1-451-FORGE.jar",
-          "hash": "741e221677eeae7061af14f18b042662f5de997ee8d8db2d7d04cc495bb4e51a",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Botania-1.20.1-451-FORGE.jar",
-          "size": 12201393
-        },
-        {
-          "path": "mods/BotanyPots-Forge-1.20.1-13.0.43.jar",
-          "hash": "55c0a1457d4ca107d5b1b005310df32672dad59b2ce0c4ca150c525848eed474",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/BotanyPots-Forge-1.20.1-13.0.43.jar",
-          "size": 1050211
-        },
-        {
-          "path": "mods/BotanyTrees-Forge-1.20.1-9.0.20.jar",
-          "hash": "21d09b967c0555e910b5e1fa52fb96ec95053e396871a005bdf3115def2b6032",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/BotanyTrees-Forge-1.20.1-9.0.20.jar",
-          "size": 261756
-        },
-        {
-          "path": "mods/botarium-forge-1.20.1-2.3.4.jar",
-          "hash": "470810a364ff4ad4d4fcd4e55798263938fc893970eacecc58e8b741a392b1cf",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/botarium-forge-1.20.1-2.3.4.jar",
-          "size": 157633
-        },
-        {
-          "path": "mods/catalogue-forge-1.20.1-1.8.0.jar",
-          "hash": "58445fc445546ab0db677edb9bf45bb87b99370e6483ee9080d816a9109cb210",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/catalogue-forge-1.20.1-1.8.0.jar",
-          "size": 240394
-        },
-        {
-          "path": "mods/catjammies-1.20.1-1.6.2.jar",
-          "hash": "d26d3ea962a5d02e82907a5818596f7c68187e0bd76e05b7b55b307fe3637152",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/catjammies-1.20.1-1.6.2.jar",
-          "size": 8260
-        },
-        {
-          "path": "mods/chipped-forge-1.20.1-3.0.7.jar",
-          "hash": "300e02535342b710fb34409821de9d097b0d8b17f56a57a17d75d05c4c1c5b63",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/chipped-forge-1.20.1-3.0.7.jar",
-          "size": 15060263
-        },
-        {
-          "path": "mods/cloth-config-11.1.136-forge.jar",
-          "hash": "1e895e85cf5b1e1905ef3178ec155c8badfe22a1577b92c09143a5aa1f4ce0f2",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/cloth-config-11.1.136-forge.jar",
-          "size": 1181413
-        },
-        {
-          "path": "mods/Clumps-forge-1.20.1-12.0.0.4.jar",
-          "hash": "1d1cfcf386f182b1d0bdbe4bd4fc57b96234e8c7468e95e1575ad4dd6433243a",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Clumps-forge-1.20.1-12.0.0.4.jar",
-          "size": 20299
-        },
-        {
-          "path": "mods/cofh_core-1.20.1-11.0.2.56.jar",
-          "hash": "d7cd3ec8083e294e17cb50fe607b416c1dc83ce885e53ba3995d86e028f790e0",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/cofh_core-1.20.1-11.0.2.56.jar",
-          "size": 1509649
-        },
-        {
-          "path": "mods/configured-forge-1.20.1-2.2.3.jar",
-          "hash": "05dceddd57825f911135c929504ef320b75953d05e7dc918dba58a0574e5315f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/configured-forge-1.20.1-2.2.3.jar",
-          "size": 418929
-        },
-        {
-          "path": "mods/constructionwand-1.20.1-2.11.jar",
-          "hash": "b55ca6f0e734bad848adb06949675136f1d05cb4fb3efdde084c9842c40e1eec",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/constructionwand-1.20.1-2.11.jar",
-          "size": 210312
-        },
-        {
-          "path": "mods/Controlling-forge-1.20.1-12.0.2.jar",
-          "hash": "516308a93824119f6a1ebc75425aa21ee8f8de0c331942793a054ba6d9c24944",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Controlling-forge-1.20.1-12.0.2.jar",
-          "size": 115280
-        },
-        {
-          "path": "mods/coroutil-forge-1.20.1-1.3.7.jar",
-          "hash": "11448808a42c17425cf2ea39701841008683d6ad6e2838a34eef0253251a870f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/coroutil-forge-1.20.1-1.3.7.jar",
-          "size": 64187
-        },
-        {
-          "path": "mods/CraterLib-Forge-1.20-3.1.0.jar",
-          "hash": "2097c83a7e672bdb19f9605aa679c2a26e9859d6afb397abfa1da846d8baa640",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/CraterLib-Forge-1.20-3.1.0.jar",
-          "size": 1353699
-        },
-        {
-          "path": "mods/create-1.20.1-6.0.8.jar",
-          "hash": "6fbb910c367dbce8e4fc7e5bf64b6edd4de980906ed00af8e47e4af843c0d9b0",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/create-1.20.1-6.0.8.jar",
-          "size": 19170905
-        },
-        {
-          "path": "mods/createaddition-1.20.1-1.3.3.jar",
-          "hash": "9bf3ae15d86ec95d128542caf10e4b5498e49ca02f725b9302d6daecd5eae1db",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/createaddition-1.20.1-1.3.3.jar",
-          "size": 1577313
-        },
-        {
-          "path": "mods/createbigcannons-5.11.2-mc.1.20.1-forge.jar",
-          "hash": "f94c0a70ab5f9c1bff4e2757a06484ae5fa21462cf3a46b906bc903e7f7fa3b9",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/createbigcannons-5.11.2-mc.1.20.1-forge.jar",
-          "size": 4040940
-        },
-        {
-          "path": "mods/create_jetpack-forge-4.4.6.jar",
-          "hash": "6a746d1278696924eec33152a391c9c073b627c4a224e9b45d99cb42c5206337",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/create_jetpack-forge-4.4.6.jar",
-          "size": 638327
-        },
-        {
-          "path": "mods/CreativeCore_FORGE_v2.12.35_mc1.20.1.jar",
-          "hash": "2c5e9efe5b256b35be24dafea2f8e26e829793fc144e95eeceabf9f1f4e601f2",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/CreativeCore_FORGE_v2.12.35_mc1.20.1.jar",
-          "size": 1143788
-        },
-        {
-          "path": "mods/cristellib-1.1.6-forge.jar",
-          "hash": "3856ad565ea45d6189452d813e2f021b365b686d3b1adae5f747c56a1e535d9f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/cristellib-1.1.6-forge.jar",
-          "size": 431318
-        },
-        {
-          "path": "mods/cryonicconfig-forge-1.0.0+mc1.20.1.jar",
-          "hash": "51ffc8832eec0fce716ecab9cd148ca7408b63963a1728b06df45d8cfb2eb04a",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/cryonicconfig-forge-1.0.0+mc1.20.1.jar",
-          "size": 133781
-        },
-        {
-          "path": "mods/cupboard-1.20.1-3.7.jar",
-          "hash": "7c6069d42e3693dc4f80d06632f008fffe6f2507902dfca6c02bf035776ccaf3",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/cupboard-1.20.1-3.7.jar",
-          "size": 31643
-        },
-        {
-          "path": "mods/curios-forge-5.14.1+1.20.1.jar",
-          "hash": "1e817919a35b37cf30524aaec73f0ca5130452f23f168f844854df282eb8e51f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/curios-forge-5.14.1+1.20.1.jar",
-          "size": 398066
-        },
-        {
-          "path": "mods/drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar",
-          "hash": "5dc8087df6d6d8849fe1df5a6a342268a6986731ee801cb46a58d725d9e1e204",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar",
-          "size": 285003
-        },
-        {
-          "path": "mods/dungeons-and-taverns-3.0.3.f[Forge].jar",
-          "hash": "251b531ff2882c61a4c2eba3bd7b1683aa22b6c2d459e27bfde04a2948c99e1e",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/dungeons-and-taverns-3.0.3.f[Forge].jar",
-          "size": 13161907
-        },
-        {
-          "path": "mods/DungeonsAriseSevenSeas-1.20.x-1.0.2-forge.jar",
-          "hash": "4d8b2ee057d08cf13be96d05a08fc933e835d6c36395c692662871d4a1319be2",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/DungeonsAriseSevenSeas-1.20.x-1.0.2-forge.jar",
-          "size": 248169
-        },
-        {
-          "path": "mods/embeddium-0.3.31+mc1.20.1.jar",
-          "hash": "eed3d1325f2acc2fd4e69bb495e5ccb91d962126ac5330f0582ebc2a3daf47fb",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/embeddium-0.3.31+mc1.20.1.jar",
-          "size": 1320675
-        },
-        {
-          "path": "mods/EuphoriaPatcher-1.8.6-r5.7.1-forge.jar",
-          "hash": "0cb6eeeb379c78459d28fa2f1e4ee44b0bdb43617dc6e9e202f3be4da1610a85",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/EuphoriaPatcher-1.8.6-r5.7.1-forge.jar",
-          "size": 2779410
-        },
-        {
-          "path": "mods/eureka-1201-1.6.2.jar",
-          "hash": "ee50b17c40f3c100176a809c8f242d9d366e5895d6a92b4c8482ecd9b3ac68be",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/eureka-1201-1.6.2.jar",
-          "size": 462837
-        },
-        {
-          "path": "mods/fabric-api-0.92.6+1.11.14+1.20.1.jar",
-          "hash": "9b140af437581d32e5ee17d20f8fe882000e6a34cba85c152ae5bccc9570cc03",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/fabric-api-0.92.6+1.11.14+1.20.1.jar",
-          "size": 3065813
-        },
-        {
-          "path": "mods/factory_blocks-forge-1.4.0+mc1.20.1.jar",
-          "hash": "a21e9ff2f8add29e7368e933015406f8a3c91dc103bbf16783ea3a3850f23a75",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/factory_blocks-forge-1.4.0+mc1.20.1.jar",
-          "size": 808664
-        },
-        {
-          "path": "mods/fallingleaves-1.20.1-2.1.2.jar",
-          "hash": "6202d8241f01e21278fd5de644fd2e992824069f2cf0fc9dc6a74ab2218015b6",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/fallingleaves-1.20.1-2.1.2.jar",
-          "size": 124212
-        },
-        {
-          "path": "mods/fancymenu_forge_3.8.1_MC_1.20.1.jar",
-          "hash": "ba1ddf0f61def8ea87e7757ebb45f1390e1da0f7ebce1aff299b0a169b045858",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/fancymenu_forge_3.8.1_MC_1.20.1.jar",
-          "size": 4472193
-        },
-        {
-          "path": "mods/FarmersDelight-1.20.1-1.2.11.jar",
-          "hash": "9a2db05541f07e15a81d514f4f47627f1c738d0464c1885765aa460117909318",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/FarmersDelight-1.20.1-1.2.11.jar",
-          "size": 2963127
-        },
-        {
-          "path": "mods/FastLeafDecay-32.jar",
-          "hash": "ce48db06bfb5830c147969793771a8f8b5a5774b182543b906bc439efd4e9469",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/FastLeafDecay-32.jar",
-          "size": 9835
-        },
-        {
-          "path": "mods/ferritecore-6.0.1-forge.jar",
-          "hash": "9c2c9396a49e796d88497758caa4637d2bcbb433c318e2dd9cebcffbaf0f6c54",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ferritecore-6.0.1-forge.jar",
-          "size": 123034
-        },
-        {
-          "path": "mods/forbidden_arcanus-1.20.1-2.2.6.jar",
-          "hash": "f45d9d919b5e2ee2574fbfac340293420db80327c543dcf9c1b4fd3a79c8cc61",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/forbidden_arcanus-1.20.1-2.2.6.jar",
-          "size": 2783387
-        },
-        {
-          "path": "mods/FramedBlocks-9.4.3.jar",
-          "hash": "58f4a8d8fb759a9db8754d83461df1b7b2e94426888259286d3acc316e6c6589",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/FramedBlocks-9.4.3.jar",
-          "size": 4251314
-        },
-        {
-          "path": "mods/ftb-essentials-forge-2001.2.4.jar",
-          "hash": "e0022bfe29dc10e373947701dae1bc4ce75ee15fe21f6d89269677fbb9aebf73",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-essentials-forge-2001.2.4.jar",
-          "size": 157732
-        },
-        {
-          "path": "mods/ftb-filter-system-forge-20.0.1.jar",
-          "hash": "fcb7b312a010986a868a6645e4e395b2635383a2387297c7c134aa4250959e24",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-filter-system-forge-20.0.1.jar",
-          "size": 197884
-        },
-        {
-          "path": "mods/ftb-library-forge-2001.2.12.jar",
-          "hash": "f09335944fff8ca3ef37a40e0b125ffb6707759ede258c73f9ce9bac61bfbf96",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-library-forge-2001.2.12.jar",
-          "size": 780523
-        },
-        {
-          "path": "mods/ftb-quests-forge-2001.4.21.jar",
-          "hash": "b85384ac0435802f8a0afafcb62b37def97965fe3457e9e10ee6ec45e5896436",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-quests-forge-2001.4.21.jar",
-          "size": 1254018
-        },
-        {
-          "path": "mods/ftb-ranks-forge-2001.1.7.jar",
-          "hash": "ec654cb94b3be8217da91f114667d7b0170c7be2ed533ac7e4faa337d1f5b872",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-ranks-forge-2001.1.7.jar",
-          "size": 87362
-        },
-        {
-          "path": "mods/ftb-teams-forge-2001.3.2.jar",
-          "hash": "b1cb4d82ea9f137a87e12a7aaf3329619294b56f7d70337dfd557a76e10b6e07",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-teams-forge-2001.3.2.jar",
-          "size": 252579
-        },
-        {
-          "path": "mods/ftb-ultimine-forge-2001.1.8.jar",
-          "hash": "b80dde55b2c91fd27f09f15ed2aefb0756c7bd704316e488ae8a06b179e85730",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-ultimine-forge-2001.1.8.jar",
-          "size": 129653
-        },
-        {
-          "path": "mods/ftb-xmod-compat-forge-2.1.3.jar",
-          "hash": "16a8eb9de88d5c33d29cb076cc39dfb337b2c54348e1ef1efe9dd60cf85e5f72",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ftb-xmod-compat-forge-2.1.3.jar",
-          "size": 129725
-        },
-        {
-          "path": "mods/fusion-1.2.12-forge-mc1.20.1.jar",
-          "hash": "5cb039922e08ae6b8705d50e484a8759579025fb4f48413fa62d2056505fb45e",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/fusion-1.2.12-forge-mc1.20.1.jar",
-          "size": 544586
-        },
-        {
-          "path": "mods/geckolib-forge-1.20.1-4.8.3.jar",
-          "hash": "8b90e11871a58b63816e99c529e6c932bc88e6beb3fec97ad618e22217df3250",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/geckolib-forge-1.20.1-4.8.3.jar",
-          "size": 1039046
-        },
-        {
-          "path": "mods/gpumemleakfix-1.20.1-1.8.jar",
-          "hash": "a7019442f1b07b1a4a875fe404d04d162905cc7fd42e0b3c843aefc7b39efc46",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/gpumemleakfix-1.20.1-1.8.jar",
-          "size": 7997
-        },
-        {
-          "path": "mods/handcrafted-forge-1.20.1-3.0.6.jar",
-          "hash": "1da3c7c524bfb656bb370757af55f08f1678e8e1cb934e1c4c04aa773ed64a79",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/handcrafted-forge-1.20.1-3.0.6.jar",
-          "size": 7111059
-        },
-        {
-          "path": "mods/ImmediatelyFast-Forge-1.5.4+1.20.4.jar",
-          "hash": "da781a31b2c8d8a845ed48c89b6463f1df3f2c655de10d8d4f5bed8123ff68a8",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ImmediatelyFast-Forge-1.5.4+1.20.4.jar",
-          "size": 538992
-        },
-        {
-          "path": "mods/immersive_aircraft-1.4.0+1.20.1-forge.jar",
-          "hash": "45dd68b6707b3eeae0c958d0242b29ec03cdd0d8fc88af20761661ebf3c456cd",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/immersive_aircraft-1.4.0+1.20.1-forge.jar",
-          "size": 2428368
-        },
-        {
-          "path": "mods/inventoryessentials-forge-1.20.1-8.2.14.jar",
-          "hash": "aa0d1ff9a73ae0b5532239b683a4825fc86e83b343eaad4e85b9c39ea2e77c07",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/inventoryessentials-forge-1.20.1-8.2.14.jar",
-          "size": 159489
-        },
-        {
-          "path": "mods/ironfurnaces-1.20.1-4.1.8.jar",
-          "hash": "e457052522cef1f8644b6929a64eab96de04ce9e6e32a715f1d68d79da26d66b",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ironfurnaces-1.20.1-4.1.8.jar",
-          "size": 612921
-        },
-        {
-          "path": "mods/irons_lib-1.20.1-1.0.2.jar",
-          "hash": "7c1afcd2772aa1ced0c30678a6bf1bf9c605a482d18e2b03d51152e05d4a2800",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/irons_lib-1.20.1-1.0.2.jar",
-          "size": 392806
-        },
-        {
-          "path": "mods/irons_spellbooks-1.20.1-3.15.6.jar",
-          "hash": "61996bb3cdb9601d83376f81295967f19a6f036563bb5a0e0f672967344a6fa7",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/irons_spellbooks-1.20.1-3.15.6.jar",
-          "size": 15178473
-        },
-        {
-          "path": "mods/Jade-1.20.1-Forge-11.13.2.jar",
-          "hash": "31949971a7a8d5a5bc95ad9d400cbedfd2d65ffbfb3cea7c0b2fa3b47431a0a5",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Jade-1.20.1-Forge-11.13.2.jar",
-          "size": 552486
-        },
-        {
-          "path": "mods/jamlib-forge-1.3.6+1.20.1.jar",
-          "hash": "76dc35be8260113f31c6696ebd8397e70cf4a9f638225d6e4d51c05e85d0a424",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/jamlib-forge-1.3.6+1.20.1.jar",
-          "size": 190810
-        },
-        {
-          "path": "mods/jei-1.20.1-forge-15.20.0.112.jar",
-          "hash": "2d3a86f503dbde51afa5142951525c37e227016ce8d9e7dfd10bbdd9233f0204",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/jei-1.20.1-forge-15.20.0.112.jar",
-          "size": 1385600
-        },
-        {
-          "path": "mods/journeymap-1.20.1-5.10.3-forge.jar",
-          "hash": "8b2679b7b4881e0aa430fd24345ea446de919faf8a45bd2a71d37c7e8ff6ae1e",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/journeymap-1.20.1-5.10.3-forge.jar",
-          "size": 7160405
-        },
-        {
-          "path": "mods/konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
-          "hash": "e78686b92c3761ec26eb9d3c53efdd3d6ca77981cbd3723995e1163b7103ae0b",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
-          "size": 625185
-        },
-        {
-          "path": "mods/kotlinforforge-4.12.0-all.jar",
-          "hash": "6a66c6a68ec09f8717cdbf06883394f0ee24d7cd826b7134a0f81839e8e720ae",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/kotlinforforge-4.12.0-all.jar",
-          "size": 7442998
-        },
-        {
-          "path": "mods/kubejs-forge-2001.6.5-build.26.jar",
-          "hash": "1769312192fbf9d72f45054ba61130523bfb471b5f480a4bff8c210ec09400bb",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/kubejs-forge-2001.6.5-build.26.jar",
-          "size": 1658792
-        },
-        {
-          "path": "mods/Mantle-1.20.1-1.11.104.jar",
-          "hash": "6052e47c3981064bd5213728eaa3c5418289f6f85b07a1cd4dd1505239248838",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Mantle-1.20.1-1.11.104.jar",
-          "size": 1625005
-        },
-        {
-          "path": "mods/mcw-doors-1.1.5-mc1.20.1forge.jar",
-          "hash": "e975bdd5ed1d680e37fb2a6cda4f4eb5c42a837fa24b0cddabe7688df42c10af",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-doors-1.1.5-mc1.20.1forge.jar",
-          "size": 1246753
-        },
-        {
-          "path": "mods/mcw-furniture-3.4.1-mc1.20.1forge.jar",
-          "hash": "9f068315ac5ae7c4b76a6ac0679cde9be59d5cbf37488a477f13b95fe1cbc37d",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-furniture-3.4.1-mc1.20.1forge.jar",
-          "size": 2174615
-        },
-        {
-          "path": "mods/mcw-mcwfences-1.2.1-mc1.20.1forge.jar",
-          "hash": "10deb617769e9674a767a3991af4c46afd081b5de42cee326f71ef2700a14313",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-mcwfences-1.2.1-mc1.20.1forge.jar",
-          "size": 708634
-        },
-        {
-          "path": "mods/mcw-mcwpaths-1.1.1-mc1.20.1forge.jar",
-          "hash": "9a809897462ca11c1920748b0fdf4555f05ef3650db1bd82016906795d068c9f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-mcwpaths-1.1.1-mc1.20.1forge.jar",
-          "size": 812573
-        },
-        {
-          "path": "mods/mcw-mcwstairs-1.0.2-mc1.20.1forge.jar",
-          "hash": "c952bf7b9eec89071d05da79f73459565847c65187b2f342fa0933c46605bfea",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-mcwstairs-1.0.2-mc1.20.1forge.jar",
-          "size": 554055
-        },
-        {
-          "path": "mods/mcw-mcwwindows-2.4.2-mc1.20.1forge.jar",
-          "hash": "7674d829d5a38d91ca68061e087fded92e976e3e461edcf75117e37a257e8f10",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-mcwwindows-2.4.2-mc1.20.1forge.jar",
-          "size": 1320692
-        },
-        {
-          "path": "mods/mcw-roofs-2.3.2-mc1.20.1forge.jar",
-          "hash": "3554317ad8d082a3d9fb5d8b387f5206e545323b4387ed1b93b7b3bf889def3f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-roofs-2.3.2-mc1.20.1forge.jar",
-          "size": 1864023
-        },
-        {
-          "path": "mods/mcw-trapdoors-1.1.5-mc1.20.1forge.jar",
-          "hash": "c2abff58334d79ea61278c6dffd941a4f4ceb5cffadf889359fd45a003738217",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mcw-trapdoors-1.1.5-mc1.20.1forge.jar",
-          "size": 604510
-        },
-        {
-          "path": "mods/melody_forge_1.0.3_MC_1.20.1-1.20.4.jar",
-          "hash": "933e2a7e79c4594f965f7f7d00b1f28a98ec2a180ad8f9f90310a266fe5cf5d8",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/melody_forge_1.0.3_MC_1.20.1-1.20.4.jar",
-          "size": 37178
-        },
-        {
-          "path": "mods/moonlight-1.20-2.16.30-forge.jar",
-          "hash": "056494483634004d4a82bcf95ef80ac0912ee0f88ccb7b29c7f71e6947aa71d1",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/moonlight-1.20-2.16.30-forge.jar",
-          "size": 1389600
-        },
-        {
-          "path": "mods/MouseTweaks-forge-mc1.20.1-2.25.1.jar",
-          "hash": "6c27d16aa715ac6613a55fc463739e2c7b78279e4e4c4cede299e4a2d4a70f08",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/MouseTweaks-forge-mc1.20.1-2.25.1.jar",
-          "size": 76237
-        },
-        {
-          "path": "mods/MyServerIsCompatible-1.20-1.0.jar",
-          "hash": "74bd64fe43eefa4a81006184b7558ceff20f6579597c0c35baeb44e70cfaaf51",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/MyServerIsCompatible-1.20-1.0.jar",
-          "size": 3482
-        },
-        {
-          "path": "mods/mysticaloaktree-1.20-1.11.jar",
-          "hash": "217f791ed65773a26f0563e45e15bed025e95b91e77f114169706777e6fb72d7",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/mysticaloaktree-1.20-1.11.jar",
-          "size": 231836
-        },
-        {
-          "path": "mods/NoChatReports-FORGE-1.20.1-v2.2.2.jar",
-          "hash": "ef7fa5096dfd492c3d3ae7228888ca4b92ce07d9b8e302297ceb2ceb1f8d238c",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/NoChatReports-FORGE-1.20.1-v2.2.2.jar",
-          "size": 272740
-        },
-        {
-          "path": "mods/Not Enough Recipe Book-FORGE-0.4.1+1.20.1.jar",
-          "hash": "8f05afb56310b21e91d2f1d1200a9c0d98a34a9689b9b6288a6507c0498b299d",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Not Enough Recipe Book-FORGE-0.4.1+1.20.1.jar",
-          "size": 21667
-        },
-        {
-          "path": "mods/notenoughanimations-forge-1.12.2-mc1.20.1.jar",
-          "hash": "4adf8422b1a480ca26b44c7e6d9a5962f47ed8d1945017afdf06dbb62bdbba9e",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/notenoughanimations-forge-1.12.2-mc1.20.1.jar",
-          "size": 1937545
-        },
-        {
-          "path": "mods/not_enough_glyphs-1.20.1-3.2.1.1.jar",
-          "hash": "db6e29a46abc6b47c69769213e92b6c23562c4b31a281661aef54d3420acfaa4",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/not_enough_glyphs-1.20.1-3.2.1.1.jar",
-          "size": 284404
-        },
-        {
-          "path": "mods/OctoLib-FORGE-0.5.0.1+1.20.1.jar",
-          "hash": "5bb146c691f2c5054752f006a61aab6335ecb1cd9718a9643733de5367971047",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/OctoLib-FORGE-0.5.0.1+1.20.1.jar",
-          "size": 424035
-        },
-        {
-          "path": "mods/oculus-mc1.20.1-1.8.0.jar",
-          "hash": "0945df0cba0f62b3901dd80c3268e5311b770ece78c78037a45db12ac0425fef",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/oculus-mc1.20.1-1.8.0.jar",
-          "size": 2851119
-        },
-        {
-          "path": "mods/Paraglider-forge-20.1.3.jar",
-          "hash": "3528e4d424682a415ae97b9597e5ed0567e5a194b4aeb30ae364e962da43b36a",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Paraglider-forge-20.1.3.jar",
-          "size": 589055
-        },
-        {
-          "path": "mods/Patchouli-1.20.1-85-FORGE.jar",
-          "hash": "05f7b5d52f6b8f0fd7f8b4822fa07a192d1394d83a264309c9d221d6d4fd21c5",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Patchouli-1.20.1-85-FORGE.jar",
-          "size": 642732
-        },
-        {
-          "path": "mods/PickUpNotifier-v8.0.0-1.20.1-Forge.jar",
-          "hash": "b343d2068413d895deb45417f56d2c823fe07b173879c1b03575eebfc189011d",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/PickUpNotifier-v8.0.0-1.20.1-Forge.jar",
-          "size": 102164
-        },
-        {
-          "path": "mods/Ping-Wheel-1.12.1-forge-1.20.1.jar",
-          "hash": "71692ad5d2b410ebcfbe3bb6bdf151c40ea75d012c75aff3c6c1a37abf9e8057",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Ping-Wheel-1.12.1-forge-1.20.1.jar",
-          "size": 157314
-        },
-        {
-          "path": "mods/player-animation-lib-forge-1.0.2-rc1+1.20.jar",
-          "hash": "90d9965cb9efdbda29fdc5610be3914cf7008bf5c392ff34f7ab25f96a852691",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/player-animation-lib-forge-1.0.2-rc1+1.20.jar",
-          "size": 181437
-        },
-        {
-          "path": "mods/PuzzlesLib-v8.1.33-1.20.1-Forge.jar",
-          "hash": "f3077a9f817629b8e8929c1951042d1a1adc62d30b72adebd54d2b074a4faf4f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/PuzzlesLib-v8.1.33-1.20.1-Forge.jar",
-          "size": 1342987
-        },
-        {
-          "path": "mods/Quark-4.0-462.jar",
-          "hash": "c90b96f049d92825c4a103721988c80d72e5ad380d17be46a0f53e114874c478",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Quark-4.0-462.jar",
-          "size": 14935230
-        },
-        {
-          "path": "mods/rarcompat-1.20.1-0.5.jar",
-          "hash": "2de2a9cfd21edf676072ca7432ff9acdd28f8e077fcac90a46d3dea8f82bf9f1",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/rarcompat-1.20.1-0.5.jar",
-          "size": 409926
-        },
-        {
-          "path": "mods/refinedstorage-1.12.4.jar",
-          "hash": "d8ae3926c2121336efcd6956c43d91f21ce405b77ac7c7201c559d4c19f380d2",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/refinedstorage-1.12.4.jar",
-          "size": 3300191
-        },
-        {
-          "path": "mods/refinedstorageaddons-0.10.0.jar",
-          "hash": "8371fe7932e88e3dd06401fd921a6ab2c52913287bd8994b096e47655c664491",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/refinedstorageaddons-0.10.0.jar",
-          "size": 33771
-        },
-        {
-          "path": "mods/relics-1.20.1-0.8.0.13.jar",
-          "hash": "2731d3b81533564c5d206faf94e4e8afaf928d97b47b720e5d6aaa017333096f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/relics-1.20.1-0.8.0.13.jar",
-          "size": 1521089
-        },
-        {
-          "path": "mods/resourcefulconfig-forge-1.20.1-2.1.3.jar",
-          "hash": "c404b9e5cf8595427a72d4ca6ee5730289168762b463f169be3ae5dfe3727ded",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/resourcefulconfig-forge-1.20.1-2.1.3.jar",
-          "size": 136923
-        },
-        {
-          "path": "mods/resourcefullib-forge-1.20.1-2.1.29.jar",
-          "hash": "b13afb95231d88e1caea5a045967e0fc291b29020b0d26ad39e6f9e9a551fee8",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/resourcefullib-forge-1.20.1-2.1.29.jar",
-          "size": 432753
-        },
-        {
-          "path": "mods/rhino-forge-2001.2.3-build.10.jar",
-          "hash": "fed2211429301bf043864183cab9ab8e92d4cc4dbb9e488ce6c75217c54584a6",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/rhino-forge-2001.2.3-build.10.jar",
-          "size": 1798244
-        },
-        {
-          "path": "mods/rightclickharvest-forge-4.6.1+1.20.1.jar",
-          "hash": "e7ae955174869497a7aa855cf859aba6f37abbb2a93b53e9e05935cf7709cc0a",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/rightclickharvest-forge-4.6.1+1.20.1.jar",
-          "size": 288408
-        },
-        {
-          "path": "mods/ritchiesprojectilelib-2.1.1-mc.1.20.1-forge.jar",
-          "hash": "5531ec454792f98993fa29d55f8810444ba3e9ef8f04331c5811b84ec8d0c3dc",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/ritchiesprojectilelib-2.1.1-mc.1.20.1-forge.jar",
-          "size": 78625
-        },
-        {
-          "path": "mods/Searchables-forge-1.20.1-1.0.3.jar",
-          "hash": "c1a76e93886210574d3f298c0461241fb711e52ac22c7a04d3236840f29e6576",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Searchables-forge-1.20.1-1.0.3.jar",
-          "size": 77732
-        },
-        {
-          "path": "mods/SimpleDiscordLink-Universal-3.4.0.jar",
-          "hash": "7c9dc5cf71595cd1fab6b0b20f8b350b4d73552fb5c8c1d030f4938115565197",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/SimpleDiscordLink-Universal-3.4.0.jar",
-          "size": 10067135
-        },
-        {
-          "path": "mods/SimpleRPC-4.1.0+hotfix.1.jar",
-          "hash": "57b072f82a8fc4f252f349bae102cd9f7f87003696e6441584a8fea6d2b06e75",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/SimpleRPC-4.1.0+hotfix.1.jar",
-          "size": 714318
-        },
-        {
-          "path": "mods/sophisticatedbackpacks-1.20.1-3.24.35.1675.jar",
-          "hash": "df1c4c879c8ab812725fee94b499f2381c3b65d97d70545519d41f9047dfe727",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/sophisticatedbackpacks-1.20.1-3.24.35.1675.jar",
-          "size": 1018674
-        },
-        {
-          "path": "mods/sophisticatedcore-1.20.1-1.3.21.1676.jar",
-          "hash": "194c14e3f32efbd3d5f17bd5b669d535f6ffda14cc11aa9551236b7d869bb210",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/sophisticatedcore-1.20.1-1.3.21.1676.jar",
-          "size": 1435469
-        },
-        {
-          "path": "mods/sophisticatedstorage-1.20.1-1.4.36.1621.jar",
-          "hash": "9d99bb5c08d552d062c72ba7711bb0504d2475878c263da99734b70a19d7e183",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/sophisticatedstorage-1.20.1-1.4.36.1621.jar",
-          "size": 1672209
-        },
-        {
-          "path": "mods/structureessentials-1.20.1-4.9.jar",
-          "hash": "8702ec8a82920920fefb25d47cb9150f59eaea8a5dfe3f344dfedd0adf044637",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/structureessentials-1.20.1-4.9.jar",
-          "size": 62733
-        },
-        {
-          "path": "mods/supplementaries-1.20-3.1.43-forge.jar",
-          "hash": "6132fc23a2fe1da0ca57439b35526ee9a1a8d898397ff8e61b2d08fb951cdf6a",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/supplementaries-1.20-3.1.43-forge.jar",
-          "size": 13667742
-        },
-        {
-          "path": "mods/suppsquared-1.20-1.1.29.jar",
-          "hash": "a972bcd468df4151d26bdfe5602e6e16fbd22efa23ba222e136d8b90c533d6bd",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/suppsquared-1.20-1.1.29.jar",
-          "size": 922956
-        },
-        {
-          "path": "mods/TConstruct-1.20.1-3.11.2.166.jar",
-          "hash": "653b49d73481a1325ba78adc7273dee6c765a51bafdf264a7510576d6ef91c43",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/TConstruct-1.20.1-3.11.2.166.jar",
-          "size": 21572031
-        },
-        {
-          "path": "mods/TerraBlender-forge-1.20.1-3.0.1.10.jar",
-          "hash": "c109016f46ca9bdae69976bf080bbf2e8e5968cb66c0a78845f8ca6af5dbbeb1",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/TerraBlender-forge-1.20.1-3.0.1.10.jar",
-          "size": 107532
-        },
-        {
-          "path": "mods/thermal_dynamics-1.20.1-11.0.1.23.jar",
-          "hash": "1eb755e77b8bbdf5fef16c1b725002d2b47520b544e49f1274724986ab677ca0",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/thermal_dynamics-1.20.1-11.0.1.23.jar",
-          "size": 622948
-        },
-        {
-          "path": "mods/thermal_expansion-1.20.1-11.0.1.29.jar",
-          "hash": "f44d9e2476deb0ce2700c3837aa6e99c6a6bc95bc2d89d69ebe34b6c3a612633",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/thermal_expansion-1.20.1-11.0.1.29.jar",
-          "size": 574141
-        },
-        {
-          "path": "mods/thermal_foundation-1.20.1-11.0.6.70.jar",
-          "hash": "8cb610abb3c835b47f9b4ec19be6a54104d1f61230b67a9d5bfd097c5ac45823",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/thermal_foundation-1.20.1-11.0.6.70.jar",
-          "size": 4549423
-        },
-        {
-          "path": "mods/thermal_innovation-1.20.1-11.0.1.23.jar",
-          "hash": "cb9ae2b7184b01441687a9fd7ca534d861b37b46934003dc14f2675bc844150f",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/thermal_innovation-1.20.1-11.0.1.23.jar",
-          "size": 225344
-        },
-        {
-          "path": "mods/thermal_integration-1.20.1-11.0.1.27.jar",
-          "hash": "c0b8004499a5c4f8cb42abad96c6be1f8ee49af6f756a72cef7c828199c570d4",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/thermal_integration-1.20.1-11.0.1.27.jar",
-          "size": 333350
-        },
-        {
-          "path": "mods/toms_storage-1.20-1.7.1.jar",
-          "hash": "08552be86f960111e501227707dc089c91b8a55f6c1be09baee188338576ff9b",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/toms_storage-1.20-1.7.1.jar",
-          "size": 520148
-        },
-        {
-          "path": "mods/Towns-and-Towers-1.12-Fabric+Forge.jar",
-          "hash": "9c8115af7109579da990249fdd67b38323a45be70f8a3a962b61da69c7021984",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Towns-and-Towers-1.12-Fabric+Forge.jar",
-          "size": 2864275
-        },
-        {
-          "path": "mods/twilightforest-1.20.1-4.3.2508-universal.jar",
-          "hash": "0bdc89263616d1b35c32ef82c5e9c14cbd20368e2fe8b468c72a28320be7a778",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/twilightforest-1.20.1-4.3.2508-universal.jar",
-          "size": 23332091
-        },
-        {
-          "path": "mods/valhelsia_core-forge-1.20.1-1.1.2.jar",
-          "hash": "d52ae1941c76ff57ee61943b38b5ae95a1e4bffa39604946bee1cfe52964f690",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/valhelsia_core-forge-1.20.1-1.1.2.jar",
-          "size": 203313
-        },
-        {
-          "path": "mods/valkyrienskies-120-2.4.11.jar",
-          "hash": "f99f24de62015451a047f90484cf9d25970cac350105b581c22b2d5247ebfd53",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/valkyrienskies-120-2.4.11.jar",
-          "size": 27752937
-        },
-        {
-          "path": "mods/voicechat-forge-1.20.1-2.6.16.jar",
-          "hash": "5e43dbd4db21a3f3c6d97182a342cc602f8f3c70669ed63cfc37e42bfd84c1c9",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/voicechat-forge-1.20.1-2.6.16.jar",
-          "size": 4903006
-        },
-        {
-          "path": "mods/watut-forge-1.20.1-1.2.3.jar",
-          "hash": "19a7291187e1074dac0ade56f95cdb84936e8563c55afdc0b86c90ea7cd80a9e",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/watut-forge-1.20.1-1.2.3.jar",
-          "size": 435496
-        },
-        {
-          "path": "mods/waystones-forge-1.20.1-14.1.20.jar",
-          "hash": "5ecc6535596b5954f6293224be6b35805c64f4d4aedc2b9e32d9508dd529cabd",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/waystones-forge-1.20.1-14.1.20.jar",
-          "size": 533738
-        },
-        {
-          "path": "mods/YungsApi-1.20-Forge-4.0.6.jar",
-          "hash": "101c30d01d0cf9d86190f578eb1e43bd06b64092e95662a00ef52946f472c7b1",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/YungsApi-1.20-Forge-4.0.6.jar",
-          "size": 370524
-        },
-        {
-          "path": "mods/YungsBetterMineshafts-1.20-Forge-4.0.4.jar",
-          "hash": "6632e7bcc58325098e85bcb755483de7cb3af92a5ea548f3b5c0162cbf0dc1dc",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/YungsBetterMineshafts-1.20-Forge-4.0.4.jar",
-          "size": 492998
-        },
-        {
-          "path": "mods/YungsBetterStrongholds-1.20-Forge-4.0.3.jar",
-          "hash": "054b0a1be86510ed6bd05de66a29200f13f5603c0c9eb7e62074ddc3d19cb0e4",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/YungsBetterStrongholds-1.20-Forge-4.0.3.jar",
-          "size": 473564
-        },
-        {
-          "path": "mods/YungsCaveBiomes-1.20.1-Forge-2.0.5.jar",
-          "hash": "b799668cbbc0903e885f5b638119d0221186e5dbfe812eaf391f86ab8a97bd42",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/YungsCaveBiomes-1.20.1-Forge-2.0.5.jar",
-          "size": 13014967
-        },
-        {
-          "path": "mods/Zeta-1.0-31.jar",
-          "hash": "cd1786902a79434f8fd762d741019d9c8a79725fef7e30a89c153c934e1e6a9e",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/Zeta-1.0-31.jar",
-          "size": 1006518
-        },
-        {
-          "path": "mods/zmedievalmusic-1.20.1-2.2.jar",
-          "hash": "afe5d3d0b6623fb2df6622a76e8fc93d8ab8b32cd9384ca138dec1944049ac84",
-          "url": "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack/AGLR/mods/zmedievalmusic-1.20.1-2.2.jar",
-          "size": 304415885
-        },
         {
           "path": "config/ad_astra-client.jsonc",
           "hash": "eff1be886673bc30e4dde7030f6970915c5c1c648d671f81bae5c941025705b3",
@@ -3112,7 +2218,159 @@
           "size": 260
         }
       ],
-      "deletedFiles": []
+      "deletedFiles": [
+        "mods/ad_astra-forge-1.20.1-1.15.20.jar",
+        "mods/alltheleaks-1.1.1+1.20.1-forge.jar",
+        "mods/allurement-1.20.1-4.0.0.jar",
+        "mods/AmbientEnvironment-forge-1.20.1-11.0.0.1.jar",
+        "mods/AmbientSounds_FORGE_v6.3.4_mc1.20.1.jar",
+        "mods/appleskin-forge-mc1.20.1-2.5.1.jar",
+        "mods/Aquaculture-1.20.1-2.5.7.jar",
+        "mods/architectury-9.2.14-forge.jar",
+        "mods/ars_additions-1.20.1-1.6.7.jar",
+        "mods/ars_elemental-1.20.1-0.6.7.9.jar",
+        "mods/ars_nouveau-1.20.1-4.12.7-all.jar",
+        "mods/artifacts-forge-9.5.19.jar",
+        "mods/athena-forge-1.20.1-3.1.2.jar",
+        "mods/balm-forge-1.20.1-7.3.38-all.jar",
+        "mods/bellsandwhistles-0.4.5-1.20.x-Create6.0+.jar",
+        "mods/bettercombat-forge-1.9.0+1.20.1.jar",
+        "mods/BiomesOPlenty-1.20.1-18.0.0.592.jar",
+        "mods/blueprint-1.20.1-7.1.3.jar",
+        "mods/Bookshelf-Forge-1.20.1-20.2.15.jar",
+        "mods/Botania-1.20.1-451-FORGE.jar",
+        "mods/BotanyPots-Forge-1.20.1-13.0.43.jar",
+        "mods/BotanyTrees-Forge-1.20.1-9.0.20.jar",
+        "mods/botarium-forge-1.20.1-2.3.4.jar",
+        "mods/catalogue-forge-1.20.1-1.8.0.jar",
+        "mods/catjammies-1.20.1-1.6.2.jar",
+        "mods/chipped-forge-1.20.1-3.0.7.jar",
+        "mods/cloth-config-11.1.136-forge.jar",
+        "mods/Clumps-forge-1.20.1-12.0.0.4.jar",
+        "mods/cofh_core-1.20.1-11.0.2.56.jar",
+        "mods/configured-forge-1.20.1-2.2.3.jar",
+        "mods/constructionwand-1.20.1-2.11.jar",
+        "mods/Controlling-forge-1.20.1-12.0.2.jar",
+        "mods/coroutil-forge-1.20.1-1.3.7.jar",
+        "mods/CraterLib-Forge-1.20-3.1.0.jar",
+        "mods/create-1.20.1-6.0.8.jar",
+        "mods/createaddition-1.20.1-1.3.3.jar",
+        "mods/createbigcannons-5.11.2-mc.1.20.1-forge.jar",
+        "mods/create_jetpack-forge-4.4.6.jar",
+        "mods/CreativeCore_FORGE_v2.12.35_mc1.20.1.jar",
+        "mods/cristellib-1.1.6-forge.jar",
+        "mods/cryonicconfig-forge-1.0.0+mc1.20.1.jar",
+        "mods/cupboard-1.20.1-3.7.jar",
+        "mods/curios-forge-5.14.1+1.20.1.jar",
+        "mods/drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar",
+        "mods/dungeons-and-taverns-3.0.3.f[Forge].jar",
+        "mods/DungeonsAriseSevenSeas-1.20.x-1.0.2-forge.jar",
+        "mods/embeddium-0.3.31+mc1.20.1.jar",
+        "mods/EuphoriaPatcher-1.8.6-r5.7.1-forge.jar",
+        "mods/eureka-1201-1.6.2.jar",
+        "mods/fabric-api-0.92.6+1.11.14+1.20.1.jar",
+        "mods/factory_blocks-forge-1.4.0+mc1.20.1.jar",
+        "mods/fallingleaves-1.20.1-2.1.2.jar",
+        "mods/fancymenu_forge_3.8.1_MC_1.20.1.jar",
+        "mods/FarmersDelight-1.20.1-1.2.11.jar",
+        "mods/FastLeafDecay-32.jar",
+        "mods/ferritecore-6.0.1-forge.jar",
+        "mods/forbidden_arcanus-1.20.1-2.2.6.jar",
+        "mods/FramedBlocks-9.4.3.jar",
+        "mods/ftb-essentials-forge-2001.2.4.jar",
+        "mods/ftb-filter-system-forge-20.0.1.jar",
+        "mods/ftb-library-forge-2001.2.12.jar",
+        "mods/ftb-quests-forge-2001.4.21.jar",
+        "mods/ftb-ranks-forge-2001.1.7.jar",
+        "mods/ftb-teams-forge-2001.3.2.jar",
+        "mods/ftb-ultimine-forge-2001.1.8.jar",
+        "mods/ftb-xmod-compat-forge-2.1.3.jar",
+        "mods/fusion-1.2.12-forge-mc1.20.1.jar",
+        "mods/geckolib-forge-1.20.1-4.8.3.jar",
+        "mods/gpumemleakfix-1.20.1-1.8.jar",
+        "mods/handcrafted-forge-1.20.1-3.0.6.jar",
+        "mods/ImmediatelyFast-Forge-1.5.4+1.20.4.jar",
+        "mods/immersive_aircraft-1.4.0+1.20.1-forge.jar",
+        "mods/inventoryessentials-forge-1.20.1-8.2.14.jar",
+        "mods/ironfurnaces-1.20.1-4.1.8.jar",
+        "mods/irons_lib-1.20.1-1.0.2.jar",
+        "mods/irons_spellbooks-1.20.1-3.15.6.jar",
+        "mods/Jade-1.20.1-Forge-11.13.2.jar",
+        "mods/jamlib-forge-1.3.6+1.20.1.jar",
+        "mods/jei-1.20.1-forge-15.20.0.112.jar",
+        "mods/journeymap-1.20.1-5.10.3-forge.jar",
+        "mods/konkrete_forge_1.8.0_MC_1.20-1.20.1.jar",
+        "mods/kotlinforforge-4.12.0-all.jar",
+        "mods/kubejs-forge-2001.6.5-build.26.jar",
+        "mods/Mantle-1.20.1-1.11.104.jar",
+        "mods/mcw-doors-1.1.5-mc1.20.1forge.jar",
+        "mods/mcw-furniture-3.4.1-mc1.20.1forge.jar",
+        "mods/mcw-mcwfences-1.2.1-mc1.20.1forge.jar",
+        "mods/mcw-mcwpaths-1.1.1-mc1.20.1forge.jar",
+        "mods/mcw-mcwstairs-1.0.2-mc1.20.1forge.jar",
+        "mods/mcw-mcwwindows-2.4.2-mc1.20.1forge.jar",
+        "mods/mcw-roofs-2.3.2-mc1.20.1forge.jar",
+        "mods/mcw-trapdoors-1.1.5-mc1.20.1forge.jar",
+        "mods/melody_forge_1.0.3_MC_1.20.1-1.20.4.jar",
+        "mods/moonlight-1.20-2.16.30-forge.jar",
+        "mods/MouseTweaks-forge-mc1.20.1-2.25.1.jar",
+        "mods/MyServerIsCompatible-1.20-1.0.jar",
+        "mods/mysticaloaktree-1.20-1.11.jar",
+        "mods/NoChatReports-FORGE-1.20.1-v2.2.2.jar",
+        "mods/Not Enough Recipe Book-FORGE-0.4.1+1.20.1.jar",
+        "mods/notenoughanimations-forge-1.12.2-mc1.20.1.jar",
+        "mods/not_enough_glyphs-1.20.1-3.2.1.1.jar",
+        "mods/OctoLib-FORGE-0.5.0.1+1.20.1.jar",
+        "mods/oculus-mc1.20.1-1.8.0.jar",
+        "mods/Paraglider-forge-20.1.3.jar",
+        "mods/Patchouli-1.20.1-85-FORGE.jar",
+        "mods/PickUpNotifier-v8.0.0-1.20.1-Forge.jar",
+        "mods/Ping-Wheel-1.12.1-forge-1.20.1.jar",
+        "mods/player-animation-lib-forge-1.0.2-rc1+1.20.jar",
+        "mods/PuzzlesLib-v8.1.33-1.20.1-Forge.jar",
+        "mods/Quark-4.0-462.jar",
+        "mods/rarcompat-1.20.1-0.5.jar",
+        "mods/refinedstorage-1.12.4.jar",
+        "mods/refinedstorageaddons-0.10.0.jar",
+        "mods/relics-1.20.1-0.8.0.13.jar",
+        "mods/resourcefulconfig-forge-1.20.1-2.1.3.jar",
+        "mods/resourcefullib-forge-1.20.1-2.1.29.jar",
+        "mods/rhino-forge-2001.2.3-build.10.jar",
+        "mods/rightclickharvest-forge-4.6.1+1.20.1.jar",
+        "mods/ritchiesprojectilelib-2.1.1-mc.1.20.1-forge.jar",
+        "mods/Searchables-forge-1.20.1-1.0.3.jar",
+        "mods/SimpleDiscordLink-Universal-3.4.0.jar",
+        "mods/SimpleRPC-4.1.0+hotfix.1.jar",
+        "mods/sophisticatedbackpacks-1.20.1-3.24.35.1675.jar",
+        "mods/sophisticatedcore-1.20.1-1.3.21.1676.jar",
+        "mods/sophisticatedstorage-1.20.1-1.4.36.1621.jar",
+        "mods/structureessentials-1.20.1-4.9.jar",
+        "mods/supplementaries-1.20-3.1.43-forge.jar",
+        "mods/suppsquared-1.20-1.1.29.jar",
+        "mods/TConstruct-1.20.1-3.11.2.166.jar",
+        "mods/TerraBlender-forge-1.20.1-3.0.1.10.jar",
+        "mods/thermal_dynamics-1.20.1-11.0.1.23.jar",
+        "mods/thermal_expansion-1.20.1-11.0.1.29.jar",
+        "mods/thermal_foundation-1.20.1-11.0.6.70.jar",
+        "mods/thermal_innovation-1.20.1-11.0.1.23.jar",
+        "mods/thermal_integration-1.20.1-11.0.1.27.jar",
+        "mods/toms_storage-1.20-1.7.1.jar",
+        "mods/Towns-and-Towers-1.12-Fabric+Forge.jar",
+        "mods/twilightforest-1.20.1-4.3.2508-universal.jar",
+        "mods/valhelsia_core-forge-1.20.1-1.1.2.jar",
+        "mods/valkyrienskies-120-2.4.11.jar",
+        "mods/voicechat-forge-1.20.1-2.6.16.jar",
+        "mods/watut-forge-1.20.1-1.2.3.jar",
+        "mods/waystones-forge-1.20.1-14.1.20.jar",
+        "mods/YungsApi-1.20-Forge-4.0.6.jar",
+        "mods/YungsBetterMineshafts-1.20-Forge-4.0.4.jar",
+        "mods/YungsBetterStrongholds-1.20-Forge-4.0.3.jar",
+        "mods/YungsCaveBiomes-1.20.1-Forge-2.0.5.jar",
+        "mods/Zeta-1.0-31.jar",
+        "mods/zmedievalmusic-1.20.1-2.2.jar"
+      ],
+      "modsVersion": "v0.2",
+      "modsUrl": "https://github.com/vuluvulu1/vulu-launcher/releases/download/mods-AGLR-v1.0/AGLR-mods.zip"
     }
   }
 }
