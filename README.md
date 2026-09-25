@@ -2,4 +2,4 @@
 
 A private minecraft launcher for me and my friends. 
 
-***abandoned** for now.* 
+***abandoned** and **not working properly** for now.* 
