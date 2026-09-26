@@ -9,7 +9,7 @@ namespace AGLR_Launcher
     /// </summary>
     public class LauncherUpdateService
     {
-        private const string LocalVersion = "0.8";
+        private const string LocalVersion = "0.7";
         private const string ApiBase = "https://vulu-api.onrender.com"; // Deploy sonrası Render URL'si
 
         private static readonly HttpClient _http = new();

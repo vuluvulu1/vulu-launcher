@@ -1,53 +1,61 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\",
+  "WorkspaceRootPath": "D:\\vulu-launcher\\vulu Launcher\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\launchers\\vulu launcher\\yedek 17.06.26\\vulu launcher\\loginservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\vulu-launcher\\vulu launcher\\loginservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:loginservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\launchers\\vulu launcher\\yedek 17.06.26\\vulu launcher\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\vulu-launcher\\vulu launcher\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\properties\\settings.settings||{6D2695F9-5365-4A78-89ED-F205C045BFE6}",
-      "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:properties\\settings.settings||{6D2695F9-5365-4A78-89ED-F205C045BFE6}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\launchers\\vulu launcher\\yedek 17.06.26\\vulu launcher\\loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\launchers\\vulu launcher\\yedek 17.06.26\\vulu launcher\\launcherupdateservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:launcherupdateservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\adminpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:adminpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\launchers\\vulu launcher\\yedek 17.06.26\\vulu launcher\\credentialmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\vulu-launcher\\vulu launcher\\credentialmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:credentialmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\launchers\\vulu launcher\\yedek 17.06.26\\vulu launcher\\splashform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\vulu-launcher\\vulu launcher\\adminservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:adminservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\vulu-launcher\\vulu launcher\\adminpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:adminpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|D:\\vulu-launcher\\vulu Launcher\\adminpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:adminpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\vulu-launcher\\vulu launcher\\launcherupdateservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:launcherupdateservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|D:\\vulu-launcher\\vulu Launcher\\properties\\settings.settings||{6D2695F9-5365-4A78-89ED-F205C045BFE6}",
+      "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:properties\\settings.settings||{6D2695F9-5365-4A78-89ED-F205C045BFE6}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\vulu-launcher\\vulu launcher\\loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:loginform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\vulu-launcher\\vulu launcher\\splashform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:splashform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\launchers\\vulu launcher\\yedek 17.06.26\\vulu launcher\\splashform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\vulu-launcher\\vulu launcher\\splashform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:splashform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\launchers\\vulu launcher\\yedek 17.06.26\\vulu launcher\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|d:\\vulu-launcher\\vulu launcher\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|D:\\vulu-launcher\\vulu Launcher\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\splashform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|D:\\vulu-launcher\\vulu Launcher\\splashform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{906848D1-E85D-85C2-D408-84C8ED7A0080}|vulu Launcher.csproj|solutionrelative:splashform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
@@ -61,90 +69,41 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "CredentialManager.cs",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\CredentialManager.cs",
-              "RelativeDocumentMoniker": "CredentialManager.cs",
-              "ToolTip": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\CredentialManager.cs",
-              "RelativeToolTip": "CredentialManager.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAA7AAAAAAAAAA==",
+              "DocumentIndex": 4,
+              "Title": "AdminPanel.cs",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\AdminPanel.cs",
+              "RelativeDocumentMoniker": "AdminPanel.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\AdminPanel.cs",
+              "RelativeToolTip": "AdminPanel.cs",
+              "ViewState": "AgIAADUAAAAAAAAAAAAAALIAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-13T07:50:00.475Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Settings.settings",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\Properties\\Settings.settings",
-              "RelativeDocumentMoniker": "Properties\\Settings.settings",
-              "ToolTip": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\Properties\\Settings.settings",
-              "RelativeToolTip": "Properties\\Settings.settings",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002767|",
-              "WhenOpened": "2026-06-13T07:47:41.184Z",
+              "WhenOpened": "2026-09-26T00:38:47.68Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Form1.cs",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\Form1.cs",
-              "RelativeDocumentMoniker": "Form1.cs",
-              "ToolTip": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\Form1.cs",
-              "RelativeToolTip": "Form1.cs",
-              "ViewState": "AgIAAHcCAAAAAAAAAAAMwI8CAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-25T11:57:44.148Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\vulu Launcher\\yedek 13.06.26\\Updater\\Program.cs",
-              "RelativeDocumentMoniker": "..\\..\\..\\..\\vulu Launcher\\yedek 13.06.26\\Updater\\Program.cs",
-              "ToolTip": "D:\\vulu Launcher\\yedek 13.06.26\\Updater\\Program.cs",
-              "RelativeToolTip": "..\\..\\..\\..\\vulu Launcher\\yedek 13.06.26\\Updater\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-12T23:04:53.69Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "LoginForm.cs",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\LoginForm.cs",
-              "RelativeDocumentMoniker": "LoginForm.cs",
-              "ToolTip": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\LoginForm.cs",
-              "RelativeToolTip": "LoginForm.cs",
-              "ViewState": "AgIAAHcAAAAAAAAAAAA1wCcBAAAAAAAAAAAAAA==",
+              "Title": "AdminService.cs",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\AdminService.cs",
+              "RelativeDocumentMoniker": "AdminService.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\AdminService.cs",
+              "RelativeToolTip": "AdminService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAALAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-12T22:31:51.824Z",
+              "WhenOpened": "2026-09-26T00:23:59.424Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "LauncherUpdateService.cs",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\LauncherUpdateService.cs",
-              "RelativeDocumentMoniker": "LauncherUpdateService.cs",
-              "ToolTip": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\LauncherUpdateService.cs",
-              "RelativeToolTip": "LauncherUpdateService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAwAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-12T21:31:05Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 11,
               "Title": "Form1.Designer.cs",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\Form1.Designer.cs",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\Form1.Designer.cs",
               "RelativeDocumentMoniker": "Form1.Designer.cs",
-              "ToolTip": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\Form1.Designer.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\Form1.Designer.cs",
               "RelativeToolTip": "Form1.Designer.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -154,34 +113,22 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "LoginService.cs",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\LoginService.cs",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\LoginService.cs",
               "RelativeDocumentMoniker": "LoginService.cs",
-              "ToolTip": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\LoginService.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\LoginService.cs",
               "RelativeToolTip": "LoginService.cs",
-              "ViewState": "AgIAABIAAAAAAAAAAAA5wC4AAABKAAAAAAAAAA==",
+              "ViewState": "AgIAACsAAAAAAAAAAAAgwEcAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-12T22:18:23.506Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "AdminPanel.cs [Design]",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\AdminPanel.cs",
-              "RelativeDocumentMoniker": "AdminPanel.cs",
-              "ToolTip": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\AdminPanel.cs [Design]",
-              "RelativeToolTip": "AdminPanel.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-13T08:19:11.516Z",
-              "EditorCaption": " [Design]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 9,
               "Title": "SplashForm.Designer.cs",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\SplashForm.Designer.cs",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\SplashForm.Designer.cs",
               "RelativeDocumentMoniker": "SplashForm.Designer.cs",
-              "ToolTip": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\SplashForm.Designer.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\SplashForm.Designer.cs",
               "RelativeToolTip": "SplashForm.Designer.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -189,11 +136,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 10,
               "Title": "SplashForm.cs",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\SplashForm.cs",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\SplashForm.cs",
               "RelativeDocumentMoniker": "SplashForm.cs",
-              "ToolTip": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\SplashForm.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\SplashForm.cs",
               "RelativeToolTip": "SplashForm.cs",
               "ViewState": "AgIAAAsAAAAAAAAAAAAQwBwAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -202,25 +149,117 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "SplashForm.cs [Design]",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\SplashForm.cs",
-              "RelativeDocumentMoniker": "SplashForm.cs",
-              "ToolTip": "D:\\vulu Launcher\\yedek 13.06.26\\vulu Launcher\\SplashForm.cs [Design]",
-              "RelativeToolTip": "..\\..\\..\\..\\vulu Launcher\\yedek 13.06.26\\vulu Launcher\\SplashForm.cs [Design]",
+              "DocumentIndex": 1,
+              "Title": "Form1.cs",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\Form1.cs",
+              "RelativeDocumentMoniker": "Form1.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\Form1.cs",
+              "RelativeToolTip": "Form1.cs",
+              "ViewState": "AgIAAHYCAAAAAAAAAAAIwKACAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-09T22:44:46.242Z"
+              "WhenOpened": "2026-04-25T11:57:44.148Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Form1.cs [Design]",
-              "DocumentMoniker": "D:\\Launchers\\vulu Launcher\\yedek 17.06.26\\vulu Launcher\\Form1.cs",
-              "RelativeDocumentMoniker": "Form1.cs",
-              "ToolTip": "D:\\vulu Launcher\\yedek 13.06.26\\vulu Launcher\\Form1.cs [Design]",
-              "RelativeToolTip": "..\\..\\..\\..\\vulu Launcher\\yedek 13.06.26\\vulu Launcher\\Form1.cs [Design]",
+              "DocumentIndex": 5,
+              "Title": "AdminPanel.cs [Design]",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\AdminPanel.cs",
+              "RelativeDocumentMoniker": "AdminPanel.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\AdminPanel.cs [Design]",
+              "RelativeToolTip": "AdminPanel.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-25T12:49:15.11Z"
+              "WhenOpened": "2026-06-13T08:19:11.516Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "CredentialManager.cs",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\CredentialManager.cs",
+              "RelativeDocumentMoniker": "CredentialManager.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\CredentialManager.cs",
+              "RelativeToolTip": "CredentialManager.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAgwBQAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-13T07:50:00.475Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "LauncherUpdateService.cs",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\LauncherUpdateService.cs",
+              "RelativeDocumentMoniker": "LauncherUpdateService.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\LauncherUpdateService.cs",
+              "RelativeToolTip": "LauncherUpdateService.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAA9wAsAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-12T21:31:05Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "LoginForm.cs",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\LoginForm.cs",
+              "RelativeDocumentMoniker": "LoginForm.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\LoginForm.cs",
+              "RelativeToolTip": "LoginForm.cs",
+              "ViewState": "AgIAAHcAAAAAAAAAAAA1wCcBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-12T22:31:51.824Z"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\vulu Launcher\\yedek 13.06.26\\Updater\\Program.cs",
+              "RelativeDocumentMoniker": "..\\..\\vulu Launcher\\yedek 13.06.26\\Updater\\Program.cs",
+              "ToolTip": "D:\\vulu Launcher\\yedek 13.06.26\\Updater\\Program.cs",
+              "RelativeToolTip": "..\\..\\vulu Launcher\\yedek 13.06.26\\Updater\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-12T23:04:53.69Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Settings.settings",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\Properties\\Settings.settings",
+              "RelativeDocumentMoniker": "Properties\\Settings.settings",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\Properties\\Settings.settings",
+              "RelativeToolTip": "Properties\\Settings.settings",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002767|",
+              "WhenOpened": "2026-06-13T07:47:41.184Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "SplashForm.cs [Design]",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\SplashForm.cs",
+              "RelativeDocumentMoniker": "SplashForm.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\SplashForm.cs [Design]",
+              "RelativeToolTip": "SplashForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-09T22:44:46.242Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Form1.cs [Design]",
+              "DocumentMoniker": "D:\\vulu-launcher\\vulu Launcher\\Form1.cs",
+              "RelativeDocumentMoniker": "Form1.cs",
+              "ToolTip": "D:\\vulu-launcher\\vulu Launcher\\Form1.cs [Design]",
+              "RelativeToolTip": "Form1.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-25T12:49:15.11Z",
+              "EditorCaption": " [Design]"
             }
           ]
         }
