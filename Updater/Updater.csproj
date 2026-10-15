@@ -21,7 +21,8 @@
 
     <!-- Arayüz exe'nin içine gömülür; güncelleme sırasında diskteki dosyalar değişse de etkilenmez -->
     <EmbeddedResource Include="ui\updater.html" LogicalName="updater.html" />
-    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\Sora.ttf" LogicalName="Sora.ttf" />
+    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\IBMPlexMono-Medium.ttf" LogicalName="IBMPlexMono.ttf" />
+    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\Silkscreen-Bold.ttf" LogicalName="Silkscreen.ttf" />
     <EmbeddedResource Include="..\Launcher\wwwroot\assets\logo.png" LogicalName="logo.png" />
     <Content Include="vuluLauncher-logo-prototip.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
