@@ -62,7 +62,11 @@ namespace Updater
             _window.SetDevToolsEnabled(false).SetContextMenuEnabled(false);
 #endif
 
-            _window.WindowCreated += (_, _) => RoundCorners(_window.WindowHandle);
+            _window.WindowCreated += (_, _) =>
+            {
+                RoundCorners(_window.WindowHandle);
+                VuluShared.WindowIcon.Apply(_window.WindowHandle, Path.Combine(installDir, "vuluLauncher-logo-prototip.ico"));
+            };
             // Dosyalar yer değiştirirken kapatılırsa kurulum yarım kalır; o sırada kapatma engellenir
             _window.WindowClosing += (_, _) => _engine.IsApplying;
 

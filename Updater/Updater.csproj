@@ -18,6 +18,7 @@
   <ItemGroup>
     <!-- Launcher ile ortak: GitHub release bilgisi ve sürüm karşılaştırma -->
     <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
+    <Compile Include="..\Shared\WindowIcon.cs" Link="Shared\WindowIcon.cs" />
 
     <!-- Arayüz exe'nin içine gömülür; güncelleme sırasında diskteki dosyalar değişse de etkilenmez -->
     <EmbeddedResource Include="ui\updater.html" LogicalName="updater.html" />

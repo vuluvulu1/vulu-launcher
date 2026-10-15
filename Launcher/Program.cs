@@ -53,7 +53,11 @@ namespace VuluLauncher
             window.SetDevToolsEnabled(false).SetContextMenuEnabled(false);
 #endif
 
-            window.WindowCreated += (_, _) => RoundCorners(window.WindowHandle);
+            window.WindowCreated += (_, _) =>
+            {
+                RoundCorners(window.WindowHandle);
+                VuluShared.WindowIcon.Apply(window.WindowHandle, Path.Combine(AppContext.BaseDirectory, "logo.ico"));
+            };
 
             var bridge = new Bridge(window);
             var app = new LauncherApp(bridge, window);
