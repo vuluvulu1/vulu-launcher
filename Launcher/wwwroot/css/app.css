@@ -303,6 +303,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
     box-shadow: 0 0 0 3px #17110d;
 }
 .stage-greeting { margin-top: 10px; font: 500 13.5px var(--font); letter-spacing: .08em; color: rgba(227, 179, 122, .85); opacity: 0; }
+/* Bağlantı uzarsa perdede görünen durum satırı; nokta nokta nabız gibi atar */
+.stage-status { min-height: 18px; margin-top: 18px; font: 500 12px var(--font); letter-spacing: .04em; color: rgba(227, 179, 122, .6); opacity: 0; transition: opacity .4s ease; }
+.stage-status.visible { opacity: 1; animation: status-pulse 2s ease-in-out infinite; }
+@keyframes status-pulse { 50% { color: rgba(227, 179, 122, .95); } }
 
 /* Zamanlama: çerçeve → harfler sırayla çizilir ve dolar → ayraç → karşılama */
 .play .stage-frame { animation: frame-in .7s ease-out .1s forwards; }

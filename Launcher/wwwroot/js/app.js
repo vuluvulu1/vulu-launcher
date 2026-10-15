@@ -138,8 +138,12 @@ function setupLoginForm() {
     $('login-form').addEventListener('submit', event => { event.preventDefault(); tryLogin(); });
 }
 
-/** Giriş ekranını (ilk açılışta ve çıkış yapınca) hazırlar. */
-async function showLogin() {
+/**
+ * Giriş ekranını hazırlar. Açılışta (auto) "Beni hatırla" ile kayıtlı hesap varsa giriş ekranı hiç
+ * gösterilmez: perde kapanır, giriş arkada yapılır, sunucuya bağlanana kadar perde kapalı kalır.
+ * Çıkış yapınca auto kapalıdır; kullanıcı bilerek çıktığı için tekrar otomatik girilmez.
+ */
+async function showLogin({ auto = false } = {}) {
     const username = $('login-username'), password = $('login-password');
 
     const init = await bridge.invoke('app.init');
@@ -158,8 +162,18 @@ async function showLogin() {
     $('login-remember').checked = !!init.savedUsername;
     if (init.savedUsername && init.hasSavedPassword) { password.value = SAVED_MASK; state.useSavedPassword = true; }
 
+    const canAutoLogin = auto && !!init.savedUsername && init.hasSavedPassword;
+
+    if (canAutoLogin && !state.settings.skipSplash) {
+        await autoLoginBehindCurtain(init.savedUsername);
+        return;
+    }
+
     showView('view-login');
     (init.savedUsername ? $('login-submit') : username).focus();
+
+    // Açılış animasyonu kapalıysa otomatik giriş giriş ekranında denenir
+    if (canAutoLogin) { tryLogin(); return; }
 
     // Sunucu uykudaysa kullanıcı yazarken uyansın
     setLoginStatus('Sunucuya bağlanılıyor...');
@@ -167,6 +181,33 @@ async function showLogin() {
         if ($('login-submit').disabled) return; // giriş denemesi sürüyor, mesajına dokunma
         setLoginStatus(result.reachable ? '' : 'Sunucuya ulaşılamadı.', !result.reachable);
     });
+}
+
+/** Kayıtlı hesapla giriş: perde kapalı ve yazı oynarken yapılır; olmazsa perde giriş ekranına açılır. */
+async function autoLoginBehindCurtain(savedUsername) {
+    beginSplash(savedUsername);
+
+    // Yazı bittiği halde bağlantı sürüyorsa (sunucu uykudan uyanıyor olabilir) perdede belirtilir
+    const slowTimer = setTimeout(() => setSplashStatus('Sunucuya bağlanılıyor…'), CURTAIN_OPEN_AT - 600);
+    const result = await requestLogin({ username: savedUsername, password: '', useSaved: true, remember: true });
+    clearTimeout(slowTimer);
+    setSplashStatus('');
+
+    if (result.success) {
+        await enterLauncher(result);
+        return;
+    }
+
+    // Giriş olmadı (şifre değişmiş, hesap kapatılmış ya da sunucuya ulaşılamadı): giriş ekranına açılır
+    setLoginStatus(result.error || 'Giriş başarısız.', true);
+    await wait(Math.max(0, CURTAIN_OPEN_AT - (performance.now() - splashStartedAt)));
+    await openCurtainsTo('view-login');
+    $('login-submit').focus();
+}
+
+async function requestLogin(args) {
+    try { return await bridge.invoke('auth.login', args); }
+    catch (err) { return { success: false, error: err.message }; }
 }
 
 async function tryLogin() {
@@ -178,17 +219,12 @@ async function tryLogin() {
     $('login-submit').disabled = true;
     setLoginStatus('Giriş yapılıyor, lütfen bekleyin...');
 
-    let result;
-    try {
-        result = await bridge.invoke('auth.login', {
-            username,
-            password: state.useSavedPassword ? '' : password,
-            useSaved: state.useSavedPassword,
-            remember: $('login-remember').checked,
-        });
-    } catch (err) {
-        result = { success: false, error: err.message };
-    }
+    const result = await requestLogin({
+        username,
+        password: state.useSavedPassword ? '' : password,
+        useSaved: state.useSavedPassword,
+        remember: $('login-remember').checked,
+    });
 
     $('login-submit').disabled = false;
     if (!result.success) { setLoginStatus(result.error || 'Giriş başarısız.', true); return; }
@@ -205,19 +241,42 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const CURTAIN_OPEN_AT = 3600;
 const CURTAIN_DONE_AFTER = 1500;
 
-async function enterLauncher(session) {
-    // Açılış ekranı her şeyden önce ve anında gelir; arayüz perde kapalıyken arkada hazırlanır
+let splashStartedAt = null; // açılış oynuyorsa başladığı an
+
+/** Perdeyi anında kapatır ve yazı animasyonunu baştan başlatır. */
+function beginSplash(username) {
     const splash = $('view-splash');
-    const skipSplash = !!state.settings.skipSplash;
-    const startedAt = performance.now();
-    if (!skipSplash) {
-        $('splash-greeting').textContent = `Hoş geldin, ${session.username}`;
-        splash.classList.remove('play', 'open');
-        splash.hidden = false;
-        $('view-login').hidden = true;
-        void splash.offsetWidth; // animasyon her girişte baştan oynasın
-        splash.classList.add('play');
-    }
+    $('splash-greeting').textContent = `Hoş geldin, ${username}`;
+    setSplashStatus('');
+    splash.classList.remove('play', 'open');
+    splash.hidden = false;
+    $('view-login').hidden = true;
+    void splash.offsetWidth; // animasyon her seferinde baştan oynasın
+    splash.classList.add('play');
+    splashStartedAt = performance.now();
+}
+
+function setSplashStatus(text) {
+    const status = $('splash-status');
+    status.textContent = text;
+    status.classList.toggle('visible', !!text);
+}
+
+/** Verilen ekranı perdenin arkasında açar ve perdeleri çeker. */
+async function openCurtainsTo(viewId) {
+    const splash = $('view-splash');
+    $(viewId).hidden = false;
+    splash.classList.add('open');
+    await wait(CURTAIN_DONE_AFTER);
+    splash.hidden = true;
+    splash.classList.remove('play', 'open');
+    splashStartedAt = null;
+}
+
+async function enterLauncher(session) {
+    // Perde (otomatik girişte zaten kapalı) arayüzden önce gelir; arayüz arkada hazırlanır
+    const useSplash = !state.settings.skipSplash;
+    if (useSplash && splashStartedAt === null) beginSplash(session.username);
 
     state.username = session.username;
     $('user-name').textContent = session.username;
@@ -235,18 +294,14 @@ async function enterLauncher(session) {
     if (!state.instances.some(i => !i.locked))
         appendLog({ text: 'Hesabınıza tanımlı bir paket yok. Yeni bir instance oluşturabilirsiniz.', level: 'warn' });
 
-    if (skipSplash) {
+    if (!useSplash) {
         showView('view-main');
         startMusic();
     } else {
-        // Arayüz hazır ve yazı tamamlandıysa perdeler açılır; arkadan launcher görünür
-        await wait(Math.max(0, CURTAIN_OPEN_AT - (performance.now() - startedAt)));
-        $('view-main').hidden = false;
-        splash.classList.add('open');
+        // Yazı tamamlanınca (ve arayüz hazırsa) perdeler açılır; arkadan launcher görünür
+        await wait(Math.max(0, CURTAIN_OPEN_AT - (performance.now() - splashStartedAt)));
         startMusic();
-        await wait(CURTAIN_DONE_AFTER);
-        splash.hidden = true;
-        splash.classList.remove('play', 'open');
+        await openCurtainsTo('view-main');
     }
 
     await offerLauncherUpdate();
@@ -750,5 +805,5 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('dragover', event => event.preventDefault());
     window.addEventListener('drop', event => event.preventDefault());
 
-    showLogin().catch(err => setLoginStatus(err.message, true));
+    showLogin({ auto: true }).catch(err => { showView('view-login'); setLoginStatus(err.message, true); });
 });
