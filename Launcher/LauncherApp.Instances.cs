@@ -14,6 +14,7 @@ namespace VuluLauncher
         private void RegisterInstanceCommands()
         {
             _bridge.On("instances.list", _ => Task.FromResult<object?>(ListInstances()));
+            _bridge.On("instances.details", async args => await InstanceDetailsAsync(args.Str("id")));
             _bridge.On("instances.options", async _ => await InstanceOptionsAsync());
             _bridge.On("instances.loaderVersions", async args =>
                 await LoaderCatalog.LoaderVersionsAsync(args.Str("loader"), args.Str("mcVersion")));
@@ -56,13 +57,15 @@ namespace VuluLauncher
         {
             RequireLogin();
 
-            var packs = PackCatalog.All.Where(IsPackAllowed).Select(p =>
+            // İzin verilmeyen paketler de listelenir ama kilitli gösterilir; başlatma ResolveTarget'ta yine engellenir
+            var packs = PackCatalog.All.Select(p =>
             {
                 string? custom = BackgroundUrl(PackPrefix + p.Id);
                 return (object)new
             {
                 id = PackPrefix + p.Id,
                 kind = "server",
+                locked = !IsPackAllowed(p),
                 name = p.Name,
                 description = p.Description,
                 mcVersion = p.McVersion,
@@ -86,6 +89,7 @@ namespace VuluLauncher
             {
                 id = InstancePrefix + m.Folder,
                 kind = "custom",
+                locked = false,
                 name = m.Name,
                 description = m.ModpackProjectId != null
                     ? $"Modrinth modpack · {m.ModpackVersion}"
@@ -104,6 +108,77 @@ namespace VuluLauncher
             });
 
             return packs.Concat(custom);
+        }
+
+        /// <summary>Ana ekrandaki istatistikler ve yenilikler: mod sayısı, disk boyutu, son güncelleme, changelog.</summary>
+        private async Task<object?> InstanceDetailsAsync(string id)
+        {
+            RequireLogin();
+
+            string folder;
+            bool isServer = id.StartsWith(PackPrefix, StringComparison.Ordinal);
+            if (isServer)
+            {
+                var pack = PackCatalog.Find(id[PackPrefix.Length..])
+                    ?? throw new InvalidOperationException("Bilinmeyen paket.");
+                if (!IsPackAllowed(pack))
+                    throw new InvalidOperationException($"{pack.Name} paketine erişim izniniz yok.");
+                folder = pack.FolderName;
+            }
+            else
+            {
+                folder = RequireCustomInstance(id).Folder;
+            }
+
+            string path = Path.Combine(AppPaths.Instances, folder);
+            var (installed, modCount, sizeBytes, modsChanged) = await Task.Run(() => ScanInstanceFolder(path));
+
+            InstanceManifest? manifest = null;
+            if (isServer)
+            {
+                var root = await _instanceUpdater.GetManifestCachedAsync();
+                root?.Instances?.TryGetValue(folder, out manifest);
+            }
+
+            // Sunucu paketlerinde manifest'in yayın tarihi, kişisel instance'larda mods klasörünün son değişimi
+            string? updatedAt = !string.IsNullOrWhiteSpace(manifest?.UpdatedAt)
+                ? manifest!.UpdatedAt
+                : modsChanged?.ToString("o");
+
+            return new
+            {
+                installed,
+                modCount,
+                sizeMb = Math.Round(sizeBytes / 1024.0 / 1024.0, 1),
+                updatedAt,
+                modsVersion = manifest?.ModsVersion,
+                changelog = manifest?.Changelog ?? new List<ChangelogEntry>()
+            };
+        }
+
+        private static (bool Installed, int ModCount, long SizeBytes, DateTime? ModsChanged) ScanInstanceFolder(string path)
+        {
+            if (!Directory.Exists(path)) return (false, 0, 0, null);
+
+            long size = 0;
+            try
+            {
+                var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
+                foreach (var file in new DirectoryInfo(path).EnumerateFiles("*", options))
+                    size += file.Length;
+            }
+            catch { /* boyut yaklaşık kalabilir */ }
+
+            string mods = Path.Combine(path, "mods");
+            int modCount = 0;
+            DateTime? modsChanged = null;
+            if (Directory.Exists(mods))
+            {
+                modCount = Directory.GetFiles(mods, "*.jar").Length;
+                modsChanged = Directory.GetLastWriteTime(mods);
+            }
+
+            return (true, modCount, size, modsChanged);
         }
 
         /// <summary>Arayüzden gelen kimliği başlatılabilir hedefe çevirir; izinleri burada denetler.</summary>

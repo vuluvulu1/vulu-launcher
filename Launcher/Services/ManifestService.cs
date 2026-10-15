@@ -63,7 +63,7 @@ namespace VuluLauncher
         }
 
         // ── Manifest push ─────────────────────────────────────────────────
-        public async Task<bool> PushManifestAsync(string instance, List<ManifestFile> files, List<string>? deletedFiles = null, string? modsVersion = null, string? modsUrl = null)
+        public async Task<bool> PushManifestAsync(string instance, List<ManifestFile> files, List<string>? deletedFiles = null, string? modsVersion = null, string? modsUrl = null, List<ChangelogEntry>? changelog = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, $"{ApiConfig.BaseUrl}/manifest/push");
             request.Headers.Add("Authorization", $"Bearer {_token}");
@@ -73,7 +73,8 @@ namespace VuluLauncher
                 files,
                 deletedFiles = deletedFiles ?? new List<string>(),
                 modsVersion,
-                modsUrl
+                modsUrl,
+                changelog = changelog ?? new List<ChangelogEntry>()
             });
 
             var response = await _http.SendAsync(request);
@@ -218,6 +219,22 @@ namespace VuluLauncher
 
         [JsonPropertyName("modsUrl")]
         public string? ModsUrl { get; set; }
+
+        /// <summary>Yenilikler panelinde gösterilen notlar; en yenisi başta.</summary>
+        [JsonPropertyName("changelog")]
+        public List<ChangelogEntry>? Changelog { get; set; }
+    }
+
+    public class ChangelogEntry
+    {
+        [JsonPropertyName("version")]
+        public string Version { get; set; } = string.Empty;
+
+        [JsonPropertyName("date")]
+        public string Date { get; set; } = string.Empty;
+
+        [JsonPropertyName("text")]
+        public string Text { get; set; } = string.Empty;
     }
 
     public class ManifestFile

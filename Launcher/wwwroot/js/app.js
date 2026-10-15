@@ -10,6 +10,8 @@ const state = {
     settings: {},
     username: '',
     page: 'home',
+    details: null,          // seçili paketin istatistikleri ve yenilikleri (instances.details)
+    activityText: '',       // süren işlemin son log satırı; durum çubuğunda gösterilir
 };
 
 const LOADER_NAMES = { vanilla: 'Vanilla', fabric: 'Fabric', quilt: 'Quilt', forge: 'Forge', neoforge: 'NeoForge' };
@@ -39,6 +41,7 @@ function showPage(name) {
 
 /** Uzun süren bir işlemi sarar: bittiğine kadar "meşgul" göstergesi açık kalır. */
 async function withActivity(promiseFactory) {
+    if (state.busy === 0 && !launching) state.activityText = '';
     state.busy++;
     refreshActivity();
     updatePlayButton();
@@ -78,6 +81,41 @@ function setupTitlebar() {
     $('btn-min').addEventListener('click', () => bridge.send('window.minimize'));
     $('btn-close').addEventListener('click', () => bridge.send('window.close'));
     $('btn-admin').addEventListener('click', () => openAdminPanel());
+
+    $('btn-user').addEventListener('click', () => setPopover('user-dropdown', 'btn-user', $('user-dropdown').hidden));
+    $('user-dropdown').addEventListener('click', event => {
+        const action = event.target.closest('button')?.dataset.action;
+        if (!action) return;
+        closePopovers();
+        if (action === 'settings') showPage('settings');
+        if (action === 'logout') logout();
+    });
+}
+
+// ── Açılır menüler (kullanıcı menüsü, RAM seçimi) ─────────────────────
+const POPOVERS = [['user-dropdown', 'btn-user'], ['ram-pop', 'btn-ram']];
+
+function setPopover(popoverId, buttonId, open) {
+    if (open) closePopovers();
+    $(popoverId).hidden = !open;
+    $(buttonId).setAttribute('aria-expanded', String(open));
+    if (open) $(popoverId).querySelector('[aria-selected="true"], button')?.focus();
+}
+
+function closePopovers() {
+    for (const [popoverId, buttonId] of POPOVERS) setPopover(popoverId, buttonId, false);
+}
+
+function setupPopovers() {
+    document.addEventListener('mousedown', event => {
+        for (const [popoverId, buttonId] of POPOVERS)
+            if (!$(popoverId).hidden && !event.target.closest('#' + popoverId + ', #' + buttonId)) setPopover(popoverId, buttonId, false);
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        for (const [popoverId, buttonId] of POPOVERS)
+            if (!$(popoverId).hidden) { setPopover(popoverId, buttonId, false); $(buttonId).focus(); }
+    });
 }
 
 // ── Giriş ─────────────────────────────────────────────────────────────
@@ -113,6 +151,9 @@ async function showLogin() {
     state.ramOptionsGb = init.ramOptionsGb;
     applySettings(init.settings);
     $('app-version').textContent = 'v' + init.version;
+    $('user-menu').hidden = true;
+    $('btn-admin').hidden = true;
+    closePopovers();
 
     username.value = init.savedUsername || '';
     password.value = '';
@@ -163,13 +204,15 @@ async function tryLogin() {
 // ── Giriş sonrası ─────────────────────────────────────────────────────
 async function enterLauncher(session) {
     state.username = session.username;
-    $('welcome-name').textContent = session.username;
+    $('user-name').textContent = session.username;
+    $('user-avatar').textContent = (session.username || '?').charAt(0);
+    $('user-menu').hidden = false;
     $('btn-admin').hidden = !session.isAdmin;
 
     clearConsole();
     showPage('home');
     await reloadInstances(store.get('lastPack', ''));
-    if (state.instances.length === 0)
+    if (!state.instances.some(i => !i.locked))
         appendLog({ text: 'Hesabınıza tanımlı bir paket yok. Yeni bir instance oluşturabilirsiniz.', level: 'warn' });
 
     // Açılış animasyonu oynarken paket güncellemeleri kontrol edilir
@@ -213,6 +256,7 @@ async function offerInstanceUpdates(updates) {
         try { await withActivity(() => bridge.invoke('updates.apply', { instance: update.instance })); }
         catch (err) { appendLog({ text: err.message, level: 'error' }); }
     }
+    if (updates.length) loadDetails(); // mod sayısı / boyut değişmiş olabilir
 }
 
 async function offerLauncherUpdate() {
@@ -247,7 +291,8 @@ async function reloadInstances(selectId) {
     renderInstanceLists();
 
     const wanted = selectId || (state.selected && state.selected.id);
-    const next = state.instances.find(i => i.id === wanted) || state.instances[0] || null;
+    const usable = state.instances.filter(i => !i.locked);
+    const next = usable.find(i => i.id === wanted) || usable[0] || null;
     if (next) selectInstance(next);
     else clearSelection();
 }
@@ -262,6 +307,18 @@ function renderInstanceLists() {
         const thumb = el('div', { class: 'thumb' + (instance.thumbnail ? '' : ' plain') });
         if (instance.thumbnail) thumb.style.backgroundImage = `url("${instance.thumbnail}")`;
 
+        if (instance.locked) {
+            return el('button', {
+                class: 'pack-card locked', 'data-id': instance.id, disabled: true,
+                title: 'Bu paket için yetkin yok', 'aria-label': instance.name + ' (yetki gerekli)',
+            },
+                thumb,
+                el('div', { class: 'info' },
+                    el('span', { class: 'name' }, instance.name),
+                    el('span', { class: 'ver' }, 'Yetki gerekli')),
+                fromMarkup('<svg class="lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>'));
+        }
+
         return el('button', { class: 'pack-card', 'data-id': instance.id, onclick: () => { selectInstance(instance); showPage('home'); } },
             thumb,
             instance.iconUrl && el('img', { class: 'card-icon', src: instance.iconUrl, alt: '' }),
@@ -270,7 +327,8 @@ function renderInstanceLists() {
                 el('span', { class: 'ver' }, loaderLabel(instance))));
     };
 
-    const servers = state.instances.filter(i => i.kind === 'server');
+    // Kilitli paketler listenin sonunda durur
+    const servers = state.instances.filter(i => i.kind === 'server').sort((a, b) => a.locked - b.locked);
     const customs = state.instances.filter(i => i.kind === 'custom');
 
     $('pack-list').replaceChildren(...(servers.length
@@ -299,6 +357,10 @@ function clearSelection() {
     $('pack-actions').replaceChildren();
     $('stage-bg').className = 'stage-bg plain';
     $('stage-bg').style.backgroundImage = '';
+    state.details = null;
+    $('pack-stats').hidden = true;
+    $('changelog').hidden = true;
+    $('dock-version').textContent = '—';
     updatePlayButton();
 }
 
@@ -326,53 +388,194 @@ function selectInstance(instance) {
             : `${LOADER_NAMES[instance.loader]} ${instance.loaderVersion || ''}`.trim()));
 
     const isCustom = instance.kind === 'custom';
-    $('pack-actions').replaceChildren(
+    $('pack-actions').replaceChildren(...[
         isCustom && el('button', { class: 'btn btn-sm', onclick: () => openNewInstanceDialog(instance) }, 'Düzenle'),
         isCustom && el('button', { class: 'btn btn-sm', onclick: () => openInstanceContent(instance) }, 'İçerik'),
         isCustom && el('button', { class: 'btn btn-sm', onclick: () => { openModrinthFor(instance); } }, 'Mod ekle'),
         el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'instance', id: instance.id }) }, 'Klasörü aç'),
         el('button', { class: 'btn btn-sm', onclick: () => openBackgroundDialog(instance) }, 'Arka plan'),
-        isCustom && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deleteInstance(instance) }, 'Sil'));
+        isCustom && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deleteInstance(instance) }, 'Sil'),
+    ].filter(Boolean));
 
     // Öncelik: bu paket için yapılmış seçim → ayarlardaki varsayılan → paketin önerdiği
     const saved = parseInt(store.get('ram_' + instance.id, ''), 10);
     const fallback = state.settings.defaultRamGb > 0 ? state.settings.defaultRamGb : instance.recommendedRamGb;
     state.ramGb = state.ramOptionsGb.includes(saved) ? saved : fallback;
     renderRamOptions();
+
+    $('dock-version').textContent = loaderLabel(instance);
+    state.details = null;
+    renderDetails();
+    loadDetails();
     updatePlayButton();
+}
+
+// ── Paket ayrıntıları: istatistikler ve yenilikler ────────────────────
+async function loadDetails() {
+    const instance = state.selected;
+    if (!instance) return;
+    let details;
+    try { details = await bridge.invoke('instances.details', { id: instance.id }); }
+    catch { details = { failed: true }; }
+    if (state.selected !== instance) return; // bu arada başka paket seçildi
+    state.details = details;
+    renderDetails();
+    refreshStatus();
+}
+
+function formatSize(mb) {
+    if (!(mb > 0)) return '0 MB';
+    return mb >= 1024 ? (mb / 1024).toFixed(1).replace('.', ',') + ' GB' : Math.round(mb) + ' MB';
+}
+
+function parseDate(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    return isNaN(date) ? null : date;
+}
+
+function formatDate(date) {
+    return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function relativeDate(date) {
+    const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const days = Math.round((startOfDay(new Date()) - startOfDay(date)) / 86400000);
+    if (days <= 0) return 'Bugün';
+    if (days === 1) return 'Dün';
+    if (days < 30) return days + ' gün önce';
+    return formatDate(date);
+}
+
+function renderDetails() {
+    const instance = state.selected, details = state.details;
+    const loading = !details;
+    const installed = details && details.installed;
+
+    $('pack-stats').hidden = !instance;
+    const setStat = (id, text, title) => {
+        const node = $(id);
+        node.textContent = loading ? '…' : text;
+        node.classList.toggle('loading', loading);
+        node.title = title || '';
+    };
+
+    if (details && details.failed) {
+        setStat('stat-mods', '—'); setStat('stat-size', '—'); setStat('stat-updated', '—');
+    } else {
+        const updated = parseDate(details && details.updatedAt);
+        setStat('stat-mods', installed ? String(details.modCount) : '—');
+        setStat('stat-size', installed ? formatSize(details.sizeMb) : 'Kurulmadı');
+        setStat('stat-updated', updated ? relativeDate(updated) : '—', updated ? formatDate(updated) : '');
+    }
+
+    // Yenilikler yalnızca sunucu paketlerinde (manifest'ten gelir)
+    const panel = $('changelog');
+    panel.hidden = !instance || instance.kind !== 'server';
+    if (panel.hidden) return;
+
+    const entries = (details && details.changelog) || [];
+    $('changelog-all').hidden = entries.length <= 3;
+    $('changelog-list').replaceChildren(...(loading
+        ? [el('p', { class: 'cl-empty' }, 'Yükleniyor…')]
+        : entries.length
+            ? entries.slice(0, 3).map(changelogItem)
+            : [el('p', { class: 'cl-empty' }, 'Bu paket için henüz yenilik notu yok.')]));
+}
+
+function changelogItem(entry) {
+    const date = parseDate(entry.date);
+    const meta = [entry.version, date ? formatDate(date) : entry.date].filter(Boolean).join(' · ');
+    return el('div', { class: 'cl-item' },
+        meta && el('span', { class: 'cl-meta' }, meta),
+        el('span', { class: 'cl-text' }, entry.text));
+}
+
+function showAllChangelog() {
+    const entries = (state.details && state.details.changelog) || [];
+    openModal(close => [
+        el('div', { class: 'modal-head' }, `${state.selected.name} · Yenilikler`),
+        el('div', { class: 'modal-body cl-list' }, entries.map(changelogItem)),
+        el('div', { class: 'modal-foot' }, el('button', { class: 'btn btn-primary', onclick: () => close() }, 'Kapat')),
+    ]);
 }
 
 function renderRamOptions() {
     const recommended = state.selected ? state.selected.recommendedRamGb : null;
+    $('ram-label').textContent = state.ramGb + ' GB';
     $('ram-options').replaceChildren(...state.ramOptionsGb.map(gb =>
         el('button', {
-            class: (gb === state.ramGb ? 'active ' : '') + (gb === recommended ? 'rec' : ''),
+            role: 'option',
+            'aria-selected': String(gb === state.ramGb),
             onclick: () => {
                 state.ramGb = gb;
                 if (state.selected) store.set('ram_' + state.selected.id, String(gb));
                 renderRamOptions();
+                setPopover('ram-pop', 'btn-ram', false);
+                $('btn-ram').focus();
             },
-        }, gb + ' GB')));
+        },
+            el('span', {}, gb + ' GB'),
+            gb === recommended && el('span', { class: 'note' }, 'önerilen'))));
 }
 
 // ── Oyna ──────────────────────────────────────────────────────────────
 let launching = false;
 
 function updatePlayButton() {
-    const button = $('btn-play');
+    const button = $('btn-play'), label = $('play-label');
     const busy = launching || state.busy > 0;
     button.classList.toggle('busy', busy);
 
-    if (launching) { button.disabled = true; button.textContent = 'Başlatılıyor…'; }
-    else if (state.busy > 0) { button.disabled = true; button.textContent = 'İşlem sürüyor…'; }
-    else if (state.gameRunning) { button.disabled = true; button.textContent = 'Oyun çalışıyor'; }
-    else { button.disabled = !state.selected; button.textContent = 'OYNA'; }
+    if (launching) { button.disabled = true; label.textContent = 'Başlatılıyor…'; }
+    else if (state.busy > 0) { button.disabled = true; label.textContent = 'İşlem sürüyor…'; }
+    else if (state.gameRunning) { button.disabled = true; label.textContent = 'Oyun çalışıyor'; }
+    else { button.disabled = !state.selected; label.textContent = 'OYNA'; }
+    refreshStatus();
+}
+
+/** Log satırındaki ilerlemeyi yüzdeye çevirir: "%45", "45%" ya da "12/120". Bulunamazsa null. */
+function progressOf(text) {
+    let match = /%\s?(\d{1,3})|(\d{1,3})\s?%/.exec(text);
+    if (match) return Math.min(100, Number(match[1] || match[2]));
+    match = /(\d+)\s?\/\s?(\d+)/.exec(text);
+    if (match && Number(match[2]) > 0) return Math.min(100, Math.round(Number(match[1]) * 100 / Number(match[2])));
+    return null;
+}
+
+/** Alt çubuktaki durum metni ve ilerleme çubuğu. */
+function refreshStatus() {
+    const bar = $('status-bar').parentElement;
+    let text, pct = 0, mode = '';
+
+    if (launching || state.busy > 0) {
+        text = state.activityText || (launching ? 'Başlatılıyor…' : 'İşlem sürüyor…');
+        pct = progressOf(text);
+        if (pct === null) mode = 'indeterminate';
+    } else if (state.gameRunning) {
+        text = 'Oyun çalışıyor'; pct = 100; mode = 'running';
+    } else if (!state.selected) {
+        text = 'Başlamak için bir paket seç';
+    } else if (!state.details) {
+        text = 'Paket bilgileri alınıyor…'; mode = 'indeterminate';
+    } else if (state.details.installed === false) {
+        text = 'İlk açılışta oyun dosyaları indirilecek';
+    } else {
+        text = 'Hazır'; pct = 100;
+    }
+
+    $('status-text').textContent = text;
+    $('status-text').title = text;
+    $('status-pct').textContent = mode === 'indeterminate' ? '' : pct + '%';
+    $('status-bar').style.width = (pct || 0) + '%';
+    bar.className = 'bar' + (mode ? ' ' + mode : '');
 }
 
 async function play() {
     if (!state.selected || state.gameRunning || launching) return;
 
     clearConsole();
+    state.activityText = '';
     launching = true;
     updatePlayButton();
     try {
@@ -408,7 +611,11 @@ function appendLog(line) {
     if (stickToBottom) body.scrollTop = body.scrollHeight;
 
     // Oyun çıktısı dışındaki son satır, diğer sayfalardaki işlem göstergesinde de görünür
-    if (line.level !== 'game' && line.level !== 'gameError') $('activity-text').textContent = line.text;
+    // ve ana ekrandaki durum çubuğunu sürer
+    if (line.level !== 'game' && line.level !== 'gameError') {
+        $('activity-text').textContent = line.text;
+        if (launching || state.busy > 0) { state.activityText = line.text; refreshStatus(); }
+    }
 }
 
 function clearConsole() {
@@ -423,7 +630,7 @@ function setConsoleExpanded(expanded) {
 
 function setupConsole() {
     bridge.on('log', lines => lines.forEach(appendLog));
-    bridge.on('gameExited', () => { state.gameRunning = false; updatePlayButton(); });
+    bridge.on('gameExited', () => { state.gameRunning = false; updatePlayButton(); loadDetails(); });
 
     $('console-clear').addEventListener('click', clearConsole);
     $('console-toggle').addEventListener('click', () => setConsoleExpanded(!$('console').classList.contains('expanded')));
@@ -452,14 +659,35 @@ async function saveSettings(patch) {
 
 // ── Müzik ─────────────────────────────────────────────────────────────
 function refreshMusicWidget() {
-    const off = $('music').paused;
-    $('music-toggle').classList.toggle('off', off);
+    const audio = $('music'), off = audio.paused;
     document.querySelector('.music').classList.toggle('paused', off);
+    $('music-toggle').setAttribute('aria-label', off ? 'Müziği çal' : 'Müziği duraklat');
+    $('music-toggle').title = off ? 'Çal' : 'Duraklat';
+    $('music-mute').classList.toggle('muted', audio.muted);
+    $('music-mute').setAttribute('aria-label', audio.muted ? 'Sesi aç' : 'Sesi kapat');
+    $('music-mute').title = audio.muted ? 'Sesi aç' : 'Sesi kapat';
+}
+
+function refreshMusicProgress() {
+    const audio = $('music'), seek = $('music-seek');
+    const value = audio.duration > 0 ? Math.round(audio.currentTime / audio.duration * 1000) : 0;
+    if (!seek.matches(':active')) seek.value = value; // sürüklerken zıplamasın
+    seek.style.setProperty('--pct', seek.value / 10 + '%');
 }
 
 function setupMusic() {
-    const audio = $('music'), slider = $('music-volume');
+    const audio = $('music'), slider = $('music-volume'), seek = $('music-seek');
     let saveTimer = null;
+
+    audio.addEventListener('timeupdate', refreshMusicProgress);
+    audio.addEventListener('loadedmetadata', refreshMusicProgress);
+    audio.addEventListener('volumechange', refreshMusicWidget);
+    seek.addEventListener('input', () => {
+        if (audio.duration > 0) audio.currentTime = seek.value / 1000 * audio.duration;
+        seek.style.setProperty('--pct', seek.value / 10 + '%');
+    });
+    $('music-restart').addEventListener('click', () => { audio.currentTime = 0; refreshMusicProgress(); });
+    $('music-mute').addEventListener('click', () => { audio.muted = !audio.muted; });
 
     slider.addEventListener('input', () => {
         audio.volume = slider.value / 100;
@@ -485,10 +713,13 @@ function startMusic() {
 // ── Başlat ────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
     setupTitlebar();
+    setupPopovers();
     setupConsole();
     setupMusic();
     setupLoginForm();
     $('btn-play').addEventListener('click', play);
+    $('btn-ram').addEventListener('click', () => setPopover('ram-pop', 'btn-ram', $('ram-pop').hidden));
+    $('changelog-all').addEventListener('click', showAllChangelog);
     $('btn-new-instance').addEventListener('click', () => openNewInstanceDialog());
     for (const button of document.querySelectorAll('.rail-nav button'))
         button.addEventListener('click', () => showPage(button.dataset.page));

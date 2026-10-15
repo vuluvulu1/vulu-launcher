@@ -18,6 +18,13 @@ function el(tag, props, ...children) {
     return node;
 }
 
+/** Sabit SVG/HTML parçasından eleman üretir (yalnızca koddaki sabit işaretleme için; kullanıcı verisi verilmez). */
+function fromMarkup(markup) {
+    const template = document.createElement('template');
+    template.innerHTML = markup.trim();
+    return template.content.firstElementChild;
+}
+
 /**
  * Modal açar. build(close) içeriği döndürür; close(deger) modalı kapatıp Promise'i çözer.
  * Esc tuşu ve (dismissable ise) arka plana tıklama close(undefined) çağırır.

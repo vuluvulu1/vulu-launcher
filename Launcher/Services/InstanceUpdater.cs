@@ -24,6 +24,21 @@ namespace VuluLauncher
             _log = log;
         }
 
+        /// <summary>Son başarılı kontrolde alınan manifest; paket ayrıntıları (tarih, yenilikler) buradan okunur.</summary>
+        public ManifestRoot? LastManifest { get; private set; }
+
+        /// <summary>Manifest henüz alınmadıysa alır. Hata fırlatmaz; alınamazsa null döner.</summary>
+        public async Task<ManifestRoot?> GetManifestCachedAsync()
+        {
+            if (LastManifest != null) return LastManifest;
+            try { LastManifest = await _manifest.GetManifestAsync(); }
+            catch { /* ayrıntılar manifest olmadan da gösterilir */ }
+            return LastManifest;
+        }
+
+        /// <summary>Manifest yayınlandıktan sonra bir sonraki okumada yenisi alınsın.</summary>
+        public void ForgetManifest() => LastManifest = null;
+
         /// <summary>Sadece kontrol eder; hiçbir şey indirmez. Hata fırlatmaz, sorunları loga yazar.</summary>
         public async Task<List<InstanceUpdatePlan>> BuildPlanAsync(IEnumerable<string> allowedPacks)
         {
@@ -34,6 +49,7 @@ namespace VuluLauncher
             try
             {
                 manifest = await _manifest.GetManifestAsync();
+                LastManifest = manifest;
             }
             catch (Exception ex)
             {

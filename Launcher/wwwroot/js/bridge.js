@@ -70,6 +70,7 @@ const mockBackend = (() => {
     let instances = [
         { id: 'pack:vanilla', kind: 'server', name: 'Vanilla', description: 'Modsuz, sade Minecraft.', mcVersion: '1.20.1', loader: 'vanilla', loaderVersion: null, recommendedRamGb: 4, logo: 'assets/minecraftlogo.png', background: 'assets/launchervanillabg.jpg', backgroundStyle: 'cover', thumbnail: 'assets/launchervanillabg.jpg', iconUrl: null },
         { id: 'pack:aglr', kind: 'server', name: 'AGLR', description: 'Forge tabanlı ana mod paketi.', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', recommendedRamGb: 8, logo: 'assets/aglr.png', background: 'assets/mainmenu.png', backgroundStyle: 'side', thumbnail: 'assets/mainmenu.png', iconUrl: null },
+        { id: 'pack:rng', kind: 'server', locked: true, name: 'R', description: 'Özel paket.', mcVersion: '1.20.1', loader: 'vanilla', loaderVersion: null, recommendedRamGb: 8, logo: null, background: null, backgroundStyle: 'cover', thumbnail: null, iconUrl: null },
         { id: 'inst:fabric-121', kind: 'custom', name: 'Fabric 1.21', description: 'Kişisel instance', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', recommendedRamGb: 8, logo: null, background: null, backgroundStyle: 'cover', thumbnail: null, iconUrl: null },
     ];
 
@@ -102,6 +103,7 @@ const mockBackend = (() => {
         'game.play': async args => {
             log(`${args.instanceId} hazırlanıyor...`, 'accent');
             await wait(700);
+            for (let n = 0; n <= 2400; n += 600) { log(`Dosyalar kontrol ediliyor... ${n}/2400  assets`, 'accent', true); await wait(250); }
             log('Java 21 bulunamadı, Adoptium\'dan indiriliyor...', 'accent');
             for (let mb = 0; mb <= 45; mb += 15) { log(`Java 21 indiriliyor... ${mb} MB`, 'accent', true); await wait(200); }
             log('Java 21 kuruldu.', 'ok');
@@ -112,6 +114,21 @@ const mockBackend = (() => {
         },
 
         'instances.list': async () => instances,
+        'instances.details': async args => {
+            await wait(350);
+            const daysAgo = n => new Date(Date.now() - n * 86400000).toISOString();
+            if (args.id === 'pack:aglr') return {
+                installed: true, modCount: 187, sizeMb: 2380.4, updatedAt: daysAgo(3), modsVersion: 'v1.4',
+                changelog: [
+                    { version: 'v1.4', date: daysAgo(3).slice(0, 10), text: 'Create 0.5.1 ve Farmer\'s Delight güncellendi, JEI eklendi.' },
+                    { version: 'v1.3', date: daysAgo(17).slice(0, 10), text: 'Sunucu performansı için config düzeltmeleri.' },
+                    { version: 'v1.2', date: daysAgo(40).slice(0, 10), text: 'KubeJS tarifleri yenilendi.' },
+                    { version: 'v1.1', date: daysAgo(62).slice(0, 10), text: 'İlk büyük güncelleme.' },
+                ],
+            };
+            if (args.id === 'pack:vanilla') return { installed: true, modCount: 0, sizeMb: 612, updatedAt: daysAgo(0), modsVersion: null, changelog: [] };
+            return { installed: false, modCount: 0, sizeMb: 0, updatedAt: null, modsVersion: null, changelog: [] };
+        },
         'instances.options': async () => { await wait(300); return { minecraftVersions: ['1.21.11', '1.21.1', '1.20.1', '1.19.2', '1.16.5', '1.12.2'], loaders: ['vanilla', 'fabric', 'quilt', 'forge', 'neoforge'] }; },
         'instances.loaderVersions': async args => { await wait(300); return args.loader === 'neoforge' && args.mcVersion === '1.20.1' ? [] : ['0.16.14', '0.16.13', '0.16.10']; },
         'instances.create': async args => {

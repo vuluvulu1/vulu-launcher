@@ -83,7 +83,7 @@ namespace VuluLauncher
             _bridge.On("admin.deleteUser", async args => await AdminDeleteUserAsync(args.Str("id")));
             _bridge.On("admin.instances", _ => Task.FromResult<object?>(AdminInstances()));
             _bridge.On("admin.scanPush", async args =>
-                await AdminScanPushAsync(args.Str("instance"), args.Str("modsVersion"), args.Str("modsUrl")));
+                await AdminScanPushAsync(args.Str("instance"), args.Str("modsVersion"), args.Str("modsUrl"), args.Str("changelog")));
         }
 
         public void Shutdown()
@@ -427,7 +427,7 @@ namespace VuluLauncher
         }
 
         /// <summary>Instance klasörünü tarar, önceki manifest ile karşılaştırır ve yeni manifest'i API'ye gönderir.</summary>
-        private async Task<object?> AdminScanPushAsync(string instance, string modsVersion, string modsUrl)
+        private async Task<object?> AdminScanPushAsync(string instance, string modsVersion, string modsUrl, string changelogNote)
         {
             RequireAdmin();
 
@@ -442,8 +442,25 @@ namespace VuluLauncher
 
             var current = await manifestService.GetManifestAsync();
             var previousFiles = new List<string>();
+            var changelog = new List<ChangelogEntry>();
             if (current?.Instances != null && current.Instances.TryGetValue(instance, out var previous))
+            {
                 previousFiles = previous.Files.Select(f => f.Path).ToList();
+                changelog = previous.Changelog ?? changelog;
+            }
+
+            // Yeni not en başa eklenir; eski notlar korunur (sunucu manifest'i bütün olarak değiştirir)
+            if (!string.IsNullOrWhiteSpace(changelogNote))
+            {
+                changelog.Insert(0, new ChangelogEntry
+                {
+                    Version = string.IsNullOrWhiteSpace(modsVersion) ? "" : modsVersion.Trim(),
+                    Date = DateTime.Now.ToString("yyyy-MM-dd"),
+                    Text = changelogNote.Trim()
+                });
+            }
+            if (changelog.Count > MaxChangelogEntries)
+                changelog = changelog.Take(MaxChangelogEntries).ToList();
 
             var newFiles = await Task.Run(() => manifestService.ScanInstance(instancePath, instance));
             var newPaths = newFiles.Select(f => f.Path).ToHashSet();
@@ -454,10 +471,14 @@ namespace VuluLauncher
             bool pushed = await manifestService.PushManifestAsync(
                 instance, newFiles, deleted,
                 string.IsNullOrWhiteSpace(modsVersion) ? null : modsVersion.Trim(),
-                string.IsNullOrWhiteSpace(modsUrl) ? null : modsUrl.Trim());
+                string.IsNullOrWhiteSpace(modsUrl) ? null : modsUrl.Trim(),
+                changelog);
 
+            _instanceUpdater.ForgetManifest();
             return new { success = pushed, fileCount = newFiles.Count, deletedCount = deleted.Count };
         }
+
+        private const int MaxChangelogEntries = 20;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct POINT { public int X; public int Y; }

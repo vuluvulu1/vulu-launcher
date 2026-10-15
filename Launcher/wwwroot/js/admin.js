@@ -156,6 +156,11 @@ function renderInstancesTab(body) {
         const cards = info.instances.map(instance => {
             const modsVersion = el('input', { type: 'text', placeholder: 'Mods versiyon (örn: v1.0)', spellcheck: false });
             const modsUrl = el('input', { type: 'url', placeholder: 'Mods ZIP adresi (https://...)', spellcheck: false });
+            const changelog = el('textarea', {
+                class: 'changelog-input', rows: 2, maxLength: 600, spellcheck: false,
+                placeholder: 'Yenilik notu (isteğe bağlı): eklenen/güncellenen modlar, düzeltmeler...',
+                'aria-label': instance + ' yenilik notu',
+            });
             const button = el('button', { class: 'btn btn-sm btn-primary' }, 'Tara ve yayınla');
 
             button.addEventListener('click', async () => {
@@ -163,11 +168,12 @@ function renderInstancesTab(body) {
                 log(`${instance} taranıyor ve gönderiliyor...`);
                 try {
                     const result = await bridge.invoke('admin.scanPush', {
-                        instance, modsVersion: modsVersion.value, modsUrl: modsUrl.value,
+                        instance, modsVersion: modsVersion.value, modsUrl: modsUrl.value, changelog: changelog.value,
                     });
                     log(result.success
                         ? `✓ ${instance}: manifest güncellendi (${result.fileCount} dosya, ${result.deletedCount} silindi)`
                         : `✗ ${instance}: sunucu manifest'i kabul etmedi.`);
+                    if (result.success) { changelog.value = ''; loadDetails(); }
                 } catch (err) {
                     log(`✗ ${instance}: ${err.message}`);
                 }
@@ -177,7 +183,7 @@ function renderInstancesTab(body) {
             return el('div', { class: 'inst-card' },
                 el('div', { class: 'title' }, instance),
                 el('div', { class: 'folders' }, 'Taranacak: ' + info.trackedFolders.join(', ')),
-                modsVersion, modsUrl, button);
+                modsVersion, modsUrl, button, changelog);
         });
 
         body.replaceChildren(
