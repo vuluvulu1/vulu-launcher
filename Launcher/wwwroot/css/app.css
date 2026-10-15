@@ -305,11 +305,8 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .open .stage-title { opacity: 0; transform: scale(.97); }
 .open .stage-vignette { opacity: 0; }
 
-@media (prefers-reduced-motion: reduce) {
-    .play .stage-name path, .play .stage-ornament, .play .stage-greeting, .play .stage-vignette::after { animation-duration: .01s; animation-delay: 0s; }
-    .curtain, .valance { transition: opacity .8s ease; }
-    .open .curtain, .open .valance { transform: none; opacity: 0; }
-}
+/* Not: açılış süs amaçlıdır ve kullanıcı perdelerin her durumda açılmasını istedi; WebView2 "animasyonları
+   azalt" bildirse bile perdeler kayarak açılır. */
 
 /* ── Ana ekran: sol şerit ──────────────────────────────────────────── */
 #view-main { display: grid; grid-template-columns: 240px 1fr; }
