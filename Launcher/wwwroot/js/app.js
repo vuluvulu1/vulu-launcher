@@ -169,6 +169,7 @@ async function showLogin({ auto = false } = {}) {
         return;
     }
 
+    hideSplash();
     showView('view-login');
     (init.savedUsername ? $('login-submit') : username).focus();
 
@@ -262,15 +263,42 @@ function setSplashStatus(text) {
     status.classList.toggle('visible', !!text);
 }
 
-/** Verilen ekranı perdenin arkasında açar ve perdeleri çeker. */
-async function openCurtainsTo(viewId) {
+/** Açılış ekranını animasyonsuz kaldırır (otomatik giriş yokken ya da hata olursa). */
+function hideSplash() {
     const splash = $('view-splash');
-    $(viewId).hidden = false;
-    splash.classList.add('open');
-    await wait(CURTAIN_DONE_AFTER);
     splash.hidden = true;
     splash.classList.remove('play', 'open');
     splashStartedAt = null;
+}
+
+/** İki kare bekler: yeni görünen ekran perde kapalıyken çizilsin (pencere arka plandaysa takılmaz). */
+const nextPaint = () => Promise.race([
+    new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    wait(150),
+]);
+
+/**
+ * Verilen ekranı perdenin arkasında açar, çizilmesini bekler ve perdeleri çeker. Sahne, perdeler
+ * gerçekten açıldıktan sonra kalkar; tarayıcı meşgul olup geçiş geç başlasa bile yarıda kesilmez.
+ */
+async function openCurtainsTo(viewId) {
+    const splash = $('view-splash');
+    const curtain = splash.querySelector('.curtain-left');
+    $(viewId).hidden = false;
+    await nextPaint();
+
+    const opened = new Promise(resolve => {
+        const timer = setTimeout(resolve, CURTAIN_DONE_AFTER + 1500); // geçiş olayı gelmezse
+        curtain.addEventListener('transitionend', function onEnd(event) {
+            if (event.target !== curtain) return;
+            curtain.removeEventListener('transitionend', onEnd);
+            clearTimeout(timer);
+            resolve();
+        });
+    });
+    splash.classList.add('open');
+    await opened;
+    hideSplash();
 }
 
 async function enterLauncher(session) {
@@ -298,7 +326,8 @@ async function enterLauncher(session) {
         showView('view-main');
         startMusic();
     } else {
-        // Yazı tamamlanınca (ve arayüz hazırsa) perdeler açılır; arkadan launcher görünür
+        // Ana ekran perdenin arkasında şimdiden çizilir; yazı tamamlanınca perdeler açılır
+        $('view-main').hidden = false;
         await wait(Math.max(0, CURTAIN_OPEN_AT - (performance.now() - splashStartedAt)));
         startMusic();
         await openCurtainsTo('view-main');
@@ -805,5 +834,5 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('dragover', event => event.preventDefault());
     window.addEventListener('drop', event => event.preventDefault());
 
-    showLogin({ auto: true }).catch(err => { showView('view-login'); setLoginStatus(err.message, true); });
+    showLogin({ auto: true }).catch(err => { hideSplash(); showView('view-login'); setLoginStatus(err.message, true); });
 });

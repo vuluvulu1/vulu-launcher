@@ -225,7 +225,8 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
             rgba(0, 0, 0, .55) 0px, rgba(0, 0, 0, .2) 22px, rgba(255, 220, 180, .05) 40px,
             rgba(0, 0, 0, .18) 58px, rgba(0, 0, 0, .55) 80px),
         #0d0a08;
-    transition: transform 1s cubic-bezier(.65, 0, .3, 1);
+    transition: transform 1.1s cubic-bezier(.65, 0, .3, 1);
+    will-change: transform; /* kendi katmanında: açılırken her karede yeniden çizilmez */
 }
 .curtain-left { left: 0; transform-origin: left center; box-shadow: inset -30px 0 50px -12px #000; }
 .curtain-right { right: 0; transform-origin: right center; box-shadow: inset 30px 0 50px -12px #000; }
@@ -246,15 +247,16 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
         radial-gradient(ellipse 26% 30% at 50% 47%, rgba(255, 224, 178, .13) 0%, rgba(255, 224, 178, .05) 45%, transparent 75%),
         radial-gradient(ellipse 30% 36% at 50% 47%, transparent 35%, rgba(0, 0, 0, .94) 100%);
     transition: opacity .5s ease;
+    will-change: opacity;
 }
 .stage-vignette::before {
     content: ""; position: absolute; inset: 0;
     clip-path: polygon(47% 0, 53% 0, 66% 100%, 34% 100%);
     background: linear-gradient(180deg, rgba(255, 228, 186, .09), rgba(255, 228, 186, .025) 55%, transparent 80%);
 }
-/* Başta her yer karanlık; spot yanınca bu örtü kalkar */
-.stage-vignette::after { content: ""; position: absolute; inset: 0; background: #000; opacity: 0; }
-.play .stage-vignette::after { animation: lights-on .55s ease-out .1s backwards; }
+/* Başta (ve uygulama açılırken) her yer karanlık; spot yanınca bu örtü kalkar */
+.stage-vignette::after { content: ""; position: absolute; inset: 0; background: #000; opacity: 1; }
+.play .stage-vignette::after { opacity: 0; animation: lights-on .55s ease-out .1s backwards; }
 @keyframes lights-on { from { opacity: 1; } to { opacity: 0; } }
 
 .stage-title { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .35s ease, transform .5s ease; }
@@ -305,7 +307,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 
 @media (prefers-reduced-motion: reduce) {
     .play .stage-name path, .play .stage-ornament, .play .stage-greeting, .play .stage-vignette::after { animation-duration: .01s; animation-delay: 0s; }
-    .curtain, .valance { transition: opacity .3s ease; }
+    .curtain, .valance { transition: opacity .8s ease; }
     .open .curtain, .open .valance { transform: none; opacity: 0; }
 }
 
