@@ -274,9 +274,10 @@ async function offerLauncherUpdate() {
     }
 
     const size = check.sizeMb ? ` (${check.sizeMb} MB)` : '';
+    const notes = check.notes && check.notes.trim() ? `\n\nYenilikler:\n${check.notes.trim()}` : '';
     const accepted = await confirmDialog({
         title: 'Launcher güncellemesi',
-        message: `Launcher ${check.version} sürümüne güncellenebilir${size}.\nŞimdi güncellensin mi?`,
+        message: `Launcher v${check.version} sürümüne güncellenebilir${size}.${notes}\n\nŞimdi güncellensin mi? Launcher kapanıp güncellendikten sonra yeniden açılır.`,
     });
     if (!accepted) { appendLog({ text: 'Launcher güncellemesi ertelendi.', level: 'muted' }); return; }
 

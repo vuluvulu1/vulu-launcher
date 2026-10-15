@@ -14,8 +14,14 @@ namespace VuluLauncher
         private const string WebView2DownloadUrl = "https://go.microsoft.com/fwlink/p/?LinkId=2124703";
 
         [STAThread]
-        private static void Main()
+        private static void Main(string[] args)
         {
+#if !DEBUG
+            // Discord tarzı açılış: önce Updater sürümü denetler, sonra launcher'ı "--from-updater" ile açar.
+            // Updater yoksa ya da açılamazsa launcher normal şekilde devam eder.
+            if (!args.Contains("--from-updater") && StartUpdater()) return;
+#endif
+
             if (!WebView2Installed())
             {
                 MessageBox(IntPtr.Zero,
@@ -57,6 +63,25 @@ namespace VuluLauncher
             window.WaitForClose();
 
             app.Shutdown();
+        }
+
+        private static bool StartUpdater()
+        {
+            string updater = Path.Combine(AppContext.BaseDirectory, VuluShared.Releases.UpdaterExeName);
+            if (!File.Exists(updater)) return false;
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(updater)
+                {
+                    UseShellExecute = false,
+                    WorkingDirectory = AppContext.BaseDirectory
+                });
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static bool WebView2Installed() =>

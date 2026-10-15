@@ -1,16 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Updater</RootNamespace>
     <ApplicationIcon>vuluLauncher-logo-prototip.ico</ApplicationIcon>
+    <Version>0.8.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="vuluLauncher-logo-prototip.ico" />
+    <PackageReference Include="Photino.NET" Version="4.0.16" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Launcher ile ortak: GitHub release bilgisi ve sürüm karşılaştırma -->
+    <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
+
+    <!-- Arayüz exe'nin içine gömülür; güncelleme sırasında diskteki dosyalar değişse de etkilenmez -->
+    <EmbeddedResource Include="ui\updater.html" LogicalName="updater.html" />
+    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\Sora.ttf" LogicalName="Sora.ttf" />
+    <EmbeddedResource Include="..\Launcher\wwwroot\assets\logo.png" LogicalName="logo.png" />
+    <Content Include="vuluLauncher-logo-prototip.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

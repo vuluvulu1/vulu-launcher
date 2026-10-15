@@ -24,7 +24,7 @@ namespace VuluLauncher
         private readonly GameLauncher _game;
 
         private List<InstanceUpdatePlan> _updatePlan = new();
-        private VersionInfo? _latestLauncher;
+        private VuluShared.ReleaseManifest? _latestLauncher;
         private AdminService? _admin;
 
         // Pencere sürükleme: başlangıçtaki pencere ve imleç konumu
@@ -227,25 +227,19 @@ namespace VuluLauncher
             }
 
             _latestLauncher = latest;
-            Log($"Yeni launcher sürümü mevcut: {latest.Version}", "warn");
+            string version = VuluShared.Releases.Clean(latest.Version);
+            Log($"Yeni launcher sürümü mevcut: v{version}", "warn");
 
-            // Dosya boyutunu ve disk alanını öğren; alınamazsa güncelleme yine de önerilir
-            double? sizeMb = null;
+            // Zip ve açılmış hali için yer gerekir; boyut bilinmiyorsa güncelleme yine de önerilir
+            double? sizeMb = latest.Size > 0 ? Math.Round(latest.Size / 1024.0 / 1024.0, 1) : null;
             bool diskOk = true;
             long neededMb = 0, freeMb = 0;
             try
             {
-                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
-                http.DefaultRequestHeaders.Add("User-Agent", "vulu-launcher");
-                using var request = new HttpRequestMessage(HttpMethod.Head, latest.DownloadUrl);
-                using var response = await http.SendAsync(request);
-
-                if (response.Content.Headers.ContentLength is long length)
+                if (latest.Size > 0)
                 {
-                    sizeMb = Math.Round(length / 1024.0 / 1024.0, 1);
-
                     var drive = new DriveInfo(Path.GetPathRoot(AppPaths.Base) ?? "C:\\");
-                    long needed = length + 50L * 1024 * 1024; // +50MB pay
+                    long needed = latest.Size * 3 + 50L * 1024 * 1024;
                     neededMb = needed / 1024 / 1024;
                     freeMb = drive.AvailableFreeSpace / 1024 / 1024;
                     diskOk = drive.AvailableFreeSpace >= needed;
@@ -253,24 +247,22 @@ namespace VuluLauncher
             }
             catch { }
 
-            return new { status = "available", version = latest.Version, sizeMb, diskOk, neededMb, freeMb };
+            return new { status = "available", version, notes = latest.Notes, sizeMb, diskOk, neededMb, freeMb };
         }
 
+        /// <summary>Updater'ı açar ve launcher'ı kapatır; Updater kapanmayı bekleyip kurar ve launcher'ı yeniden açar.</summary>
         private object StartLauncherUpdate()
         {
             if (_latestLauncher == null)
                 throw new InvalidOperationException("Bekleyen launcher güncellemesi yok.");
 
-            string updaterPath = Path.Combine(AppPaths.Base, "Updater.exe");
+            string updaterPath = Path.Combine(AppPaths.Base, VuluShared.Releases.UpdaterExeName);
             if (!File.Exists(updaterPath))
                 throw new FileNotFoundException("Updater.exe bulunamadı.");
 
-            // Updater argümanları: <indirme adresi> <launcher exe yolu> [sha256]
-            var startInfo = new ProcessStartInfo(updaterPath);
-            startInfo.ArgumentList.Add(_latestLauncher.DownloadUrl);
-            startInfo.ArgumentList.Add(Environment.ProcessPath ?? Path.Combine(AppPaths.Base, "vulu Launcher.exe"));
-            if (!string.IsNullOrWhiteSpace(_latestLauncher.Sha256))
-                startInfo.ArgumentList.Add(_latestLauncher.Sha256.Trim());
+            var startInfo = new ProcessStartInfo(updaterPath) { UseShellExecute = false, WorkingDirectory = AppPaths.Base };
+            startInfo.ArgumentList.Add("--wait-pid");
+            startInfo.ArgumentList.Add(Environment.ProcessId.ToString());
 
             Process.Start(startInfo);
             _window.Close();
