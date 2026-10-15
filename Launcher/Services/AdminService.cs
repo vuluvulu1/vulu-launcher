@@ -12,14 +12,21 @@ namespace VuluLauncher
 
         public AdminService(string username, string password)
         {
-            string uri = $"mongodb+srv://{username}:{password}@vulu.wjhda8r.mongodb.net/launcher?appName=vulu";
+            _client = CreateClient(username, password);
+            Database = _client.GetDatabase("launcher");
+            _users = Database.GetCollection<AdminUser>("users");
+        }
+
+        /// <summary>vulu Packs yayınlama da admin'in bu bağlantısını kullanır.</summary>
+        public IMongoDatabase Database { get; }
+
+        public static MongoClient CreateClient(string username, string password)
+        {
+            string uri = $"mongodb+srv://{Uri.EscapeDataString(username)}:{Uri.EscapeDataString(password)}@vulu.wjhda8r.mongodb.net/launcher?appName=vulu";
             var settings = MongoClientSettings.FromConnectionString(uri);
             settings.ServerApi = new ServerApi(ServerApiVersion.V1);
             settings.ServerSelectionTimeout = TimeSpan.FromSeconds(10);
-
-            _client = new MongoClient(settings);
-            var db = _client.GetDatabase("launcher");
-            _users = db.GetCollection<AdminUser>("users");
+            return new MongoClient(settings);
         }
 
         /// <summary>

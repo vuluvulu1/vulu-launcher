@@ -1,25 +1,9 @@
-// Admin sayfası: kullanıcı yönetimi (MongoDB) ve instance manifest yayınlama.
+// Admin sayfası: kullanıcı yönetimi (MongoDB). vulu Packs yayınlama da bu bağlantıyı kullanır.
 let adminConnected = false;
-let adminTab = 'users';
 
-/** Admin sekmesi her açıldığında seçili bölümü yeniden çizer. */
+/** Admin sekmesi her açıldığında yeniden çizilir. */
 function openAdminPage() {
-    showAdminTab(adminTab);
-}
-
-function showAdminTab(tab) {
-    adminTab = tab;
-    for (const button of document.querySelectorAll('#admin-tabs button'))
-        button.classList.toggle('active', button.dataset.tab === tab);
-
-    const body = $('admin-body');
-    if (tab === 'users') renderUsersTab(body);
-    else renderInstancesTab(body);
-}
-
-function setupAdminPage() {
-    for (const button of document.querySelectorAll('#admin-tabs button'))
-        button.addEventListener('click', () => showAdminTab(button.dataset.tab));
+    renderUsersTab($('admin-body'));
 }
 
 // ── Kullanıcılar ──────────────────────────────────────────────────────
@@ -48,7 +32,8 @@ function renderUsersTab(body) {
     });
 }
 
-function renderConnectForm(body) {
+/** MongoDB bağlantı formu; bağlanınca onConnected çağrılır (varsayılan: kullanıcı listesi). */
+function renderConnectForm(body, onConnected = () => renderUsersTab(body)) {
     const username = el('input', { type: 'text', placeholder: 'MongoDB kullanıcı adı', autofocus: true, spellcheck: false });
     const password = el('input', { type: 'password', placeholder: 'Şifre' });
     const error = el('div', { class: 'form-error' });
@@ -62,7 +47,7 @@ function renderConnectForm(body) {
             error.textContent = 'Bağlanılıyor...';
             try {
                 const result = await bridge.invoke('admin.connect', { username: username.value, password: password.value });
-                if (result.success) { adminConnected = true; renderUsersTab(body); return; }
+                if (result.success) { adminConnected = true; onConnected(); return; }
                 error.textContent = result.error;
             } catch (err) {
                 error.textContent = err.message;
@@ -139,54 +124,4 @@ async function deleteUser(user, body) {
     try { await bridge.invoke('admin.deleteUser', { id: user.id }); }
     catch (err) { await alertDialog({ title: 'Silinemedi', message: err.message }); }
     renderUsersTab(body);
-}
-
-// ── Instance güncelleme ───────────────────────────────────────────────
-function renderInstancesTab(body) {
-    body.replaceChildren(el('p', { class: 'admin-toolbar' }, 'Yükleniyor...'));
-
-    bridge.invoke('admin.instances').then(info => {
-        const logBox = el('div', { class: 'admin-log' });
-        const log = text => { logBox.textContent = text + '\n' + logBox.textContent; };
-
-        const cards = info.instances.map(instance => {
-            const modsVersion = el('input', { type: 'text', placeholder: 'Mods versiyon (örn: v1.0)', spellcheck: false });
-            const modsUrl = el('input', { type: 'url', placeholder: 'Mods ZIP adresi (https://...)', spellcheck: false });
-            const changelog = el('textarea', {
-                class: 'changelog-input', rows: 2, maxLength: 600, spellcheck: false,
-                placeholder: 'Yenilik notu (isteğe bağlı): eklenen/güncellenen modlar, düzeltmeler...',
-                'aria-label': instance + ' yenilik notu',
-            });
-            const button = el('button', { class: 'btn btn-sm btn-primary' }, 'Tara ve yayınla');
-
-            button.addEventListener('click', async () => {
-                button.disabled = true;
-                log(`${instance} taranıyor ve gönderiliyor...`);
-                try {
-                    const result = await bridge.invoke('admin.scanPush', {
-                        instance, modsVersion: modsVersion.value, modsUrl: modsUrl.value, changelog: changelog.value,
-                    });
-                    log(result.success
-                        ? `✓ ${instance}: manifest güncellendi (${result.fileCount} dosya, ${result.deletedCount} silindi)`
-                        : `✗ ${instance}: sunucu manifest'i kabul etmedi.`);
-                    if (result.success) { changelog.value = ''; loadDetails(); }
-                } catch (err) {
-                    log(`✗ ${instance}: ${err.message}`);
-                }
-                button.disabled = false;
-            });
-
-            return el('div', { class: 'inst-card' },
-                el('div', { class: 'title' }, instance),
-                el('div', { class: 'folders' }, 'Taranacak: ' + info.trackedFolders.join(', ')),
-                modsVersion, modsUrl, button, changelog);
-        });
-
-        body.replaceChildren(
-            el('p', { class: 'admin-toolbar' }, 'Instance klasörünü tarar, manifest oluşturur ve sunucuya gönderir.'),
-            ...(cards.length ? cards : [el('p', { class: 'pack-empty' }, 'Bu bilgisayarda kurulu instance klasörü bulunamadı.')]),
-            logBox);
-    }).catch(err => {
-        body.replaceChildren(el('p', { class: 'form-error' }, 'Hata: ' + err.message));
-    });
 }

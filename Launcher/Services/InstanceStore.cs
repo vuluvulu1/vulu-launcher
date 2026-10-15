@@ -15,6 +15,8 @@ namespace VuluLauncher
         /// <summary>Instance klasörüne göre dosya yolu, örn. "mods/sodium.jar".</summary>
         public string File { get; set; } = "";
         public string? IconUrl { get; set; }
+        /// <summary>vulu Packs'ten geldiyse true; paket güncellenince bu içerikler yenisiyle eşitlenir.</summary>
+        public bool FromPack { get; set; }
     }
 
     /// <summary>Kullanıcının oluşturduğu instance'ın bilgileri; instances/&lt;klasör&gt;/instance.json içinde durur.</summary>
@@ -30,6 +32,10 @@ namespace VuluLauncher
         /// <summary>Modrinth modpack'inden kurulduysa projenin adı/kimliği.</summary>
         public string? ModpackProjectId { get; set; }
         public string? ModpackVersion { get; set; }
+        /// <summary>vulu Packs'ten kurulduysa (ya da oradan yayınlandıysa) paketin kimliği ve revizyonu.</summary>
+        public string? SharedPackId { get; set; }
+        public int SharedPackRevision { get; set; }
+        public string? Description { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public List<InstalledContent> Content { get; set; } = new();
 

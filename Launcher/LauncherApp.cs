@@ -18,12 +18,10 @@ namespace VuluLauncher
 
         private LoginService _login = new();
         private readonly LauncherUpdateService _launcherUpdates = new();
-        private readonly InstanceUpdater _instanceUpdater;
         private readonly JavaManager _java;
         private readonly ModrinthService _modrinth;
         private readonly GameLauncher _game;
 
-        private List<InstanceUpdatePlan> _updatePlan = new();
         private VuluShared.ReleaseManifest? _latestLauncher;
         private AdminService? _admin;
 
@@ -35,7 +33,6 @@ namespace VuluLauncher
         {
             _bridge = bridge;
             _window = window;
-            _instanceUpdater = new InstanceUpdater(Log);
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
             _game = new GameLauncher(Log, _java);
@@ -66,9 +63,6 @@ namespace VuluLauncher
 
             _bridge.On("auth.login", async args => await LoginAsync(args));
 
-            _bridge.On("updates.check", async _ => await CheckInstanceUpdatesAsync());
-            _bridge.On("updates.apply", async args => await ApplyInstanceUpdateAsync(args.Str("instance")));
-
             _bridge.On("launcher.check", async _ => await CheckLauncherVersionAsync());
             _bridge.On("launcher.update", _ => Task.FromResult<object?>(StartLauncherUpdate()));
 
@@ -76,15 +70,13 @@ namespace VuluLauncher
             _bridge.On("game.versions", async _ => { RequireLogin(); return await LoaderCatalog.MinecraftVersionsAsync(); });
 
             RegisterInstanceCommands();
+            RegisterPackCommands();
 
             // ── Admin ─────────────────────────────────────────────────────
             _bridge.On("admin.connect", async args => await AdminConnectAsync(args.Str("username"), args.Str("password")));
             _bridge.On("admin.users", async _ => await AdminUsersAsync());
             _bridge.On("admin.saveUser", async args => await AdminSaveUserAsync(args));
             _bridge.On("admin.deleteUser", async args => await AdminDeleteUserAsync(args.Str("id")));
-            _bridge.On("admin.instances", _ => Task.FromResult<object?>(AdminInstances()));
-            _bridge.On("admin.scanPush", async args =>
-                await AdminScanPushAsync(args.Str("instance"), args.Str("modsVersion"), args.Str("modsUrl"), args.Str("changelog")));
         }
 
         public void Shutdown()
@@ -167,45 +159,6 @@ namespace VuluLauncher
         {
             if (string.IsNullOrEmpty(_login.Token))
                 throw new InvalidOperationException("Önce giriş yapmalısınız.");
-        }
-
-        // ════════════════════════════════════════════════════════════════
-        // PAKET GÜNCELLEMELERİ
-        // ════════════════════════════════════════════════════════════════
-        private async Task<object?> CheckInstanceUpdatesAsync()
-        {
-            RequireLogin();
-            _updatePlan = await _instanceUpdater.BuildPlanAsync(_login.AllowedPacks);
-
-            return _updatePlan.Select(p => new
-            {
-                instance = p.InstanceName,
-                modsVersion = p.ModsUpdate ? p.Manifest.ModsVersion : null,
-                fileCount = p.ToUpdate.Count,
-                sizeMb = Math.Round(p.ToUpdate.Sum(f => f.Size) / 1024.0 / 1024.0, 1),
-                deleteCount = p.ToDelete.Count
-            });
-        }
-
-        private async Task<object?> ApplyInstanceUpdateAsync(string instance)
-        {
-            RequireLogin();
-            var item = _updatePlan.FirstOrDefault(p => p.InstanceName == instance)
-                ?? throw new InvalidOperationException($"{instance} için bekleyen güncelleme yok.");
-
-            try
-            {
-                await _instanceUpdater.ApplyAsync(item);
-                _updatePlan.Remove(item);
-                Log($"{instance} güncellendi.", "ok");
-                return new { success = true, error = (string?)null };
-            }
-            catch (Exception ex)
-            {
-                Log($"{instance} güncellenemedi: {ex.Message}", "error");
-                Log("Bir sonraki açılışta tekrar denenecek.", "muted");
-                return new { success = false, error = ex.Message };
-            }
         }
 
         // ════════════════════════════════════════════════════════════════
@@ -415,72 +368,6 @@ namespace VuluLauncher
             await RequireAdminConnection().DeleteUserAsync(id);
             return new { success = true };
         }
-
-        private object AdminInstances()
-        {
-            RequireAdmin();
-            return new
-            {
-                trackedFolders = ManifestService.TrackedFolders,
-                instances = PackCatalog.All
-                    .Select(p => p.FolderName)
-                    .Where(name => Directory.Exists(Path.Combine(AppPaths.Instances, name)))
-            };
-        }
-
-        /// <summary>Instance klasörünü tarar, önceki manifest ile karşılaştırır ve yeni manifest'i API'ye gönderir.</summary>
-        private async Task<object?> AdminScanPushAsync(string instance, string modsVersion, string modsUrl, string changelogNote)
-        {
-            RequireAdmin();
-
-            if (PackCatalog.All.All(p => p.FolderName != instance))
-                throw new InvalidOperationException($"Bilinmeyen instance: {instance}");
-
-            string instancePath = Path.Combine(AppPaths.Instances, instance);
-            if (!Directory.Exists(instancePath))
-                throw new DirectoryNotFoundException($"Klasör bulunamadı: {instancePath}");
-
-            var manifestService = new ManifestService(_login.Token!);
-
-            var current = await manifestService.GetManifestAsync();
-            var previousFiles = new List<string>();
-            var changelog = new List<ChangelogEntry>();
-            if (current?.Instances != null && current.Instances.TryGetValue(instance, out var previous))
-            {
-                previousFiles = previous.Files.Select(f => f.Path).ToList();
-                changelog = previous.Changelog ?? changelog;
-            }
-
-            // Yeni not en başa eklenir; eski notlar korunur (sunucu manifest'i bütün olarak değiştirir)
-            if (!string.IsNullOrWhiteSpace(changelogNote))
-            {
-                changelog.Insert(0, new ChangelogEntry
-                {
-                    Version = string.IsNullOrWhiteSpace(modsVersion) ? "" : modsVersion.Trim(),
-                    Date = DateTime.Now.ToString("yyyy-MM-dd"),
-                    Text = changelogNote.Trim()
-                });
-            }
-            if (changelog.Count > MaxChangelogEntries)
-                changelog = changelog.Take(MaxChangelogEntries).ToList();
-
-            var newFiles = await Task.Run(() => manifestService.ScanInstance(instancePath, instance));
-            var newPaths = newFiles.Select(f => f.Path).ToHashSet();
-
-            // Önceki manifestte olup artık lokalde olmayan = silinmiş
-            var deleted = previousFiles.Where(p => !newPaths.Contains(p)).ToList();
-
-            bool pushed = await manifestService.PushManifestAsync(
-                instance, newFiles, deleted,
-                string.IsNullOrWhiteSpace(modsVersion) ? null : modsVersion.Trim(),
-                string.IsNullOrWhiteSpace(modsUrl) ? null : modsUrl.Trim(),
-                changelog);
-
-            _instanceUpdater.ForgetManifest();
-            return new { success = pushed, fileCount = newFiles.Count, deletedCount = deleted.Count };
-        }
-
-        private const int MaxChangelogEntries = 20;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct POINT { public int X; public int Y; }

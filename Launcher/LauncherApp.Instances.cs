@@ -91,9 +91,10 @@ namespace VuluLauncher
                 kind = "custom",
                 locked = false,
                 name = m.Name,
-                description = m.ModpackProjectId != null
-                    ? $"Modrinth modpack · {m.ModpackVersion}"
+                description = !string.IsNullOrWhiteSpace(m.Description) ? m.Description
+                    : m.ModpackProjectId != null ? $"Modrinth modpack · {m.ModpackVersion}"
                     : "Kişisel instance",
+                sharedPackId = m.SharedPackId,
                 mcVersion = m.McVersion,
                 loader = m.Loader,
                 loaderVersion = m.LoaderVersion,
@@ -110,7 +111,7 @@ namespace VuluLauncher
             return packs.Concat(custom);
         }
 
-        /// <summary>Ana ekrandaki istatistikler ve yenilikler: mod sayısı, disk boyutu, son güncelleme, changelog.</summary>
+        /// <summary>Ana ekrandaki istatistikler: mod sayısı, disk boyutu, son değişiklik.</summary>
         private async Task<object?> InstanceDetailsAsync(string id)
         {
             RequireLogin();
@@ -133,26 +134,12 @@ namespace VuluLauncher
             string path = Path.Combine(AppPaths.Instances, folder);
             var (installed, modCount, sizeBytes, modsChanged) = await Task.Run(() => ScanInstanceFolder(path));
 
-            InstanceManifest? manifest = null;
-            if (isServer)
-            {
-                var root = await _instanceUpdater.GetManifestCachedAsync();
-                root?.Instances?.TryGetValue(folder, out manifest);
-            }
-
-            // Sunucu paketlerinde manifest'in yayın tarihi, kişisel instance'larda mods klasörünün son değişimi
-            string? updatedAt = !string.IsNullOrWhiteSpace(manifest?.UpdatedAt)
-                ? manifest!.UpdatedAt
-                : modsChanged?.ToString("o");
-
             return new
             {
                 installed,
                 modCount,
                 sizeMb = Math.Round(sizeBytes / 1024.0 / 1024.0, 1),
-                updatedAt,
-                modsVersion = manifest?.ModsVersion,
-                changelog = manifest?.Changelog ?? new List<ChangelogEntry>()
+                updatedAt = modsChanged?.ToString("o")
             };
         }
 
@@ -591,7 +578,6 @@ namespace VuluLauncher
 
             _login = new LoginService();
             _admin = null;
-            _updatePlan = new List<InstanceUpdatePlan>();
             return new { success = true };
         }
     }

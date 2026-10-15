@@ -74,6 +74,13 @@ const mockBackend = (() => {
         { id: 'inst:fabric-121', kind: 'custom', name: 'Fabric 1.21', description: 'Kişisel instance', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', recommendedRamGb: 8, logo: null, background: null, backgroundStyle: 'cover', thumbnail: null, iconUrl: null },
     ];
 
+    const daysAgoIso = n => new Date(Date.now() - n * 86400000).toISOString();
+    let packs = [
+        { id: 'p1', name: 'Create Macera', description: 'Create ve FTB Quests ile ilerlenen teknoloji/macera paketi. Görev kitabı baştan sona Türkçe.', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 3, updatedAt: daysAgoIso(2), modCount: 142, sizeMb: 512.4, includes: ['config', 'kubejs', 'defaultconfigs'], coverUrl: 'assets/mainmenu.png', installed: null },
+        { id: 'p2', name: 'Hafif Survival', description: 'Performans modları ve birkaç küçük eklenti. Düşük bilgisayarlar için.', author: 'vulu', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', revision: 2, updatedAt: daysAgoIso(9), modCount: 24, sizeMb: 61.7, includes: ['config'], coverUrl: 'assets/launchervanillabg.jpg', installed: { instanceId: 'inst:fabric-121', revision: 1 } },
+        { id: 'p3', name: 'Skyblock', description: '', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 1, updatedAt: daysAgoIso(30), modCount: 68, sizeMb: 140.2, includes: ['config', 'kubejs'], coverUrl: null, installed: null },
+    ];
+
     let content = [
         { file: 'mods/sodium-fabric-0.6.jar', type: 'mod', title: 'Sodium', version: 'mc1.21.1-0.6.13', iconUrl: null, sizeMb: 1.2 },
         { file: 'mods/elle-eklenen.jar', type: 'mod', title: 'elle-eklenen.jar', version: null, iconUrl: null, sizeMb: 0.4 },
@@ -97,8 +104,6 @@ const mockBackend = (() => {
         },
         'auth.logout': async () => ({ success: true }),
         'auth.forgetPassword': async () => ({ success: true }),
-        'updates.check': async () => { await wait(300); return []; },
-        'updates.apply': async () => ({ success: true }),
         'launcher.check': async () => { log('Launcher güncel.', 'muted'); return { status: 'upToDate' }; },
         'game.play': async args => {
             log(`${args.instanceId} hazırlanıyor...`, 'accent');
@@ -113,22 +118,60 @@ const mockBackend = (() => {
             return { started: true };
         },
 
+        'packs.list': async () => {
+            await wait(400);
+            return { configured: true, isAdmin: true, adminConnected: true, packs };
+        },
+        'packs.install': async args => {
+            const pack = packs.find(p => p.id === args.id);
+            log(`${pack.name} kuruluyor...`, 'accent');
+            for (let n = 0; n <= pack.modCount; n += 12) { log(`Modlar indiriliyor... ${n}/${pack.modCount}`, 'accent', true); await wait(150); }
+            log('Paket dosyaları açılıyor...', 'accent', true); await wait(300);
+            const id = 'inst:' + pack.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            instances = instances.concat({ id, kind: 'custom', locked: false, sharedPackId: pack.id, name: pack.name, description: pack.description, mcVersion: pack.mcVersion, loader: pack.loader, loaderVersion: pack.loaderVersion, recommendedRamGb: 8, logo: null, background: null, backgroundStyle: 'cover', thumbnail: null, iconUrl: null });
+            pack.installed = { instanceId: id, revision: pack.revision };
+            log(`${pack.name} kuruldu.`, 'ok');
+            return { id };
+        },
+        'packs.update': async args => {
+            const pack = packs.find(p => p.id === args.id);
+            log(`${pack.name} güncelleniyor...`, 'accent'); await wait(800);
+            pack.installed.revision = pack.revision;
+            log(`${pack.name} güncellendi.`, 'ok');
+            return { id: pack.installed.instanceId };
+        },
+        'packs.shareInfo': async () => {
+            await wait(300);
+            return {
+                name: 'Fabric 1.21', description: '', mcVersion: '1.21.1', loader: 'fabric', modrinthCount: 2, existing: null,
+                entries: [
+                    { path: 'config', isDir: true, files: 184, sizeMb: 2.4, checkedByDefault: true, note: null },
+                    { path: 'kubejs', isDir: true, files: 37, sizeMb: 5.1, checkedByDefault: true, note: null },
+                    { path: 'mods', isDir: true, files: 1, sizeMb: 0.4, checkedByDefault: true, note: 'Modrinth dışından eklenenler' },
+                    { path: 'resourcepacks', isDir: true, files: 2, sizeMb: 18.2, checkedByDefault: true, note: 'Modrinth dışından eklenenler' },
+                    { path: 'options.txt', isDir: false, files: 1, sizeMb: 0.01, checkedByDefault: false, note: null },
+                    { path: 'servers.dat', isDir: false, files: 1, sizeMb: 0.01, checkedByDefault: false, note: null },
+                ],
+            };
+        },
+        'packs.pickCover': async () => ({ path: 'C:\\kapak.jpg', url: 'assets/mainmenu.png' }),
+        'packs.publish': async args => {
+            log(`${args.name} hazırlanıyor...`, 'accent'); await wait(500);
+            log(`${args.name} yükleniyor (221 dosya, 2 Modrinth içeriği)...`, 'accent', true); await wait(700);
+            packs.unshift({ id: 'p' + Date.now(), name: args.name, description: args.description, author: 'vulu', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', revision: 1, updatedAt: new Date().toISOString(), modCount: 2, sizeMb: 26.3, includes: args.includes, coverUrl: args.coverPath ? 'assets/mainmenu.png' : null, installed: null });
+            log(`${args.name} vulu Packs'te yayınlandı (rev 1).`, 'ok');
+            return { id: packs[0].id, revision: 1 };
+        },
+        'packs.delete': async args => { packs = packs.filter(p => p.id !== args.id); return { success: true }; },
+
         'game.versions': async () => { await wait(300); return ['1.21.11', '1.21.10', '1.21.4', '1.21.1', '1.20.6', '1.20.4', '1.20.1', '1.19.4', '1.19.2', '1.18.2', '1.16.5', '1.12.2', '1.8.9']; },
         'instances.list': async () => instances,
         'instances.details': async args => {
             await wait(350);
             const daysAgo = n => new Date(Date.now() - n * 86400000).toISOString();
-            if (args.id === 'pack:aglr') return {
-                installed: true, modCount: 187, sizeMb: 2380.4, updatedAt: daysAgo(3), modsVersion: 'v1.4',
-                changelog: [
-                    { version: 'v1.4', date: daysAgo(3).slice(0, 10), text: 'Create 0.5.1 ve Farmer\'s Delight güncellendi, JEI eklendi.' },
-                    { version: 'v1.3', date: daysAgo(17).slice(0, 10), text: 'Sunucu performansı için config düzeltmeleri.' },
-                    { version: 'v1.2', date: daysAgo(40).slice(0, 10), text: 'KubeJS tarifleri yenilendi.' },
-                    { version: 'v1.1', date: daysAgo(62).slice(0, 10), text: 'İlk büyük güncelleme.' },
-                ],
-            };
-            if (args.id === 'pack:vanilla') return { installed: true, modCount: 0, sizeMb: 612, updatedAt: daysAgo(0), modsVersion: null, changelog: [] };
-            return { installed: false, modCount: 0, sizeMb: 0, updatedAt: null, modsVersion: null, changelog: [] };
+            if (args.id === 'pack:aglr') return { installed: true, modCount: 187, sizeMb: 2380.4, updatedAt: daysAgo(3) };
+            if (args.id === 'pack:vanilla') return { installed: true, modCount: 0, sizeMb: 612, updatedAt: daysAgo(0) };
+            return { installed: false, modCount: 0, sizeMb: 0, updatedAt: null };
         },
         'instances.options': async () => { await wait(300); return { minecraftVersions: ['1.21.11', '1.21.1', '1.20.1', '1.19.2', '1.16.5', '1.12.2'], loaders: ['vanilla', 'fabric', 'quilt', 'forge', 'neoforge'] }; },
         'instances.loaderVersions': async args => { await wait(300); return args.loader === 'neoforge' && args.mcVersion === '1.20.1' ? [] : ['0.16.14', '0.16.13', '0.16.10']; },
@@ -198,8 +241,6 @@ const mockBackend = (() => {
             return { success: true };
         },
         'admin.deleteUser': async args => { users = users.filter(u => u.id !== args.id); return { success: true }; },
-        'admin.instances': async () => ({ trackedFolders: ['config', 'kubejs', 'defaultconfigs', 'fancymenu_data'], instances: ['Vanilla', 'AGLR'] }),
-        'admin.scanPush': async () => { await wait(800); return { success: true, fileCount: 214, deletedCount: 3 }; },
     };
 
     return {

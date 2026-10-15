@@ -91,6 +91,18 @@ namespace VuluLauncher
             return GetAsync<List<MrVersion>>(url);
         }
 
+        /// <summary>Verilen sürüm kimliklerinin ayrıntıları (dosya adresi, hash). Modrinth tek istekte çoklu sorguya izin verir.</summary>
+        public async Task<List<MrVersion>> VersionsByIdsAsync(IEnumerable<string> versionIds)
+        {
+            var result = new List<MrVersion>();
+            foreach (var chunk in versionIds.Distinct().Chunk(100))
+            {
+                string ids = Uri.EscapeDataString(JsonSerializer.Serialize(chunk));
+                result.AddRange(await GetAsync<List<MrVersion>>($"{Api}/versions?ids={ids}"));
+            }
+            return result;
+        }
+
         /// <summary>Quilt, Fabric modlarını da çalıştırır; diğerleri yalnızca kendi modlarını.</summary>
         private static string[] CompatibleLoaders(string loader) =>
             loader == "quilt" ? new[] { "quilt", "fabric" } : new[] { loader };

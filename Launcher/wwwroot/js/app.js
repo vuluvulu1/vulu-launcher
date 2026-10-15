@@ -37,6 +37,7 @@ function showPage(name) {
     if (name === 'modrinth') openModrinthPage();
     if (name === 'settings') openSettingsPage();
     if (name === 'admin') openAdminPage();
+    if (name === 'packs') openPacksPage();
     refreshActivity();
 }
 
@@ -208,8 +209,10 @@ async function enterLauncher(session) {
     $('user-name').textContent = session.username;
     $('user-avatar').textContent = (session.username || '?').charAt(0);
     $('user-menu').hidden = false;
+    state.isAdmin = !!session.isAdmin;
     $('page-tabs').hidden = false;
     $('tab-admin').hidden = !session.isAdmin;
+    $('packs-grid').replaceChildren(); // başka hesaptan kalan liste görünmesin
 
     clearConsole();
     showPage('home');
@@ -217,7 +220,6 @@ async function enterLauncher(session) {
     if (!state.instances.some(i => !i.locked))
         appendLog({ text: 'Hesabınıza tanımlı bir paket yok. Yeni bir instance oluşturabilirsiniz.', level: 'warn' });
 
-    // Açılış animasyonu oynarken paket güncellemeleri kontrol edilir
     const splash = $('view-splash');
     const skipSplash = !!state.settings.skipSplash;
     if (!skipSplash) {
@@ -226,10 +228,7 @@ async function enterLauncher(session) {
         showView('view-splash');
     }
 
-    const [updates] = await Promise.all([
-        bridge.invoke('updates.check').catch(() => []),
-        new Promise(resolve => setTimeout(resolve, skipSplash ? 0 : 2600)),
-    ]);
+    if (!skipSplash) await new Promise(resolve => setTimeout(resolve, 2600));
 
     startMusic();
     if (skipSplash) showView('view-main');
@@ -240,25 +239,7 @@ async function enterLauncher(session) {
         setTimeout(() => { splash.hidden = true; }, 650);
     }
 
-    await offerInstanceUpdates(updates);
     await offerLauncherUpdate();
-}
-
-async function offerInstanceUpdates(updates) {
-    for (const update of updates) {
-        const lines = [`${update.instance} için güncelleme mevcut:`];
-        if (update.modsVersion) lines.push(`  •  Mods paketi → ${update.modsVersion}`);
-        if (update.fileCount > 0) lines.push(`  •  ${update.fileCount} config/kubejs dosyası (${update.sizeMb} MB)`);
-        if (update.deleteCount > 0) lines.push(`  •  ${update.deleteCount} eski dosya silinecek`);
-        lines.push('', 'Şimdi güncellensin mi?');
-
-        const accepted = await confirmDialog({ title: 'Güncelleme mevcut', message: lines.join('\n') });
-        if (!accepted) { appendLog({ text: `${update.instance} güncellemesi ertelendi.`, level: 'muted' }); continue; }
-
-        try { await withActivity(() => bridge.invoke('updates.apply', { instance: update.instance })); }
-        catch (err) { appendLog({ text: err.message, level: 'error' }); }
-    }
-    if (updates.length) loadDetails(); // mod sayısı / boyut değişmiş olabilir
 }
 
 async function offerLauncherUpdate() {
@@ -362,7 +343,6 @@ function clearSelection() {
     $('stage-bg').style.backgroundImage = '';
     state.details = null;
     $('pack-stats').hidden = true;
-    $('changelog').hidden = true;
     renderVersionPicker();
     updatePlayButton();
 }
@@ -395,6 +375,8 @@ function selectInstance(instance) {
         isCustom && el('button', { class: 'btn btn-sm', onclick: () => openNewInstanceDialog(instance) }, 'Düzenle'),
         isCustom && el('button', { class: 'btn btn-sm', onclick: () => openInstanceContent(instance) }, 'İçerik'),
         isCustom && el('button', { class: 'btn btn-sm', onclick: () => { openModrinthFor(instance); } }, 'Mod ekle'),
+        isCustom && state.isAdmin && el('button', { class: 'btn btn-sm btn-accent', onclick: () => openShareDialog(instance) },
+            instance.sharedPackId ? 'Paylaşımı güncelle' : 'Paylaş'),
         el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'instance', id: instance.id }) }, 'Klasörü aç'),
         el('button', { class: 'btn btn-sm', onclick: () => openBackgroundDialog(instance) }, 'Arka plan'),
         isCustom && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deleteInstance(instance) }, 'Sil'),
@@ -473,6 +455,8 @@ async function loadDetails() {
 
 function formatSize(mb) {
     if (!(mb > 0)) return '0 MB';
+    if (mb < 1) return Math.max(1, Math.round(mb * 1024)) + ' KB';
+    if (mb < 10) return mb.toFixed(1).replace('.', ',') + ' MB';
     return mb >= 1024 ? (mb / 1024).toFixed(1).replace('.', ',') + ' GB' : Math.round(mb) + ' MB';
 }
 
@@ -516,36 +500,6 @@ function renderDetails() {
         setStat('stat-size', installed ? formatSize(details.sizeMb) : 'Kurulmadı');
         setStat('stat-updated', updated ? relativeDate(updated) : '—', updated ? formatDate(updated) : '');
     }
-
-    // Yenilikler yalnızca sunucu paketlerinde (manifest'ten gelir)
-    const panel = $('changelog');
-    panel.hidden = !instance || instance.kind !== 'server';
-    if (panel.hidden) return;
-
-    const entries = (details && details.changelog) || [];
-    $('changelog-all').hidden = entries.length <= 3;
-    $('changelog-list').replaceChildren(...(loading
-        ? [el('p', { class: 'cl-empty' }, 'Yükleniyor…')]
-        : entries.length
-            ? entries.slice(0, 3).map(changelogItem)
-            : [el('p', { class: 'cl-empty' }, 'Bu paket için henüz yenilik notu yok.')]));
-}
-
-function changelogItem(entry) {
-    const date = parseDate(entry.date);
-    const meta = [entry.version, date ? formatDate(date) : entry.date].filter(Boolean).join(' · ');
-    return el('div', { class: 'cl-item' },
-        meta && el('span', { class: 'cl-meta' }, meta),
-        el('span', { class: 'cl-text' }, entry.text));
-}
-
-function showAllChangelog() {
-    const entries = (state.details && state.details.changelog) || [];
-    openModal(close => [
-        el('div', { class: 'modal-head' }, `${state.selected.name} · Yenilikler`),
-        el('div', { class: 'modal-body cl-list' }, entries.map(changelogItem)),
-        el('div', { class: 'modal-foot' }, el('button', { class: 'btn btn-primary', onclick: () => close() }, 'Kapat')),
-    ]);
 }
 
 function renderRamOptions() {
@@ -768,13 +722,12 @@ window.addEventListener('DOMContentLoaded', () => {
     setupTitlebar();
     setupPopovers();
     setupVersionPicker();
-    setupAdminPage();
+    setupPacksPage();
     setupConsole();
     setupMusic();
     setupLoginForm();
     $('btn-play').addEventListener('click', play);
     $('btn-ram').addEventListener('click', () => setPopover('ram-pop', 'btn-ram', $('ram-pop').hidden));
-    $('changelog-all').addEventListener('click', showAllChangelog);
     $('btn-new-instance').addEventListener('click', () => openNewInstanceDialog());
     for (const button of document.querySelectorAll('#page-tabs button'))
         button.addEventListener('click', () => showPage(button.dataset.page));

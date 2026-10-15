@@ -19,6 +19,10 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg>
                 Oyna
             </button>
+            <button data-page="packs">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5z" /><path d="M3 8v8l9 5 9-5V8" /><path d="M12 13v8" /></svg>
+                vulu Packs
+            </button>
             <button data-page="modrinth">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
                 Modrinth
@@ -141,14 +145,6 @@
                     </div>
                     <div id="pack-actions" class="pack-actions"></div>
                 </div>
-
-                <section id="changelog" class="changelog" aria-labelledby="changelog-title" hidden>
-                    <div class="cl-head">
-                        <h2 id="changelog-title">Yenilikler</h2>
-                        <button id="changelog-all" class="link-btn" hidden>Tümü</button>
-                    </div>
-                    <div id="changelog-list" class="cl-list"></div>
-                </section>
             </div>
 
             <div class="dock">
@@ -233,14 +229,23 @@
             <div id="settings-body"></div>
         </div>
 
+        <!-- vulu Packs: adminin paylaştığı paketler -->
+        <div id="page-packs" class="page page-scroll" hidden>
+            <header class="page-head">
+                <div>
+                    <h1>vulu Packs</h1>
+                    <p class="page-sub">Ekibin paylaştığı paketler. Tek tıkla kur, güncelleme gelince buradan al.</p>
+                </div>
+                <button id="packs-refresh" class="btn btn-sm">Yenile</button>
+            </header>
+            <p id="packs-status" class="page-note"></p>
+            <div id="packs-grid" class="packs-grid"></div>
+        </div>
+
         <!-- Admin (yalnızca admin hesaplarda görünür) -->
         <div id="page-admin" class="page page-scroll" hidden>
             <header class="page-head">
                 <h1>Admin paneli</h1>
-                <div id="admin-tabs" class="segmented">
-                    <button data-tab="users" class="active">Kullanıcılar</button>
-                    <button data-tab="instances">Instance güncelleme</button>
-                </div>
             </header>
             <div id="admin-body" class="admin-page"></div>
         </div>
@@ -260,6 +265,7 @@
     <script src="js/admin.js"></script>
     <script src="js/instances.js"></script>
     <script src="js/modrinth.js"></script>
+    <script src="js/packs.js"></script>
     <script src="js/settings.js"></script>
     <script src="js/app.js"></script>
 </body>

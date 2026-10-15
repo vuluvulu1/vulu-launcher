@@ -8,10 +8,12 @@ namespace VuluLauncher
         public const string BaseUrl = "https://vulu-api.onrender.com";
 
         /// <summary>
-        /// Modpack config dosyalarının indirileceği kök adres.
-        /// Dosyalar "{ModpackFilesBaseUrl}/{instance}/{relativePath}" altında bulunmalı.
+        /// vulu Packs'i herkesin okuyabilmesi için MongoDB Atlas'ta oluşturulan, YALNIZCA
+        /// launcher.packs, launcher.packfiles.files ve launcher.packfiles.chunks üzerinde "find"
+        /// yetkisi olan kullanıcı. Exe'nin içinde durduğu için herkes görebilir; başka yetki vermeyin.
+        /// Boş bırakılırsa paketleri yalnızca admin bağlantısı olan kullanıcılar görür.
         /// </summary>
-        public const string ModpackFilesBaseUrl =
-            "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/modpack";
+        public const string PacksReaderUser = "";
+        public const string PacksReaderPassword = "";
     }
 }
