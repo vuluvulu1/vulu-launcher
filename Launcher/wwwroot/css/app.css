@@ -208,83 +208,59 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .login-version { position: absolute; right: 16px; bottom: 12px; font: 11px var(--font-mono); color: var(--dim); }
 
 /* ── Açılış ────────────────────────────────────────────────────────── */
-/* Sahne açılışı ("royal vintage", launcher paletinde). Bütün pencereyi (başlık çubuğu dahil) anında
-   kaplar; giriş animasyonu uygulanmaz ki arkadaki arayüz bir an bile görünmesin. Perde kapalıyken
-   launcher arkada hazırlanır, "open" sınıfıyla perdeler açılır. */
+/* Sahne açılışı: zifiri karanlık bir salon, ışık yalnızca yukarıdan düşen bir spottan gelir.
+   Bütün pencereyi (başlık çubuğu dahil) anında kaplar; giriş animasyonu uygulanmaz ki arkadaki arayüz
+   bir an bile görünmesin. Perde kapalıyken launcher arkada hazırlanır, "open" sınıfıyla perdeler açılır. */
 #view-splash {
-    inset: 0; z-index: 60; overflow: hidden; animation: none; background: transparent;
-    --bronze-dark: #7a4d24;
+    inset: 0; z-index: 60; overflow: hidden; animation: none; background: #000;
     --bronze: #c27e3e;
     --bronze-light: #e3b37a;
-    --velvet: #1a1310;
-    --velvet-deep: #0e0a08;
 }
 
-/* Espresso kadife: düşük kontrastlı dikey kıvrımlar, orta kenarda derin gölge */
+/* Neredeyse siyah kadife; kıvrımlar yalnızca spotun düştüğü yerde seçilir */
 .curtain {
     position: absolute; top: 0; bottom: 0; width: 50.5%;
     background:
         repeating-linear-gradient(90deg,
-            rgba(0, 0, 0, .42) 0px, rgba(0, 0, 0, .12) 22px, rgba(255, 214, 170, .045) 40px,
-            rgba(0, 0, 0, .1) 58px, rgba(0, 0, 0, .42) 80px),
-        linear-gradient(180deg, var(--velvet) 0%, #20170f 55%, var(--velvet-deep) 100%);
-    transition: transform 1.4s cubic-bezier(.65, 0, .25, 1);
+            rgba(0, 0, 0, .55) 0px, rgba(0, 0, 0, .2) 22px, rgba(255, 220, 180, .05) 40px,
+            rgba(0, 0, 0, .18) 58px, rgba(0, 0, 0, .55) 80px),
+        #0d0a08;
+    transition: transform 1s cubic-bezier(.65, 0, .3, 1);
 }
-.curtain-left { left: 0; transform-origin: left center; box-shadow: inset -30px 0 50px -12px rgba(0, 0, 0, .8); }
-.curtain-right { right: 0; transform-origin: right center; box-shadow: inset 30px 0 50px -12px rgba(0, 0, 0, .8); }
-/* Etekte çift bakır şerit */
-.curtain::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: 10px; height: 7px;
-    border-top: 2px solid var(--bronze); border-bottom: 1px solid var(--bronze-dark);
-    opacity: .75;
+.curtain-left { left: 0; transform-origin: left center; box-shadow: inset -30px 0 50px -12px #000; }
+.curtain-right { right: 0; transform-origin: right center; box-shadow: inset 30px 0 50px -12px #000; }
+
+/* Üst saçak: karanlığa karışır, yalnızca dalgalı kenarı seçilir */
+.valance {
+    position: absolute; top: 0; left: 0; right: 0; height: 70px; z-index: 2;
+    background: repeating-linear-gradient(90deg, rgba(0, 0, 0, .4) 0, rgba(255, 220, 180, .025) 46px, rgba(0, 0, 0, .4) 92px), #080605;
+    -webkit-mask: radial-gradient(46px 18px at 50% 100%, transparent 98%, #000) 0 0 / 92px 100% repeat-x;
+    mask: radial-gradient(46px 18px at 50% 100%, transparent 98%, #000) 0 0 / 92px 100% repeat-x;
+    transition: transform .6s cubic-bezier(.65, 0, .35, 1) .35s;
 }
 
-/* Kenarlar koyulaşır, ortada hafif sıcak sahne ışığı */
+/* Spot: yukarıdan inen ince huzme ve ortada yazının üstüne düşen ışık havuzu; gerisi karanlık */
 .stage-vignette {
     position: absolute; inset: 0; z-index: 1; pointer-events: none;
     background:
-        radial-gradient(ellipse 46% 38% at 50% 48%, rgba(194, 126, 62, .14), transparent 70%),
-        radial-gradient(ellipse 80% 75% at 50% 50%, transparent 55%, rgba(0, 0, 0, .65) 100%);
-    transition: opacity .6s ease;
+        radial-gradient(ellipse 26% 30% at 50% 47%, rgba(255, 224, 178, .13) 0%, rgba(255, 224, 178, .05) 45%, transparent 75%),
+        radial-gradient(ellipse 30% 36% at 50% 47%, transparent 35%, rgba(0, 0, 0, .94) 100%);
+    transition: opacity .5s ease;
 }
+.stage-vignette::before {
+    content: ""; position: absolute; inset: 0;
+    clip-path: polygon(47% 0, 53% 0, 66% 100%, 34% 100%);
+    background: linear-gradient(180deg, rgba(255, 228, 186, .09), rgba(255, 228, 186, .025) 55%, transparent 80%);
+}
+/* Başta her yer karanlık; spot yanınca bu örtü kalkar */
+.stage-vignette::after { content: ""; position: absolute; inset: 0; background: #000; opacity: 0; }
+.play .stage-vignette::after { animation: lights-on .55s ease-out .1s backwards; }
+@keyframes lights-on { from { opacity: 1; } to { opacity: 0; } }
 
-/* Üst saçak: dalgalı alt kenar, çift bakır şerit */
-.valance {
-    position: absolute; top: 0; left: 0; right: 0; height: 78px; z-index: 2;
-    background:
-        repeating-linear-gradient(90deg, rgba(0, 0, 0, .35) 0, rgba(255, 214, 170, .035) 46px, rgba(0, 0, 0, .35) 92px),
-        linear-gradient(180deg, #120d0a, #1d1510);
-    -webkit-mask: radial-gradient(46px 20px at 50% 100%, transparent 98%, #000) 0 0 / 92px 100% repeat-x;
-    mask: radial-gradient(46px 20px at 50% 100%, transparent 98%, #000) 0 0 / 92px 100% repeat-x;
-    transition: transform .8s cubic-bezier(.65, 0, .35, 1) .6s;
-}
-.valance::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: 22px; height: 6px;
-    border-top: 2px solid var(--bronze); border-bottom: 1px solid var(--bronze-dark); opacity: .8;
-}
-
-/* Ortada başlık, çerçeve ve karşılama */
-.stage-title { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .45s ease, transform .6s ease; }
-
-/* Vintage çerçeve: çift ince bakır çizgi, köşelerde baklava */
-.stage-frame {
-    position: absolute; left: 50%; top: 50%; width: 600px; height: 250px; transform: translate(-50%, -52%);
-    border: 1px solid rgba(194, 126, 62, .55); opacity: 0;
-}
-.stage-frame::before {
-    content: ""; position: absolute; inset: 6px; border: 1px solid rgba(194, 126, 62, .28);
-}
-.stage-frame::after {
-    content: ""; position: absolute; inset: -6px;
-    background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23c27e3e'/%3E%3C/svg%3E") 0 0 / 11px 11px no-repeat,
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23c27e3e'/%3E%3C/svg%3E") 100% 0 / 11px 11px no-repeat,
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23c27e3e'/%3E%3C/svg%3E") 0 100% / 11px 11px no-repeat,
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23c27e3e'/%3E%3C/svg%3E") 100% 100% / 11px 11px no-repeat;
-}
+.stage-title { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .35s ease, transform .5s ease; }
 
 /* Başlık: her harf önce ince bakır kalemle çizilir, sonra altın-bakırla dolar */
-.stage-name { position: relative; width: 520px; height: auto; overflow: visible; filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .6)); }
+.stage-name { position: relative; width: 500px; height: auto; overflow: visible; filter: drop-shadow(0 2px 10px rgba(0, 0, 0, .8)); }
 .stage-name path {
     fill: url(#title-gold); fill-opacity: 0;
     stroke: var(--bronze-light); stroke-width: 1.1px; vector-effect: non-scaling-stroke;
@@ -294,36 +270,33 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 
 /* Ayraç: ortasında baklava olan ince çizgi */
 .stage-ornament {
-    position: relative; width: 180px; height: 9px; margin-top: 10px; opacity: 0;
-    background: linear-gradient(90deg, transparent, var(--bronze) 30%, var(--bronze) 70%, transparent) center / 100% 1px no-repeat;
+    position: relative; width: 160px; height: 9px; margin-top: 8px; opacity: 0;
+    background: linear-gradient(90deg, transparent, rgba(194, 126, 62, .8) 30%, rgba(194, 126, 62, .8) 70%, transparent) center / 100% 1px no-repeat;
 }
 .stage-ornament::after {
-    content: ""; position: absolute; left: 50%; top: 50%; width: 7px; height: 7px;
+    content: ""; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px;
     background: var(--bronze-light); transform: translate(-50%, -50%) rotate(45deg);
-    box-shadow: 0 0 0 3px #17110d;
 }
-.stage-greeting { margin-top: 10px; font: 500 13.5px var(--font); letter-spacing: .08em; color: rgba(227, 179, 122, .85); opacity: 0; }
-/* Bağlantı uzarsa perdede görünen durum satırı; nokta nokta nabız gibi atar */
-.stage-status { min-height: 18px; margin-top: 18px; font: 500 12px var(--font); letter-spacing: .04em; color: rgba(227, 179, 122, .6); opacity: 0; transition: opacity .4s ease; }
+.stage-greeting { margin-top: 10px; font: 500 13.5px var(--font); letter-spacing: .08em; color: rgba(227, 179, 122, .8); opacity: 0; }
+/* Bağlantı uzarsa perdede görünen durum satırı; nabız gibi atar */
+.stage-status { min-height: 18px; margin-top: 16px; font: 500 12px var(--font); letter-spacing: .04em; color: rgba(227, 179, 122, .55); opacity: 0; transition: opacity .4s ease; }
 .stage-status.visible { opacity: 1; animation: status-pulse 2s ease-in-out infinite; }
-@keyframes status-pulse { 50% { color: rgba(227, 179, 122, .95); } }
+@keyframes status-pulse { 50% { color: rgba(227, 179, 122, .9); } }
 
-/* Zamanlama: çerçeve → harfler sırayla çizilir ve dolar → ayraç → karşılama */
-.play .stage-frame { animation: frame-in .7s ease-out .1s forwards; }
+/* Zamanlama (~2,4 sn): spot yanar → harfler sırayla çizilip dolar → ayraç ve karşılama */
 .play .stage-name path {
     animation:
-        pen-draw .75s cubic-bezier(.45, 0, .35, 1) calc(.45s + var(--i) * .12s) forwards,
-        ink-fill .6s ease-out calc(.95s + var(--i) * .12s) forwards;
+        pen-draw .5s cubic-bezier(.45, 0, .35, 1) calc(.45s + var(--i) * .07s) forwards,
+        ink-fill .4s ease-out calc(.75s + var(--i) * .07s) forwards;
 }
-.play .stage-ornament { animation: splash-rise .6s ease-out 2.5s forwards; }
-.play .stage-greeting { animation: splash-rise .6s ease-out 2.75s forwards; }
+.play .stage-ornament { animation: splash-rise .45s ease-out 1.6s forwards; }
+.play .stage-greeting { animation: splash-rise .45s ease-out 1.75s forwards; }
 
-@keyframes frame-in { from { opacity: 0; transform: translate(-50%, -52%) scale(.96); } to { opacity: 1; transform: translate(-50%, -52%) scale(1); } }
 @keyframes pen-draw { to { stroke-dashoffset: 0; } }
-@keyframes ink-fill { to { fill-opacity: 1; stroke-opacity: .35; } }
-@keyframes splash-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes ink-fill { to { fill-opacity: 1; stroke-opacity: .3; } }
+@keyframes splash-rise { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
-/* Açılış: perdeler iki yana çekilirken toplanır, saçak yukarı kalkar, başlık ve karartma çekilir */
+/* Açılış: spot söner, perdeler iki yana çekilirken toplanır, saçak kalkar */
 .open .curtain-left { transform: translateX(-100%) scaleX(.85); }
 .open .curtain-right { transform: translateX(100%) scaleX(.85); }
 .open .valance { transform: translateY(-100%); }
@@ -331,7 +304,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .open .stage-vignette { opacity: 0; }
 
 @media (prefers-reduced-motion: reduce) {
-    .play .stage-frame, .play .stage-name path, .play .stage-ornament, .play .stage-greeting { animation-duration: .01s; animation-delay: 0s; }
+    .play .stage-name path, .play .stage-ornament, .play .stage-greeting, .play .stage-vignette::after { animation-duration: .01s; animation-delay: 0s; }
     .curtain, .valance { transition: opacity .3s ease; }
     .open .curtain, .open .valance { transform: none; opacity: 0; }
 }
