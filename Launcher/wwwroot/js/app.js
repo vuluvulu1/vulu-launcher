@@ -31,11 +31,12 @@ function showView(id) {
 function showPage(name) {
     state.page = name;
     for (const page of document.querySelectorAll('.page')) page.hidden = page.id !== 'page-' + name;
-    for (const button of document.querySelectorAll('.rail-nav button'))
+    for (const button of document.querySelectorAll('#page-tabs button'))
         button.classList.toggle('active', button.dataset.page === name);
 
     if (name === 'modrinth') openModrinthPage();
     if (name === 'settings') openSettingsPage();
+    if (name === 'admin') openAdminPage();
     refreshActivity();
 }
 
@@ -80,7 +81,6 @@ function setupTitlebar() {
 
     $('btn-min').addEventListener('click', () => bridge.send('window.minimize'));
     $('btn-close').addEventListener('click', () => bridge.send('window.close'));
-    $('btn-admin').addEventListener('click', () => openAdminPanel());
 
     $('btn-user').addEventListener('click', () => setPopover('user-dropdown', 'btn-user', $('user-dropdown').hidden));
     $('user-dropdown').addEventListener('click', event => {
@@ -152,7 +152,8 @@ async function showLogin() {
     applySettings(init.settings);
     $('app-version').textContent = 'v' + init.version;
     $('user-menu').hidden = true;
-    $('btn-admin').hidden = true;
+    $('page-tabs').hidden = true;
+    $('tab-admin').hidden = true;
     closePopovers();
 
     username.value = init.savedUsername || '';
@@ -207,7 +208,8 @@ async function enterLauncher(session) {
     $('user-name').textContent = session.username;
     $('user-avatar').textContent = (session.username || '?').charAt(0);
     $('user-menu').hidden = false;
-    $('btn-admin').hidden = !session.isAdmin;
+    $('page-tabs').hidden = false;
+    $('tab-admin').hidden = !session.isAdmin;
 
     clearConsole();
     showPage('home');
@@ -361,7 +363,7 @@ function clearSelection() {
     state.details = null;
     $('pack-stats').hidden = true;
     $('changelog').hidden = true;
-    $('dock-version').textContent = '—';
+    renderVersionPicker();
     updatePlayButton();
 }
 
@@ -383,7 +385,7 @@ function selectInstance(instance) {
 
     $('pack-desc').textContent = instance.description;
     $('pack-tags').replaceChildren(
-        el('span', { class: 'tag' }, 'Minecraft ' + instance.mcVersion),
+        el('span', { class: 'tag', id: 'tag-mc' }, 'Minecraft ' + mcVersionOf(instance)),
         el('span', { class: 'tag' }, instance.loader === 'vanilla'
             ? 'Vanilla'
             : `${LOADER_NAMES[instance.loader]} ${instance.loaderVersion || ''}`.trim()));
@@ -404,11 +406,56 @@ function selectInstance(instance) {
     state.ramGb = state.ramOptionsGb.includes(saved) ? saved : fallback;
     renderRamOptions();
 
-    $('dock-version').textContent = loaderLabel(instance);
+    renderVersionPicker();
     state.details = null;
     renderDetails();
     loadDetails();
     updatePlayButton();
+}
+
+// ── Vanilla sürüm seçimi ──────────────────────────────────────────────
+/** Sunucunun Vanilla paketinde Minecraft sürümü seçilebilir; modlu paketlerin sürümü sabittir. */
+function canPickVersion(instance) {
+    return !!instance && instance.kind === 'server' && instance.loader === 'vanilla';
+}
+
+function mcVersionOf(instance) {
+    if (!canPickVersion(instance)) return instance.mcVersion;
+    return store.get('mcver_' + instance.id, '') || instance.mcVersion;
+}
+
+async function renderVersionPicker() {
+    const instance = state.selected;
+    const select = $('version-select'), label = $('dock-version');
+    const pickable = canPickVersion(instance);
+
+    select.hidden = !pickable;
+    label.hidden = pickable;
+    if (!pickable) { label.textContent = instance ? loaderLabel(instance) : '—'; return; }
+
+    const current = mcVersionOf(instance);
+    select.replaceChildren(el('option', { value: current }, current));
+    select.value = current;
+
+    if (!state.mcVersions) {
+        try { state.mcVersions = await bridge.invoke('game.versions'); }
+        catch { return; } // liste alınamazsa yalnızca mevcut sürüm seçili kalır
+    }
+    if (state.selected !== instance) return;
+
+    const versions = state.mcVersions.includes(current) ? state.mcVersions : [current, ...state.mcVersions];
+    select.replaceChildren(...versions.map(v => el('option', { value: v }, v)));
+    select.value = current;
+}
+
+function setupVersionPicker() {
+    $('version-select').addEventListener('change', event => {
+        const instance = state.selected;
+        if (!canPickVersion(instance)) return;
+        store.set('mcver_' + instance.id, event.target.value);
+        const tag = $('tag-mc');
+        if (tag) tag.textContent = 'Minecraft ' + event.target.value;
+    });
 }
 
 // ── Paket ayrıntıları: istatistikler ve yenilikler ────────────────────
@@ -527,6 +574,7 @@ function updatePlayButton() {
     const button = $('btn-play'), label = $('play-label');
     const busy = launching || state.busy > 0;
     button.classList.toggle('busy', busy);
+    $('version-select').disabled = busy || state.gameRunning;
 
     if (launching) { button.disabled = true; label.textContent = 'Başlatılıyor…'; }
     else if (state.busy > 0) { button.disabled = true; label.textContent = 'İşlem sürüyor…'; }
@@ -580,7 +628,11 @@ async function play() {
     launching = true;
     updatePlayButton();
     try {
-        const result = await bridge.invoke('game.play', { instanceId: state.selected.id, ramGb: state.ramGb });
+        const result = await bridge.invoke('game.play', {
+            instanceId: state.selected.id,
+            ramGb: state.ramGb,
+            mcVersion: canPickVersion(state.selected) ? mcVersionOf(state.selected) : '',
+        });
         state.gameRunning = result.started;
     } catch (err) {
         appendLog({ text: err.message, level: 'error' });
@@ -715,6 +767,8 @@ function startMusic() {
 window.addEventListener('DOMContentLoaded', () => {
     setupTitlebar();
     setupPopovers();
+    setupVersionPicker();
+    setupAdminPage();
     setupConsole();
     setupMusic();
     setupLoginForm();
@@ -722,7 +776,7 @@ window.addEventListener('DOMContentLoaded', () => {
     $('btn-ram').addEventListener('click', () => setPopover('ram-pop', 'btn-ram', $('ram-pop').hidden));
     $('changelog-all').addEventListener('click', showAllChangelog);
     $('btn-new-instance').addEventListener('click', () => openNewInstanceDialog());
-    for (const button of document.querySelectorAll('.rail-nav button'))
+    for (const button of document.querySelectorAll('#page-tabs button'))
         button.addEventListener('click', () => showPage(button.dataset.page));
 
     // Dosya sürükleyip bırakmak sayfayı değiştirmesin

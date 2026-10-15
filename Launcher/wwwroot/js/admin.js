@@ -1,29 +1,25 @@
-// Admin paneli: kullanıcı yönetimi (MongoDB) ve instance manifest yayınlama.
+// Admin sayfası: kullanıcı yönetimi (MongoDB) ve instance manifest yayınlama.
 let adminConnected = false;
+let adminTab = 'users';
 
-function openAdminPanel() {
-    return openModal(close => {
-        const body = el('div', { class: 'admin-body' });
-        const tabUsers = el('button', { onclick: () => show('users') }, 'Kullanıcılar');
-        const tabInstances = el('button', { onclick: () => show('instances') }, 'Instance güncelleme');
+/** Admin sekmesi her açıldığında seçili bölümü yeniden çizer. */
+function openAdminPage() {
+    showAdminTab(adminTab);
+}
 
-        function show(tab) {
-            tabUsers.classList.toggle('active', tab === 'users');
-            tabInstances.classList.toggle('active', tab === 'instances');
-            if (tab === 'users') renderUsersTab(body);
-            else renderInstancesTab(body);
-        }
+function showAdminTab(tab) {
+    adminTab = tab;
+    for (const button of document.querySelectorAll('#admin-tabs button'))
+        button.classList.toggle('active', button.dataset.tab === tab);
 
-        // Modal DOM'a eklendikten sonra ilk sekmeyi çiz
-        queueMicrotask(() => show('users'));
+    const body = $('admin-body');
+    if (tab === 'users') renderUsersTab(body);
+    else renderInstancesTab(body);
+}
 
-        return [
-            el('div', { class: 'modal-head' }, 'Admin paneli',
-                el('button', { class: 'link-btn', onclick: () => close() }, 'Kapat')),
-            el('div', { class: 'tabs' }, tabUsers, tabInstances),
-            body,
-        ];
-    }, { wide: true, dismissable: false });
+function setupAdminPage() {
+    for (const button of document.querySelectorAll('#admin-tabs button'))
+        button.addEventListener('click', () => showAdminTab(button.dataset.tab));
 }
 
 // ── Kullanıcılar ──────────────────────────────────────────────────────

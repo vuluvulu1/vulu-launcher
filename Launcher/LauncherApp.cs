@@ -72,7 +72,8 @@ namespace VuluLauncher
             _bridge.On("launcher.check", async _ => await CheckLauncherVersionAsync());
             _bridge.On("launcher.update", _ => Task.FromResult<object?>(StartLauncherUpdate()));
 
-            _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb")));
+            _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion")));
+            _bridge.On("game.versions", async _ => { RequireLogin(); return await LoaderCatalog.MinecraftVersionsAsync(); });
 
             RegisterInstanceCommands();
 
@@ -272,13 +273,22 @@ namespace VuluLauncher
         // ════════════════════════════════════════════════════════════════
         // OYUN
         // ════════════════════════════════════════════════════════════════
-        private async Task<object?> PlayAsync(string instanceId, int ramGb)
+        private async Task<object?> PlayAsync(string instanceId, int ramGb, string mcVersion)
         {
             RequireLogin();
 
             try
             {
                 var (target, recommendedRamGb) = ResolveTarget(instanceId);
+
+                // Sunucunun Vanilla paketinde kullanıcı Minecraft sürümünü seçebilir; modlu paketlerin sürümü sabittir
+                if (!string.IsNullOrWhiteSpace(mcVersion) && mcVersion != target.McVersion &&
+                    target.Loader == "vanilla" && instanceId.StartsWith(PackPrefix, StringComparison.Ordinal))
+                {
+                    if (!(await LoaderCatalog.MinecraftVersionsAsync()).Contains(mcVersion))
+                        throw new InvalidOperationException($"Bilinmeyen Minecraft sürümü: {mcVersion}");
+                    target = target with { McVersion = mcVersion };
+                }
 
                 if (!PackCatalog.RamOptionsGb.Contains(ramGb))
                     ramGb = AppSettings.Current.DefaultRamGb > 0 ? AppSettings.Current.DefaultRamGb : recommendedRamGb;

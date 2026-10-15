@@ -14,11 +14,25 @@
             <span>vulu Launcher</span>
             <span class="tb-tag">BETA</span>
         </div>
-        <div class="tb-actions">
-            <button id="btn-admin" class="tb-pill" hidden title="Admin paneli">
+        <nav id="page-tabs" class="tb-tabs" aria-label="Sayfalar" hidden>
+            <button data-page="home" class="active">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg>
+                Oyna
+            </button>
+            <button data-page="modrinth">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+                Modrinth
+            </button>
+            <button data-page="settings">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" /></svg>
+                Ayarlar
+            </button>
+            <button data-page="admin" id="tab-admin" hidden>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" /></svg>
                 Admin
             </button>
+        </nav>
+        <div class="tb-actions">
             <div id="user-menu" class="user-menu" hidden>
                 <button id="btn-user" class="user-chip" aria-haspopup="menu" aria-expanded="false" aria-controls="user-dropdown">
                     <span id="user-avatar" class="avatar" aria-hidden="true"></span>
@@ -83,12 +97,6 @@
                 <div id="instance-list" class="pack-list"></div>
             </div>
 
-            <nav class="rail-nav">
-                <button data-page="home" class="active">Oyna</button>
-                <button data-page="modrinth">Modrinth</button>
-                <button data-page="settings">Ayarlar</button>
-            </nav>
-
             <div class="music paused">
                 <div class="music-top">
                     <div class="music-art" aria-hidden="true">
@@ -145,8 +153,9 @@
 
             <div class="dock">
                 <div class="dock-ver">
-                    <span class="dock-label">Sürüm</span>
+                    <label class="dock-label" for="version-select">Sürüm</label>
                     <span id="dock-version" class="dock-value">—</span>
+                    <select id="version-select" class="version-select" hidden></select>
                 </div>
                 <div class="dock-status">
                     <div class="status-row">
@@ -222,6 +231,18 @@
                 <span id="settings-saved" class="page-note"></span>
             </header>
             <div id="settings-body"></div>
+        </div>
+
+        <!-- Admin (yalnızca admin hesaplarda görünür) -->
+        <div id="page-admin" class="page page-scroll" hidden>
+            <header class="page-head">
+                <h1>Admin paneli</h1>
+                <div id="admin-tabs" class="segmented">
+                    <button data-tab="users" class="active">Kullanıcılar</button>
+                    <button data-tab="instances">Instance güncelleme</button>
+                </div>
+            </header>
+            <div id="admin-body" class="admin-page"></div>
         </div>
 
         <!-- Oyna sayfası dışındayken süren işlemi gösterir -->

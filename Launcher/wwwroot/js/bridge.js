@@ -113,6 +113,7 @@ const mockBackend = (() => {
             return { started: true };
         },
 
+        'game.versions': async () => { await wait(300); return ['1.21.11', '1.21.10', '1.21.4', '1.21.1', '1.20.6', '1.20.4', '1.20.1', '1.19.4', '1.19.2', '1.18.2', '1.16.5', '1.12.2', '1.8.9']; },
         'instances.list': async () => instances,
         'instances.details': async args => {
             await wait(350);
