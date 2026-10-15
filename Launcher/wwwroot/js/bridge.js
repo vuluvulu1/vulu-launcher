@@ -81,6 +81,13 @@ const mockBackend = (() => {
         { id: 'p3', name: 'Skyblock', description: '', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 1, updatedAt: daysAgoIso(30), modCount: 68, sizeMb: 140.2, includes: ['config', 'kubejs'], coverUrl: null, installed: null },
     ];
 
+    const members = [
+        { username: 'vulu', bio: 'Launcher\'ı yapan kişi. Genelde Create paketlerinde takılırım.', isAdmin: true, avatarVersion: 0, createdAt: daysAgoIso(140), lastSeenAt: daysAgoIso(0), packCount: 3 },
+        { username: 'misafir', bio: '', isAdmin: false, avatarVersion: 0, createdAt: daysAgoIso(60), lastSeenAt: daysAgoIso(3), packCount: 0 },
+        { username: 'halil', bio: 'Skyblock bağımlısı.', isAdmin: false, avatarVersion: 0, createdAt: daysAgoIso(20), lastSeenAt: daysAgoIso(1), packCount: 0 },
+        { username: 'eskiuye', bio: '', isAdmin: false, avatarVersion: 0, createdAt: daysAgoIso(300), lastSeenAt: null, packCount: 0 },
+    ];
+
     let content = [
         { file: 'mods/sodium-fabric-0.6.jar', type: 'mod', title: 'Sodium', version: 'mc1.21.1-0.6.13', iconUrl: null, sizeMb: 1.2 },
         { file: 'mods/elle-eklenen.jar', type: 'mod', title: 'elle-eklenen.jar', version: null, iconUrl: null, sizeMb: 0.4 },
@@ -116,6 +123,24 @@ const mockBackend = (() => {
             log('[Render thread/INFO]: Setting user: vulu', 'game');
             setTimeout(() => { log('Oyun kapatıldı. İyi günler!', 'warn'); bridge._dispatch({ event: 'gameExited' }); }, 4000);
             return { started: true };
+        },
+
+        'profile.list': async () => { await wait(250); return members; },
+        'profile.me': async () => members[0],
+        'profile.get': async args => {
+            await wait(250);
+            const user = members.find(m => m.username === args.username);
+            if (!user) throw new Error('Kullanıcı bulunamadı.');
+            return { ...user, packs: user.username === 'vulu' ? packs.map(p => ({ id: p.id, name: p.name, revision: p.revision, mcVersion: p.mcVersion, loader: p.loader })) : [] };
+        },
+        'profile.saveBio': async args => { await wait(300); members[0].bio = args.bio.trim(); return members[0]; },
+        'profile.pickAvatar': async () => null,
+        'profile.removeAvatar': async () => { members[0].avatarVersion = 0; return members[0]; },
+        'profile.changePassword': async args => {
+            await wait(400);
+            if (args.currentPassword !== 'sifre') throw new Error('Mevcut şifre yanlış.');
+            log('Şifren değiştirildi.', 'ok');
+            return { success: true };
         },
 
         'packs.list': async () => {

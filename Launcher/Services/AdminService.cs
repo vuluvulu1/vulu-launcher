@@ -17,7 +17,6 @@ namespace VuluLauncher
             _users = Database.GetCollection<AdminUser>("users");
         }
 
-        /// <summary>vulu Packs yayınlama da admin'in bu bağlantısını kullanır.</summary>
         public IMongoDatabase Database { get; }
 
         public static MongoClient CreateClient(string username, string password)

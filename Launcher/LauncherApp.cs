@@ -17,6 +17,7 @@ namespace VuluLauncher
         private readonly PhotinoWindow _window;
 
         private LoginService _login = new();
+        private readonly ApiClient _api;
         private readonly LauncherUpdateService _launcherUpdates = new();
         private readonly JavaManager _java;
         private readonly ModrinthService _modrinth;
@@ -33,6 +34,7 @@ namespace VuluLauncher
         {
             _bridge = bridge;
             _window = window;
+            _api = new ApiClient(() => _login.Token);
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
             _game = new GameLauncher(Log, _java);
@@ -71,6 +73,7 @@ namespace VuluLauncher
 
             RegisterInstanceCommands();
             RegisterPackCommands();
+            RegisterProfileCommands();
 
             // ── Admin ─────────────────────────────────────────────────────
             _bridge.On("admin.connect", async args => await AdminConnectAsync(args.Str("username"), args.Str("password")));
@@ -96,6 +99,7 @@ namespace VuluLauncher
             return new
             {
                 version = LauncherUpdateService.LocalVersion,
+                apiBaseUrl = ApiConfig.BaseUrl,
                 savedUsername = username,
                 // Kayıtlı şifre arayüze gönderilmez; arayüz sadece var olduğunu bilir
                 hasSavedPassword = !string.IsNullOrEmpty(password),

@@ -24,19 +24,6 @@ async function openPacksPage() {
 
 function renderPacks(result) {
     const grid = $('packs-grid'), status = $('packs-status');
-
-    if (!result.configured) {
-        status.textContent = '';
-        grid.replaceChildren(el('div', { class: 'packs-empty' },
-            el('h2', {}, 'vulu Packs henüz açık değil'),
-            el('p', {}, result.isAdmin
-                ? 'Paketleri görmek ve yayınlamak için veritabanına bağlan. Herkesin görebilmesi için okuma kullanıcısının launcher\'a eklenmesi gerekiyor.'
-                : 'Admin paylaşım sistemini kurduğunda paketler burada görünecek.'),
-            result.isAdmin && el('div', { class: 'packs-connect', id: 'packs-connect' })));
-        if (result.isAdmin) renderConnectForm($('packs-connect'), openPacksPage);
-        return;
-    }
-
     status.textContent = result.packs.length ? `${result.packs.length} paket` : '';
     if (!result.packs.length) {
         grid.replaceChildren(el('div', { class: 'packs-empty' },
@@ -130,21 +117,8 @@ async function deletePack(pack) {
 }
 
 // ── Paylaş (admin) ────────────────────────────────────────────────────
-/** Yayınlama admin'in MongoDB bağlantısını kullanır; bağlı değilse önce bağlantı istenir. */
+/** Yalnızca admin işaretli hesaplarda görünür; yetkiyi sunucu da ayrıca denetler. */
 async function openShareDialog(instance) {
-    if (!adminConnected) {
-        const connected = await openModal(close => {
-            const body = el('div', { class: 'modal-body form' });
-            renderConnectForm(body, () => close(true));
-            return [
-                el('div', { class: 'modal-head' }, 'Veritabanına bağlan',
-                    el('button', { class: 'link-btn', onclick: () => close(false) }, 'Vazgeç')),
-                body,
-            ];
-        });
-        if (!connected) return;
-    }
-
     let info;
     try { info = await bridge.invoke('packs.shareInfo', { instanceId: instance.id }); }
     catch (err) { await alertDialog({ title: 'Paylaşılamıyor', message: err.message }); return; }

@@ -167,6 +167,8 @@ async function logout() {
 
     $('music').pause();
     adminConnected = false;
+    profile.me = null;
+    profile.members = [];
     state.instances = [];
     state.selected = null;
     await showLogin();

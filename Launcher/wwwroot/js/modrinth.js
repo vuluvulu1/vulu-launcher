@@ -46,7 +46,6 @@ const modrinth = {
     loader: '',              // yalnızca modpack aramasında
     openSource: false,
     categories: {},          // tür → seçili kategori adları (Set)
-    filtersOpen: false,
     filterData: {},          // tür → sunucudan gelen filtre seçenekleri
     offset: 0,
     total: 0,
@@ -105,7 +104,6 @@ function setupModrinthPage() {
     $('mr-target').addEventListener('change', () => { modrinth.targetId = $('mr-target').value; searchModrinth(false); });
     $('mr-version').addEventListener('change', () => { modrinth.mcVersion = $('mr-version').value; searchModrinth(false); });
     $('mr-loader').addEventListener('change', () => { modrinth.loader = $('mr-loader').value; searchModrinth(false); });
-    $('mr-filter-toggle').addEventListener('click', () => { modrinth.filtersOpen = !modrinth.filtersOpen; renderModrinthFilters(); });
     $('mr-more').addEventListener('click', () => searchModrinth(true));
 }
 
@@ -150,10 +148,6 @@ function renderModrinthFilters() {
     const selected = selectedCategories();
     const activeCount = selected.size + (modrinth.openSource ? 1 : 0);
 
-    const toggle = $('mr-filter-toggle');
-    toggle.textContent = activeCount > 0 ? `Filtreler (${activeCount})` : 'Filtreler';
-    toggle.classList.toggle('btn-primary', activeCount > 0);
-
     if (data && modrinth.type === 'modpack') {
         if ($('mr-version').options.length === 0) {
             $('mr-version').replaceChildren(el('option', { value: '' }, 'Tüm sürümler'),
@@ -165,10 +159,8 @@ function renderModrinthFilters() {
         $('mr-loader').value = modrinth.loader;
     }
 
+    // Filtreler sağ panelde hep açık durur
     const panel = $('mr-filters');
-    panel.hidden = !modrinth.filtersOpen;
-    if (!modrinth.filtersOpen) return;
-
     if (!data) { panel.replaceChildren(el('p', { class: 'page-note' }, 'Filtreler yükleniyor...')); return; }
 
     const groups = data.categories.map(group => el('div', { class: 'mr-filter-group' },
@@ -191,7 +183,7 @@ function renderModrinthFilters() {
             el('button', {
                 class: 'link-btn', disabled: activeCount === 0,
                 onclick: () => { selected.clear(); modrinth.openSource = false; renderModrinthFilters(); searchModrinth(false); },
-            }, 'Filtreleri temizle')));
+            }, activeCount > 0 ? `Temizle (${activeCount})` : 'Temizle')));
 }
 
 async function searchModrinth(append) {

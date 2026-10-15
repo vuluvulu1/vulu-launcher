@@ -7,8 +7,8 @@ namespace VuluLauncher
     internal static class Program
     {
         // Arayüzün tasarlandığı boyut (%100 ölçekte). Ekran ölçeğine göre büyütülür.
-        private const int BaseWidth = 1120;
-        private const int BaseHeight = 680;
+        private const int BaseWidth = 1240;
+        private const int BaseHeight = 760;
 
         private const string WebView2Key = @"Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}";
         private const string WebView2DownloadUrl = "https://go.microsoft.com/fwlink/p/?LinkId=2124703";

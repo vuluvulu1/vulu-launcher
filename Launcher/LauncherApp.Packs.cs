@@ -1,16 +1,15 @@
 using System.IO.Compression;
 using System.Text.Json;
-using MongoDB.Bson;
 
 namespace VuluLauncher
 {
     /// <summary>
     /// vulu Packs: adminin kendi instance'larından yayınladığı paketler. Herkes listeler ve tek tıkla kurar;
-    /// yalnızca admin yayınlar ve siler.
+    /// yalnızca admin işaretli hesaplar yayınlar ve siler (yetkiyi sunucu denetler).
     /// </summary>
     internal sealed partial class LauncherApp
     {
-        private PackStore? _packReader;
+        private PackStore Packs => new(_api);
 
         // Paylaşılırken listede gösterilmeyen, oyunun kendi ürettiği ya da kişisel klasör/dosyalar
         private static readonly HashSet<string> NeverShared = new(StringComparer.OrdinalIgnoreCase)
@@ -41,45 +40,26 @@ namespace VuluLauncher
             _bridge.On("packs.delete", async args => await DeletePackAsync(args.Str("id")));
         }
 
-        /// <summary>Admin bağlıysa onun bağlantısı, değilse yalnızca okuma yetkili kullanıcı.</summary>
-        private PackStore? ReadStore()
-        {
-            if (_admin != null) return new PackStore(_admin.Database);
-            return _packReader ??= PackStore.CreateReader();
-        }
-
-        private PackStore RequireReadStore() => ReadStore()
-            ?? throw new InvalidOperationException("vulu Packs henüz yapılandırılmadı. Admin'den okuma kullanıcısını eklemesini iste.");
-
-        private PackStore RequireWriteStore() => new(RequireAdminConnection().Database);
-
         // ── Liste ─────────────────────────────────────────────────────────
         private async Task<object?> ListPacksAsync()
         {
             RequireLogin();
-            var store = ReadStore();
-            if (store == null)
-                return new { configured = false, isAdmin = _login.IsAdmin, adminConnected = _admin != null, packs = Array.Empty<object>() };
-
-            var packs = await store.ListAsync();
+            var packs = await Packs.ListAsync();
             var installed = InstanceStore.List()
                 .Where(m => m.SharedPackId != null)
                 .GroupBy(m => m.SharedPackId!)
                 .ToDictionary(g => g.Key, g => g.First());
 
-            var covers = await Task.WhenAll(packs.Select(p => CoverUrlAsync(store, p)));
-
             return new
             {
                 configured = true,
                 isAdmin = _login.IsAdmin,
-                adminConnected = _admin != null,
-                packs = packs.Select((p, i) =>
+                packs = packs.Select(p =>
                 {
-                    installed.TryGetValue(p.Id.ToString(), out var meta);
+                    installed.TryGetValue(p.Id, out var meta);
                     return new
                     {
-                        id = p.Id.ToString(),
+                        id = p.Id,
                         name = p.Name,
                         description = p.Description,
                         author = p.Author,
@@ -91,42 +71,33 @@ namespace VuluLauncher
                         modCount = p.Mods.Count(m => m.Type == "mod"),
                         sizeMb = Math.Round((p.OverridesSize + p.Mods.Sum(m => m.Size)) / 1024.0 / 1024.0, 1),
                         includes = p.Includes,
-                        coverUrl = covers[i],
+                        coverUrl = PackStore.CoverUrl(p),
                         installed = meta == null ? null : new { instanceId = InstancePrefix + meta.Folder, revision = meta.SharedPackRevision }
                     };
                 })
             };
         }
 
-        /// <summary>Kapak resmi bir kez indirilip saklanır; revizyon değişince yenisi alınır.</summary>
-        private static async Task<string?> CoverUrlAsync(PackStore store, SharedPack pack)
+        /// <summary>Kapağı instance'ın arka planı yapar; alınamazsa sessizce geçilir.</summary>
+        private async Task UseCoverAsBackgroundAsync(PackStore store, SharedPack pack, InstanceMeta meta)
         {
-            if (pack.CoverFileId is not ObjectId coverId) return null;
+            if (!pack.HasCover) return;
             string ext = CoverExtensions.Contains(pack.CoverExt) ? pack.CoverExt! : ".png";
-            string dir = Path.Combine(AppPaths.AppData, "packcache");
-            string path = Path.Combine(dir, $"{pack.Id}-{pack.Revision}{ext}");
-
             try
             {
-                if (!File.Exists(path))
-                {
-                    foreach (var old in Directory.Exists(dir) ? Directory.GetFiles(dir, $"{pack.Id}-*") : Array.Empty<string>())
-                        File.Delete(old);
-                    await store.DownloadFileAsync(coverId, path);
-                }
-                return new Uri(path).AbsoluteUri;
+                Directory.CreateDirectory(AppPaths.Backgrounds);
+                string key = BackgroundKey(InstancePrefix + meta.Folder);
+                DeleteBackgroundFiles(InstancePrefix + meta.Folder);
+                await store.DownloadCoverAsync(pack, Path.Combine(AppPaths.Backgrounds, key + ext));
             }
-            catch
-            {
-                return null; // kapak alınamazsa kart düz gösterilir
-            }
+            catch { /* kapak olmadan da kurulum tamamdır */ }
         }
 
         // ── Kurulum ve güncelleme ─────────────────────────────────────────
         private async Task<object?> InstallPackAsync(string id)
         {
             RequireLogin();
-            var store = RequireReadStore();
+            var store = Packs;
             var pack = await store.GetAsync(id) ?? throw new InvalidOperationException("Paket bulunamadı.");
 
             if (InstanceStore.List().Any(m => m.SharedPackId == id))
@@ -137,14 +108,7 @@ namespace VuluLauncher
             {
                 Log($"{pack.Name} kuruluyor...", "accent");
                 await ApplyPackAsync(store, pack, meta);
-
-                // Kapak, instance'ın arka planı olur
-                string? cover = await CoverUrlAsync(store, pack) is string url ? new Uri(url).LocalPath : null;
-                if (cover != null)
-                {
-                    Directory.CreateDirectory(AppPaths.Backgrounds);
-                    File.Copy(cover, Path.Combine(AppPaths.Backgrounds, BackgroundKey(InstancePrefix + meta.Folder) + Path.GetExtension(cover)), overwrite: true);
-                }
+                await UseCoverAsBackgroundAsync(store, pack, meta);
 
                 Log($"{pack.Name} kuruldu.", "ok");
                 return new { id = InstancePrefix + meta.Folder };
@@ -161,7 +125,7 @@ namespace VuluLauncher
             RequireLogin();
             if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken paket güncellenemez.");
 
-            var store = RequireReadStore();
+            var store = Packs;
             var pack = await store.GetAsync(id) ?? throw new InvalidOperationException("Paket bulunamadı.");
             var meta = InstanceStore.List().FirstOrDefault(m => m.SharedPackId == id)
                 ?? throw new InvalidOperationException($"{pack.Name} kurulu değil.");
@@ -233,7 +197,7 @@ namespace VuluLauncher
             string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-pack-{Guid.NewGuid():N}.zip");
             try
             {
-                await store.DownloadFileAsync(pack.OverridesFileId, zipPath);
+                await store.DownloadOverridesAsync(pack, zipPath);
                 await Task.Run(() =>
                 {
                     using var zip = ZipFile.OpenRead(zipPath);
@@ -258,7 +222,7 @@ namespace VuluLauncher
             meta.LoaderVersion = pack.LoaderVersion;
             meta.Description = pack.Description;
             meta.RamGb = pack.RecommendedRamGb;
-            meta.SharedPackId = pack.Id.ToString();
+            meta.SharedPackId = pack.Id;
             meta.SharedPackRevision = pack.Revision;
             InstanceStore.Save(meta);
         }
@@ -299,9 +263,7 @@ namespace VuluLauncher
                     .ToList()
                 : new());
 
-            SharedPack? existing = null;
-            if (meta.SharedPackId != null && _admin != null)
-                existing = await new PackStore(_admin.Database).GetAsync(meta.SharedPackId);
+            SharedPack? existing = meta.SharedPackId == null ? null : await Packs.GetAsync(meta.SharedPackId);
 
             return new
             {
@@ -311,7 +273,7 @@ namespace VuluLauncher
                 loader = meta.Loader,
                 modrinthCount = meta.Content.Count(c => File.Exists(Path.Combine(dir, c.File))),
                 entries,
-                existing = existing == null ? null : new { id = existing.Id.ToString(), revision = existing.Revision, hasCover = existing.CoverFileId != null }
+                existing = existing == null ? null : new { id = existing.Id, revision = existing.Revision, hasCover = existing.HasCover }
             };
         }
 
@@ -338,7 +300,8 @@ namespace VuluLauncher
 
         private async Task<object?> PublishPackAsync(JsonElement args)
         {
-            var store = RequireWriteStore();
+            RequireAdmin(); // asıl yetki denetimi sunucuda
+            var store = Packs;
             var meta = RequireCustomInstance(args.Str("instanceId"));
             string dir = InstanceStore.PathOf(meta.Folder);
 
@@ -355,8 +318,8 @@ namespace VuluLauncher
 
             // Var olan paketi güncelle (yalnızca bu instance'tan yayınlanmışsa)
             var pack = new SharedPack();
-            if (args.Bool("update") && meta.SharedPackId != null && ObjectId.TryParse(meta.SharedPackId, out var existingId))
-                pack.Id = existingId;
+            if (args.Bool("update") && meta.SharedPackId != null)
+                pack.Id = meta.SharedPackId;
 
             Log($"{name} hazırlanıyor...", "accent");
             var (mods, fallbackFiles) = await ResolvePackModsAsync(meta, dir);
@@ -382,14 +345,14 @@ namespace VuluLauncher
                 Log($"{name} yükleniyor ({fileCount} dosya, {mods.Count} Modrinth içeriği)...", "replace");
                 pack = await store.PublishAsync(pack, zipPath, cover);
 
-                meta.SharedPackId = pack.Id.ToString();
+                meta.SharedPackId = pack.Id;
                 meta.SharedPackRevision = pack.Revision;
                 meta.Description = description;
                 foreach (var content in meta.Content) content.FromPack = true;
                 InstanceStore.Save(meta);
 
                 Log($"{name} vulu Packs'te yayınlandı (rev {pack.Revision}).", "ok");
-                return new { id = pack.Id.ToString(), revision = pack.Revision };
+                return new { id = pack.Id, revision = pack.Revision };
             }
             finally
             {
@@ -487,7 +450,8 @@ namespace VuluLauncher
 
         private async Task<object?> DeletePackAsync(string id)
         {
-            await RequireWriteStore().DeleteAsync(id);
+            RequireAdmin();
+            await Packs.DeleteAsync(id);
             Log("Paket vulu Packs'ten kaldırıldı. Kuranların instance'ları yerinde kalır.", "muted");
             return new { success = true };
         }

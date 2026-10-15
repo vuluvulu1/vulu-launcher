@@ -1,149 +1,106 @@
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver;
-using MongoDB.Driver.GridFS;
+using System.Net;
 
 namespace VuluLauncher
 {
     /// <summary>
-    /// vulu Packs: adminin paylaştığı instance'lar. Bilgiler "packs" koleksiyonunda, dosyalar (seçilen
-    /// klasörlerin zip'i ve kapak resmi) GridFS'in "packfiles" deposunda durur. Modrinth modları
-    /// kopyalanmaz; sürümü sabitlenmiş indirme adresi ve hash'iyle listelenir.
+    /// vulu Packs: adminin paylaştığı instance'lar. Hepsi vulu-api üzerinden: giriş yapan herkes listeler
+    /// ve indirir, admin işaretli hesaplar yayınlar ve siler. Modrinth modları kopyalanmaz; sürümü
+    /// sabitlenmiş indirme adresi ve hash'iyle listelenir.
     /// </summary>
     internal sealed class PackStore
     {
-        private readonly IMongoCollection<SharedPack> _packs;
-        private readonly GridFSBucket _files;
+        private readonly ApiClient _api;
 
-        public PackStore(IMongoDatabase database)
+        public PackStore(ApiClient api)
         {
-            _packs = database.GetCollection<SharedPack>("packs");
-            _files = new GridFSBucket(database, new GridFSBucketOptions { BucketName = "packfiles" });
+            _api = api;
         }
 
-        /// <summary>
-        /// Herkesin paketleri okuyabilmesi için yalnızca okuma yetkili veritabanı kullanıcısı.
-        /// Bilgiler ApiConfig'te değilse null döner (admin bağlıysa onun bağlantısı kullanılır).
-        /// </summary>
-        public static PackStore? CreateReader()
+        public Task<List<SharedPack>> ListAsync() => _api.GetAsync<List<SharedPack>>("/packs");
+
+        public async Task<SharedPack?> GetAsync(string id)
         {
-            if (string.IsNullOrWhiteSpace(ApiConfig.PacksReaderUser)) return null;
-            var client = AdminService.CreateClient(ApiConfig.PacksReaderUser, ApiConfig.PacksReaderPassword);
-            return new PackStore(client.GetDatabase("launcher"));
+            try { return await _api.GetAsync<SharedPack>($"/packs/{Uri.EscapeDataString(id)}"); }
+            catch (ApiException ex) when (ex.Status == HttpStatusCode.NotFound) { return null; }
         }
 
-        public async Task<List<SharedPack>> ListAsync() =>
-            await _packs.Find(_ => true).SortByDescending(p => p.UpdatedAt).ToListAsync();
+        public Task DownloadOverridesAsync(SharedPack pack, string path) =>
+            _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/overrides", path);
 
-        public async Task<SharedPack?> GetAsync(string id) =>
-            ObjectId.TryParse(id, out var objectId)
-                ? await _packs.Find(p => p.Id == objectId).FirstOrDefaultAsync()
-                : null;
+        public Task DownloadCoverAsync(SharedPack pack, string path) =>
+            _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/cover?v={pack.Revision}", path);
 
-        public async Task DownloadFileAsync(ObjectId fileId, string path)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            string part = path + ".part";
-            await using (var stream = File.Create(part))
-                await _files.DownloadToStreamAsync(fileId, stream);
-            File.Move(part, path, overwrite: true);
-        }
+        /// <summary>Kapak resminin herkese açık adresi; revizyon değişince tarayıcı önbelleği yenilenir.</summary>
+        public static string? CoverUrl(SharedPack pack) =>
+            pack.HasCover ? $"{ApiConfig.BaseUrl}/packs/{Uri.EscapeDataString(pack.Id)}/cover?v={pack.Revision}" : null;
 
-        /// <summary>Yeni paket ekler ya da (pack.Id doluysa) var olanı yeni revizyonla değiştirir.</summary>
+        /// <summary>Dosyaları yükler ve paketi yayınlar. pack.Id doluysa o paketin yeni revizyonu olur.</summary>
         public async Task<SharedPack> PublishAsync(SharedPack pack, string overridesZip, string? coverPath)
         {
-            var previous = pack.Id == ObjectId.Empty ? null : await _packs.Find(p => p.Id == pack.Id).FirstOrDefaultAsync();
+            var overrides = await _api.UploadFileAsync<UploadResult>("/packs/files?kind=overrides", overridesZip);
+            UploadResult? cover = coverPath == null ? null : await _api.UploadFileAsync<UploadResult>("/packs/files?kind=cover", coverPath);
 
-            await using (var zip = File.OpenRead(overridesZip))
-                pack.OverridesFileId = await _files.UploadFromStreamAsync($"{pack.Name}-overrides.zip", zip);
-            pack.OverridesSize = new FileInfo(overridesZip).Length;
-
-            if (coverPath != null)
+            return await _api.PostAsync<SharedPack>("/packs", new
             {
-                await using var cover = File.OpenRead(coverPath);
-                pack.CoverFileId = await _files.UploadFromStreamAsync($"{pack.Name}-cover{Path.GetExtension(coverPath)}", cover);
-                pack.CoverExt = Path.GetExtension(coverPath).ToLowerInvariant();
-            }
-            else if (previous != null)
-            {
-                pack.CoverFileId = previous.CoverFileId; // kapak değiştirilmediyse eskisi kalır
-                pack.CoverExt = previous.CoverExt;
-            }
-
-            pack.UpdatedAt = DateTime.UtcNow;
-            if (previous == null)
-            {
-                pack.Id = ObjectId.GenerateNewId();
-                pack.CreatedAt = pack.UpdatedAt;
-                pack.Revision = 1;
-                await _packs.InsertOneAsync(pack);
-            }
-            else
-            {
-                pack.CreatedAt = previous.CreatedAt;
-                pack.Revision = previous.Revision + 1;
-                await _packs.ReplaceOneAsync(p => p.Id == pack.Id, pack);
-
-                // Eski dosyalar artık kullanılmıyor
-                await TryDeleteFileAsync(previous.OverridesFileId);
-                if (coverPath != null && previous.CoverFileId is ObjectId oldCover) await TryDeleteFileAsync(oldCover);
-            }
-            return pack;
+                id = string.IsNullOrEmpty(pack.Id) ? null : pack.Id,
+                name = pack.Name,
+                description = pack.Description,
+                mcVersion = pack.McVersion,
+                loader = pack.Loader,
+                loaderVersion = pack.LoaderVersion,
+                recommendedRamGb = pack.RecommendedRamGb,
+                mods = pack.Mods,
+                includes = pack.Includes,
+                overridesFileId = overrides.FileId,
+                coverFileId = cover?.FileId,
+                coverExt = coverPath == null ? null : Path.GetExtension(coverPath).ToLowerInvariant()
+            });
         }
 
-        public async Task DeleteAsync(string id)
-        {
-            var pack = await GetAsync(id) ?? throw new InvalidOperationException("Paket bulunamadı.");
-            await _packs.DeleteOneAsync(p => p.Id == pack.Id);
-            await TryDeleteFileAsync(pack.OverridesFileId);
-            if (pack.CoverFileId is ObjectId cover) await TryDeleteFileAsync(cover);
-        }
+        public Task DeleteAsync(string id) => _api.DeleteAsync<object>($"/packs/{Uri.EscapeDataString(id)}");
 
-        private async Task TryDeleteFileAsync(ObjectId id)
+        private sealed class UploadResult
         {
-            try { await _files.DeleteAsync(id); }
-            catch (GridFSFileNotFoundException) { }
+            public string FileId { get; set; } = "";
+            public long Size { get; set; }
         }
     }
 
-    [BsonIgnoreExtraElements]
     public sealed class SharedPack
     {
-        [BsonId] public ObjectId Id { get; set; }
-        [BsonElement("name")] public string Name { get; set; } = "";
-        [BsonElement("description")] public string Description { get; set; } = "";
-        [BsonElement("author")] public string Author { get; set; } = "";
-        [BsonElement("mcVersion")] public string McVersion { get; set; } = "";
-        [BsonElement("loader")] public string Loader { get; set; } = "vanilla";
-        [BsonElement("loaderVersion")] public string? LoaderVersion { get; set; }
-        [BsonElement("recommendedRamGb")] public int RecommendedRamGb { get; set; }
-        [BsonElement("revision")] public int Revision { get; set; }
-        [BsonElement("createdAt")] public DateTime CreatedAt { get; set; }
-        [BsonElement("updatedAt")] public DateTime UpdatedAt { get; set; }
-        [BsonElement("mods")] public List<PackMod> Mods { get; set; } = new();
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Author { get; set; } = "";
+        public string McVersion { get; set; } = "";
+        public string Loader { get; set; } = "vanilla";
+        public string? LoaderVersion { get; set; }
+        public int RecommendedRamGb { get; set; }
+        public int Revision { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public List<PackMod> Mods { get; set; } = new();
         /// <summary>Pakete dahil edilen klasör/dosyalar (config, kubejs...), bilgi amaçlı.</summary>
-        [BsonElement("includes")] public List<string> Includes { get; set; } = new();
-        [BsonElement("overridesFileId")] public ObjectId OverridesFileId { get; set; }
-        [BsonElement("overridesSize")] public long OverridesSize { get; set; }
-        [BsonElement("coverFileId")] public ObjectId? CoverFileId { get; set; }
-        [BsonElement("coverExt")] public string? CoverExt { get; set; }
+        public List<string> Includes { get; set; } = new();
+        public long OverridesSize { get; set; }
+        public bool HasCover { get; set; }
+        public string? CoverExt { get; set; }
     }
 
     /// <summary>Modrinth'ten indirilecek bir içerik; sürümü yayınlandığı anda sabitlenir.</summary>
-    [BsonIgnoreExtraElements]
     public sealed class PackMod
     {
-        [BsonElement("projectId")] public string ProjectId { get; set; } = "";
-        [BsonElement("versionId")] public string VersionId { get; set; } = "";
-        [BsonElement("title")] public string Title { get; set; } = "";
-        [BsonElement("versionNumber")] public string VersionNumber { get; set; } = "";
-        [BsonElement("type")] public string Type { get; set; } = "mod";
+        public string ProjectId { get; set; } = "";
+        public string VersionId { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string VersionNumber { get; set; } = "";
+        public string Type { get; set; } = "mod";
         /// <summary>Instance klasörüne göre yol, örn. "mods/sodium.jar".</summary>
-        [BsonElement("file")] public string File { get; set; } = "";
-        [BsonElement("iconUrl")] public string? IconUrl { get; set; }
-        [BsonElement("url")] public string Url { get; set; } = "";
-        [BsonElement("sha1")] public string? Sha1 { get; set; }
-        [BsonElement("sha512")] public string? Sha512 { get; set; }
-        [BsonElement("size")] public long Size { get; set; }
+        public string File { get; set; } = "";
+        public string? IconUrl { get; set; }
+        public string Url { get; set; } = "";
+        public string? Sha1 { get; set; }
+        public string? Sha512 { get; set; }
+        public long Size { get; set; }
     }
 }

@@ -33,6 +33,7 @@ function showPage(name) {
     for (const page of document.querySelectorAll('.page')) page.hidden = page.id !== 'page-' + name;
     for (const button of document.querySelectorAll('#page-tabs button'))
         button.classList.toggle('active', button.dataset.page === name);
+    $('btn-user').classList.toggle('active', name === 'profile');
 
     if (name === 'modrinth') openModrinthPage();
     if (name === 'settings') openSettingsPage();
@@ -83,18 +84,11 @@ function setupTitlebar() {
     $('btn-min').addEventListener('click', () => bridge.send('window.minimize'));
     $('btn-close').addEventListener('click', () => bridge.send('window.close'));
 
-    $('btn-user').addEventListener('click', () => setPopover('user-dropdown', 'btn-user', $('user-dropdown').hidden));
-    $('user-dropdown').addEventListener('click', event => {
-        const action = event.target.closest('button')?.dataset.action;
-        if (!action) return;
-        closePopovers();
-        if (action === 'settings') showPage('settings');
-        if (action === 'logout') logout();
-    });
+    $('btn-user').addEventListener('click', () => openProfile(state.username));
 }
 
-// ── Açılır menüler (kullanıcı menüsü, RAM seçimi) ─────────────────────
-const POPOVERS = [['user-dropdown', 'btn-user'], ['ram-pop', 'btn-ram']];
+// ── Açılır menüler (RAM seçimi) ───────────────────────────────────────
+const POPOVERS = [['ram-pop', 'btn-ram']];
 
 function setPopover(popoverId, buttonId, open) {
     if (open) closePopovers();
@@ -152,7 +146,8 @@ async function showLogin() {
     state.ramOptionsGb = init.ramOptionsGb;
     applySettings(init.settings);
     $('app-version').textContent = 'v' + init.version;
-    $('user-menu').hidden = true;
+    state.apiBase = init.apiBaseUrl || '';
+    $('btn-user').hidden = true;
     $('page-tabs').hidden = true;
     $('tab-admin').hidden = true;
     closePopovers();
@@ -207,8 +202,9 @@ async function tryLogin() {
 async function enterLauncher(session) {
     state.username = session.username;
     $('user-name').textContent = session.username;
-    $('user-avatar').textContent = (session.username || '?').charAt(0);
-    $('user-menu').hidden = false;
+    setAvatar($('user-avatar'), { username: session.username, avatarVersion: 0 });
+    $('btn-user').hidden = false;
+    loadMyProfile(); // avatarı arka planda getirir
     state.isAdmin = !!session.isAdmin;
     $('page-tabs').hidden = false;
     $('tab-admin').hidden = !session.isAdmin;
@@ -723,6 +719,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupPopovers();
     setupVersionPicker();
     setupPacksPage();
+    setupProfilePage();
     setupConsole();
     setupMusic();
     setupLoginForm();
