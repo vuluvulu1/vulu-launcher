@@ -150,6 +150,7 @@ document.addEventListener('pointerup', () => { dragging = false; });
 document.addEventListener('pointercancel', () => { dragging = false; });
 
 window.addEventListener('DOMContentLoaded', () => send('ready'));
+document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
 </body>
 </html>

@@ -48,9 +48,11 @@ namespace VuluLauncher
                 .SetSize(width, height)
                 .Center();
 
+            // Sağ tık menüsü hiçbir sürümde açılmaz (tarayıcı menüsü launcher'a ait değil)
+            window.SetContextMenuEnabled(false);
 #if !DEBUG
-            // Dağıtılan sürümde geliştirici araçları ve sağ tık menüsü kapalıdır.
-            window.SetDevToolsEnabled(false).SetContextMenuEnabled(false);
+            // Dağıtılan sürümde geliştirici araçları da kapalıdır; Debug'da F12 ile açılır.
+            window.SetDevToolsEnabled(false);
 #endif
 
             window.WindowCreated += (_, _) =>

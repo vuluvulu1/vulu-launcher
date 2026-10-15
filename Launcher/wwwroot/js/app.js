@@ -830,6 +830,9 @@ window.addEventListener('DOMContentLoaded', () => {
     for (const button of document.querySelectorAll('#page-tabs button'))
         button.addEventListener('click', () => showPage(button.dataset.page));
 
+    // Sağ tık menüsü açılmasın (pencere ayarı yanında, sayfa düzeyinde de)
+    window.addEventListener('contextmenu', event => event.preventDefault());
+
     // Dosya sürükleyip bırakmak sayfayı değiştirmesin
     window.addEventListener('dragover', event => event.preventDefault());
     window.addEventListener('drop', event => event.preventDefault());

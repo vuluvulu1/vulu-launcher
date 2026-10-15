@@ -58,8 +58,9 @@ namespace Updater
                 .SetSize((int)(BaseWidth * scale), (int)(BaseHeight * scale))
                 .Center();
 
+            _window.SetContextMenuEnabled(false);
 #if !DEBUG
-            _window.SetDevToolsEnabled(false).SetContextMenuEnabled(false);
+            _window.SetDevToolsEnabled(false);
 #endif
 
             _window.WindowCreated += (_, _) =>
