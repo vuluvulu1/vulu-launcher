@@ -208,64 +208,126 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .login-version { position: absolute; right: 16px; bottom: 12px; font: 11px var(--font-mono); color: var(--dim); }
 
 /* ── Açılış ────────────────────────────────────────────────────────── */
-/* Sahne açılışı. Bütün pencereyi (başlık çubuğu dahil) anında kaplar; giriş animasyonu uygulanmaz ki
-   arkadaki arayüz bir an bile görünmesin. Perde kapalıyken launcher arkada hazırlanır, "open" ile açılır. */
-#view-splash { inset: 0; z-index: 60; overflow: hidden; animation: none; background: transparent; }
+/* Sahne açılışı ("royal vintage", launcher paletinde). Bütün pencereyi (başlık çubuğu dahil) anında
+   kaplar; giriş animasyonu uygulanmaz ki arkadaki arayüz bir an bile görünmesin. Perde kapalıyken
+   launcher arkada hazırlanır, "open" sınıfıyla perdeler açılır. */
+#view-splash {
+    inset: 0; z-index: 60; overflow: hidden; animation: none; background: transparent;
+    --bronze-dark: #7a4d24;
+    --bronze: #c27e3e;
+    --bronze-light: #e3b37a;
+    --velvet: #1a1310;
+    --velvet-deep: #0e0a08;
+}
 
+/* Espresso kadife: düşük kontrastlı dikey kıvrımlar, orta kenarda derin gölge */
 .curtain {
     position: absolute; top: 0; bottom: 0; width: 50.5%;
-    /* Kadife: koyu bordo zemin üstünde dikey kıvrımlar, orta kenarda gölge */
     background:
         repeating-linear-gradient(90deg,
-            rgba(0, 0, 0, .38) 0px, rgba(0, 0, 0, .1) 18px, rgba(255, 210, 200, .07) 34px,
-            rgba(0, 0, 0, .08) 50px, rgba(0, 0, 0, .38) 68px),
-        linear-gradient(180deg, #4a0b12 0%, #6e121c 45%, #4f0c14 100%);
-    transition: transform 1.25s cubic-bezier(.65, 0, .25, 1);
+            rgba(0, 0, 0, .42) 0px, rgba(0, 0, 0, .12) 22px, rgba(255, 214, 170, .045) 40px,
+            rgba(0, 0, 0, .1) 58px, rgba(0, 0, 0, .42) 80px),
+        linear-gradient(180deg, var(--velvet) 0%, #20170f 55%, var(--velvet-deep) 100%);
+    transition: transform 1.4s cubic-bezier(.65, 0, .25, 1);
 }
-.curtain-left { left: 0; transform-origin: left center; box-shadow: inset -24px 0 40px -10px rgba(0, 0, 0, .7); }
-.curtain-right { right: 0; transform-origin: right center; box-shadow: inset 24px 0 40px -10px rgba(0, 0, 0, .7); }
-/* Altın püskül şeridi */
-.curtain::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: linear-gradient(180deg, #e9c46a, #9a6b1f); }
+.curtain-left { left: 0; transform-origin: left center; box-shadow: inset -30px 0 50px -12px rgba(0, 0, 0, .8); }
+.curtain-right { right: 0; transform-origin: right center; box-shadow: inset 30px 0 50px -12px rgba(0, 0, 0, .8); }
+/* Etekte çift bakır şerit */
+.curtain::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 10px; height: 7px;
+    border-top: 2px solid var(--bronze); border-bottom: 1px solid var(--bronze-dark);
+    opacity: .75;
+}
 
-/* Üst saçak: dalgalı alt kenar ve altın şerit */
-.valance {
-    position: absolute; top: 0; left: 0; right: 0; height: 84px; z-index: 2;
+/* Kenarlar koyulaşır, ortada hafif sıcak sahne ışığı */
+.stage-vignette {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
     background:
-        repeating-linear-gradient(90deg, rgba(0, 0, 0, .3) 0, rgba(255, 210, 200, .05) 40px, rgba(0, 0, 0, .3) 80px),
-        linear-gradient(180deg, #3e0910, #5c0f18);
-    -webkit-mask: radial-gradient(44px 22px at 50% 100%, transparent 98%, #000) 0 0 / 88px 100% repeat-x;
-    mask: radial-gradient(44px 22px at 50% 100%, transparent 98%, #000) 0 0 / 88px 100% repeat-x;
-    transition: transform .7s cubic-bezier(.65, 0, .35, 1) .55s;
+        radial-gradient(ellipse 46% 38% at 50% 48%, rgba(194, 126, 62, .14), transparent 70%),
+        radial-gradient(ellipse 80% 75% at 50% 50%, transparent 55%, rgba(0, 0, 0, .65) 100%);
+    transition: opacity .6s ease;
 }
-.valance::after { content: ""; position: absolute; left: 0; right: 0; bottom: 22px; height: 3px; background: linear-gradient(90deg, #9a6b1f, #f2d98a, #9a6b1f); }
 
-/* Perdenin üstünde, ortada altın el yazısı */
-.stage-title { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .35s ease, transform .5s ease; }
-.stage-name {
-    padding: 0 24px; font: 400 92px/1.15 "Great Vibes", cursive; white-space: nowrap;
-    background: linear-gradient(100deg, #8a6420 0%, #e9c46a 22%, #fff1bf 38%, #d4a537 52%, #f7e3a0 66%, #a8781f 100%);
-    background-size: 220% 100%; background-position: 100% 0;
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .55));
-    clip-path: inset(0 100% 0 0);
+/* Üst saçak: dalgalı alt kenar, çift bakır şerit */
+.valance {
+    position: absolute; top: 0; left: 0; right: 0; height: 78px; z-index: 2;
+    background:
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, .35) 0, rgba(255, 214, 170, .035) 46px, rgba(0, 0, 0, .35) 92px),
+        linear-gradient(180deg, #120d0a, #1d1510);
+    -webkit-mask: radial-gradient(46px 20px at 50% 100%, transparent 98%, #000) 0 0 / 92px 100% repeat-x;
+    mask: radial-gradient(46px 20px at 50% 100%, transparent 98%, #000) 0 0 / 92px 100% repeat-x;
+    transition: transform .8s cubic-bezier(.65, 0, .35, 1) .6s;
 }
-.stage-greeting { margin-top: 2px; font: 500 14px var(--font); letter-spacing: .04em; color: #e6c98a; opacity: 0; }
+.valance::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 22px; height: 6px;
+    border-top: 2px solid var(--bronze); border-bottom: 1px solid var(--bronze-dark); opacity: .8;
+}
 
-/* Oynatma: önce yazı soldan sağa "yazılır", altın parıltı geçer, karşılama belirir */
-.play .stage-name { animation: write 1.3s cubic-bezier(.55, .1, .35, 1) .25s forwards, shine 1.6s ease-in-out 1.2s forwards; }
-.play .stage-greeting { animation: splash-rise .5s ease-out 1.3s forwards; }
-@keyframes write { to { clip-path: inset(0 -10% 0 0); } }
-@keyframes shine { to { background-position: 0 0; } }
+/* Ortada başlık, çerçeve ve karşılama */
+.stage-title { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .45s ease, transform .6s ease; }
+
+/* Vintage çerçeve: çift ince bakır çizgi, köşelerde baklava */
+.stage-frame {
+    position: absolute; left: 50%; top: 50%; width: 600px; height: 250px; transform: translate(-50%, -52%);
+    border: 1px solid rgba(194, 126, 62, .55); opacity: 0;
+}
+.stage-frame::before {
+    content: ""; position: absolute; inset: 6px; border: 1px solid rgba(194, 126, 62, .28);
+}
+.stage-frame::after {
+    content: ""; position: absolute; inset: -6px;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23c27e3e'/%3E%3C/svg%3E") 0 0 / 11px 11px no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23c27e3e'/%3E%3C/svg%3E") 100% 0 / 11px 11px no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23c27e3e'/%3E%3C/svg%3E") 0 100% / 11px 11px no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23c27e3e'/%3E%3C/svg%3E") 100% 100% / 11px 11px no-repeat;
+}
+
+/* Başlık: her harf önce ince bakır kalemle çizilir, sonra altın-bakırla dolar */
+.stage-name { position: relative; width: 520px; height: auto; overflow: visible; filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .6)); }
+.stage-name path {
+    fill: url(#title-gold); fill-opacity: 0;
+    stroke: var(--bronze-light); stroke-width: 1.1px; vector-effect: non-scaling-stroke;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 1; stroke-dashoffset: 1;
+}
+
+/* Ayraç: ortasında baklava olan ince çizgi */
+.stage-ornament {
+    position: relative; width: 180px; height: 9px; margin-top: 10px; opacity: 0;
+    background: linear-gradient(90deg, transparent, var(--bronze) 30%, var(--bronze) 70%, transparent) center / 100% 1px no-repeat;
+}
+.stage-ornament::after {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 7px; height: 7px;
+    background: var(--bronze-light); transform: translate(-50%, -50%) rotate(45deg);
+    box-shadow: 0 0 0 3px #17110d;
+}
+.stage-greeting { margin-top: 10px; font: 500 13.5px var(--font); letter-spacing: .08em; color: rgba(227, 179, 122, .85); opacity: 0; }
+
+/* Zamanlama: çerçeve → harfler sırayla çizilir ve dolar → ayraç → karşılama */
+.play .stage-frame { animation: frame-in .7s ease-out .1s forwards; }
+.play .stage-name path {
+    animation:
+        pen-draw .75s cubic-bezier(.45, 0, .35, 1) calc(.45s + var(--i) * .12s) forwards,
+        ink-fill .6s ease-out calc(.95s + var(--i) * .12s) forwards;
+}
+.play .stage-ornament { animation: splash-rise .6s ease-out 2.5s forwards; }
+.play .stage-greeting { animation: splash-rise .6s ease-out 2.75s forwards; }
+
+@keyframes frame-in { from { opacity: 0; transform: translate(-50%, -52%) scale(.96); } to { opacity: 1; transform: translate(-50%, -52%) scale(1); } }
+@keyframes pen-draw { to { stroke-dashoffset: 0; } }
+@keyframes ink-fill { to { fill-opacity: 1; stroke-opacity: .35; } }
 @keyframes splash-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-/* Açılış: perdeler iki yana çekilirken toplanır, saçak yukarı kalkar, yazı çekilir */
+/* Açılış: perdeler iki yana çekilirken toplanır, saçak yukarı kalkar, başlık ve karartma çekilir */
 .open .curtain-left { transform: translateX(-100%) scaleX(.85); }
 .open .curtain-right { transform: translateX(100%) scaleX(.85); }
 .open .valance { transform: translateY(-100%); }
 .open .stage-title { opacity: 0; transform: scale(.97); }
+.open .stage-vignette { opacity: 0; }
 
 @media (prefers-reduced-motion: reduce) {
-    .play .stage-name, .play .stage-greeting { animation-duration: .01s; animation-delay: 0s; }
+    .play .stage-frame, .play .stage-name path, .play .stage-ornament, .play .stage-greeting { animation-duration: .01s; animation-delay: 0s; }
     .curtain, .valance { transition: opacity .3s ease; }
     .open .curtain, .open .valance { transform: none; opacity: 0; }
 }

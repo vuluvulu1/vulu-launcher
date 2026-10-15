@@ -202,8 +202,8 @@ async function tryLogin() {
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Sahne açılışı zamanlaması (ms): yazı yazılıp parladıktan sonra perdeler açılır, açılış bitince sahne kalkar
-const CURTAIN_OPEN_AT = 2300;
-const CURTAIN_DONE_AFTER = 1350;
+const CURTAIN_OPEN_AT = 3600;
+const CURTAIN_DONE_AFTER = 1500;
 
 async function enterLauncher(session) {
     // Açılış ekranı her şeyden önce ve anında gelir; arayüz perde kapalıyken arkada hazırlanır
