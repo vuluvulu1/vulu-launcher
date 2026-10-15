@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>vulu Launcher</title>
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+    <!-- ── Başlık çubuğu (pencere çerçevesiz; sürükleme buradan) ───────── -->
+    <header id="titlebar">
+        <div class="tb-brand">
+            <img src="assets/logo.png" alt="">
+            <span>vulu Launcher</span>
+            <span class="tb-tag">BETA</span>
+        </div>
+        <div class="tb-actions">
+            <button id="btn-admin" class="tb-btn tb-text" hidden title="Admin paneli">⚙ Admin</button>
+            <button id="btn-min" class="tb-btn" title="Küçült" aria-label="Küçült">
+                <svg viewBox="0 0 12 12"><path d="M2 6h8" /></svg>
+            </button>
+            <button id="btn-close" class="tb-btn tb-close" title="Kapat" aria-label="Kapat">
+                <svg viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" /></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ── Giriş ───────────────────────────────────────────────────────── -->
+    <section id="view-login" class="view">
+        <form id="login-form" class="login-card" autocomplete="off">
+            <img class="login-logo" src="assets/logo.png" alt="">
+            <h1>vulu Launcher</h1>
+            <p class="login-sub">Devam etmek için giriş yap</p>
+
+            <label for="login-username">Kullanıcı adı</label>
+            <input id="login-username" type="text" maxlength="16" spellcheck="false">
+
+            <label for="login-password">Şifre</label>
+            <input id="login-password" type="password">
+
+            <label class="check">
+                <input id="login-remember" type="checkbox">
+                <span>Beni hatırla</span>
+            </label>
+
+            <button id="login-submit" type="submit" class="btn btn-primary btn-block">Giriş yap</button>
+            <p id="login-status" class="login-status"></p>
+        </form>
+        <span id="app-version" class="login-version"></span>
+    </section>
+
+    <!-- ── Açılış animasyonu ───────────────────────────────────────────── -->
+    <section id="view-splash" class="view" hidden>
+        <img id="splash-img" alt="">
+    </section>
+
+    <!-- ── Ana ekran ───────────────────────────────────────────────────── -->
+    <section id="view-main" class="view" hidden>
+        <aside class="rail">
+            <div class="rail-scroll">
+                <h2>Paketler</h2>
+                <div id="pack-list" class="pack-list"></div>
+
+                <h2 class="rail-head">
+                    <span>Instance'larım</span>
+                    <button id="btn-new-instance" class="mini-btn" title="Yeni instance oluştur">+ Yeni</button>
+                </h2>
+                <div id="instance-list" class="pack-list"></div>
+            </div>
+
+            <nav class="rail-nav">
+                <button data-page="home" class="active">Oyna</button>
+                <button data-page="modrinth">Modrinth</button>
+                <button data-page="settings">Ayarlar</button>
+            </nav>
+
+            <div class="music">
+                <div class="music-top">
+                    <button id="music-toggle" class="icon-btn" title="Müziği aç/kapat" aria-label="Müziği aç/kapat">♪</button>
+                    <div class="marquee"><span>Distant Horizons — Jeremy Soule, The Elder Scrolls</span></div>
+                </div>
+                <input id="music-volume" type="range" min="0" max="100" value="40" aria-label="Ses düzeyi">
+            </div>
+        </aside>
+
+        <!-- Oyna -->
+        <div id="page-home" class="stage page">
+            <div id="stage-bg" class="stage-bg"></div>
+
+            <div class="stage-top">
+                <span class="welcome">Hoşgeldin, <b id="welcome-name"></b></span>
+            </div>
+
+            <div class="stage-hero">
+                <img id="pack-logo" class="pack-logo" alt="" hidden>
+                <h1 id="pack-title" class="pack-title" hidden></h1>
+                <p id="pack-desc" class="pack-desc"></p>
+                <div id="pack-tags" class="pack-tags"></div>
+                <div id="pack-actions" class="pack-actions"></div>
+            </div>
+
+            <div class="dock">
+                <div class="ram">
+                    <span class="dock-label">RAM</span>
+                    <div id="ram-options" class="segmented"></div>
+                </div>
+                <button id="btn-play" class="btn btn-play" disabled>OYNA</button>
+            </div>
+
+            <div id="console" class="console">
+                <div class="console-head">
+                    <span>Konsol</span>
+                    <div>
+                        <button id="console-clear" class="link-btn">Temizle</button>
+                        <button id="console-toggle" class="link-btn">Büyüt</button>
+                    </div>
+                </div>
+                <div id="console-body" class="console-body"></div>
+            </div>
+        </div>
+
+        <!-- Modrinth -->
+        <div id="page-modrinth" class="page page-scroll" hidden>
+            <header class="page-head">
+                <h1>Modrinth</h1>
+                <div id="mr-types" class="segmented"></div>
+            </header>
+            <div class="mr-bar">
+                <input id="mr-query" type="text" placeholder="Ara..." spellcheck="false">
+                <label class="mr-field">
+                    <span>Sırala</span>
+                    <select id="mr-sort"></select>
+                </label>
+                <label id="mr-target-wrap" class="mr-field wide">
+                    <span>Kurulacak instance</span>
+                    <select id="mr-target"></select>
+                </label>
+                <label id="mr-version-wrap" class="mr-field" hidden>
+                    <span>Minecraft</span>
+                    <select id="mr-version"></select>
+                </label>
+                <label id="mr-loader-wrap" class="mr-field" hidden>
+                    <span>Yükleyici</span>
+                    <select id="mr-loader"></select>
+                </label>
+                <button id="mr-filter-toggle" class="btn">Filtreler</button>
+            </div>
+            <div id="mr-filters" class="mr-filters" hidden></div>
+            <p id="mr-status" class="page-note"></p>
+            <div id="mr-results" class="mr-results"></div>
+            <button id="mr-more" class="btn btn-block" hidden>Daha fazla göster</button>
+        </div>
+
+        <!-- Ayarlar -->
+        <div id="page-settings" class="page page-scroll" hidden>
+            <header class="page-head">
+                <h1>Ayarlar</h1>
+                <span id="settings-saved" class="page-note"></span>
+            </header>
+            <div id="settings-body"></div>
+        </div>
+
+        <!-- Oyna sayfası dışındayken süren işlemi gösterir -->
+        <div id="activity" class="activity" hidden>
+            <span class="spinner"></span>
+            <span id="activity-text"></span>
+        </div>
+    </section>
+
+    <div id="modal-root"></div>
+    <audio id="music" src="assets/menu.mp3" loop preload="auto"></audio>
+
+    <script src="js/bridge.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/instances.js"></script>
+    <script src="js/modrinth.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
