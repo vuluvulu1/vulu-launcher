@@ -4,7 +4,7 @@
  * Ölçülü köşeler (4–10px), birbirinden biraz farklı tonlarda katmanlar ve ince kenarlar.
  * Bulanıklık ve dekoratif parlama yok; gölge yalnızca açılan pencere ve menülerde.
  * Yazılarda CSS büyük harf dönüşümü kullanılmaz (Türkçe "i" → "İ" sorununu önler).
- * Mono yazı yalnızca sayı, sürüm ve konsolda; pixel font yalnızca logo ve paket başlığında.
+ * Mono yazı yalnızca sayı, sürüm ve konsolda; pixel font yalnızca paket/instance adlarında.
  */
 
 /* Gömülü fontlar (SIL Open Font License, lisanslar fonts/ klasöründe) */
@@ -95,7 +95,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .tb-brand { display: flex; align-items: center; gap: 10px; pointer-events: none; }
 .tb-brand img { width: 20px; height: 20px; image-rendering: pixelated; border-radius: var(--r-sm); }
-.tb-brand span:first-of-type { font: 700 12.5px var(--font-pixel); letter-spacing: .02em; }
+.tb-brand span:first-of-type { font: 700 14px var(--font); letter-spacing: -.01em; }
 .tb-tag { font: 600 10px var(--font-mono); letter-spacing: .06em; color: var(--accent-hi); background: var(--accent-soft); padding: 1px 6px; border-radius: var(--r-sm); }
 .tb-actions { display: flex; align-items: center; gap: 4px; height: 100%; }
 .tb-btn { width: 36px; height: 30px; border: 0; border-radius: var(--r); background: transparent; display: grid; place-items: center; }
@@ -196,7 +196,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
     background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg);
 }
 .login-logo { width: 44px; height: 44px; image-rendering: pixelated; border-radius: var(--r); }
-.login-card h1 { margin: 16px 0 0; font: 700 20px var(--font-pixel); letter-spacing: .01em; }
+.login-card h1 { margin: 16px 0 0; font: 600 22px var(--font); letter-spacing: -.01em; }
 .login-sub { margin: 4px 0 22px; color: var(--muted); font-size: 13px; }
 .login-card label:not(.check) { font: 600 12px var(--font); color: var(--muted); margin: 0 0 6px; }
 .login-card input[type=text], .login-card input[type=password] { margin-bottom: 14px; }

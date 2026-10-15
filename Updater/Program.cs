@@ -155,7 +155,7 @@ namespace Updater
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "";
             return ReadResourceText("updater.html")
                 .Replace("__FONT__", "data:font/ttf;base64," + Convert.ToBase64String(ReadResource("IBMPlexMono.ttf")))
-                .Replace("__PIXEL__", "data:font/ttf;base64," + Convert.ToBase64String(ReadResource("Silkscreen.ttf")))
+                .Replace("__SANS__", "data:font/ttf;base64," + Convert.ToBase64String(ReadResource("IBMPlexSans.ttf")))
                 .Replace("__LOGO__", "data:image/png;base64," + Convert.ToBase64String(ReadResource("logo.png")))
                 .Replace("__VERSION__", VuluShared.Releases.Clean(version));
         }

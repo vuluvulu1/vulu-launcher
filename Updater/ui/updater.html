@@ -5,7 +5,7 @@
 <title>vulu Launcher Güncelleyici</title>
 <style>
 @font-face { font-family: "IBM Plex Mono"; src: url("__FONT__") format("truetype"); font-weight: 400 700; }
-@font-face { font-family: "Silkscreen"; src: url("__PIXEL__") format("truetype"); font-weight: 700; }
+@font-face { font-family: "IBM Plex Sans"; src: url("__SANS__") format("truetype"); font-weight: 100 700; }
 
 /* Launcher ile aynı dil: ölçülü köşeler, katmanlı yüzeyler, büyük harf dönüşümü yok */
 :root {
@@ -38,7 +38,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .top { height: 36px; flex: none; display: flex; align-items: stretch; background: var(--panel); border-bottom: 1px solid var(--line); }
 .brand { flex: 1; display: flex; align-items: center; gap: 9px; padding: 0 12px; }
 .brand img { width: 16px; height: 16px; image-rendering: pixelated; border-radius: 3px; }
-.brand b { font: 700 11px "Silkscreen", monospace; letter-spacing: .04em; }
+.brand b { font: 700 13px "IBM Plex Sans", "Segoe UI", sans-serif; letter-spacing: -.01em; }
 .top button { width: 34px; height: 28px; margin: 4px 2px; border: 0; border-radius: 6px; background: transparent; display: grid; place-items: center; }
 .top button:hover { background: var(--surface); }
 .top #close:hover { background: #a8321f; }
@@ -79,7 +79,7 @@ body.error .bar { visibility: hidden; }
 </head>
 <body class="checking">
     <div class="top" id="drag">
-        <div class="brand"><img src="__LOGO__" alt=""><b>vulu launcher</b></div>
+        <div class="brand"><img src="__LOGO__" alt=""><b>vulu Launcher</b></div>
         <button id="minimize" aria-label="Küçült" title="Küçült"><svg viewBox="0 0 12 12"><path d="M2 6h8"/></svg></button>
         <button id="close" aria-label="Kapat" title="Kapat"><svg viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg></button>
     </div>
