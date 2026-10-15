@@ -219,12 +219,13 @@ async function enterLauncher(session) {
     const splash = $('view-splash');
     const skipSplash = !!state.settings.skipSplash;
     if (!skipSplash) {
-        splash.classList.remove('fade');
-        $('splash-img').src = 'assets/splash.gif?' + Date.now(); // animasyon baştan oynasın
+        $('splash-greeting').textContent = `Hoş geldin, ${session.username}`;
+        splash.classList.remove('fade', 'play');
         showView('view-splash');
+        void splash.offsetWidth; // animasyon her girişte baştan oynasın
+        splash.classList.add('play');
+        await new Promise(resolve => setTimeout(resolve, 2400));
     }
-
-    if (!skipSplash) await new Promise(resolve => setTimeout(resolve, 2600));
 
     startMusic();
     if (skipSplash) showView('view-main');
@@ -232,7 +233,7 @@ async function enterLauncher(session) {
         $('view-login').hidden = true;
         $('view-main').hidden = false;
         splash.classList.add('fade');
-        setTimeout(() => { splash.hidden = true; }, 650);
+        setTimeout(() => { splash.hidden = true; splash.classList.remove('fade', 'play'); }, 560);
     }
 
     await offerLauncherUpdate();
