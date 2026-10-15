@@ -12,6 +12,7 @@
 @font-face { font-family: "IBM Plex Mono"; src: url("../fonts/IBMPlexMono-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "IBM Plex Mono"; src: url("../fonts/IBMPlexMono-Medium.ttf") format("truetype"); font-weight: 500; font-display: swap; }
 @font-face { font-family: "IBM Plex Mono"; src: url("../fonts/IBMPlexMono-SemiBold.ttf") format("truetype"); font-weight: 600 700; font-display: swap; }
+@font-face { font-family: "Great Vibes"; src: url("../fonts/GreatVibes-Regular.ttf") format("truetype"); font-weight: 400; font-display: block; }
 @font-face { font-family: "Silkscreen"; src: url("../fonts/Silkscreen-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
 
 :root {
@@ -207,31 +208,66 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .login-version { position: absolute; right: 16px; bottom: 12px; font: 11px var(--font-mono); color: var(--dim); }
 
 /* ── Açılış ────────────────────────────────────────────────────────── */
-/* Başlık çubuğu dahil bütün pencereyi kaplar; ana ekran altında hazır bekler, bitince yumuşakça çekilir */
-#view-splash { inset: 0; z-index: 60; display: grid; place-items: center; background: var(--bg); transition: opacity .5s ease; }
-#view-splash.fade { opacity: 0; pointer-events: none; }
-.splash { display: flex; flex-direction: column; align-items: center; }
+/* Sahne açılışı. Bütün pencereyi (başlık çubuğu dahil) anında kaplar; giriş animasyonu uygulanmaz ki
+   arkadaki arayüz bir an bile görünmesin. Perde kapalıyken launcher arkada hazırlanır, "open" ile açılır. */
+#view-splash { inset: 0; z-index: 60; overflow: hidden; animation: none; background: transparent; }
 
-/* Logo alttan yukarı satır satır "inşa edilir" (blok blok, adım adım) */
-.splash-logo { width: 96px; height: 96px; image-rendering: pixelated; border-radius: var(--r); clip-path: inset(100% 0 0 0); }
-.splash-name { margin-top: 22px; font: 600 22px var(--font); letter-spacing: -.01em; opacity: 0; }
-.splash-greeting { margin-top: 4px; font-size: 13px; color: var(--muted); opacity: 0; }
-.splash-bar { width: 168px; height: 3px; margin-top: 24px; border-radius: 3px; background: rgba(255, 255, 255, .08); overflow: hidden; opacity: 0; }
-.splash-bar span { display: block; width: 100%; height: 100%; border-radius: 3px; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+.curtain {
+    position: absolute; top: 0; bottom: 0; width: 50.5%;
+    /* Kadife: koyu bordo zemin üstünde dikey kıvrımlar, orta kenarda gölge */
+    background:
+        repeating-linear-gradient(90deg,
+            rgba(0, 0, 0, .38) 0px, rgba(0, 0, 0, .1) 18px, rgba(255, 210, 200, .07) 34px,
+            rgba(0, 0, 0, .08) 50px, rgba(0, 0, 0, .38) 68px),
+        linear-gradient(180deg, #4a0b12 0%, #6e121c 45%, #4f0c14 100%);
+    transition: transform 1.25s cubic-bezier(.65, 0, .25, 1);
+}
+.curtain-left { left: 0; transform-origin: left center; box-shadow: inset -24px 0 40px -10px rgba(0, 0, 0, .7); }
+.curtain-right { right: 0; transform-origin: right center; box-shadow: inset 24px 0 40px -10px rgba(0, 0, 0, .7); }
+/* Altın püskül şeridi */
+.curtain::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: linear-gradient(180deg, #e9c46a, #9a6b1f); }
 
-.play .splash-logo { animation: splash-build .6s steps(8, end) .1s forwards; }
-.play .splash-name { animation: splash-rise .45s ease-out .55s forwards; }
-.play .splash-greeting { animation: splash-rise .45s ease-out .7s forwards; }
-.play .splash-bar { animation: splash-show .3s ease-out .8s forwards; }
-.play .splash-bar span { animation: splash-fill 1.35s cubic-bezier(.4, 0, .2, 1) .9s forwards; }
+/* Üst saçak: dalgalı alt kenar ve altın şerit */
+.valance {
+    position: absolute; top: 0; left: 0; right: 0; height: 84px; z-index: 2;
+    background:
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, .3) 0, rgba(255, 210, 200, .05) 40px, rgba(0, 0, 0, .3) 80px),
+        linear-gradient(180deg, #3e0910, #5c0f18);
+    -webkit-mask: radial-gradient(44px 22px at 50% 100%, transparent 98%, #000) 0 0 / 88px 100% repeat-x;
+    mask: radial-gradient(44px 22px at 50% 100%, transparent 98%, #000) 0 0 / 88px 100% repeat-x;
+    transition: transform .7s cubic-bezier(.65, 0, .35, 1) .55s;
+}
+.valance::after { content: ""; position: absolute; left: 0; right: 0; bottom: 22px; height: 3px; background: linear-gradient(90deg, #9a6b1f, #f2d98a, #9a6b1f); }
 
-@keyframes splash-build { to { clip-path: inset(0 0 0 0); } }
+/* Perdenin üstünde, ortada altın el yazısı */
+.stage-title { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .35s ease, transform .5s ease; }
+.stage-name {
+    padding: 0 24px; font: 400 92px/1.15 "Great Vibes", cursive; white-space: nowrap;
+    background: linear-gradient(100deg, #8a6420 0%, #e9c46a 22%, #fff1bf 38%, #d4a537 52%, #f7e3a0 66%, #a8781f 100%);
+    background-size: 220% 100%; background-position: 100% 0;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .55));
+    clip-path: inset(0 100% 0 0);
+}
+.stage-greeting { margin-top: 2px; font: 500 14px var(--font); letter-spacing: .04em; color: #e6c98a; opacity: 0; }
+
+/* Oynatma: önce yazı soldan sağa "yazılır", altın parıltı geçer, karşılama belirir */
+.play .stage-name { animation: write 1.3s cubic-bezier(.55, .1, .35, 1) .25s forwards, shine 1.6s ease-in-out 1.2s forwards; }
+.play .stage-greeting { animation: splash-rise .5s ease-out 1.3s forwards; }
+@keyframes write { to { clip-path: inset(0 -10% 0 0); } }
+@keyframes shine { to { background-position: 0 0; } }
 @keyframes splash-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-@keyframes splash-show { to { opacity: 1; } }
-@keyframes splash-fill { to { transform: scaleX(1); } }
+
+/* Açılış: perdeler iki yana çekilirken toplanır, saçak yukarı kalkar, yazı çekilir */
+.open .curtain-left { transform: translateX(-100%) scaleX(.85); }
+.open .curtain-right { transform: translateX(100%) scaleX(.85); }
+.open .valance { transform: translateY(-100%); }
+.open .stage-title { opacity: 0; transform: scale(.97); }
 
 @media (prefers-reduced-motion: reduce) {
-    .play .splash-logo, .play .splash-name, .play .splash-greeting, .play .splash-bar, .play .splash-bar span { animation-duration: .01s; animation-delay: 0s; }
+    .play .stage-name, .play .stage-greeting { animation-duration: .01s; animation-delay: 0s; }
+    .curtain, .valance { transition: opacity .3s ease; }
+    .open .curtain, .open .valance { transform: none; opacity: 0; }
 }
 
 /* ── Ana ekran: sol şerit ──────────────────────────────────────────── */

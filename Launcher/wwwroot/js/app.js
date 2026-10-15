@@ -199,7 +199,26 @@ async function tryLogin() {
 }
 
 // ── Giriş sonrası ─────────────────────────────────────────────────────
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// Sahne açılışı zamanlaması (ms): yazı yazılıp parladıktan sonra perdeler açılır, açılış bitince sahne kalkar
+const CURTAIN_OPEN_AT = 2300;
+const CURTAIN_DONE_AFTER = 1350;
+
 async function enterLauncher(session) {
+    // Açılış ekranı her şeyden önce ve anında gelir; arayüz perde kapalıyken arkada hazırlanır
+    const splash = $('view-splash');
+    const skipSplash = !!state.settings.skipSplash;
+    const startedAt = performance.now();
+    if (!skipSplash) {
+        $('splash-greeting').textContent = `Hoş geldin, ${session.username}`;
+        splash.classList.remove('play', 'open');
+        splash.hidden = false;
+        $('view-login').hidden = true;
+        void splash.offsetWidth; // animasyon her girişte baştan oynasın
+        splash.classList.add('play');
+    }
+
     state.username = session.username;
     $('user-name').textContent = session.username;
     setAvatar($('user-avatar'), { username: session.username, avatarVersion: 0 });
@@ -216,24 +235,18 @@ async function enterLauncher(session) {
     if (!state.instances.some(i => !i.locked))
         appendLog({ text: 'Hesabınıza tanımlı bir paket yok. Yeni bir instance oluşturabilirsiniz.', level: 'warn' });
 
-    const splash = $('view-splash');
-    const skipSplash = !!state.settings.skipSplash;
-    if (!skipSplash) {
-        $('splash-greeting').textContent = `Hoş geldin, ${session.username}`;
-        splash.classList.remove('fade', 'play');
-        showView('view-splash');
-        void splash.offsetWidth; // animasyon her girişte baştan oynasın
-        splash.classList.add('play');
-        await new Promise(resolve => setTimeout(resolve, 2400));
-    }
-
-    startMusic();
-    if (skipSplash) showView('view-main');
-    else {
-        $('view-login').hidden = true;
+    if (skipSplash) {
+        showView('view-main');
+        startMusic();
+    } else {
+        // Arayüz hazır ve yazı tamamlandıysa perdeler açılır; arkadan launcher görünür
+        await wait(Math.max(0, CURTAIN_OPEN_AT - (performance.now() - startedAt)));
         $('view-main').hidden = false;
-        splash.classList.add('fade');
-        setTimeout(() => { splash.hidden = true; splash.classList.remove('fade', 'play'); }, 560);
+        splash.classList.add('open');
+        startMusic();
+        await wait(CURTAIN_DONE_AFTER);
+        splash.hidden = true;
+        splash.classList.remove('play', 'open');
     }
 
     await offerLauncherUpdate();
@@ -716,6 +729,9 @@ function startMusic() {
 
 // ── Başlat ────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+    // Açılıştaki el yazısı fontu giriş ekranındayken hazır olsun
+    document.fonts.load('92px "Great Vibes"').catch(() => { });
+
     setupTitlebar();
     setupPopovers();
     setupVersionPicker();
