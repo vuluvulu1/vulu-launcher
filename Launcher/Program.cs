@@ -33,6 +33,7 @@ namespace VuluLauncher
 
             double scale = GetDpiForSystem() / 96.0;
             if (scale < 1) scale = 1;
+            var (width, height) = FitToWorkArea((int)(BaseWidth * scale), (int)(BaseHeight * scale));
 
             var window = new PhotinoWindow()
                 .SetTitle("vulu Launcher")
@@ -44,7 +45,7 @@ namespace VuluLauncher
                 .SetResizable(false)
                 .SetUseOsDefaultSize(false)
                 .SetUseOsDefaultLocation(false)
-                .SetSize((int)(BaseWidth * scale), (int)(BaseHeight * scale))
+                .SetSize(width, height)
                 .Center();
 
 #if !DEBUG
@@ -64,6 +65,26 @@ namespace VuluLauncher
 
             app.Shutdown();
         }
+
+        /// <summary>
+        /// Küçük ekranlarda (ör. 1366×768 dizüstü) pencere görev çubuğunun altına taşmasın: masaüstünün
+        /// kullanılabilir alanına sığacak kadar küçültülür. Arayüz esnek olduğu için daha küçük boyutta da çalışır.
+        /// </summary>
+        private static (int Width, int Height) FitToWorkArea(int width, int height)
+        {
+            var area = new RECT();
+            if (!SystemParametersInfo(0x0030 /* SPI_GETWORKAREA */, 0, ref area, 0)) return (width, height);
+
+            int maxWidth = (int)((area.Right - area.Left) * 0.96);
+            int maxHeight = (int)((area.Bottom - area.Top) * 0.96);
+            return (Math.Min(width, maxWidth), Math.Min(height, maxHeight));
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT { public int Left, Top, Right, Bottom; }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SystemParametersInfo(uint action, uint param, ref RECT value, uint winIni);
 
         private static bool StartUpdater()
         {

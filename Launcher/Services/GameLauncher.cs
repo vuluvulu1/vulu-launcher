@@ -184,7 +184,17 @@ namespace VuluLauncher
                 case "forge":
                 {
                     _log($"Forge {loaderVersion} kontrol ediliyor...", "accent");
-                    return await new ForgeInstaller(launcher, Downloader.Http).Install(mc, loaderVersion, InstallOptions(javaPath));
+                    // Aynı adla kurulmuş eski NeoForge profili Forge sanılmasın
+                    bool reuse = !LegacyNeoForge.ProfileIsNeoForge(launcher, mc, loaderVersion);
+                    return await new ForgeInstaller(launcher, Downloader.Http).Install(mc, loaderVersion, InstallOptions(javaPath, reuse));
+                }
+
+                case "neoforge" when LegacyNeoForge.IsLegacy(mc):
+                {
+                    _log($"NeoForge {loaderVersion} kontrol ediliyor...", "accent");
+                    bool reuse = LegacyNeoForge.ProfileIsNeoForge(launcher, mc, loaderVersion);
+                    return await new ForgeInstaller(launcher, Downloader.Http)
+                        .Install(LegacyNeoForge.CreateVersion(mc, loaderVersion), InstallOptions(javaPath, reuse));
                 }
 
                 case "neoforge":
@@ -198,10 +208,10 @@ namespace VuluLauncher
             }
         }
 
-        private ForgeInstallOptions InstallOptions(string javaPath) => new()
+        private ForgeInstallOptions InstallOptions(string javaPath, bool skipIfInstalled = true) => new()
         {
             JavaPath = javaPath,
-            SkipIfAlreadyInstalled = true,
+            SkipIfAlreadyInstalled = skipIfInstalled,
             FileProgress = FileProgress(),
             InstallerOutput = new ThrottledProgress<string>(line => _log(line, "replace"), 100)
         };
@@ -269,6 +279,9 @@ namespace VuluLauncher
                         .ToList();
                 }
 
+                case "neoforge" when LegacyNeoForge.IsLegacy(mcVersion):
+                    return await LegacyNeoForge.VersionsAsync(mcVersion);
+
                 case "neoforge":
                 {
                     var versions = await new NeoForgeInstaller(CoreLauncher(), Downloader.Http).GetNeoForgeVersions(mcVersion);
@@ -278,6 +291,61 @@ namespace VuluLauncher
                 default:
                     throw new InvalidOperationException($"Bilinmeyen mod yükleyici: {loader}");
             }
+        }
+    }
+
+    /// <summary>
+    /// NeoForge'un 1.20.1 sürümleri, sonrakilerden farklı olarak Forge'un bir kolu olarak "net/neoforged/forge"
+    /// altında ("1.20.1-47.1.106" gibi) yayınlandı. NeoForge kütüphanesi bunları bulamadığı için listeyi
+    /// buradan alır, kurulumu da Forge kurucusuyla (kurucu dosyası NeoForge'un Maven'ından) yaparız.
+    /// Kurulan profil Forge ile aynı adı taşır ("1.20.1-forge-47.1.106"); hangisine ait olduğu içinden okunur.
+    /// </summary>
+    internal static class LegacyNeoForge
+    {
+        private const string Maven = "https://maven.neoforged.net/releases/net/neoforged/forge";
+        private static readonly Dictionary<string, List<string>> Cache = new();
+
+        public static bool IsLegacy(string mcVersion) => mcVersion == "1.20.1";
+
+        public static async Task<List<string>> VersionsAsync(string mcVersion)
+        {
+            lock (Cache) { if (Cache.TryGetValue(mcVersion, out var cached)) return cached; }
+
+            string xml = await Downloader.Http.GetStringAsync($"{Maven}/maven-metadata.xml");
+            string prefix = mcVersion + "-";
+            var versions = Regex.Matches(xml, @"<version>([^<]+)</version>")
+                .Select(m => m.Groups[1].Value)
+                .Where(v => v.StartsWith(prefix, StringComparison.Ordinal))
+                .Select(v => v[prefix.Length..])
+                .Where(v => Version.TryParse(v, out _))
+                .OrderByDescending(v => Version.Parse(v))
+                .ToList();
+
+            lock (Cache) Cache[mcVersion] = versions;
+            return versions;
+        }
+
+        public static CmlLib.Core.Installer.Forge.Versions.ForgeVersion CreateVersion(string mcVersion, string loaderVersion)
+        {
+            if (!Version.TryParse(loaderVersion, out _))
+                throw new InvalidOperationException($"Geçersiz NeoForge sürümü: {loaderVersion}");
+
+            string full = $"{mcVersion}-{loaderVersion}";
+            return new CmlLib.Core.Installer.Forge.Versions.ForgeVersion(mcVersion, loaderVersion)
+            {
+                Files = new[]
+                {
+                    new ForgeVersionFile { Type = "installer", DirectUrl = $"{Maven}/{full}/forge-{full}-installer.jar" }
+                }
+            };
+        }
+
+        /// <summary>Bu adla kurulu profil NeoForge'a mı ait? (Kurulu değilse false.)</summary>
+        public static bool ProfileIsNeoForge(MinecraftLauncher launcher, string mcVersion, string loaderVersion)
+        {
+            string path = launcher.MinecraftPath.GetVersionJsonPath($"{mcVersion}-forge-{loaderVersion}");
+            try { return File.Exists(path) && File.ReadAllText(path).Contains("net.neoforged", StringComparison.Ordinal); }
+            catch { return false; }
         }
     }
 }

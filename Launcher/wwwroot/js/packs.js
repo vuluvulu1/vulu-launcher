@@ -190,8 +190,8 @@ async function openShareDialog(instance) {
                     el('label', {}, 'Açıklama'), description),
                 el('div', { class: 'share-right' },
                     el('div', { class: 'share-title' }, 'Pakete dahil edilecekler'),
-                    el('p', { class: 'hint' }, `${info.modrinthCount} Modrinth içeriği bağlantı olarak eklenir, kuranlar Modrinth'ten indirir. `
-                        + 'Görev kitabı ve özel dosyalar genelde config/ ve kubejs/ içindedir.'),
+                    el('p', { class: 'hint' }, 'Modrinth\'te bulunan modlar, kaynak paketleri ve shaderlar dosya yerine bağlantı olarak eklenir; '
+                        + 'kuranlar Modrinth\'ten indirir. Görev kitabı ve özel dosyalar genelde config/ ve kubejs/ içindedir.'),
                     el('div', { class: 'share-list' }, checks.length
                         ? checks.map(c => c.row)
                         : el('p', { class: 'hint' }, 'Paylaşılacak dosya bulunamadı.')),

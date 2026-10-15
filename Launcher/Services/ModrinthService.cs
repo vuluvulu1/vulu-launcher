@@ -103,6 +103,25 @@ namespace VuluLauncher
             return result;
         }
 
+        /// <summary>
+        /// Dosyaların SHA-1'lerinden Modrinth sürümlerini bulur (elle eklenmiş ya da modpack'ten gelmiş modlar için).
+        /// Modrinth'te olmayan dosyalar sonuçta yer almaz.
+        /// </summary>
+        public async Task<Dictionary<string, MrVersion>> VersionsByHashesAsync(IEnumerable<string> sha1Hashes)
+        {
+            var result = new Dictionary<string, MrVersion>(StringComparer.OrdinalIgnoreCase);
+            foreach (var chunk in sha1Hashes.Distinct(StringComparer.OrdinalIgnoreCase).Chunk(500))
+            {
+                using var response = await Downloader.Http.PostAsJsonAsync($"{Api}/version_files", new { hashes = chunk, algorithm = "sha1" });
+                if (!response.IsSuccessStatusCode)
+                    throw new HttpRequestException($"Modrinth isteği başarısız oldu ({(int)response.StatusCode}).");
+
+                var found = await response.Content.ReadFromJsonAsync<Dictionary<string, MrVersion>>(Json);
+                foreach (var (hash, version) in found ?? new()) result[hash] = version;
+            }
+            return result;
+        }
+
         /// <summary>Quilt, Fabric modlarını da çalıştırır; diğerleri yalnızca kendi modlarını.</summary>
         private static string[] CompatibleLoaders(string loader) =>
             loader == "quilt" ? new[] { "quilt", "fabric" } : new[] { loader };

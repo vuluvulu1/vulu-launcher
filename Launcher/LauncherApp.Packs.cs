@@ -255,7 +255,7 @@ namespace VuluLauncher
                             files = files.Count,
                             sizeMb = Math.Round(files.Sum(f => new FileInfo(f).Length) / 1024.0 / 1024.0, 2),
                             checkedByDefault = SharedByDefault.Contains(e.Name),
-                            note = ContentFolders.Contains(e.Name, StringComparer.OrdinalIgnoreCase) ? "Modrinth dışından eklenenler" : null
+                            note = ContentFolders.Contains(e.Name, StringComparer.OrdinalIgnoreCase) ? "Modrinth'te bulunanlar bağlantı olur" : null
                         };
                     })
                     .Where(e => e.files > 0)
@@ -323,11 +323,12 @@ namespace VuluLauncher
 
             Log($"{name} hazırlanıyor...", "accent");
             var (mods, fallbackFiles) = await ResolvePackModsAsync(meta, dir);
+            var tracked = TrackedFiles(meta);
+            mods.AddRange(await ResolveUntrackedByHashAsync(dir, includes, tracked));
 
             string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-share-{Guid.NewGuid():N}.zip");
             try
             {
-                var tracked = TrackedFiles(meta);
                 int fileCount = await Task.Run(() => BuildOverridesZip(zipPath, dir, includes, tracked, fallbackFiles));
                 if (new FileInfo(zipPath).Length > MaxOverridesBytes)
                     throw new InvalidOperationException("Paket dosyaları 200 MB'ı aşıyor. Büyük klasörleri (ör. resourcepacks) çıkarmayı dene.");
@@ -366,7 +367,9 @@ namespace VuluLauncher
         /// </summary>
         private async Task<(List<PackMod> Mods, List<string> FallbackFiles)> ResolvePackModsAsync(InstanceMeta meta, string dir)
         {
-            var present = meta.Content.Where(c => File.Exists(Path.Combine(dir, c.File))).ToList();
+            var present = meta.Content
+                .Where(c => !string.IsNullOrEmpty(c.VersionId) && File.Exists(Path.Combine(dir, c.File)))
+                .ToList();
             var versions = present.Count == 0
                 ? new List<MrVersion>()
                 : await _modrinth.VersionsByIdsAsync(present.Select(c => c.VersionId));
@@ -399,6 +402,67 @@ namespace VuluLauncher
                 });
             }
             return (mods, fallback);
+        }
+
+        /// <summary>
+        /// Launcher'ın takip etmediği mod/kaynak paketi/shader dosyalarını (modpack'ten gelen ya da elle eklenen)
+        /// hash'leriyle Modrinth'te arar. Bulunanlar dosya yerine bağlantı olarak pakete girer ve
+        /// <paramref name="tracked"/>'a eklenir; böylece zip'e konmazlar. Modrinth'e ulaşılamazsa dosyalar zip'te kalır.
+        /// </summary>
+        private async Task<List<PackMod>> ResolveUntrackedByHashAsync(string dir, List<string> includes, HashSet<string> tracked)
+        {
+            var types = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["mods"] = "mod", ["resourcepacks"] = "resourcepack", ["shaderpacks"] = "shader"
+            };
+
+            // Yalnızca klasörün kendisindeki dosyalar (alt klasörler mod değildir, ör. mods/.connector)
+            var candidates = includes
+                .Where(types.ContainsKey)
+                .SelectMany(folder => SharedFiles(dir, folder, tracked)
+                    .Select(file => (Folder: folder, Path: file, Relative: Path.GetRelativePath(dir, file).Replace('\\', '/'))))
+                .Where(c => c.Relative.Count(ch => ch == '/') == 1)
+                .ToList();
+            if (candidates.Count == 0) return new();
+
+            var hashes = await Task.Run(() => candidates.ToDictionary(
+                c => c.Relative,
+                c => { using var s = File.OpenRead(c.Path); return Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(s)).ToLowerInvariant(); }));
+
+            Dictionary<string, MrVersion> found;
+            try { found = await _modrinth.VersionsByHashesAsync(hashes.Values); }
+            catch (Exception ex)
+            {
+                Log($"Modrinth'te arama yapılamadı, dosyalar pakete gömülecek: {ex.Message}", "warn");
+                return new();
+            }
+
+            var mods = new List<PackMod>();
+            foreach (var candidate in candidates)
+            {
+                string sha1 = hashes[candidate.Relative];
+                if (!found.TryGetValue(sha1, out var version)) continue;
+                var file = version.Files.FirstOrDefault(f => string.Equals(f.Hashes?.Sha1, sha1, StringComparison.OrdinalIgnoreCase));
+                if (file == null || !file.Url.StartsWith("https://cdn.modrinth.com/", StringComparison.Ordinal)) continue;
+
+                mods.Add(new PackMod
+                {
+                    ProjectId = version.ProjectId,
+                    VersionId = version.Id,
+                    Title = string.IsNullOrWhiteSpace(version.Name) ? Path.GetFileNameWithoutExtension(candidate.Path) : version.Name,
+                    VersionNumber = version.VersionNumber,
+                    Type = types[candidate.Folder],
+                    File = candidate.Relative,
+                    Url = file.Url,
+                    Sha1 = file.Hashes?.Sha1,
+                    Sha512 = file.Hashes?.Sha512,
+                    Size = file.Size
+                });
+                tracked.Add(candidate.Relative);
+            }
+
+            if (mods.Count > 0) Log($"{mods.Count} dosya Modrinth'te bulundu, bağlantı olarak eklendi.", "muted");
+            return mods;
         }
 
         /// <summary>Seçilen klasör/dosyaları zip'ler. Modrinth'ten bağlantı olarak gidecek içerikler hariç tutulur.</summary>
@@ -445,8 +509,10 @@ namespace VuluLauncher
             }
         }
 
+        /// <summary>Modrinth sürüm kimliği bilinen (bağlantı olarak paylaşılabilecek) içeriklerin dosyaları.</summary>
         private static HashSet<string> TrackedFiles(InstanceMeta meta) =>
-            new(meta.Content.Select(c => c.File.Replace('\\', '/')), StringComparer.OrdinalIgnoreCase);
+            new(meta.Content.Where(c => !string.IsNullOrEmpty(c.VersionId)).Select(c => c.File.Replace('\\', '/')),
+                StringComparer.OrdinalIgnoreCase);
 
         private async Task<object?> DeletePackAsync(string id)
         {
