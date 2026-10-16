@@ -8,7 +8,7 @@
     <AssemblyName>vulu-launcher-setup</AssemblyName>
     <RootNamespace>Installer</RootNamespace>
     <ApplicationIcon>..\Launcher\logo.ico</ApplicationIcon>
-    <Version>0.8.0</Version>
+    <Version>0.9.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
     <!-- Tek dosya olarak dağıtılır ve .NET kurulu olmayan bilgisayarda da çalışır.

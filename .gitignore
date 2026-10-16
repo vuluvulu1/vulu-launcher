@@ -1,8 +1,19 @@
-.vs/
+# Derleme çıktıları
 bin/
 obj/
+artifacts/
+
+# IDE ve araç ayarları (Claude Code dahil; yerel izinler ve önizleme ayarları depoya girmez)
+.vs/
+.vscode/
+.idea/
+.claude/
 *.user
 *.suo
-*.tmp
-artifacts/
+
+# Çalışma sırasında oluşanlar
 .update/
+*.tmp
+*.log
+Thumbs.db
+.DS_Store
