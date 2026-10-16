@@ -134,8 +134,18 @@ namespace VuluLauncher
         public async Task<List<string>> InstallAsync(InstanceMeta instance, string projectId, string? versionId = null)
         {
             var installed = new List<string>();
-            await InstallRecursiveAsync(instance, projectId, new HashSet<string>(), installed, isDependency: false, versionId);
+            using var job = new DownloadJob($"{instance.Name} · içerik kuruluyor") { Phase = "İndiriliyor" };
+            try
+            {
+                await InstallRecursiveAsync(instance, projectId, new HashSet<string>(), installed, isDependency: false, versionId);
+            }
+            catch (Exception ex)
+            {
+                job.Fail(ex.Message);
+                throw;
+            }
             InstanceStore.Save(instance);
+            job.Complete(installed.Count == 1 ? $"{installed[0]} kuruldu" : $"{installed.Count} içerik kuruldu");
             return installed;
         }
 
@@ -178,7 +188,9 @@ namespace VuluLauncher
                 ?? throw new InvalidOperationException($"{project.Title}: geçersiz dosya adı.");
 
             _log($"{project.Title} indiriliyor ({version.VersionNumber})...", "accent");
-            await Downloader.DownloadAsync(file.Url, path, sha1: file.Hashes?.Sha1, sha512: file.Hashes?.Sha512);
+            var item = DownloadJob.Current?.Add($"{project.Title} {version.VersionNumber}", file.Size);
+            if (item != null) await item.DownloadAsync(file.Url, path, file.Hashes?.Sha1, file.Hashes?.Sha512);
+            else await Downloader.DownloadAsync(file.Url, path, sha1: file.Hashes?.Sha1, sha512: file.Hashes?.Sha512);
 
             // Önceki sürümün dosyası farklı adla duruyorsa kaldır
             var previous = instance.Content.FirstOrDefault(c => c.ProjectId == project.Id);
@@ -232,11 +244,13 @@ namespace VuluLauncher
 
             string packPath = Path.Combine(Path.GetTempPath(), $"vulu-{Guid.NewGuid():N}.mrpack");
             InstanceMeta? instance = null;
+            using var job = new DownloadJob($"{project.Title} kuruluyor") { Phase = "Modpack indiriliyor" };
 
             try
             {
                 _log($"{project.Title} {version.VersionNumber} indiriliyor...", "accent");
-                await Downloader.DownloadAsync(packFile.Url, packPath, sha1: packFile.Hashes?.Sha1, sha512: packFile.Hashes?.Sha512);
+                await job.Add(packFile.Filename, packFile.Size)
+                    .DownloadAsync(packFile.Url, packPath, packFile.Hashes?.Sha1, packFile.Hashes?.Sha512);
 
                 using var zip = ZipFile.OpenRead(packPath);
                 var indexEntry = zip.GetEntry("modrinth.index.json")
@@ -258,17 +272,20 @@ namespace VuluLauncher
                 InstanceStore.Save(instance);
 
                 string instanceDir = InstanceStore.PathOf(instance.Folder);
-                await DownloadPackFilesAsync(index, instanceDir);
+                await DownloadPackFilesAsync(index, instanceDir, job);
 
                 _log("Modpack ayarları açılıyor...", "replace");
+                job.Phase = "Ayarlar yerleştiriliyor";
                 ExtractOverrides(zip, "overrides/", instanceDir);
                 ExtractOverrides(zip, "client-overrides/", instanceDir);
 
                 _log($"{project.Title} kuruldu.", "ok");
+                job.Complete($"{project.Title} kuruldu");
                 return instance;
             }
-            catch
+            catch (Exception ex)
             {
+                job.Fail(ex.Message);
                 if (instance != null)
                 {
                     try { InstanceStore.Delete(instance.Folder); } catch { }
@@ -295,10 +312,12 @@ namespace VuluLauncher
             return ("vanilla", null);
         }
 
-        private async Task DownloadPackFilesAsync(MrPackIndex index, string instanceDir)
+        private async Task DownloadPackFilesAsync(MrPackIndex index, string instanceDir, DownloadJob job)
         {
             // Sunucuya özel dosyalar istemcide gereksizdir
             var files = index.Files.Where(f => f.Env?.Client != "unsupported").ToList();
+            var items = files.ToDictionary(f => f, f => job.Add(Path.GetFileName(f.Path), f.FileSize));
+            job.Phase = "Modlar indiriliyor";
             int done = 0;
 
             await Parallel.ForEachAsync(files, new ParallelOptions { MaxDegreeOfParallelism = 6 }, async (file, cancellation) =>
@@ -309,7 +328,7 @@ namespace VuluLauncher
                 string url = file.Downloads.FirstOrDefault(IsAllowedPackUrl)
                     ?? throw new InvalidDataException($"Modpack izin verilmeyen bir adresten indirme istiyor: {file.Path}");
 
-                await Downloader.DownloadAsync(url, path, sha1: file.Hashes?.Sha1, sha512: file.Hashes?.Sha512, cancellation: cancellation);
+                await items[file].DownloadAsync(url, path, file.Hashes?.Sha1, file.Hashes?.Sha512, cancellation);
 
                 int current = Interlocked.Increment(ref done);
                 _log($"Modpack dosyaları indiriliyor... {current}/{files.Count}", "replace");

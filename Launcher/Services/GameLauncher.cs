@@ -79,6 +79,8 @@ namespace VuluLauncher
             if (Interlocked.Exchange(ref _running, 1) == 1)
                 throw new InvalidOperationException("Oyun zaten çalışıyor.");
 
+            // Her şey kuruluysa iş hızla biter ve panelde görünmez; ilk açılışta indirilenler panelde izlenir
+            using var job = new DownloadJob($"{target.Name} hazırlanıyor") { Phase = "Oyun dosyaları denetleniyor" };
             try
             {
                 var settings = AppSettings.Current;
@@ -93,6 +95,7 @@ namespace VuluLauncher
                 string javaPath = await _java.EnsureAsync(javaMajor);
 
                 string versionName = await EnsureLoaderAsync(launcher, target, javaPath);
+                job.Phase = "Oyun dosyaları indiriliyor";
 
                 var option = new MLaunchOption
                 {
@@ -113,7 +116,7 @@ namespace VuluLauncher
                 }
 
                 var process = await launcher.InstallAndBuildProcessAsync(
-                    versionName, option, FileProgress(), byteProgress: null, CancellationToken.None);
+                    versionName, option, FileProgress(), ByteProgress(), CancellationToken.None);
 
                 // Launcher oyun açılınca kapanacaksa çıktı yönlendirilmez; okuyan kalmayacağı için
                 bool closeAfterStart = settings.OnGameStart == "close";
@@ -141,9 +144,11 @@ namespace VuluLauncher
                 }
 
                 _log("Oyun başlatıldı! İyi oyunlar.", "ok");
+                job.Complete("Oyun başlatıldı");
             }
-            catch
+            catch (Exception ex)
             {
+                job.Fail(ex.Message);
                 Interlocked.Exchange(ref _running, 0);
                 throw;
             }
@@ -216,9 +221,24 @@ namespace VuluLauncher
             InstallerOutput = new ThrottledProgress<string>(line => _log(line, "replace"), 100)
         };
 
-        private IProgress<InstallerProgressChangedEventArgs> FileProgress() =>
-            new ThrottledProgress<InstallerProgressChangedEventArgs>(e =>
+        private IProgress<InstallerProgressChangedEventArgs> FileProgress()
+        {
+            // İlerleme başka thread'den gelir; iş, akıştan şimdi alınır
+            var job = DownloadJob.Current;
+            var log = new ThrottledProgress<InstallerProgressChangedEventArgs>(e =>
                 _log($"Dosyalar kontrol ediliyor... {e.ProgressedTasks}/{e.TotalTasks}  {e.Name}", "replace"), 100);
+            return new ThrottledProgress<InstallerProgressChangedEventArgs>(e =>
+            {
+                job?.Aggregate(e.ProgressedTasks, e.TotalTasks, e.Name);
+                log.Report(e);
+            }, 0);
+        }
+
+        private IProgress<ByteProgress>? ByteProgress()
+        {
+            var job = DownloadJob.Current;
+            return job == null ? null : new ThrottledProgress<ByteProgress>(p => job.AggregateBytes(p.ProgressedBytes, p.TotalBytes), 0);
+        }
     }
 
     /// <summary>Instance oluşturma ekranı için Minecraft ve mod yükleyici sürümlerini listeler.</summary>

@@ -73,6 +73,50 @@ const mockBackend = (() => {
     ];
 
     const daysAgoIso = n => new Date(Date.now() - n * 86400000).toISOString();
+    // İndirme panelini denemek için: C#'taki DownloadJob'un göndereceği durumları taklit eder
+    const MOCK_MODS = ['Create', 'Sodium', 'Iris Shaders', 'Farmer\'s Delight', 'JourneyMap', 'Jade', 'EMI', 'Supplementaries', 'Waystones', 'FTB Quests', 'Architectury API', 'Cloth Config API', 'Balm', 'Collective', 'Moonlight Lib', 'Create: Steam \'n\' Rails'];
+    let mockJobId = 0;
+    async function simulateDownload(title, count) {
+        const id = ++mockJobId;
+        const items = Array.from({ length: Math.min(count, 40) }, (_, i) => ({ name: MOCK_MODS[i % MOCK_MODS.length] + (i >= MOCK_MODS.length ? ' ' + (i + 1) : ''), size: Math.round((0.2 + Math.random() * 6) * 1024 * 1024), done: 0, state: 'queued' }));
+        items.push({ name: 'Paket dosyaları (config, görevler…)', size: 18 * 1024 * 1024, done: 0, state: 'queued' });
+        const total = items.reduce((s, i) => s + i.size, 0);
+        const started = Date.now();
+        const emit = (state, message = '') => {
+            const done = items.reduce((s, i) => s + i.done, 0);
+            const elapsed = (Date.now() - started) / 1000;
+            const speed = elapsed > 0.3 ? done / elapsed : 0;
+            bridge._dispatch({ event: 'download', data: {
+                id, title, phase: state === 'running' ? (items.at(-1).state === 'queued' ? 'Modlar indiriliyor' : 'Paket dosyaları indiriliyor') : '', state, message,
+                files: { done: items.filter(i => i.state === 'done').length, total: items.length },
+                bytes: { done, total }, speed, eta: speed > 0 ? (total - done) / speed : null, elapsed: Math.round(elapsed),
+                active: items.filter(i => i.state === 'active').map(({ name, size, done }) => ({ name, size, done })),
+                queued: items.filter(i => i.state === 'queued').length,
+                recent: items.filter(i => i.state === 'done').slice(-5).reverse().map(({ name, size }) => ({ name, size })),
+                failed: [],
+            } });
+        };
+        let next = 0;
+        while (items.some(i => i.state !== 'done')) {
+            while (items.filter(i => i.state === 'active').length < 6 && next < items.length) items[next++].state = 'active';
+            for (const item of items.filter(i => i.state === 'active')) {
+                item.done = Math.min(item.size, item.done + 180 * 1024 + Math.random() * 600 * 1024);
+                if (item.done >= item.size) item.state = 'done';
+            }
+            emit('running');
+            log(`Modlar indiriliyor... ${items.filter(i => i.state === 'done').length}/${items.length}`, 'accent', true);
+            await wait(160);
+        }
+        emit('done', title.replace(/ kuruluyor$/, ' kuruldu'));
+    }
+
+    const minutesAgoIso = n => new Date(Date.now() - n * 60000).toISOString();
+    let feedback = [
+        { id: 'f1', pack: 'p1', kind: 'request', text: 'Create: Steam \'n\' Rails eklenebilir mi? Trenler olmadan uzun mesafeler çok sıkıcı oluyor.', author: 'KaiKaenn', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: minutesAgoIso(14), mine: false, canDelete: true },
+        { id: 'f2', pack: 'p1', kind: 'feedback', text: 'Nether\'a girince oyun çöküyor, crash raporunda Oculus yazıyor.', author: 'ChillManHDM', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: minutesAgoIso(190), mine: false, canDelete: true },
+        { id: 'f3', pack: 'p1', kind: 'request', text: 'JEI yerine EMI olsun', author: 'Enwlyd', authorAvatarVersion: 0, status: 'done', reply: 'rev 3\'te değiştirildi.', repliedBy: 'vulu', createdAt: daysAgoIso(4), mine: false, canDelete: true },
+        { id: 'f4', pack: 'general', kind: 'request', text: 'Biraz daha hafif bir survival paketi olabilir mi? Laptopta 142 modu kaldıramıyorum.', author: 'KaiKaenn', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: daysAgoIso(1), mine: false, canDelete: true },
+    ];
     let packs = [
         { id: 'p1', name: 'Create Macera', description: 'Create ve FTB Quests ile ilerlenen teknoloji/macera paketi. Görev kitabı baştan sona Türkçe.', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 3, updatedAt: daysAgoIso(2), modCount: 142, sizeMb: 512.4, includes: ['config', 'kubejs', 'defaultconfigs'], coverUrl: 'assets/mainmenu.png', installed: null },
         { id: 'p2', name: 'Hafif Survival', description: 'Performans modları ve birkaç küçük eklenti. Düşük bilgisayarlar için.', author: 'vulu', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', revision: 2, updatedAt: daysAgoIso(9), modCount: 24, sizeMb: 61.7, includes: ['config'], coverUrl: 'assets/launchervanillabg.jpg', installed: { instanceId: 'inst:fabric-121', revision: 1 } },
@@ -143,13 +187,30 @@ const mockBackend = (() => {
 
         'packs.list': async () => {
             await wait(400);
-            return { configured: true, isAdmin: true, adminConnected: true, packs };
+            const open = key => feedback.filter(f => f.pack === key && f.status === 'open').length;
+            return {
+                configured: true, isAdmin: true, adminConnected: true, feedbackEnabled: true, generalFeedback: open('general'),
+                packs: packs.map(p => ({ ...p, openFeedback: open(p.id) })),
+            };
         },
+        'feedback.list': async args => { await wait(300); return feedback.filter(f => f.pack === args.pack); },
+        'feedback.post': async args => {
+            await wait(250);
+            const item = { id: 'f' + Date.now(), pack: args.pack, kind: args.kind, text: args.text.trim(), author: 'vulu', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: new Date().toISOString(), mine: true, canDelete: true };
+            feedback.unshift(item);
+            return item;
+        },
+        'feedback.update': async args => {
+            const item = feedback.find(f => f.id === args.id);
+            if (args.status !== undefined) item.status = args.status;
+            if (args.reply !== undefined) { item.reply = args.reply.trim(); item.repliedBy = item.reply ? 'vulu' : ''; }
+            return { ...item };
+        },
+        'feedback.delete': async args => { feedback = feedback.filter(f => f.id !== args.id); return { success: true }; },
         'packs.install': async args => {
             const pack = packs.find(p => p.id === args.id);
             log(`${pack.name} kuruluyor...`, 'accent');
-            for (let n = 0; n <= pack.modCount; n += 12) { log(`Modlar indiriliyor... ${n}/${pack.modCount}`, 'accent', true); await wait(150); }
-            log('Paket dosyaları açılıyor...', 'accent', true); await wait(300);
+            await simulateDownload(`${pack.name} kuruluyor`, pack.modCount);
             const id = 'inst:' + pack.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             instances = instances.concat({ id, kind: 'custom', locked: false, sharedPackId: pack.id, name: pack.name, description: pack.description, mcVersion: pack.mcVersion, loader: pack.loader, loaderVersion: pack.loaderVersion, recommendedRamGb: 8, logo: null, background: null, backgroundStyle: 'cover', thumbnail: null, iconUrl: null });
             pack.installed = { instanceId: id, revision: pack.revision };

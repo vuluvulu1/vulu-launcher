@@ -21,7 +21,7 @@ namespace VuluLauncher
         /// Yalnızca https adresleri kabul edilir.
         /// </summary>
         public static async Task DownloadAsync(string url, string path, IProgress<long>? bytesRead = null,
-            string? sha1 = null, string? sha512 = null, CancellationToken cancellation = default)
+            string? sha1 = null, string? sha512 = null, CancellationToken cancellation = default, Action<long>? contentLength = null)
         {
             if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
                 throw new InvalidOperationException($"Geçersiz indirme adresi: {url}");
@@ -34,6 +34,7 @@ namespace VuluLauncher
                 using (var response = await Http.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellation))
                 {
                     response.EnsureSuccessStatusCode();
+                    if (response.Content.Headers.ContentLength is long length) contentLength?.Invoke(length);
                     using var stream = await response.Content.ReadAsStreamAsync(cancellation);
                     using var file = File.Create(partPath);
 

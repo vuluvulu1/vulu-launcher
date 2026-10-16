@@ -39,6 +39,7 @@ namespace VuluLauncher
             _modrinth = new ModrinthService(Log);
             _game = new GameLauncher(Log, _java);
             _game.Exited += () => _bridge.Emit("gameExited");
+            DownloadJob.Emit = snapshot => _bridge.Emit("download", snapshot);
         }
 
         public void RegisterCommands()

@@ -38,6 +38,9 @@ namespace VuluLauncher
             return SendAsync<T>(HttpMethod.Put, path, content);
         }
 
+        public Task<T> PatchAsync<T>(string path, object body) =>
+            SendAsync<T>(HttpMethod.Patch, path, JsonContent.Create(body, options: Json));
+
         public Task<T> DeleteAsync<T>(string path) => SendAsync<T>(HttpMethod.Delete, path, null);
 
         /// <summary>Dosyayı akış halinde gönderir (belleğe tamamı alınmaz).</summary>
@@ -51,7 +54,7 @@ namespace VuluLauncher
         }
 
         /// <summary>Yanıtı ".part" dosyasına indirip tamamlanınca yerine taşır.</summary>
-        public async Task DownloadAsync(string path, string target)
+        public async Task DownloadAsync(string path, string target, IProgress<long>? bytesRead = null)
         {
             using var response = await RawAsync(HttpMethod.Get, path, null, HttpCompletionOption.ResponseHeadersRead);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
@@ -59,7 +62,16 @@ namespace VuluLauncher
             try
             {
                 await using (var file = File.Create(part))
-                    await response.Content.CopyToAsync(file);
+                await using (var stream = await response.Content.ReadAsStreamAsync())
+                {
+                    byte[] buffer = new byte[81920];
+                    int read;
+                    while ((read = await stream.ReadAsync(buffer)) > 0)
+                    {
+                        await file.WriteAsync(buffer.AsMemory(0, read));
+                        bytesRead?.Report(read);
+                    }
+                }
                 File.Move(part, target, overwrite: true);
             }
             finally

@@ -24,6 +24,9 @@ async function openPacksPage() {
 
 function renderPacks(result) {
     const grid = $('packs-grid'), status = $('packs-status');
+    $('packs-request').hidden = !result.feedbackEnabled;
+    $('packs-request-count').textContent = result.generalFeedback || '';
+    $('packs-request-count').hidden = !result.generalFeedback;
     status.textContent = result.packs.length ? `${result.packs.length} paket` : '';
     if (!result.packs.length) {
         grid.replaceChildren(el('div', { class: 'packs-empty' },
@@ -68,6 +71,13 @@ function packTile(pack, result) {
                 el('span', { class: 'tag' }, formatSize(pack.sizeMb))),
             el('div', { class: 'pack-foot' },
                 primary,
+                result.feedbackEnabled && el('button', {
+                    class: 'btn btn-sm btn-feedback', title: 'Geri bildirim ve istekler',
+                    onclick: () => openFeedback(pack, result.isAdmin),
+                },
+                    fromMarkup('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg>'),
+                    'Geri bildirim',
+                    pack.openFeedback > 0 && el('span', { class: 'count' }, pack.openFeedback)),
                 result.isAdmin && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deletePack(pack) }, 'Sil'))));
 }
 
@@ -209,4 +219,5 @@ async function openShareDialog(instance) {
 
 function setupPacksPage() {
     $('packs-refresh').addEventListener('click', openPacksPage);
+    $('packs-request').addEventListener('click', () => openFeedback(null, state.isAdmin));
 }

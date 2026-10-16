@@ -24,8 +24,8 @@ namespace VuluLauncher
             catch (ApiException ex) when (ex.Status == HttpStatusCode.NotFound) { return null; }
         }
 
-        public Task DownloadOverridesAsync(SharedPack pack, string path) =>
-            _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/overrides", path);
+        public Task DownloadOverridesAsync(SharedPack pack, string path, IProgress<long>? bytesRead = null) =>
+            _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/overrides", path, bytesRead);
 
         public Task DownloadCoverAsync(SharedPack pack, string path) =>
             _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/cover?v={pack.Revision}", path);

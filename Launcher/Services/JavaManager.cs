@@ -53,7 +53,21 @@ namespace VuluLauncher
                 if (existing != null) return existing;
 
                 _log($"Java {major} bulunamadı, Adoptium'dan indiriliyor...", "accent");
-                await InstallAsync(major, installDir, cancellation);
+                // Oyun başlatılırken o işe eklenir; ayarlardan istenince kendi işi olur
+                var parent = DownloadJob.Current;
+                using var own = parent == null ? new DownloadJob($"Java {major} kuruluyor") : null;
+                var job = parent ?? own!;
+                job.Phase = $"Java {major} indiriliyor";
+                try
+                {
+                    await InstallAsync(major, installDir, job.Add($"Java {major} (Eclipse Temurin)", 0), cancellation);
+                }
+                catch (Exception ex)
+                {
+                    own?.Fail(ex.Message);
+                    throw;
+                }
+                own?.Complete($"Java {major} kuruldu");
 
                 return FindJavaExe(installDir)
                     ?? throw new FileNotFoundException($"Java {major} kuruldu ama java.exe bulunamadı: {installDir}");
@@ -76,7 +90,7 @@ namespace VuluLauncher
             }
         }
 
-        private async Task InstallAsync(int major, string installDir, CancellationToken cancellation)
+        private async Task InstallAsync(int major, string installDir, DownloadItem item, CancellationToken cancellation)
         {
             string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-temurin-{major}.zip");
             string stagingDir = installDir + ".tmp";
@@ -86,18 +100,21 @@ namespace VuluLauncher
                 long downloaded = 0;
                 var progress = new ThrottledProgress<long>(_ =>
                     _log($"Java {major} indiriliyor... {Interlocked.Read(ref downloaded) / 1024 / 1024} MB", "replace"), 200);
-                var bytes = new CountingProgress(read => { Interlocked.Add(ref downloaded, read); progress.Report(read); });
+                var bytes = new CountingProgress(read => { Interlocked.Add(ref downloaded, read); progress.Report(read); item.Report(read); });
+                item.Start();
 
                 // JRE daha küçüktür; o sürüm için JRE yayınlanmadıysa JDK'ya düşülür
                 try
                 {
-                    await Downloader.DownloadAsync(BinaryUrl(major, "jre"), zipPath, bytes, cancellation: cancellation);
+                    await Downloader.DownloadAsync(BinaryUrl(major, "jre"), zipPath, bytes, cancellation: cancellation, contentLength: item.SetSize);
                 }
                 catch (HttpRequestException)
                 {
                     downloaded = 0;
-                    await Downloader.DownloadAsync(BinaryUrl(major, "jdk"), zipPath, bytes, cancellation: cancellation);
+                    item.Reset();
+                    await Downloader.DownloadAsync(BinaryUrl(major, "jdk"), zipPath, bytes, cancellation: cancellation, contentLength: item.SetSize);
                 }
+                item.Complete();
 
                 _log($"Java {major} kuruluyor...", "replace");
                 await Task.Run(() =>

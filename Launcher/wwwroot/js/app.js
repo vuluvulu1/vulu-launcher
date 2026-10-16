@@ -57,8 +57,10 @@ async function withActivity(promiseFactory) {
 }
 
 function refreshActivity() {
-    // Oyna sayfasında konsol zaten görünür; diğer sayfalarda son satır alt köşede gösterilir
-    $('activity').hidden = !(state.busy > 0 && state.page !== 'home');
+    // Oyna sayfasında konsol zaten görünür; diğer sayfalarda son satır alt köşede gösterilir.
+    // İndirme paneli açıksa o ayrıntılı halini gösterdiği için bu satır gizlenir.
+    $('activity').hidden = !(state.busy > 0 && state.page !== 'home') || !!downloads.job;
+    renderDownloads();
 }
 
 // ── Başlık çubuğu ─────────────────────────────────────────────────────
@@ -805,6 +807,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupPacksPage();
     setupProfilePage();
     setupConsole();
+    setupDownloads();
     setupMusic();
     setupLoginForm();
     $('btn-play').addEventListener('click', play);

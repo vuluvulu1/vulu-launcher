@@ -38,13 +38,17 @@ namespace VuluLauncher
             _bridge.On("packs.pickCover", _ => Task.FromResult<object?>(PickCover()));
             _bridge.On("packs.publish", async args => await PublishPackAsync(args));
             _bridge.On("packs.delete", async args => await DeletePackAsync(args.Str("id")));
+            RegisterFeedbackCommands();
         }
 
         // ── Liste ─────────────────────────────────────────────────────────
         private async Task<object?> ListPacksAsync()
         {
             RequireLogin();
-            var packs = await Packs.ListAsync();
+            var packsTask = Packs.ListAsync();
+            var countsTask = FeedbackCountsAsync();
+            var packs = await packsTask;
+            var feedback = await countsTask;
             var installed = InstanceStore.List()
                 .Where(m => m.SharedPackId != null)
                 .GroupBy(m => m.SharedPackId!)
@@ -54,6 +58,8 @@ namespace VuluLauncher
             {
                 configured = true,
                 isAdmin = _login.IsAdmin,
+                feedbackEnabled = feedback != null,
+                generalFeedback = feedback?.GetValueOrDefault("general") ?? 0,
                 packs = packs.Select(p =>
                 {
                     installed.TryGetValue(p.Id, out var meta);
@@ -72,6 +78,7 @@ namespace VuluLauncher
                         sizeMb = Math.Round((p.OverridesSize + p.Mods.Sum(m => m.Size)) / 1024.0 / 1024.0, 1),
                         includes = p.Includes,
                         coverUrl = PackStore.CoverUrl(p),
+                        openFeedback = feedback?.GetValueOrDefault(p.Id) ?? 0,
                         installed = meta == null ? null : new { instanceId = InstancePrefix + meta.Folder, revision = meta.SharedPackRevision }
                     };
                 })
@@ -104,17 +111,20 @@ namespace VuluLauncher
                 throw new InvalidOperationException($"{pack.Name} zaten kurulu.");
 
             var meta = InstanceStore.Create(pack.Name, pack.McVersion, pack.Loader, pack.LoaderVersion);
+            using var job = new DownloadJob($"{pack.Name} kuruluyor");
             try
             {
                 Log($"{pack.Name} kuruluyor...", "accent");
-                await ApplyPackAsync(store, pack, meta);
+                await ApplyPackAsync(store, pack, meta, job);
                 await UseCoverAsBackgroundAsync(store, pack, meta);
 
                 Log($"{pack.Name} kuruldu.", "ok");
+                job.Complete($"{pack.Name} kuruldu");
                 return new { id = InstancePrefix + meta.Folder };
             }
-            catch
+            catch (Exception ex)
             {
+                job.Fail(ex.Message);
                 try { InstanceStore.Delete(meta.Folder); } catch { }
                 throw;
             }
@@ -131,8 +141,18 @@ namespace VuluLauncher
                 ?? throw new InvalidOperationException($"{pack.Name} kurulu değil.");
 
             Log($"{pack.Name} güncelleniyor (rev {meta.SharedPackRevision} → {pack.Revision})...", "accent");
-            await ApplyPackAsync(store, pack, meta);
+            using var job = new DownloadJob($"{pack.Name} güncelleniyor");
+            try
+            {
+                await ApplyPackAsync(store, pack, meta, job);
+            }
+            catch (Exception ex)
+            {
+                job.Fail(ex.Message);
+                throw;
+            }
             Log($"{pack.Name} güncellendi.", "ok");
+            job.Complete($"{pack.Name} güncellendi · rev {pack.Revision}");
             return new { id = InstancePrefix + meta.Folder };
         }
 
@@ -141,7 +161,7 @@ namespace VuluLauncher
         /// olmayan ya da sürümü değişen modlar kaldırılır; kullanıcının kendi eklediği modlara dokunulmaz.
         /// Paketteki config dosyaları instance'takilerin üzerine yazılır.
         /// </summary>
-        private async Task ApplyPackAsync(PackStore store, SharedPack pack, InstanceMeta meta)
+        private async Task ApplyPackAsync(PackStore store, SharedPack pack, InstanceMeta meta, DownloadJob job)
         {
             string dir = InstanceStore.PathOf(meta.Folder);
             var wanted = pack.Mods.GroupBy(m => m.ProjectId).ToDictionary(g => g.Key, g => g.First());
@@ -157,6 +177,11 @@ namespace VuluLauncher
                 .Where(m => !meta.Content.Any(c => c.FromPack && c.ProjectId == m.ProjectId))
                 .ToList();
 
+            // Panelde her dosya ayrı görünür; paket dosyaları (config, görevler) en sonda iner
+            var items = missing.ToDictionary(m => m, m => job.Add(string.IsNullOrEmpty(m.Title) ? Path.GetFileName(m.File) : m.Title, m.Size));
+            var overridesItem = job.Add("Paket dosyaları (config, görevler…)", pack.OverridesSize);
+            job.Phase = missing.Count > 0 ? "Modlar indiriliyor" : "Paket dosyaları indiriliyor";
+
             int done = 0;
             await Parallel.ForEachAsync(missing, new ParallelOptions { MaxDegreeOfParallelism = 6 }, async (mod, cancel) =>
             {
@@ -165,7 +190,7 @@ namespace VuluLauncher
                 if (!Uri.TryCreate(mod.Url, UriKind.Absolute, out var uri) || uri.Host != "cdn.modrinth.com")
                     throw new InvalidDataException($"Paket izin verilmeyen bir adresten indirme istiyor: {mod.Title}");
 
-                await Downloader.DownloadAsync(mod.Url, path, sha1: mod.Sha1, sha512: mod.Sha512, cancellation: cancel);
+                await items[mod].DownloadAsync(mod.Url, path, mod.Sha1, mod.Sha512, cancel);
                 int current = Interlocked.Increment(ref done);
                 Log($"Modlar indiriliyor... {current}/{missing.Count}", "replace");
             });
@@ -194,10 +219,16 @@ namespace VuluLauncher
             }
 
             Log("Paket dosyaları açılıyor...", "replace");
+            job.Phase = "Paket dosyaları indiriliyor";
             string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-pack-{Guid.NewGuid():N}.zip");
             try
             {
-                await store.DownloadOverridesAsync(pack, zipPath);
+                overridesItem.Start();
+                try { await store.DownloadOverridesAsync(pack, zipPath, overridesItem); }
+                catch (Exception ex) { overridesItem.Fail(ex.Message); throw; }
+                overridesItem.Complete();
+
+                job.Phase = "Dosyalar yerleştiriliyor";
                 await Task.Run(() =>
                 {
                     using var zip = ZipFile.OpenRead(zipPath);
