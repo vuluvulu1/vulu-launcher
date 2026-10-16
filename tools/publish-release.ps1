@@ -8,6 +8,8 @@
     3. Klasörü zip'ler ve zip'i anlatan release.json'u üretir.
     4. Kurulum programını (vulu-launcher-setup.exe, tek dosya) derler.
     5. -Publish verilirse üçünü "gh release create" ile GitHub'a yükler.
+       -Local verilirse GitHub'a dokunmaz; üçünü artifacts\release\latest'e koyar. tools\local-test.ps1
+       bu klasörü yerel sunucudan yayınlar ve bu bilgisayardaki kurulum/güncelleme onu kullanır.
 
     Kurulum programı paketi içermez; çalışınca en son release'i GitHub'dan indirir. Bu yüzden
     eski bir release'teki setup.exe de her zaman en yeni sürümü kurar.
@@ -20,13 +22,19 @@
 
 .EXAMPLE
     .\tools\publish-release.ps1 -Version 0.8.1 -NotesFile notlar.txt -Publish
+
+.EXAMPLE
+    .\tools\publish-release.ps1 -Version 0.8.2 -Notes "Yerel deneme" -Local
 #>
 param(
     [Parameter(Mandatory = $true)][string]$Version,
     [string]$Notes = "",
     [string]$NotesFile = "",
-    [switch]$Publish
+    [switch]$Publish,
+    [switch]$Local
 )
+
+if ($Publish -and $Local) { throw "-Publish ve -Local birlikte kullanılamaz." }
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -113,6 +121,18 @@ Write-Host "  $releaseJson"
 Write-Host "  $setupPath ($([math]::Round((Get-Item $setupPath).Length / 1MB, 1)) MB)"
 
 $ghArgs = @("release", "create", "v$Version", $zipPath, $releaseJson, $setupPath, "--repo", $Repository, "--title", "vulu Launcher v$Version", "--notes", $(if ($Notes) { $Notes } else { "vulu Launcher v$Version" }))
+
+if ($Local) {
+    # Yerel "en son sürüm": GitHub'daki latest release'in yerini tutar
+    $latestDir = Join-Path $root "artifacts\release\latest"
+    if (Test-Path $latestDir) { Remove-Item $latestDir -Recurse -Force }
+    New-Item -ItemType Directory -Force $latestDir | Out-Null
+    Copy-Item $zipPath, $releaseJson, $setupPath $latestDir
+    Write-Host ""
+    Write-Host "Yerel en son sürüm: v$Version (artifacts\release\latest)" -ForegroundColor Green
+    Write-Host "Yerel sunucu açık değilse: .\tools\local-test.ps1"
+    return
+}
 
 if (-not $Publish) {
     Write-Host ""
