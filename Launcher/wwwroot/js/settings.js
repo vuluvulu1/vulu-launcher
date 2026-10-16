@@ -212,7 +212,6 @@ async function logout() {
     catch (err) { await alertDialog({ title: 'Çıkış yapılamadı', message: err.message }); return; }
 
     $('music').pause();
-    adminConnected = false;
     adminTab = null;
     pendingRegistrations = [];
     updateAdminBadge();

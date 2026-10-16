@@ -526,7 +526,7 @@ html[data-ui="neon"] .member.active::before { border-radius: 0; box-shadow: var(
 html[data-ui="neon"] .members-head h2 { font: 600 13px var(--font-hud); letter-spacing: .06em; }
 
 /* Admin */
-html[data-ui="neon"] .user-row, html[data-ui="neon"] .inst-card, html[data-ui="neon"] .admin-connect, html[data-ui="neon"] .admin-log {
+html[data-ui="neon"] .user-row, html[data-ui="neon"] .inst-card, html[data-ui="neon"] .admin-log {
     border-radius: 0; background: rgba(9, 9, 20, .8); border-color: var(--line);
 }
 html[data-ui="neon"] .user-row:hover { border-color: rgba(255, 43, 214, .35); }

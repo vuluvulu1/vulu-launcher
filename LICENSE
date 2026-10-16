@@ -37,8 +37,6 @@ respective authors and remain under their own licenses; nothing above restricts 
   - .NET runtime and System.Security.Cryptography.ProtectedData (Microsoft) - MIT License
   - Photino.NET - Apache License 2.0
   - CmlLib.Core and CmlLib.Core.Installer.Forge - MIT License
-  - MongoDB.Driver - Apache License 2.0
-  - BCrypt.Net-Next - MIT License
   - IBM Plex Sans and IBM Plex Mono fonts - SIL Open Font License 1.1
     (Launcher/wwwroot/fonts/OFL-IBMPlex.txt)
   - Great Vibes font - SIL Open Font License 1.1 (Launcher/wwwroot/fonts/OFL-GreatVibes.txt)

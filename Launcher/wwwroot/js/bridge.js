@@ -61,9 +61,9 @@ const mockBackend = (() => {
         { id: 'r2', username: 'madencibaba', email: 'maden@ornek.com', createdAt: new Date(Date.now() - 26 * 3600000).toISOString() },
     ];
     let users = [
-        { id: '1', username: 'vulu', isActive: true, isAdmin: true },
-        { id: '2', username: 'misafir', isActive: true, isAdmin: false },
-        { id: '3', username: 'eskiuye', isActive: false, isAdmin: false },
+        { id: '1', username: 'vulu', email: 'vulu@ornek.com', isActive: true, isAdmin: true, lastSeenAt: new Date().toISOString() },
+        { id: '2', username: 'misafir', email: '', isActive: true, isAdmin: false, lastSeenAt: new Date(Date.now() - 3 * 86400000).toISOString() },
+        { id: '3', username: 'eskiuye', email: 'eski@ornek.com', isActive: false, isAdmin: false, lastSeenAt: null },
     ];
 
     let settings = {
@@ -209,7 +209,7 @@ const mockBackend = (() => {
             await wait(400);
             const open = key => feedback.filter(f => f.pack === key && f.status === 'open').length;
             return {
-                configured: true, isAdmin: true, adminConnected: true, feedbackEnabled: true, generalFeedback: open('general'),
+                configured: true, isAdmin: true, feedbackEnabled: true, generalFeedback: open('general'),
                 packs: packs.map(p => ({ ...p, openFeedback: open(p.id) })),
             };
         },
@@ -344,12 +344,20 @@ const mockBackend = (() => {
         'settings.removeJava': async () => ({ removed: 2 }),
         'files.open': async () => ({ opened: true }),
 
-        'admin.connect': async args => { await wait(400); return args.password ? { success: true } : { success: false, error: 'Bağlantı başarısız.' }; },
-        'admin.users': async () => users,
+        'admin.users': async () => { await wait(250); return users.map(u => ({ ...u })); },
         'admin.saveUser': async args => {
-            if (args.id) users = users.map(u => u.id === args.id ? { ...u, ...args } : u);
-            else users.push({ ...args, id: String(Date.now()) });
-            return { success: true };
+            await wait(250);
+            if (args.id) {
+                const self = users.find(u => u.id === args.id).username === 'vulu';
+                if (self && (!args.isAdmin || !args.isActive)) throw new Error('Kendi adminliğini kaldıramaz ya da kendi hesabını kapatamazsın.');
+                users = users.map(u => u.id === args.id ? { ...u, isAdmin: args.isAdmin, isActive: args.isActive } : u);
+                return users.find(u => u.id === args.id);
+            }
+            if (users.some(u => u.username.toLowerCase() === args.username.toLowerCase())) throw new Error('Bu kullanıcı adı alınmış ya da bekleyen bir kayıt isteğinde.');
+            if (args.password.length < 6) throw new Error('Şifre 6-72 karakter olmalı.');
+            const user = { id: String(Date.now()), username: args.username, email: args.email.toLowerCase(), isAdmin: args.isAdmin, isActive: args.isActive, lastSeenAt: null };
+            users.push(user);
+            return user;
         },
         'admin.deleteUser': async args => { users = users.filter(u => u.id !== args.id); return { success: true }; },
     };

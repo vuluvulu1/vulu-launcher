@@ -384,7 +384,7 @@ html[data-ui="atlas"] .mr-icon.plain, html[data-ui="atlas"] .content-icon.plain 
 
 /* Ayarlar, profil, admin */
 html[data-ui="atlas"] .set-section, html[data-ui="atlas"] .profile-card, html[data-ui="atlas"] .members,
-html[data-ui="atlas"] .user-row, html[data-ui="atlas"] .inst-card, html[data-ui="atlas"] .admin-connect, html[data-ui="atlas"] .admin-log {
+html[data-ui="atlas"] .user-row, html[data-ui="atlas"] .inst-card, html[data-ui="atlas"] .admin-log {
     background: var(--paper-noise), var(--surface); border-color: rgba(70, 45, 20, .18); box-shadow: var(--paper-shadow);
 }
 html[data-ui="atlas"] .set-section h2 { font: italic 700 15px var(--font-serif); color: var(--accent); border-bottom-color: rgba(70, 45, 20, .15); }

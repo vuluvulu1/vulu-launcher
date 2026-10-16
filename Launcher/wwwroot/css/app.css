@@ -180,6 +180,8 @@ input[type=text]:focus, input[type=password]:focus, input[type=url]:focus, input
 input::placeholder, .textarea::placeholder { color: var(--dim); }
 select { cursor: pointer; }
 select:disabled { opacity: .55; }
+input:disabled { opacity: .55; cursor: not-allowed; }
+.check input:disabled + span { opacity: .55; }
 option { background: var(--surface); }
 input[type=number]::-webkit-inner-spin-button { display: none; }
 .textarea { resize: vertical; min-height: 60px; font: 13px/1.5 var(--font); }
@@ -539,10 +541,6 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .inst-card .title { grid-column: 1 / -1; font-weight: 600; font-size: 14px; }
 .inst-card .folders { grid-column: 1 / -1; font-size: 12px; color: var(--muted); margin-top: -8px; }
 .admin-log { margin-top: 10px; padding: 10px 12px; min-height: 70px; border-radius: var(--r); background: var(--panel); border: 1px solid var(--line); font: 12px/1.6 var(--font-mono); color: var(--muted); white-space: pre-wrap; user-select: text; -webkit-user-select: text; }
-.admin-connect { max-width: 360px; margin: 10px 0 0; padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); }
-.admin-connect h3 { margin: 0 0 8px; font: 600 15px var(--font); }
-.admin-connect label { font: 600 12px var(--font); color: var(--muted); margin-top: 6px; }
-.admin-connect .btn { margin-top: 12px; }
 
 /* ── Modrinth ──────────────────────────────────────────────────────── */
 .mr-layout { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 20px; align-items: start; }

@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using MongoDB.Driver;
 using Photino.NET;
 
 namespace VuluLauncher
@@ -24,7 +23,6 @@ namespace VuluLauncher
         private readonly GameLauncher _game;
 
         private VuluShared.ReleaseManifest? _latestLauncher;
-        private AdminService? _admin;
 
         // Pencere sürükleme: başlangıçtaki pencere ve imleç konumu
         private Point _dragWindowStart;
@@ -77,10 +75,7 @@ namespace VuluLauncher
             RegisterProfileCommands();
 
             // ── Admin ─────────────────────────────────────────────────────
-            _bridge.On("admin.connect", async args => await AdminConnectAsync(args.Str("username"), args.Str("password")));
-            _bridge.On("admin.users", async _ => await AdminUsersAsync());
-            _bridge.On("admin.saveUser", async args => await AdminSaveUserAsync(args));
-            _bridge.On("admin.deleteUser", async args => await AdminDeleteUserAsync(args.Str("id")));
+            RegisterAdminCommands();
         }
 
         public void Shutdown()
@@ -278,96 +273,6 @@ namespace VuluLauncher
             RequireLogin();
             if (!_login.IsAdmin)
                 throw new InvalidOperationException("Bu işlem için admin yetkisi gerekli.");
-        }
-
-        private AdminService RequireAdminConnection()
-        {
-            RequireAdmin();
-            return _admin ?? throw new InvalidOperationException("Önce veritabanına bağlanın.");
-        }
-
-        private async Task<object?> AdminConnectAsync(string username, string password)
-        {
-            RequireAdmin();
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
-                return new { success = false, error = "Boş bırakılamaz." };
-
-            try
-            {
-                var service = new AdminService(username.Trim(), password);
-                await service.TestConnectionAsync();
-                // Eski paket izinleri veritabanından temizlenir (bir kez iş yapar, sonra eşleşen kayıt kalmaz)
-                try { await service.RemoveLegacyFieldsAsync(); } catch { /* yazma izni yoksa kayıtlar olduğu gibi kalır */ }
-                _admin = service;
-                return new { success = true, error = (string?)null };
-            }
-            catch
-            {
-                return new { success = false, error = "Bağlantı başarısız." };
-            }
-        }
-
-        private async Task<object?> AdminUsersAsync()
-        {
-            var users = await RequireAdminConnection().GetUsersAsync();
-            // Şifre hash'leri arayüze gönderilmez
-            return users.Select(u => new
-            {
-                id = u.Id,
-                username = u.Username,
-                isActive = u.IsActive,
-                isAdmin = u.IsAdmin
-            });
-        }
-
-        private async Task<object?> AdminSaveUserAsync(JsonElement args)
-        {
-            var admin = RequireAdminConnection();
-
-            string id = args.Str("id");
-            string username = args.Str("username").Trim();
-            string password = args.Str("password");
-            bool isAdmin = args.Bool("isAdmin");
-            bool isActive = args.Bool("isActive");
-
-            if (string.IsNullOrEmpty(username))
-                return new { success = false, error = "Kullanıcı adı zorunlu." };
-
-            if (string.IsNullOrEmpty(id))
-            {
-                if (string.IsNullOrEmpty(password))
-                    return new { success = false, error = "Yeni kullanıcı için şifre zorunlu." };
-
-                await admin.AddUserAsync(new AdminUser
-                {
-                    Username = username,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
-                    IsAdmin = isAdmin,
-                    IsActive = isActive
-                });
-            }
-            else
-            {
-                var update = Builders<AdminUser>.Update
-                    .Set(u => u.Username, username)
-                    .Set(u => u.IsActive, isActive)
-                    .Set(u => u.IsAdmin, isAdmin);
-
-                // Şifre boş bırakıldıysa değişmez
-                // Şifre değişirse kullanıcının açık oturumları da kapanır (sunucu tokenVersion'a bakar)
-                if (!string.IsNullOrEmpty(password))
-                    update = update.Set(u => u.PasswordHash, BCrypt.Net.BCrypt.HashPassword(password)).Inc("tokenVersion", 1);
-
-                await admin.UpdateUserAsync(id, update);
-            }
-
-            return new { success = true, error = (string?)null };
-        }
-
-        private async Task<object?> AdminDeleteUserAsync(string id)
-        {
-            await RequireAdminConnection().DeleteUserAsync(id);
-            return new { success = true };
         }
 
         [StructLayout(LayoutKind.Sequential)]

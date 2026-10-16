@@ -603,7 +603,6 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Oyun çalışırken çıkış yapılamaz.");
 
             _login = new LoginService();
-            _admin = null;
             return new { success = true };
         }
     }
