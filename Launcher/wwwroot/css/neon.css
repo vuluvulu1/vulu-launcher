@@ -262,22 +262,22 @@ html[data-ui="neon"] #view-main:not(:has(#page-home:not([hidden]))) { grid-templ
 
 /* ── Loadout şeridi (instance'lar) ─────────────────────────────────── */
 html[data-ui="neon"] .rail {
-    height: var(--strip-h); flex-direction: row; align-items: stretch;
+    height: var(--strip-h); flex-direction: row; align-items: center;
     background: linear-gradient(180deg, #0a0a16, #08080f); border-right: 0; border-bottom: 1px solid rgba(0, 234, 255, .14);
 }
-html[data-ui="neon"] .rail-scroll { display: flex; align-items: center; gap: 8px; overflow-x: auto; overflow-y: hidden; padding: 0 14px; }
+html[data-ui="neon"] .rail-scroll { display: flex; align-items: center; gap: 8px; align-self: stretch; min-width: 0; overflow-x: auto; overflow-y: hidden; padding: 0 14px; }
 html[data-ui="neon"] .rail-scroll::-webkit-scrollbar { height: 6px; }
 html[data-ui="neon"] .pack-list { flex-direction: row; gap: 8px; margin: 0; }
 html[data-ui="neon"] #pack-list { padding: 0; }
 html[data-ui="neon"] #pack-list:not(:empty) + .rail-head { margin: 0; border: 0; padding: 0 0 0 10px; border-left: 1px solid var(--line); }
 html[data-ui="neon"] .rail h2.rail-head {
-    flex: none; align-self: stretch; margin: 14px 0; padding: 0 0 0 10px;
+    flex: none; align-self: center; height: 66px; margin: 0; padding: 0 0 0 12px;
     display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; border-left: 1px solid var(--line);
 }
 html[data-ui="neon"] .pack-empty { white-space: nowrap; padding: 0 6px; font-family: var(--font-hud); font-size: 11.5px; }
 
 html[data-ui="neon"] .pack-card {
-    width: 196px; height: 66px; border-radius: 0; border: 1px solid var(--line); background: #0c0c19; overflow: hidden;
+    flex: none; width: 196px; height: 66px; border-radius: 0; border: 1px solid rgba(0, 234, 255, .16); background: #0c0c19; overflow: hidden;
     clip-path: var(--notch-sm);
 }
 html[data-ui="neon"] .pack-card .thumb {
@@ -298,22 +298,29 @@ html[data-ui="neon"] .pack-card.selected::before {
 }
 html[data-ui="neon"] .pack-card .card-icon { top: 8px; right: 8px; transform: none; width: 22px; height: 22px; border-radius: 0; }
 
-/* Müzik: şeridin sonunda küçük bir radyo modülü */
+/* Müzik: şeridin sonunda kartlarla aynı yükseklikte bir radyo modülü.
+   Üst sırada kapak + parça + kontroller, altta ince ilerleme çizgisi. */
 html[data-ui="neon"] .music {
-    flex: none; width: 270px; margin: 10px 12px 10px 0; padding: 9px 12px; gap: 6px; justify-content: center;
-    border-radius: 0; background: rgba(4, 4, 10, .6); border-color: rgba(255, 43, 214, .28); clip-path: var(--notch-sm);
+    flex: none; width: 360px; height: 66px; margin: 0 14px 0 0; padding: 0 12px;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 1fr 2px; column-gap: 10px; align-items: center;
+    border-radius: 0; border: 1px solid rgba(255, 43, 214, .26); background: linear-gradient(180deg, rgba(20, 6, 22, .7), rgba(4, 4, 10, .75));
+    clip-path: var(--notch-sm); overflow: hidden;
 }
-html[data-ui="neon"] .music-art { width: 26px; height: 26px; border-radius: 0; background: var(--pink-soft); }
+html[data-ui="neon"] .music-top { grid-column: 1; grid-row: 1; min-width: 0; gap: 9px; }
+html[data-ui="neon"] .music-art { width: 30px; height: 30px; border-radius: 0; background: var(--pink-soft); clip-path: var(--notch-sm); }
 html[data-ui="neon"] .music-art svg { stroke: var(--pink); }
-html[data-ui="neon"] .music-title { font: 600 11.5px var(--font-hud); }
+html[data-ui="neon"] .music-title { font: 600 11.5px var(--font-hud); letter-spacing: .02em; }
 html[data-ui="neon"] .music-artist { font-size: 10.5px; }
 html[data-ui="neon"] .music:not(.paused) .music-art { box-shadow: var(--glow-pink); }
-html[data-ui="neon"] .music-seek { height: 2px; background: linear-gradient(90deg, var(--pink) var(--pct), rgba(255, 43, 214, .15) var(--pct)) !important; }
-html[data-ui="neon"] .music-controls { margin-top: -2px; }
+html[data-ui="neon"] .music-controls { grid-column: 2; grid-row: 1; margin: 0; gap: 0; }
+html[data-ui="neon"] .music-controls input[type=range] { flex: none; width: 52px; height: 2px; margin-left: 4px; }
+html[data-ui="neon"] .music-seek {
+    grid-column: 1 / -1; grid-row: 2; align-self: end; width: auto; margin: 0 -12px; height: 2px;
+    background: linear-gradient(90deg, var(--pink) var(--pct), rgba(255, 43, 214, .14) var(--pct)) !important;
+}
 html[data-ui="neon"] .mc-btn { width: 24px; height: 24px; border-radius: 0; }
-html[data-ui="neon"] .mc-play { width: 26px; height: 26px; border-radius: 0; background: var(--pink); color: #19000f; clip-path: var(--notch-sm); }
+html[data-ui="neon"] .mc-play { width: 28px; height: 28px; margin: 0 2px; border-radius: 0; background: var(--pink); color: #19000f; clip-path: var(--notch-sm); }
 html[data-ui="neon"] .mc-play:hover { background: #ff6fe6; }
-html[data-ui="neon"] .music-controls input[type=range] { height: 2px; }
 
 /* ── Oyna: sahne ───────────────────────────────────────────────────── */
 html[data-ui="neon"] .stage {
