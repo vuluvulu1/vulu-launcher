@@ -21,6 +21,7 @@ namespace VuluLauncher
         private readonly JavaManager _java;
         private readonly ModrinthService _modrinth;
         private readonly GameLauncher _game;
+        private readonly DiscordPresence _discord = new();
 
         private VuluShared.ReleaseManifest? _latestLauncher;
 
@@ -36,7 +37,9 @@ namespace VuluLauncher
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
             _game = new GameLauncher(Log, _java);
-            _game.Exited += () => _bridge.Emit("gameExited");
+            _game.Exited += () => { _bridge.Emit("gameExited"); _discord.ShowIdle(); };
+            _discord.ShowIdle();
+            _discord.SetEnabled(AppSettings.Current.DiscordPresence);
             DownloadJob.Emit = snapshot => _bridge.Emit("download", snapshot);
         }
 
@@ -245,6 +248,7 @@ namespace VuluLauncher
 
                 var skins = await PrepareSkinsAsync();
                 await _game.LaunchAsync(target, _login.Username, ramGb, skins);
+                _discord.ShowPlaying(target.Name, target.McVersion, target.Loader);
 
                 // Ayarlardaki "oyun açılınca" davranışı
                 switch (AppSettings.Current.OnGameStart)

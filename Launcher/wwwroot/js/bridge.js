@@ -68,7 +68,7 @@ const mockBackend = (() => {
 
     let settings = {
         defaultRamGb: 0, javaMode: 'auto', customJavaPath: '', jvmArgs: '', gameWidth: 0, gameHeight: 0, fullscreen: false,
-        onGameStart: 'keep', skipSplash: false, consoleExpanded: false, musicEnabled: false, musicVolume: 40, accentColor: '#c27e3e',
+        onGameStart: 'keep', skipSplash: false, consoleExpanded: false, discordPresence: true, musicEnabled: false, musicVolume: 40, accentColor: '#c27e3e',
     };
 
     let instances = [

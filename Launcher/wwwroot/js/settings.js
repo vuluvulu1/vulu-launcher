@@ -115,6 +115,8 @@ async function openSettingsPage() {
             segmentedControl([['keep', 'Açık kalsın'], ['minimize', 'Küçült'], ['close', 'Kapat']], s.onGameStart,
                 value => changeSetting({ onGameStart: value }))),
         settingRow('Açılış animasyonunu atla', null, toggleControl(s.skipSplash, value => changeSetting({ skipSplash: value }))),
+        settingRow("Discord'da durum göster", 'Discord açıksa arkadaşların ne oynadığını görür: "vulu Launcher · AGLR SMP oynuyor".',
+            toggleControl(s.discordPresence !== false, value => changeSetting({ discordPresence: value }))),
         settingRow('Konsolu büyük aç', null, toggleControl(s.consoleExpanded, value => changeSetting({ consoleExpanded: value }))));
 
     // ── Ses ve görünüm ────────────────────────────────────────────────

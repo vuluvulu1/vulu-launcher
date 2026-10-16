@@ -561,6 +561,7 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Seçilen Java dosyası bulunamadı. Otomatik moda dönün ya da geçerli bir java.exe seçin.");
 
             AppSettings.Save(settings);
+            _discord.SetEnabled(settings.DiscordPresence);
             return new { settings = AppSettings.Current };
         }
 

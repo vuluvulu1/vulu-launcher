@@ -24,6 +24,8 @@ namespace VuluLauncher
         public string OnGameStart { get; set; } = "keep";
         public bool SkipSplash { get; set; }
         public bool ConsoleExpanded { get; set; }
+        /// <summary>Discord'da "vulu Launcher oynuyor" durumu.</summary>
+        public bool DiscordPresence { get; set; } = true;
 
         // ── Ses ve görünüm ────────────────────────────────────────────────
         public bool MusicEnabled { get; set; } = true;
