@@ -158,17 +158,32 @@ namespace Installer
         }
 
         // ── Yerleştirme ───────────────────────────────────────────────────
-        /// <summary>Doğrulanmış dosyaları kurulum klasörüne kopyalar (varsa üzerine) ve install.json'u yazar.</summary>
+        /// <summary>
+        /// Doğrulanmış dosyaları kurulum klasörüne kopyalar (varsa üzerine) ve install.json'u yazar. Onarım/güncellemede
+        /// önceki sürümde olup yenisinde olmayan dosyalar da silinir (Updater'ın yaptığı gibi); başka dosyalara dokunulmaz.
+        /// </summary>
         private static void Place(string staging, string dir, ReleaseManifest manifest)
         {
             Directory.CreateDirectory(dir);
+            var previous = ReadInstalled(dir);
+
+            var newPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var file in manifest.Files)
             {
                 string source = Releases.ResolveInside(staging, file.Path)!;
                 string target = Releases.ResolveInside(dir, file.Path)
                     ?? throw new InvalidDataException($"Geçersiz dosya yolu: {file.Path}");
+                newPaths.Add(target);
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                 File.Copy(source, target, overwrite: true);
+            }
+
+            foreach (var file in previous?.Files ?? new List<ReleaseFile>())
+            {
+                string? stale = Releases.ResolveInside(dir, file.Path);
+                if (stale == null || newPaths.Contains(stale) || !File.Exists(stale)) continue;
+                if (string.Equals(Path.GetFileName(stale), Releases.InstallFileName, StringComparison.OrdinalIgnoreCase)) continue;
+                try { File.Delete(stale); } catch { /* kullanımda; zararsız, bir sonraki güncellemede tekrar denenir */ }
             }
 
             var install = new ReleaseManifest
@@ -179,6 +194,17 @@ namespace Installer
                 Files = manifest.Files
             };
             File.WriteAllText(Path.Combine(dir, Releases.InstallFileName), JsonSerializer.Serialize(install, Releases.Json));
+        }
+
+        /// <summary>Kurulu sürümün dosya listesi; yoksa ya da okunamazsa null (ilk kurulum).</summary>
+        private static ReleaseManifest? ReadInstalled(string dir)
+        {
+            try
+            {
+                string path = Path.Combine(dir, Releases.InstallFileName);
+                return File.Exists(path) ? JsonSerializer.Deserialize<ReleaseManifest>(File.ReadAllText(path), Releases.Json) : null;
+            }
+            catch { return null; }
         }
 
         public static bool LauncherRunningFrom(string dir)
