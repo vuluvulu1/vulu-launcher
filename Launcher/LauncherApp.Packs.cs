@@ -77,6 +77,7 @@ namespace VuluLauncher
                         revision = p.Revision,
                         updatedAt = p.UpdatedAt.ToString("o"),
                         modCount = p.Mods.Count(m => m.Type == "mod"),
+                        recommendedRamGb = p.RecommendedRamGb,
                         resourcePackCount = p.Mods.Count(m => m.Type == "resourcepack"),
                         shaderCount = p.Mods.Count(m => m.Type == "shader"),
                         sizeMb = Math.Round((p.OverridesSize + p.Mods.Sum(m => m.Size)) / 1024.0 / 1024.0, 1),
@@ -346,11 +347,16 @@ namespace VuluLauncher
                 mcVersion = meta.McVersion,
                 loader = meta.Loader,
                 modrinthCount = meta.Content.Count(c => File.Exists(Path.Combine(dir, c.File))),
+                recommendedRamGb = existing?.RecommendedRamGb ?? DefaultRamGb(meta),
+                ramOptionsGb = PackCatalog.RamOptionsGb,
                 entries,
                 hasLogo = LogoFile(InstancePrefix + meta.Folder) != null,
                 existing = existing == null ? null : new { id = existing.Id, revision = existing.Revision, hasCover = existing.HasCover }
             };
         }
+
+        /// <summary>Paylaşanın seçmediği durumda önerilen RAM: instance'ın ayarı ya da yükleyiciye göre varsayılan.</summary>
+        private static int DefaultRamGb(InstanceMeta meta) => meta.RamGb > 0 ? meta.RamGb : (meta.Loader == "vanilla" ? 4 : 8);
 
         private static string? ShareNote(string entry) => entry.ToLowerInvariant() switch
         {
@@ -425,7 +431,8 @@ namespace VuluLauncher
                 pack.McVersion = meta.McVersion;
                 pack.Loader = meta.Loader;
                 pack.LoaderVersion = meta.LoaderVersion;
-                pack.RecommendedRamGb = meta.RamGb > 0 ? meta.RamGb : (meta.Loader == "vanilla" ? 4 : 8);
+                int ramGb = args.Int("ramGb");
+                pack.RecommendedRamGb = PackCatalog.RamOptionsGb.Contains(ramGb) ? ramGb : DefaultRamGb(meta);
                 pack.Mods = mods;
                 pack.Includes = includes;
 

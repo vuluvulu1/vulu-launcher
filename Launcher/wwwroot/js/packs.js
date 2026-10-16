@@ -69,6 +69,7 @@ function packTile(pack, result) {
                     : `${LOADER_NAMES[pack.loader] || pack.loader} ${pack.loaderVersion || ''}`.trim()),
                 pack.modCount > 0 && el('span', { class: 'tag' }, pack.modCount + ' mod'),
                 ...contentTags(pack),
+                pack.recommendedRamGb > 0 && el('span', { class: 'tag', title: 'Önerilen RAM' }, pack.recommendedRamGb + ' GB RAM'),
                 el('span', { class: 'tag' }, formatSize(pack.sizeMb))),
             el('div', { class: 'pack-foot' },
                 primary,
@@ -190,6 +191,15 @@ async function openShareDialog(instance) {
             };
         });
 
+        // Önerilen RAM: kuranların instance'ı bu değerle açılır (Ayarlar'da varsayılan RAM seçilmediyse)
+        const ramOptions = info.ramOptionsGb || state.ramOptionsGb;
+        let ramGb = ramOptions.includes(info.recommendedRamGb) ? info.recommendedRamGb : ramOptions[1] || ramOptions[0];
+        const ramButtons = ramOptions.map(gb => el('button', {
+            type: 'button', class: gb === ramGb ? 'active' : '',
+            onclick: () => { ramGb = gb; ramButtons.forEach(b => b.classList.toggle('active', b.dataset.gb === String(gb))); },
+            'data-gb': gb,
+        }, gb + ' GB'));
+
         const error = el('div', { class: 'form-error' });
         const submit = el('button', { class: 'btn btn-primary', type: 'submit' },
             info.existing ? `Güncelle (rev ${info.existing.revision + 1})` : 'Yayınla');
@@ -204,6 +214,7 @@ async function openShareDialog(instance) {
                     name: name.value,
                     description: description.value,
                     includes: checks.filter(c => c.box.checked).map(c => c.box.value),
+                    ramGb,
                     coverPath,
                     update: !!info.existing,
                 };
@@ -221,7 +232,10 @@ async function openShareDialog(instance) {
                 el('div', { class: 'share-left' },
                     coverBox,
                     el('label', {}, 'Paket adı'), name,
-                    el('label', {}, 'Açıklama'), description),
+                    el('label', {}, 'Açıklama'), description,
+                    el('label', {}, 'Önerilen RAM'),
+                    el('div', { class: 'segmented share-ram' }, ramButtons),
+                    el('p', { class: 'hint' }, 'Paketi kuranların oyunu bu RAM ile açılır; istedikleri zaman değiştirebilirler.')),
                 el('div', { class: 'share-right' },
                     el('div', { class: 'share-title' }, 'Pakete dahil edilecekler'),
                     el('p', { class: 'hint' }, 'Modrinth\'te bulunan modlar, kaynak paketleri ve shaderlar dosya yerine bağlantı olarak eklenir; '

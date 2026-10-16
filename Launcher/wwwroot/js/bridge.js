@@ -122,8 +122,8 @@ const mockBackend = (() => {
         { id: 'f4', pack: 'general', kind: 'request', text: 'Biraz daha hafif bir survival paketi olabilir mi? Laptopta 142 modu kaldıramıyorum.', author: 'KaiKaenn', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: daysAgoIso(1), mine: false, canDelete: true },
     ];
     let packs = [
-        { id: 'p1', name: 'Create Macera', description: 'Create ve FTB Quests ile ilerlenen teknoloji/macera paketi. Görev kitabı baştan sona Türkçe.', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 3, updatedAt: daysAgoIso(2), modCount: 142, resourcePackCount: 2, shaderCount: 1, sizeMb: 512.4, includes: ['config', 'kubejs', 'defaultconfigs', 'resourcepacks', 'shaderpacks'], coverUrl: 'assets/mainmenu.png', installed: null },
-        { id: 'p2', name: 'Hafif Survival', description: 'Performans modları ve birkaç küçük eklenti. Düşük bilgisayarlar için.', author: 'vulu', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', revision: 2, updatedAt: daysAgoIso(9), modCount: 24, sizeMb: 61.7, includes: ['config'], coverUrl: 'assets/launchervanillabg.jpg', installed: { instanceId: 'inst:fabric-121', revision: 1 } },
+        { id: 'p1', name: 'Create Macera', description: 'Create ve FTB Quests ile ilerlenen teknoloji/macera paketi. Görev kitabı baştan sona Türkçe.', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 3, updatedAt: daysAgoIso(2), modCount: 142, recommendedRamGb: 12, resourcePackCount: 2, shaderCount: 1, sizeMb: 512.4, includes: ['config', 'kubejs', 'defaultconfigs', 'resourcepacks', 'shaderpacks'], coverUrl: 'assets/mainmenu.png', installed: null },
+        { id: 'p2', name: 'Hafif Survival', description: 'Performans modları ve birkaç küçük eklenti. Düşük bilgisayarlar için.', author: 'vulu', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', revision: 2, updatedAt: daysAgoIso(9), modCount: 24, recommendedRamGb: 6, sizeMb: 61.7, includes: ['config'], coverUrl: 'assets/launchervanillabg.jpg', installed: { instanceId: 'inst:fabric-121', revision: 1 } },
         { id: 'p3', name: 'Skyblock', description: '', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 1, updatedAt: daysAgoIso(30), modCount: 68, sizeMb: 140.2, includes: ['config', 'kubejs'], coverUrl: null, installed: null },
     ];
 
@@ -252,7 +252,7 @@ const mockBackend = (() => {
         'packs.shareInfo': async () => {
             await wait(300);
             return {
-                name: 'Fabric 1.21', description: '', mcVersion: '1.21.1', loader: 'fabric', modrinthCount: 2, existing: null,
+                name: 'Fabric 1.21', description: '', mcVersion: '1.21.1', loader: 'fabric', modrinthCount: 2, existing: null, recommendedRamGb: 8, ramOptionsGb: [4, 8, 12, 16],
                 entries: [
                     { path: 'config', isDir: true, files: 184, sizeMb: 2.4, checkedByDefault: true, note: null },
                     { path: 'kubejs', isDir: true, files: 37, sizeMb: 5.1, checkedByDefault: true, note: null },
@@ -269,7 +269,7 @@ const mockBackend = (() => {
         'packs.publish': async args => {
             log(`${args.name} hazırlanıyor...`, 'accent'); await wait(500);
             log(`${args.name} yükleniyor (221 dosya, 2 Modrinth içeriği)...`, 'accent', true); await wait(700);
-            packs.unshift({ id: 'p' + Date.now(), name: args.name, description: args.description, author: 'vulu', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', revision: 1, updatedAt: new Date().toISOString(), modCount: 2, sizeMb: 26.3, includes: args.includes, coverUrl: args.coverPath ? 'assets/mainmenu.png' : null, installed: null });
+            packs.unshift({ id: 'p' + Date.now(), name: args.name, description: args.description, author: 'vulu', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', revision: 1, updatedAt: new Date().toISOString(), modCount: 2, recommendedRamGb: args.ramGb, sizeMb: 26.3, includes: args.includes, coverUrl: args.coverPath ? 'assets/mainmenu.png' : null, installed: null });
             log(`${args.name} vulu Packs'te yayınlandı (rev 1).`, 'ok');
             return { id: packs[0].id, revision: 1 };
         },
