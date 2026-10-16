@@ -101,8 +101,11 @@ namespace VuluLauncher
             return string.IsNullOrEmpty(mcVersion) ? loaderName : $"{mcVersion} {loaderName}";
         }
 
-        /// <summary>Oyun açık: instance adı, sürüm ve süre.</summary>
-        public void ShowPlaying(string instanceName, string mcVersion, string loader)
+        /// <summary>
+        /// Oyun açık: instance adı, sürüm ve süre. vulu Packs'ten kurulan paketlerde büyük resim paketin kapağı/logosu olur,
+        /// köşede vulu logosu kalır.
+        /// </summary>
+        public void ShowPlaying(string instanceName, string mcVersion, string loader, string? packImageUrl = null)
         {
             lock (_gate) _playing = true;
             Set(new JsonObject
@@ -110,7 +113,13 @@ namespace VuluLauncher
                 ["details"] = Trim($"{instanceName} oynuyor"),
                 ["state"] = Trim($"Minecraft {Describe(mcVersion, loader)}"),
                 ["timestamps"] = new JsonObject { ["start"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds() },
-                ["assets"] = Assets($"Minecraft {mcVersion}"),
+                ["assets"] = packImageUrl == null ? Assets($"Minecraft {mcVersion}") : new JsonObject
+                {
+                    ["large_image"] = packImageUrl,
+                    ["large_text"] = Trim(instanceName),
+                    ["small_image"] = LogoUrl,
+                    ["small_text"] = "vulu Launcher",
+                },
             });
         }
 

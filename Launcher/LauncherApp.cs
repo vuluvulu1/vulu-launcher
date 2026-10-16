@@ -234,6 +234,24 @@ namespace VuluLauncher
         // ════════════════════════════════════════════════════════════════
         // OYUN
         // ════════════════════════════════════════════════════════════════
+        /// <summary>Instance vulu Packs'ten geldiyse paketin kapağı (yoksa logosu); Discord durumunda gösterilir.</summary>
+        private async Task<string?> PackImageUrlAsync(string instanceId)
+        {
+            if (!instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal)) return null;
+            string? packId = InstanceStore.Get(instanceId[InstancePrefix.Length..])?.SharedPackId;
+            if (packId == null) return null;
+            try
+            {
+                var lookup = Packs.GetAsync(packId);
+                if (await Task.WhenAny(lookup, Task.Delay(TimeSpan.FromSeconds(6))) != lookup) return null;
+                var pack = await lookup;
+                if (pack == null) return null;
+                return PackStore.CoverUrl(pack)
+                    ?? (pack.HasLogo ? $"{ApiConfig.BaseUrl}/packs/{Uri.EscapeDataString(pack.Id)}/logo?v={pack.Revision}" : null);
+            }
+            catch { return null; }   // paket bilgisi alınamazsa vulu logosu kalır
+        }
+
         private async Task<object?> PlayAsync(string instanceId, int ramGb, string mcVersion)
         {
             RequireLogin();
@@ -256,7 +274,7 @@ namespace VuluLauncher
 
                 var skins = await PrepareSkinsAsync();
                 await _game.LaunchAsync(target, _login.Username, ramGb, skins);
-                _discord.ShowPlaying(target.Name, target.McVersion, target.Loader);
+                _discord.ShowPlaying(target.Name, target.McVersion, target.Loader, await PackImageUrlAsync(instanceId));
 
                 // Ayarlardaki "oyun açılınca" davranışı
                 switch (AppSettings.Current.OnGameStart)
