@@ -213,6 +213,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
    bir an bile görünmesin. Perde kapalıyken launcher arkada hazırlanır, "open" sınıfıyla perdeler açılır. */
 #view-splash {
     inset: 0; z-index: 60; overflow: hidden; animation: none; background: #000;
+    /* Perdeler açılırken arkadaki siyah zemin de kalkar ki launcher perdelerin arasından görünsün;
+       en sonda kalan her şey (ışık, yazı) yavaşça söner, ekran birden kaybolmaz */
+    transition: background-color .7s ease .15s, opacity .45s ease;
     --bronze: #c27e3e;
     --bronze-light: #e3b37a;
 }
@@ -299,6 +302,8 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 @keyframes splash-rise { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
 /* Açılış: spot söner, perdeler iki yana çekilirken toplanır, saçak kalkar */
+#view-splash.open { background-color: transparent; }
+#view-splash.closing { opacity: 0; pointer-events: none; }
 .open .curtain-left { transform: translateX(-100%) scaleX(.85); }
 .open .curtain-right { transform: translateX(100%) scaleX(.85); }
 .open .valance { transform: translateY(-100%); }

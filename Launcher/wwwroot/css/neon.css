@@ -191,6 +191,7 @@ html[data-ui="neon"] .login-card label:not(.check) { font: 500 10.5px var(--font
 
 /* ── Açılış: kepenkler ve neon tabela ──────────────────────────────── */
 html[data-ui="neon"] #view-splash { background: #020205; }
+html[data-ui="neon"] #view-splash.open { background-color: transparent; }
 html[data-ui="neon"] .curtain {
     width: 50.2%;
     background:

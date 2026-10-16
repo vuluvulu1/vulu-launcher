@@ -25,7 +25,9 @@ const store = {
 };
 
 function showView(id) {
-    for (const view of document.querySelectorAll('.view')) view.hidden = view.id !== id;
+    // Açılış ekranını yalnızca beginSplash/hideSplash yönetir; sönerken burada kesilmesin
+    for (const view of document.querySelectorAll('.view'))
+        if (view.id !== 'view-splash') view.hidden = view.id !== id;
 }
 
 function showPage(name) {
@@ -249,6 +251,8 @@ let splashStartedAt = null; // açılış oynuyorsa başladığı an
 /** Perdeyi anında kapatır ve yazı animasyonunu baştan başlatır. */
 function beginSplash(username) {
     const splash = $('view-splash');
+    clearTimeout(splashHideTimer);
+    splash.classList.remove('closing');
     $('splash-greeting').textContent = `Hoş geldin, ${username}`;
     setSplashStatus('');
     splash.classList.remove('play', 'open');
@@ -265,12 +269,21 @@ function setSplashStatus(text) {
     status.classList.toggle('visible', !!text);
 }
 
-/** Açılış ekranını animasyonsuz kaldırır (otomatik giriş yokken ya da hata olursa). */
+let splashHideTimer = 0;
+const SPLASH_FADE_MS = 450; // #view-splash.closing geçişiyle aynı
+
+/** Açılış ekranını kaldırır: görünüyorsa yavaşça söner, arkasındaki ekran (launcher ya da giriş) belirir. */
 function hideSplash() {
     const splash = $('view-splash');
-    splash.hidden = true;
-    splash.classList.remove('play', 'open');
-    splashStartedAt = null;
+    clearTimeout(splashHideTimer);
+    const finish = () => {
+        splash.hidden = true;
+        splash.classList.remove('play', 'open', 'closing');
+        splashStartedAt = null;
+    };
+    if (splash.hidden) { finish(); return; }
+    splash.classList.add('closing');
+    splashHideTimer = setTimeout(finish, SPLASH_FADE_MS);
 }
 
 /** İki kare bekler: yeni görünen ekran perde kapalıyken çizilsin (pencere arka plandaysa takılmaz). */
