@@ -395,6 +395,8 @@ namespace VuluLauncher
         public string? DateModified { get; set; }
         public List<string> Categories { get; set; } = new();
         public List<string> DisplayCategories { get; set; } = new();
+        /// <summary>Desteklenen Minecraft sürümleri (Modrinth'te "versions" alanı).</summary>
+        public List<string> Versions { get; set; } = new();
     }
 
     internal sealed class MrCategory

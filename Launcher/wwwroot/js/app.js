@@ -30,11 +30,17 @@ function showView(id) {
         if (view.id !== 'view-splash') view.hidden = view.id !== id;
 }
 
+// Keşfet sekmesi iki sayfayı (vulu Packs, Modrinth) kapsar; son açılan hatırlanır
+const DISCOVER_PAGES = ['packs', 'modrinth'];
+
 function showPage(name) {
+    if (name === 'discover') name = store.get('discoverSource', 'packs') === 'modrinth' ? 'modrinth' : 'packs';
+    if (DISCOVER_PAGES.includes(name)) store.set('discoverSource', name);
+
     state.page = name;
     for (const page of document.querySelectorAll('.page')) page.hidden = page.id !== 'page-' + name;
     for (const button of document.querySelectorAll('#page-tabs button'))
-        button.classList.toggle('active', button.dataset.page === name);
+        button.classList.toggle('active', button.dataset.page === name || (button.dataset.page === 'discover' && DISCOVER_PAGES.includes(name)));
     $('btn-user').classList.toggle('active', name === 'profile');
 
     if (name === 'modrinth') openModrinthPage();
@@ -820,6 +826,8 @@ window.addEventListener('DOMContentLoaded', () => {
     setupPopovers();
     setupVersionPicker();
     setupPacksPage();
+    for (const button of document.querySelectorAll('.discover-switch button'))
+        button.addEventListener('click', () => showPage(button.dataset.source));
     setupRegisterForm();
     setupProfilePage();
     setupConsole();
@@ -839,5 +847,8 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('dragover', event => event.preventDefault());
     window.addEventListener('drop', event => event.preventDefault());
 
-    showLogin({ auto: true }).catch(err => { hideSplash(); showView('view-login'); setLoginStatus(err.message, true); });
+    // Hiç tema seçilmediyse önce tema sorulur, sonra normal açılış (otomatik giriş ya da giriş ekranı)
+    (needsThemePick() ? pickThemeFirstRun() : Promise.resolve())
+        .then(() => showLogin({ auto: true }))
+        .catch(err => { hideSplash(); showView('view-login'); setLoginStatus(err.message, true); });
 });

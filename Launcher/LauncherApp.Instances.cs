@@ -343,10 +343,14 @@ namespace VuluLauncher
                     // Yükleyici adları da kategori olarak gelir; onlar ayrı gösterilir
                     categories = h.DisplayCategories.Where(c => !PackCatalog.Loaders.Contains(c)).Take(4),
                     loaders = h.Categories.Where(c => PackCatalog.Loaders.Contains(c) && c != "vanilla"),
+                    // Yeni instance önerisi için: yalnızca tam sürümler (snapshot'lar değil), en yeniler
+                    gameVersions = h.Versions.Where(v => ReleaseVersion.IsMatch(v)).TakeLast(30),
                     installed = installed.Contains(h.ProjectId)
                 })
             };
         }
+
+        private static readonly System.Text.RegularExpressions.Regex ReleaseVersion = new(@"^\d+\.\d+(\.\d+)?$");
 
         private static string? NullIfEmpty(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 

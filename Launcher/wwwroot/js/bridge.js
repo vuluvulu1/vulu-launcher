@@ -145,6 +145,7 @@ const mockBackend = (() => {
         description: 'Örnek açıklama: oyunun performansını artıran, çok kullanılan bir içerik. Uzun açıklamalar iki satırda kesilir ve sonuna üç nokta konur ki liste düzenli kalsın.',
         downloads: 242793522 / (index + 1), follows: 41673 / (index + 1), updated: new Date(Date.now() - index * 40 * 86400000).toISOString(),
         categories: ['optimization', 'utility'].slice(0, 1 + index % 2), loaders: ['fabric', 'neoforge', 'quilt'].slice(0, 1 + index % 3), installed: index === 0 && type === 'mod',
+        gameVersions: index % 2 ? ['1.20.1', '1.21.1'] : ['1.20.1', '1.21.1', '1.21.4'],
     }));
 
     const handlers = {

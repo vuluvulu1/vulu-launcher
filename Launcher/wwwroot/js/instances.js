@@ -1,11 +1,16 @@
 // Kullanıcı instance'ları: oluşturma, düzenleme, içerik listesi, silme.
 
 /** Yeni instance oluşturur; var olan bir instance verilirse onu düzenler. */
-function openNewInstanceDialog(existing) {
+/**
+ * Yeni instance oluşturur ya da (existing verilirse) düzenler.
+ * preset: { name, mcVersion, loader } ile alanlar önceden doldurulur (ör. Keşfet'te bir mod için).
+ * onCreated(id) verilirse oluşturunca ana ekrana geçilmez, bu fonksiyon çağrılır.
+ */
+function openNewInstanceDialog(existing, { preset = null, onCreated = null } = {}) {
     const isEdit = !!existing;
 
     return openModal(close => {
-        const name = el('input', { type: 'text', maxLength: 40, value: isEdit ? existing.name : '', placeholder: 'Örn. Fabric 1.21', autofocus: true, spellcheck: false });
+        const name = el('input', { type: 'text', maxLength: 40, value: isEdit ? existing.name : (preset && preset.name) || '', placeholder: 'Örn. Fabric 1.21', autofocus: true, spellcheck: false });
         const mcVersion = el('select', { disabled: true }, el('option', {}, 'Yükleniyor...'));
         const loaderVersion = el('select', { disabled: true });
         const loaderRow = el('div', { class: 'segmented' });
@@ -13,7 +18,7 @@ function openNewInstanceDialog(existing) {
         const error = el('div', { class: 'form-error' });
         const create = el('button', { class: 'btn btn-primary', type: 'submit', disabled: true }, isEdit ? 'Kaydet' : 'Oluştur');
 
-        let loader = isEdit ? existing.loader : 'vanilla';
+        let loader = isEdit ? existing.loader : (preset && preset.loader) || 'vanilla';
         let requestId = 0;
 
         function renderLoaders(loaders) {
@@ -63,10 +68,11 @@ function openNewInstanceDialog(existing) {
 
         bridge.invoke('instances.options').then(options => {
             mcVersion.replaceChildren(...options.minecraftVersions.map(version => el('option', { value: version }, version)));
-            if (isEdit) {
-                if (!options.minecraftVersions.includes(existing.mcVersion))
-                    mcVersion.prepend(el('option', { value: existing.mcVersion }, existing.mcVersion));
-                mcVersion.value = existing.mcVersion;
+            const wanted = isEdit ? existing.mcVersion : preset && preset.mcVersion;
+            if (wanted) {
+                if (!options.minecraftVersions.includes(wanted))
+                    mcVersion.prepend(el('option', { value: wanted }, wanted));
+                mcVersion.value = wanted;
             }
             mcVersion.disabled = false;
             renderLoaders(options.loaders);
@@ -87,7 +93,8 @@ function openNewInstanceDialog(existing) {
                 });
                 close(true);
                 await reloadInstances(result.id);
-                showPage('home');
+                if (onCreated) onCreated(result.id);
+                else showPage('home');
             } catch (err) {
                 error.textContent = err.message;
                 create.disabled = false;

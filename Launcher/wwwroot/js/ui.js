@@ -75,3 +75,9 @@ function alertDialog({ title, message, okText = 'Tamam' }) {
             el('button', { class: 'btn btn-primary', onclick: () => close(true) }, okText)),
     ]);
 }
+
+/** Admin işareti: yazı yerine küçük bir kalkan; üzerine gelince "Admin" yazar. */
+function adminMark() {
+    const mark = fromMarkup('<span class="admin-mark" title="Admin" role="img" aria-label="Admin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3.2v5.6c0 5-3.4 8.9-8 10.2-4.6-1.3-8-5.2-8-10.2V5.7z"/><path class="tick" d="M8.5 12.2l2.4 2.4 4.6-4.8"/></svg></span>');
+    return mark;
+}

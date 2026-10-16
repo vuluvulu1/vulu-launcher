@@ -45,7 +45,7 @@ function renderUsersTab(body) {
             return el('div', { class: 'user-row' + (user.isActive ? '' : ' inactive') },
                 el('div', {},
                     el('div', { class: 'uname' }, user.username,
-                        user.isAdmin && el('span', { class: 'badge' }, 'admin'),
+                        user.isAdmin && adminMark(),
                         !user.isActive && el('span', { class: 'badge' }, 'pasif'),
                         isSelf && el('span', { class: 'member-you' }, 'sen')),
                     el('div', { class: 'meta' }, [user.email, seen ? 'Son görülme: ' + timeAgo(seen) : 'Henüz giriş yapmadı']

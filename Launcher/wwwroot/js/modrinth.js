@@ -1,4 +1,5 @@
-// Modrinth sayfası: mod / modpack / kaynak paketi / shader arama, filtreleme, sıralama ve kurma.
+// Keşfet → Modrinth: mod / modpack / kaynak paketi / shader arama, filtreleme, sıralama ve kurma.
+// Instance seçmeden de gezilebilir; "Kur"a basınca nereye kurulacağı sorulur (gerekirse yeni instance açılır).
 const MR_TYPES = [
     { key: 'mod', label: 'Modlar' },
     { key: 'modpack', label: 'Modpackler' },
@@ -38,12 +39,14 @@ const MR_CATEGORY_NAMES = {
     high: 'Yüksek', medium: 'Orta', low: 'Düşük', potato: 'Çok düşük', screenshot: 'Ekran görüntüsü',
 };
 
+const NEW_INSTANCE = '__new';
+
 const modrinth = {
     type: 'mod',
     targetId: '',
     sort: '',
-    mcVersion: '',           // yalnızca modpack aramasında
-    loader: '',              // yalnızca modpack aramasında
+    mcVersion: '',           // instance seçilmediğinde (ya da modpack aramasında) sürüm filtresi
+    loader: '',              // instance seçilmediğinde (ya da modpack aramasında) yükleyici filtresi
     openSource: false,
     categories: {},          // tür → seçili kategori adları (Set)
     filterData: {},          // tür → sunucudan gelen filtre seçenekleri
@@ -101,7 +104,16 @@ function setupModrinthPage() {
 
     $('mr-sort').replaceChildren(...Object.entries(MR_SORTS).map(([key, label]) => el('option', { value: key }, label)));
     $('mr-sort').addEventListener('change', () => { modrinth.sort = $('mr-sort').value; searchModrinth(false); });
-    $('mr-target').addEventListener('change', () => { modrinth.targetId = $('mr-target').value; searchModrinth(false); });
+    $('mr-target').addEventListener('change', () => {
+        const value = $('mr-target').value;
+        if (value === NEW_INSTANCE) {
+            $('mr-target').value = modrinth.targetId; // vazgeçilirse eski seçim kalır
+            openNewInstanceDialog(null, { onCreated: id => { modrinth.targetId = id; openModrinthPage(); } });
+            return;
+        }
+        modrinth.targetId = value;
+        openModrinthPage();
+    });
     $('mr-version').addEventListener('change', () => { modrinth.mcVersion = $('mr-version').value; searchModrinth(false); });
     $('mr-loader').addEventListener('change', () => { modrinth.loader = $('mr-loader').value; searchModrinth(false); });
     $('mr-more').addEventListener('click', () => searchModrinth(true));
@@ -115,19 +127,23 @@ async function openModrinthPage() {
         onclick: () => { modrinth.type = type.key; openModrinthPage(); },
     }, type.label)));
 
-    // Modpack kendi instance'ını oluşturur; diğer içerikler var olan bir instance'a kurulur
+    // Modpack kendi instance'ını oluşturur; diğer içerikler bir instance'a kurulur. Instance seçilmediyse
+    // sonuçlar sürüm/yükleyici filtresiyle süzülür ve kurarken hedef sorulur.
     const customs = customInstances();
     const isPack = modrinth.type === 'modpack';
-    $('mr-target-wrap').hidden = isPack || customs.length === 0;
-    $('mr-version-wrap').hidden = !isPack;
-    $('mr-loader-wrap').hidden = !isPack;
+    if (modrinth.targetId && !customs.some(i => i.id === modrinth.targetId)) modrinth.targetId = '';
+    const freeBrowse = isPack || !modrinth.targetId;
+    $('mr-target-wrap').hidden = isPack;
+    $('mr-version-wrap').hidden = !freeBrowse;
+    $('mr-loader-wrap').hidden = !freeBrowse || !(isPack || modrinth.type === 'mod');
     $('mr-sort').value = modrinth.sort;
 
     if (!isPack) {
-        if (!customs.some(i => i.id === modrinth.targetId))
-            modrinth.targetId = state.selected && state.selected.kind === 'custom' ? state.selected.id : (customs[0] ? customs[0].id : '');
-        $('mr-target').replaceChildren(...customs.map(i =>
-            el('option', { value: i.id, selected: i.id === modrinth.targetId }, `${i.name} (${loaderLabel(i)})`)));
+        $('mr-target').replaceChildren(
+            el('option', { value: '' }, customs.length ? 'Seçilmedi (her şeyi göster)' : 'Henüz instance yok'),
+            ...customs.map(i => el('option', { value: i.id }, `${i.name} (${loaderLabel(i)})`)),
+            el('option', { value: NEW_INSTANCE }, '+ Yeni instance oluştur…'));
+        $('mr-target').value = modrinth.targetId;
     }
 
     renderModrinthFilters();
@@ -148,8 +164,8 @@ function renderModrinthFilters() {
     const selected = selectedCategories();
     const activeCount = selected.size + (modrinth.openSource ? 1 : 0);
 
-    if (data && modrinth.type === 'modpack') {
-        if ($('mr-version').options.length === 0) {
+    if (data && (modrinth.type === 'modpack' || !modrinth.targetId)) {
+        if ($('mr-version').options.length === 0 && data.minecraftVersions) {
             $('mr-version').replaceChildren(el('option', { value: '' }, 'Tüm sürümler'),
                 ...data.minecraftVersions.map(version => el('option', { value: version }, version)));
             $('mr-loader').replaceChildren(el('option', { value: '' }, 'Tümü'),
@@ -189,16 +205,7 @@ function renderModrinthFilters() {
 async function searchModrinth(append) {
     const results = $('mr-results'), status = $('mr-status'), more = $('mr-more');
     const isPack = modrinth.type === 'modpack';
-
-    if (!isPack && !modrinth.targetId) {
-        results.replaceChildren();
-        more.hidden = true;
-        status.replaceChildren(
-            'İçerik kurmak için önce bir instance gerekli. ',
-            el('button', { class: 'link-btn', onclick: () => openNewInstanceDialog() }, 'Yeni instance oluştur'),
-            ' ya da Modpackler sekmesinden hazır bir paket kur.');
-        return;
-    }
+    const freeBrowse = isPack || !modrinth.targetId;
 
     const requestId = ++modrinth.requestId;
     if (!append) { modrinth.offset = 0; status.textContent = 'Aranıyor...'; }
@@ -210,8 +217,8 @@ async function searchModrinth(append) {
             query: $('mr-query').value.trim(),
             type: modrinth.type,
             instanceId: isPack ? '' : modrinth.targetId,
-            mcVersion: isPack ? modrinth.mcVersion : '',
-            loader: isPack ? modrinth.loader : '',
+            mcVersion: freeBrowse ? modrinth.mcVersion : '',
+            loader: freeBrowse && (isPack || modrinth.type === 'mod') ? modrinth.loader : '',
             sort: modrinth.sort,
             categories: [...selectedCategories()],
             openSource: modrinth.openSource,
@@ -238,7 +245,9 @@ async function searchModrinth(append) {
         ? 'Sonuç bulunamadı. Filtreleri gevşetmeyi dene.'
         : !isPack && target
             ? `${count} · ${target.name} ile uyumlu olanlar (Minecraft ${target.mcVersion}${target.loader !== 'vanilla' && modrinth.type === 'mod' ? ', ' + LOADER_NAMES[target.loader] : ''})`
-            : count;
+            : !isPack
+                ? `${count} · "Kur"a basınca nereye kurulacağını seçersin`
+                : count;
 
     more.hidden = modrinth.offset >= modrinth.total || result.hits.length === 0;
     more.disabled = false;
@@ -260,12 +269,22 @@ async function installModrinthHit(hit, button, versionId) {
             return;
         }
 
+        // Instance seçilmediyse nereye kurulacağı sorulur; seçilen instance sonraki kurulumlar için hedef olur
+        let instanceId = modrinth.targetId;
+        const newTarget = !instanceId;
+        if (newTarget) {
+            instanceId = await chooseInstallTarget(hit);
+            if (!instanceId) { button.textContent = original; button.disabled = false; return; }
+        }
+
         const result = await withActivity(() =>
-            bridge.invoke('modrinth.install', { instanceId: modrinth.targetId, projectId: hit.id, versionId: versionId || '' }));
+            bridge.invoke('modrinth.install', { instanceId, projectId: hit.id, versionId: versionId || '' }));
         if (!result.success) throw new Error(result.error);
 
         button.classList.remove('btn-primary');
         button.textContent = 'Kuruldu ✓';
+        // Hedef yeni seçildiyse sonuçlar artık o instance'a göre süzülür
+        if (newTarget) { modrinth.targetId = instanceId; openModrinthPage(); }
         // Bağımlılık olarak başka şeyler de kurulduysa bildir
         if (result.installed.length > 1)
             $('mr-status').textContent = `Kuruldu: ${result.installed.join(', ')}`;
@@ -274,6 +293,75 @@ async function installModrinthHit(hit, button, versionId) {
         await alertDialog({ title: 'Kurulamadı', message: err.message });
     }
     button.disabled = false;
+}
+
+/** Bir içeriğin bu instance'a uyup uymadığı: sürüm ve (modlarda) yükleyici. Uymuyorsa nedeni, uyuyorsa ''. */
+function hitFitsInstance(hit, instance) {
+    const versions = hit.gameVersions || [];
+    if (versions.length && !versions.includes(instance.mcVersion)) return `Minecraft ${instance.mcVersion} desteklenmiyor`;
+    if (hit.type !== 'mod') return '';
+    if (instance.loader === 'vanilla') return "Vanilla'ya mod kurulamaz";
+    const loaders = hit.loaders || [];
+    const fits = loaders.includes(instance.loader) || (instance.loader === 'quilt' && loaders.includes('fabric'));
+    return fits ? '' : `${LOADER_NAMES[instance.loader] || instance.loader} desteklenmiyor`;
+}
+
+/** Bu içerik için önerilen yeni instance: en yeni desteklenen sürüm ve uygun yükleyici. */
+function suggestedInstance(hit) {
+    const versions = hit.gameVersions || [];
+    const mcVersion = versions[versions.length - 1] || '';
+    const preferred = ['fabric', 'neoforge', 'forge', 'quilt'];
+    const loader = hit.type === 'mod' ? preferred.find(l => (hit.loaders || []).includes(l)) || 'fabric'
+        : hit.type === 'shader' ? 'fabric'   // shaderlar Iris ile (Fabric) çalışır
+        : 'vanilla';
+    return { name: hit.title.slice(0, 40), mcVersion, loader };
+}
+
+/** "Nereye kurulsun?": uyumlu instance'lar ya da bu içerik için yeni bir instance. Seçilen instance kimliğini döner. */
+function chooseInstallTarget(hit) {
+    return new Promise(resolve => {
+        let next = null; // pencere kapandıktan sonra ne olacağı
+
+        openModal(close => {
+            const customs = customInstances();
+            const rows = customs.map(instance => ({ instance, problem: hitFitsInstance(hit, instance) }))
+                .sort((a, b) => (a.problem ? 1 : 0) - (b.problem ? 1 : 0));
+            const preset = suggestedInstance(hit);
+
+            const list = rows.map(({ instance, problem }) => el('div', { class: 'user-row target-row' + (problem ? ' inactive' : '') },
+                el('div', {},
+                    el('div', { class: 'uname' }, instance.name),
+                    el('div', { class: 'meta' }, problem || loaderLabel(instance))),
+                el('span', {}),
+                el('button', {
+                    class: 'btn btn-sm' + (problem ? '' : ' btn-primary'), disabled: !!problem,
+                    onclick: () => { next = { id: instance.id }; close(); },
+                }, 'Buraya kur')));
+
+            return [
+                el('div', { class: 'modal-head' }, `${hit.title} nereye kurulsun?`),
+                el('div', { class: 'modal-body form target-body' },
+                    el('div', { class: 'target-new-box' },
+                        el('div', {},
+                            el('b', {}, 'Bu içerik için yeni bir instance'),
+                            el('p', { class: 'hint', style: 'margin-top:2px' }, preset.mcVersion
+                                ? `Önerilen: Minecraft ${preset.mcVersion}${preset.loader !== 'vanilla' ? ' · ' + (LOADER_NAMES[preset.loader] || preset.loader) : ''}. Oluştururken değiştirebilirsin.`
+                                : 'Sürümü ve yükleyiciyi oluştururken seçebilirsin.')),
+                        el('button', { class: 'btn btn-primary', onclick: () => { next = { create: preset }; close(); } }, '+ Yeni instance oluştur')),
+                    customs.length
+                        ? [el('label', {}, 'Ya da var olan bir instance'), ...list]
+                        : el('p', { class: 'hint' }, 'Henüz instance yok.')),
+                el('div', { class: 'modal-foot' },
+                    el('button', { class: 'btn', onclick: () => close() }, 'Vazgeç')),
+            ];
+        }).then(() => {
+            if (!next) { resolve(undefined); return; }
+            if (next.id) { resolve(next.id); return; }
+            // Pencere oluşturulunca true ile kapanır, kimlik onCreated'a biraz sonra gelir; vazgeçilirse true gelmez
+            openNewInstanceDialog(null, { preset: next.create, onCreated: id => resolve(id) })
+                .then(created => { if (created !== true) resolve(undefined); });
+        });
+    });
 }
 
 /** Kurulacak sürümü seçtirir. Seçilen sürümün kimliğini döner; vazgeçilirse undefined. */

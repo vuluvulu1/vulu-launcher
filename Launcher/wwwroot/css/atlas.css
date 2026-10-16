@@ -436,3 +436,8 @@ html[data-ui="atlas"] .admin-tabs { border-bottom-color: rgba(70, 45, 20, .2); }
 html[data-ui="atlas"] .admin-tabs button { font: 600 15px var(--font-serif); }
 html[data-ui="atlas"] .reg-empty { border-color: rgba(70, 45, 20, .3); font-family: var(--font-serif); }
 html[data-ui="atlas"] .reg-empty b { font-style: italic; }
+
+/* İlk açılış tema seçimi */
+html[data-ui="atlas"] .tp-card { background: var(--paper-noise), var(--surface); box-shadow: var(--paper-shadow); }
+html[data-ui="atlas"] .tp-wrap h1 { font: italic 700 32px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .tp-name { font: 700 18px var(--font-serif); }

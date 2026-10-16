@@ -923,3 +923,73 @@ html.fx-glitch .view:not(#view-splash) { animation: fx-jitter .76s steps(1); }
 .tab-count { margin-left: 7px; padding: 0 6px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); font: 700 10.5px/16px var(--font); }
 .reg-empty { display: flex; flex-direction: column; gap: 4px; max-width: 420px; padding: 22px; border: 1px dashed var(--line-strong); border-radius: var(--r-lg); color: var(--muted); font-size: 13px; }
 .reg-empty b { color: var(--text); font-size: 14px; }
+
+/* Admin işareti (kalkan) */
+.admin-mark { display: inline-grid; place-items: center; width: 17px; height: 17px; margin-left: 6px; vertical-align: -3px; color: var(--accent); cursor: default; }
+.admin-mark svg { width: 100%; height: 100%; fill: color-mix(in srgb, var(--accent) 22%, transparent); stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+.admin-mark .tick { fill: none; stroke-linecap: round; }
+h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2px; }
+
+/* ── İlk açılış: tema seçimi ───────────────────────────────────────── */
+#view-theme { display: grid; place-items: center; overflow-y: auto; padding: 24px; }
+.tp-wrap { width: min(980px, 100%); display: flex; flex-direction: column; align-items: center; text-align: center; }
+.tp-wrap h1 { margin: 0; font: 600 28px var(--font); letter-spacing: -.01em; }
+.tp-sub { margin: 8px 0 26px; max-width: 560px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.tp-cards { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.tp-card {
+    display: flex; flex-direction: column; gap: 6px; padding: 12px 12px 16px; text-align: left;
+    border: 1px solid var(--line-strong); border-radius: var(--r-lg); background: var(--panel);
+    transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.tp-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.tp-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.tp-name { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font: 600 16px var(--font); }
+.tp-check { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 12px; opacity: 0; transition: opacity .15s; }
+.tp-card.selected .tp-check { opacity: 1; }
+.tp-text { color: var(--muted); font-size: 13px; line-height: 1.45; }
+.tp-done { margin-top: 26px; min-width: 200px; height: 40px; font-size: 14px; }
+
+/* Ön izlemeler: her biri kendi temasının renkleriyle, hangi tema açık olursa olsun aynı görünür */
+.tp-preview { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: 4px; }
+.tp-preview i { position: absolute; display: block; }
+
+.tp-classic { background: linear-gradient(160deg, #2a2019, #0d0b0a 70%); }
+.tp-classic .p-rail { left: 0; top: 0; bottom: 0; width: 24%; background: #121010; border-right: 1px solid rgba(255, 255, 255, .07); }
+.tp-classic .p-title { left: 30%; top: 30%; width: 34%; height: 9%; background: #ece6dd; border-radius: 2px; }
+.tp-classic .p-line { left: 30%; top: 44%; width: 44%; height: 4%; background: rgba(236, 230, 221, .4); border-radius: 2px; }
+.tp-classic .p-line.p-short { top: 52%; width: 28%; }
+.tp-classic .p-dock { left: 28%; right: 4%; bottom: 7%; height: 16%; background: #121010; border: 1px solid rgba(255, 255, 255, .08); border-radius: 4px; }
+.tp-classic .p-play { right: 6%; bottom: 10%; width: 20%; height: 10%; background: #c27e3e; border-radius: 3px; }
+
+.tp-neon { background: radial-gradient(ellipse at 10% 0%, rgba(255, 43, 214, .25), transparent 55%), #06060c; }
+.tp-neon .p-nav { left: 0; top: 0; bottom: 0; width: 8%; background: #07070f; border-right: 1px solid rgba(0, 234, 255, .35); }
+.tp-neon .p-strip { left: 8%; right: 0; top: 0; height: 20%; background: #0a0a16; border-bottom: 1px solid rgba(0, 234, 255, .3); }
+.tp-neon .p-card { left: 11%; top: 4%; width: 18%; height: 12%; border: 1px solid #00eaff; box-shadow: 0 0 6px #00eaff; }
+.tp-neon .p-card.p-two { left: 32%; border-color: rgba(255, 43, 214, .6); box-shadow: none; }
+.tp-neon .p-title { left: 12%; top: 40%; width: 34%; height: 9%; background: #f2fbff; box-shadow: -2px 0 #ff2bd6, 2px 0 #00eaff; }
+.tp-neon .p-line { left: 12%; top: 54%; width: 30%; height: 3%; background: #ff2bd6; opacity: .7; }
+.tp-neon .p-panel { right: 4%; top: 30%; bottom: 6%; width: 26%; border: 1px solid rgba(0, 234, 255, .45); background: rgba(10, 10, 22, .9); }
+.tp-neon .p-play { right: 6%; bottom: 10%; width: 22%; height: 12%; background: #00eaff; box-shadow: 0 0 10px #00eaff; clip-path: polygon(0 0, 88% 0, 100% 30%, 100% 100%, 12% 100%, 0 70%); }
+
+.tp-atlas { background: radial-gradient(ellipse at 50% 40%, #f3ebda, #e2d2b2 95%); }
+.tp-atlas .p-tabs { left: 0; right: 0; top: 0; height: 9%; background: #dccbaa; border-bottom: 1px solid rgba(70, 45, 20, .3); }
+.tp-atlas .p-toc { left: 4%; top: 20%; width: 20%; height: 0; border-bottom: 2px dotted rgba(70, 45, 20, .45); }
+.tp-atlas .p-toc.p-two { top: 30%; }
+.tp-atlas .p-toc.p-three { top: 40%; border-color: #a8372d; }
+.tp-atlas .p-title { left: 30%; top: 22%; width: 30%; height: 9%; background: #2b1d12; border-radius: 2px; }
+.tp-atlas .p-line { left: 30%; top: 36%; width: 26%; height: 3%; background: rgba(43, 29, 18, .45); }
+.tp-atlas .p-photo { right: 7%; top: 17%; width: 30%; height: 38%; background: #8fb37a; border: 4px solid #fbf8f0; border-bottom-width: 10px; transform: rotate(3deg); box-shadow: 0 3px 8px rgba(70, 45, 20, .3); }
+.tp-atlas .p-seal { right: 8%; bottom: 9%; width: 15%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #c84d40, #82241c); box-shadow: 0 0 0 2px #a8372d; }
+
+
+/* Keşfet: kaynak seçimi (vulu Packs / Modrinth) başlığın altında */
+.discover-switch { margin-top: 10px; }
+.discover-switch button { height: 30px; padding: 0 16px; font-size: 13px; }
+.page-head .discover-switch + .page-sub { margin-top: 10px; }
+
+/* "Nereye kurulsun?" penceresi */
+.target-body { gap: 8px; }
+.target-new-box { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: var(--r); background: var(--accent-soft); }
+.target-new-box b { font-size: 13.5px; }
+.target-new-box .btn { flex: none; }
+.target-row { margin-bottom: 0; }

@@ -23,13 +23,10 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" /></svg>
                 Oyna
             </button>
-            <button data-page="packs">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5z" /><path d="M3 8v8l9 5 9-5V8" /><path d="M12 13v8" /></svg>
-                vulu Packs
-            </button>
-            <button data-page="modrinth">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
-                Modrinth
+            <!-- Keşfet: vulu Packs ve Modrinth tek sekmede; son açılan kaynak hatırlanır -->
+            <button data-page="discover">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M15.5 8.5l-2 5-5 2 2-5z" /></svg>
+                Keşfet
             </button>
             <button data-page="settings">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" /></svg>
@@ -57,6 +54,9 @@
     </header>
 
     <!-- ── Giriş ───────────────────────────────────────────────────────── -->
+    <!-- İlk açılışta tema seçimi (themes.js) -->
+    <section id="view-theme" class="view" hidden></section>
+
     <section id="view-login" class="view" hidden>
         <form id="login-form" class="login-card" autocomplete="off">
             <img class="login-logo" src="assets/logo.png" alt="">
@@ -254,7 +254,13 @@
         <!-- Modrinth -->
         <div id="page-modrinth" class="page page-scroll" hidden>
             <header class="page-head">
-                <h1>Modrinth</h1>
+                <div>
+                    <h1>Keşfet</h1>
+                    <div class="segmented discover-switch" role="tablist" aria-label="Kaynak">
+                        <button type="button" data-source="packs">vulu Packs</button>
+                        <button type="button" data-source="modrinth" class="active">Modrinth</button>
+                    </div>
+                </div>
                 <div id="mr-types" class="segmented"></div>
             </header>
             <div class="mr-layout">
@@ -300,7 +306,11 @@
         <div id="page-packs" class="page page-scroll" hidden>
             <header class="page-head">
                 <div>
-                    <h1>vulu Packs</h1>
+                    <h1>Keşfet</h1>
+                    <div class="segmented discover-switch" role="tablist" aria-label="Kaynak">
+                        <button type="button" data-source="packs" class="active">vulu Packs</button>
+                        <button type="button" data-source="modrinth">Modrinth</button>
+                    </div>
                     <p class="page-sub">Ekibin paylaştığı paketler. Tek tıkla kur, güncelleme gelince buradan al.</p>
                 </div>
                 <div class="page-head-actions">
@@ -356,6 +366,7 @@
     <script src="js/packs.js"></script>
     <script src="js/feedback.js"></script>
     <script src="js/register.js"></script>
+    <script src="js/themes.js"></script>
     <script src="js/downloads.js"></script>
     <script src="js/profile.js"></script>
     <script src="js/settings.js"></script>

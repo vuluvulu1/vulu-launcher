@@ -572,3 +572,10 @@ html[data-ui="neon"] .tab-badge {
 }
 html[data-ui="neon"] .tab-count { border-radius: 0; background: var(--pink); color: #19000f; font-family: var(--font-hud); }
 html[data-ui="neon"] .reg-empty { border-radius: 0; border-color: rgba(0, 234, 255, .3); font-family: var(--font-hud); }
+html[data-ui="neon"] .admin-mark { color: var(--pink); filter: drop-shadow(0 0 3px rgba(255, 43, 214, .7)); }
+
+/* İlk açılış tema seçimi */
+html[data-ui="neon"] .tp-card { border-radius: 0; clip-path: var(--notch); }
+html[data-ui="neon"] .tp-card.selected { box-shadow: inset 0 0 0 2px var(--accent), 0 0 20px rgba(0, 234, 255, .25); }
+html[data-ui="neon"] .tp-wrap h1 { font-family: var(--font-hud); letter-spacing: .06em; text-shadow: -2px 0 rgba(255, 43, 214, .6), 2px 0 rgba(0, 234, 255, .6); }
+html[data-ui="neon"] .tp-check { border-radius: 0; }

@@ -61,7 +61,7 @@ function renderProfile(user) {
     const head = el('div', { class: 'profile-head' },
         avatarEl(user, 'avatar-xl'),
         el('div', { class: 'profile-id' },
-            el('h1', {}, user.username, user.isAdmin && el('span', { class: 'badge' }, 'admin')),
+            el('h1', {}, user.username, user.isAdmin && adminMark()),
             el('div', { class: 'profile-meta' },
                 [joined && 'Katıldı: ' + formatDate(joined), lastSeenText(user)].filter(Boolean).join(' · '))),
         own && el('div', { class: 'profile-head-actions' },
@@ -206,7 +206,7 @@ function renderMembers() {
             avatarEl(user, 'avatar-md'),
             el('span', { class: 'member-text' },
                 el('span', { class: 'member-name' }, user.username,
-                    user.isAdmin && el('span', { class: 'badge' }, 'admin'),
+                    user.isAdmin && adminMark(),
                     user.username === state.username && el('span', { class: 'member-you' }, 'sen')),
                 el('span', { class: 'member-sub' }, user.bio || lastSeenText(user)))))
         : [el('p', { class: 'hint' }, 'Kimse bulunamadı.')]));
