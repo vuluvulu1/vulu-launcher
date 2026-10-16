@@ -9,6 +9,10 @@
     <RootNamespace>Installer</RootNamespace>
     <ApplicationIcon>..\Launcher\logo.ico</ApplicationIcon>
     <Version>0.9.0</Version>
+    <Authors>vuluvulu1</Authors>
+    <Company>vuluvulu1</Company>
+    <Product>vulu Launcher</Product>
+    <Copyright>Copyright (c) 2026 vuluvulu1. All rights reserved.</Copyright>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
     <!-- Tek dosya olarak dağıtılır ve .NET kurulu olmayan bilgisayarda da çalışır.

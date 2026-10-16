@@ -1,0 +1,48 @@
+Copyright (c) 2026 vuluvulu1. All rights reserved.
+
+This repository is published only so that the vulu Launcher can be distributed to its
+intended users. No license is granted.
+
+The source code, compiled programs, user interface, artwork and all other files in this
+repository ("the Software"), except the third-party components listed below, are the
+exclusive property of the copyright holder. Without prior written permission from the
+copyright holder, you may not:
+
+  - use, run, copy or reproduce the Software or any part of it, except running the official
+    releases as an invited user of the vulu Launcher;
+  - modify, adapt, translate or create derivative works based on the Software;
+  - distribute, publish, sublicense, sell, rent or otherwise make the Software available
+    to anyone;
+  - reuse any portion of the source code in another project.
+
+Being able to view this repository on GitHub does not grant any of these rights. Any use
+not expressly permitted above is prohibited.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. IN NO
+EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR ITS USE.
+
+--------------------------------------------------------------------------------
+Türkçe özet: Bu yazılımın bütün hakları saklıdır. Kaynak kodun ve programın kullanılması,
+kopyalanması, değiştirilmesi, dağıtılması ya da başka bir projede kullanılması, hak
+sahibinin yazılı izni olmadan yasaktır. Bu reponun GitHub'da görülebilmesi herhangi bir
+kullanım hakkı vermez. Davet edilen kullanıcılar yalnızca resmi sürümleri çalıştırabilir.
+--------------------------------------------------------------------------------
+
+Third-party components
+----------------------
+The following components are included in or used by the Software. They are owned by their
+respective authors and remain under their own licenses; nothing above restricts them.
+
+  - .NET runtime and System.Security.Cryptography.ProtectedData (Microsoft) - MIT License
+  - Photino.NET - Apache License 2.0
+  - CmlLib.Core and CmlLib.Core.Installer.Forge - MIT License
+  - MongoDB.Driver - Apache License 2.0
+  - BCrypt.Net-Next - MIT License
+  - IBM Plex Sans and IBM Plex Mono fonts - SIL Open Font License 1.1
+    (Launcher/wwwroot/fonts/OFL-IBMPlex.txt)
+  - Great Vibes font - SIL Open Font License 1.1 (Launcher/wwwroot/fonts/OFL-GreatVibes.txt)
+  - Silkscreen font - SIL Open Font License 1.1 (Launcher/wwwroot/fonts/OFL-Silkscreen.txt)
+
+Minecraft is a trademark of Mojang AB / Microsoft. The vulu Launcher is not affiliated with,
+endorsed or sponsored by Mojang or Microsoft.
