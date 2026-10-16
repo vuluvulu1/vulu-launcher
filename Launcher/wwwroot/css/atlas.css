@@ -426,3 +426,13 @@ html[data-ui="atlas"] .fb-reply { color: #3d3022; }
 html[data-ui="atlas"] .look-preview.logo { background: radial-gradient(ellipse at 30% 60%, #f6efe0, #ddcdad 80%); }
 html[data-ui="atlas"] .look-name { font: italic 700 24px var(--font-serif); color: var(--ink); }
 html[data-ui="atlas"] .error-box { color: var(--error); }
+
+/* Kayıt ve admin rozetleri */
+html[data-ui="atlas"] .link-inline { color: var(--accent); font-family: var(--font-serif); font-style: italic; }
+html[data-ui="atlas"] .register-done h1 { margin-top: 12px; }
+html[data-ui="atlas"] .register-check { background: rgba(59, 122, 75, .12); font-family: var(--font-serif); }
+html[data-ui="atlas"] .tab-badge { background: var(--accent); color: var(--accent-ink); font-family: var(--font-serif); }
+html[data-ui="atlas"] .admin-tabs { border-bottom-color: rgba(70, 45, 20, .2); }
+html[data-ui="atlas"] .admin-tabs button { font: 600 15px var(--font-serif); }
+html[data-ui="atlas"] .reg-empty { border-color: rgba(70, 45, 20, .3); font-family: var(--font-serif); }
+html[data-ui="atlas"] .reg-empty b { font-style: italic; }

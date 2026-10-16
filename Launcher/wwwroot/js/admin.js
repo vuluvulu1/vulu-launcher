@@ -1,9 +1,34 @@
-// Admin sayfası: kullanıcı yönetimi (MongoDB). vulu Packs yayınlama da bu bağlantıyı kullanır.
+// Admin sayfası: kullanıcı yönetimi (MongoDB) ve kayıt istekleri (API; MongoDB bağlantısı gerekmez).
 let adminConnected = false;
+// Bekleyen istek varsa sayfa o sekmeyle açılır
+let adminTab = null;
 
 /** Admin sekmesi her açıldığında yeniden çizilir. */
-function openAdminPage() {
-    renderUsersTab($('admin-body'));
+async function openAdminPage() {
+    await refreshRegistrations();
+    if (!adminTab) adminTab = pendingRegistrations.length ? 'registrations' : 'users';
+    renderAdminTabs();
+}
+
+function renderAdminTabs() {
+    const content = el('div', { class: 'admin-content' });
+    const tab = (key, label, count) => el('button', {
+        class: key === adminTab ? 'active' : '',
+        onclick: async () => {
+            adminTab = key;
+            if (key === 'registrations') await refreshRegistrations();
+            renderAdminTabs();
+        },
+    }, label, count > 0 && el('span', { class: 'tab-count' }, count));
+
+    $('admin-body').replaceChildren(
+        el('div', { class: 'tabs admin-tabs' },
+            tab('users', 'Kullanıcılar'),
+            tab('registrations', 'Kayıt istekleri', pendingRegistrations.length)),
+        content);
+
+    if (adminTab === 'registrations') renderRegistrationsTab(content);
+    else renderUsersTab(content);
 }
 
 // ── Kullanıcılar ──────────────────────────────────────────────────────

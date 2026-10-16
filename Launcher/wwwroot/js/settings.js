@@ -213,6 +213,9 @@ async function logout() {
 
     $('music').pause();
     adminConnected = false;
+    adminTab = null;
+    pendingRegistrations = [];
+    updateAdminBadge();
     profile.me = null;
     profile.members = [];
     state.instances = [];

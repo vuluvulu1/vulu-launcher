@@ -39,6 +39,7 @@ namespace VuluLauncher
             _bridge.On("packs.publish", async args => await PublishPackAsync(args));
             _bridge.On("packs.delete", async args => await DeletePackAsync(args.Str("id")));
             RegisterFeedbackCommands();
+            RegisterRegistrationCommands();
         }
 
         // ── Liste ─────────────────────────────────────────────────────────

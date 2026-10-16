@@ -562,3 +562,13 @@ html[data-ui="neon"] .look-preview { border-radius: 0; }
 html[data-ui="neon"] .look-preview.logo { background: radial-gradient(ellipse at 30% 60%, #1c1340, #06060c 75%); }
 html[data-ui="neon"] .look-name { font: 700 22px var(--font-hud); text-shadow: -2px 0 rgba(255, 43, 214, .8), 2px 0 rgba(0, 234, 255, .8); }
 html[data-ui="neon"] .share-cover { border-radius: 0; }
+
+/* Kayıt ve admin rozetleri */
+html[data-ui="neon"] .link-inline { color: var(--accent); }
+html[data-ui="neon"] .register-check { border-radius: 0; background: rgba(61, 255, 168, .1); box-shadow: 0 0 18px rgba(61, 255, 168, .3); clip-path: var(--notch-sm); }
+html[data-ui="neon"] .tab-badge {
+    position: absolute; top: 6px; right: 8px; margin: 0; border-radius: 0; background: var(--pink); color: #19000f;
+    font-family: var(--font-hud); box-shadow: var(--glow-pink);
+}
+html[data-ui="neon"] .tab-count { border-radius: 0; background: var(--pink); color: #19000f; font-family: var(--font-hud); }
+html[data-ui="neon"] .reg-empty { border-radius: 0; border-color: rgba(0, 234, 255, .3); font-family: var(--font-hud); }

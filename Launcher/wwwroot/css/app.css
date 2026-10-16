@@ -903,3 +903,25 @@ html.fx-glitch .view:not(#view-splash) { animation: fx-jitter .76s steps(1); }
 }
 @keyframes fx-page { 0% { transform: translateX(100%); } 45%, 55% { transform: translateX(0); } 100% { transform: translateX(-105%); } }
 @keyframes fx-page-edge { 0% { left: 100%; } 45%, 55% { left: -90px; } 100% { left: -90px; opacity: 0; } }
+
+/* ── Kayıt ─────────────────────────────────────────────────────────── */
+.login-switch { margin: 14px 0 0; text-align: center; font-size: 12.5px; color: var(--muted); }
+.link-inline { border: 0; padding: 0; background: none; color: var(--accent-hi); font: inherit; font-weight: 600; }
+.link-inline:hover { text-decoration: underline; text-underline-offset: 2px; }
+.register-done { align-items: center; text-align: center; }
+.register-done .login-sub { margin-bottom: 20px; line-height: 1.55; }
+.register-done .login-sub b { color: var(--text); }
+.register-check {
+    width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%;
+    background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); font: 700 22px var(--font);
+}
+
+/* Admin sekmesindeki bekleyen istek sayısı */
+.tab-badge {
+    min-width: 17px; height: 17px; padding: 0 5px; margin-left: 2px; border-radius: 9px;
+    background: var(--accent); color: var(--accent-ink); font: 700 10.5px/17px var(--font); text-align: center;
+}
+.admin-tabs { padding: 0; margin-bottom: 16px; }
+.tab-count { margin-left: 7px; padding: 0 6px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); font: 700 10.5px/16px var(--font); }
+.reg-empty { display: flex; flex-direction: column; gap: 4px; max-width: 420px; padding: 22px; border: 1px dashed var(--line-strong); border-radius: var(--r-lg); color: var(--muted); font-size: 13px; }
+.reg-empty b { color: var(--text); font-size: 14px; }

@@ -56,6 +56,10 @@ const mockBackend = (() => {
     const log = (text, level = 'info', replace = false) =>
         bridge._dispatch({ event: 'log', data: [{ time: new Date().toTimeString().slice(0, 8), text, level, replace }] });
 
+    let registrations = [
+        { id: 'r1', username: 'Steve_TR', email: 'steve@ornek.com', createdAt: new Date(Date.now() - 50 * 60000).toISOString() },
+        { id: 'r2', username: 'madencibaba', email: 'maden@ornek.com', createdAt: new Date(Date.now() - 26 * 3600000).toISOString() },
+    ];
     let users = [
         { id: '1', username: 'vulu', isActive: true, isAdmin: true },
         { id: '2', username: 'misafir', isActive: true, isAdmin: false },
@@ -149,8 +153,24 @@ const mockBackend = (() => {
         'auth.login': async args => {
             await wait(500);
             if (args.username === 'hata') return { success: false, error: 'Kullanıcı adı veya şifre hatalı.' };
+            if (registrations.some(r => r.username === args.username))
+                return { success: false, error: 'Kaydın henüz onaylanmadı. Bir admin onayladığında giriş yapabilirsin.' };
             return { success: true, username: args.username || 'vulu', isAdmin: true };
         },
+        'auth.register': async args => {
+            await wait(500);
+            if (args.username.toLowerCase() === 'vulu') throw new Error('Bu kullanıcı adı alınmış.');
+            registrations.push({ id: 'r' + Date.now(), username: args.username, email: args.email.toLowerCase(), createdAt: new Date().toISOString() });
+            return { success: true };
+        },
+        'admin.registrations': async () => { await wait(250); return registrations.map(r => ({ ...r })); },
+        'admin.approveRegistration': async args => {
+            const reg = registrations.find(r => r.id === args.id);
+            registrations = registrations.filter(r => r.id !== args.id);
+            users.push({ id: 'u' + Date.now(), username: reg.username, isActive: true, isAdmin: false });
+            return { success: true };
+        },
+        'admin.rejectRegistration': async args => { registrations = registrations.filter(r => r.id !== args.id); return { success: true }; },
         'auth.logout': async () => ({ success: true }),
         'auth.forgetPassword': async () => ({ success: true }),
         'launcher.check': async () => { log('Launcher güncel.', 'muted'); return { status: 'upToDate' }; },

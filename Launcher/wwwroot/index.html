@@ -38,6 +38,7 @@
             <button data-page="admin" id="tab-admin" hidden>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" /></svg>
                 Admin
+                <span id="admin-badge" class="tab-badge" title="Bekleyen kayıt istekleri" hidden></span>
             </button>
         </nav>
         <div class="tb-actions">
@@ -75,7 +76,39 @@
 
             <button id="login-submit" type="submit" class="btn btn-primary btn-block">Giriş yap</button>
             <p id="login-status" class="login-status"></p>
+            <p class="login-switch">Hesabın yok mu? <button type="button" id="show-register" class="link-inline">Kayıt ol</button></p>
         </form>
+
+        <!-- Kayıt: istek bir admin onaylayınca hesaba dönüşür -->
+        <form id="register-form" class="login-card" autocomplete="off" hidden>
+            <img class="login-logo" src="assets/logo.png" alt="">
+            <h1>Kayıt ol</h1>
+            <p class="login-sub">Bir admin onayladığında giriş yapabilirsin</p>
+
+            <label for="register-username">Kullanıcı adı</label>
+            <input id="register-username" type="text" maxlength="16" spellcheck="false" placeholder="Oyunda görünecek ad">
+
+            <label for="register-email">E-posta</label>
+            <input id="register-email" type="text" maxlength="254" spellcheck="false" inputmode="email">
+
+            <label for="register-password">Şifre</label>
+            <input id="register-password" type="password" placeholder="En az 6 karakter">
+
+            <label for="register-password2">Şifre tekrar</label>
+            <input id="register-password2" type="password">
+
+            <button id="register-submit" type="submit" class="btn btn-primary btn-block">Kayıt isteği gönder</button>
+            <p id="register-status" class="login-status"></p>
+            <p class="login-switch">Zaten hesabın var mı? <button type="button" id="show-login" class="link-inline">Giriş yap</button></p>
+        </form>
+
+        <!-- Kayıt isteği gönderildikten sonra -->
+        <div id="register-done" class="login-card register-done" hidden>
+            <div class="register-check" aria-hidden="true">✓</div>
+            <h1>İsteğin gönderildi</h1>
+            <p class="login-sub">Bir admin kaydını onayladığında <b id="register-done-name"></b> adıyla ve seçtiğin şifreyle giriş yapabilirsin.</p>
+            <button type="button" id="register-back" class="btn btn-primary btn-block">Giriş ekranına dön</button>
+        </div>
         <span id="app-version" class="login-version"></span>
     </section>
 
@@ -322,6 +355,7 @@
     <script src="js/modrinth.js"></script>
     <script src="js/packs.js"></script>
     <script src="js/feedback.js"></script>
+    <script src="js/register.js"></script>
     <script src="js/downloads.js"></script>
     <script src="js/profile.js"></script>
     <script src="js/settings.js"></script>

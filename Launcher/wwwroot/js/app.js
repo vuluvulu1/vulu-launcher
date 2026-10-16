@@ -158,6 +158,7 @@ async function showLogin({ auto = false } = {}) {
     $('btn-user').hidden = true;
     $('page-tabs').hidden = true;
     $('tab-admin').hidden = true;
+    showLoginCard('login');
     closePopovers();
 
     username.value = init.savedUsername || '';
@@ -329,6 +330,7 @@ async function enterLauncher(session) {
     state.isAdmin = !!session.isAdmin;
     $('page-tabs').hidden = false;
     $('tab-admin').hidden = !session.isAdmin;
+    refreshRegistrations(); // bekleyen kayıt istekleri Admin sekmesinde rozet olarak görünür
     $('packs-grid').replaceChildren(); // başka hesaptan kalan liste görünmesin
 
     clearConsole();
@@ -818,6 +820,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupPopovers();
     setupVersionPicker();
     setupPacksPage();
+    setupRegisterForm();
     setupProfilePage();
     setupConsole();
     setupDownloads();
