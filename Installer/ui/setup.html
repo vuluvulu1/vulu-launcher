@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>vulu Launcher Kurulumu</title>
+<style>
+@font-face { font-family: "IBM Plex Sans"; src: url("IBMPlexSans.ttf") format("truetype"); font-weight: 100 700; }
+@font-face { font-family: "IBM Plex Mono"; src: url("IBMPlexMono.ttf") format("truetype"); font-weight: 400 700; }
+@font-face { font-family: "Great Vibes"; src: url("GreatVibes.ttf") format("truetype"); font-weight: 400; font-display: block; }
+
+/* Launcher'ın açılış sahnesiyle aynı dil: karanlık salon, yukarıdan tek spot, altın el yazısı */
+:root {
+    --bg: #070605;
+    --panel: rgba(18, 16, 16, .78);
+    --line: rgba(255, 255, 255, .08);
+    --line-strong: rgba(255, 255, 255, .14);
+    --text: #ece6dd;
+    --muted: #a0968c;
+    --dim: #6e655d;
+    --accent: #c27e3e;
+    --accent-hi: #d9a46d;
+    --accent-soft: rgba(194, 126, 62, .16);
+    --accent-ink: #160e07;
+    --ok: #7cc47f;
+    --error: #e2604a;
+    --bronze-light: #e3b37a;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+body {
+    display: flex; flex-direction: column; color: var(--text);
+    font: 13.5px/1.5 "IBM Plex Sans", "Segoe UI", sans-serif;
+    user-select: none; -webkit-user-select: none; cursor: default;
+    background: var(--bg); border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+/* Spot: yukarıdan inen huzme ve başlığa düşen ışık havuzu */
+.stage { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.stage::before {
+    content: ""; position: absolute; inset: 0;
+    clip-path: polygon(46% 0, 54% 0, 68% 100%, 32% 100%);
+    background: linear-gradient(180deg, rgba(255, 228, 186, .085), rgba(255, 228, 186, .02) 55%, transparent 85%);
+}
+.stage::after {
+    content: ""; position: absolute; inset: 0;
+    background:
+        radial-gradient(ellipse 34% 30% at 50% 30%, rgba(255, 224, 178, .12), transparent 72%),
+        radial-gradient(ellipse 75% 70% at 50% 40%, transparent 45%, rgba(0, 0, 0, .7) 100%);
+}
+
+/* Üst çubuk */
+.top { position: relative; z-index: 2; height: 40px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 14px; }
+.top img { width: 18px; height: 18px; image-rendering: pixelated; border-radius: 3px; }
+.top .label { flex: 1; font-size: 12.5px; color: var(--muted); }
+.top button { width: 34px; height: 28px; border: 0; border-radius: 6px; background: transparent; display: grid; place-items: center; }
+.top button:hover { background: rgba(255, 255, 255, .06); }
+.top #close:hover { background: #b33a2b; }
+.top svg { width: 10px; height: 10px; fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linecap: round; }
+.top button:hover svg { stroke: var(--text); }
+
+main { position: relative; z-index: 1; flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; padding: 6px 44px 28px; }
+
+/* Başlık: her harf ince bakır kalemle çizilip altın-bakırla dolar */
+.title { width: 400px; height: auto; margin-top: 8px; overflow: visible; filter: drop-shadow(0 2px 10px rgba(0, 0, 0, .8)); }
+.title path {
+    fill: url(#title-gold); fill-opacity: 0;
+    stroke: var(--bronze-light); stroke-width: 1.1px; vector-effect: non-scaling-stroke;
+    stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1;
+    animation: pen-draw .5s cubic-bezier(.45, 0, .35, 1) calc(.25s + var(--i) * .07s) forwards,
+               ink-fill .4s ease-out calc(.55s + var(--i) * .07s) forwards;
+}
+@keyframes pen-draw { to { stroke-dashoffset: 0; } }
+@keyframes ink-fill { to { fill-opacity: 1; stroke-opacity: .3; } }
+
+.subtitle { margin-top: 2px; font-size: 13px; letter-spacing: .06em; color: rgba(227, 179, 122, .8); opacity: 0; animation: rise .5s ease-out 1.3s forwards; }
+.subtitle .ver { font-family: "IBM Plex Mono", monospace; }
+@keyframes rise { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+/* Alt kart: seçenekler / ilerleme / bitiş */
+.card {
+    margin-top: auto; width: 100%; padding: 18px 20px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    opacity: 0; animation: rise .5s ease-out 1.1s forwards;
+}
+.field-label { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.path-row { display: flex; gap: 8px; margin-top: 6px; }
+.path-row input {
+    flex: 1; min-width: 0; padding: 8px 11px; font: 12.5px "IBM Plex Mono", monospace; color: var(--text);
+    background: rgba(0, 0, 0, .35); border: 1px solid var(--line-strong); border-radius: 6px; outline: none;
+    user-select: text; -webkit-user-select: text;
+}
+.path-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.hint { margin-top: 6px; min-height: 18px; font-size: 12px; color: var(--muted); }
+.hint.error { color: var(--error); }
+.hint .mono { font-family: "IBM Plex Mono", monospace; }
+
+.options { display: flex; gap: 22px; margin-top: 12px; }
+.check { display: flex; align-items: center; gap: 8px; color: var(--text); cursor: pointer; font-size: 13px; }
+.check input { accent-color: var(--accent); width: 15px; height: 15px; margin: 0; }
+
+.actions { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+.actions .spacer { flex: 1; font-size: 12px; color: var(--dim); }
+.btn {
+    height: 34px; padding: 0 16px; border: 1px solid var(--line-strong); border-radius: 6px;
+    background: rgba(255, 255, 255, .04); font-weight: 600; font-size: 13px;
+}
+.btn:hover:not(:disabled) { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .22); }
+.btn-primary { min-width: 150px; height: 40px; border: 0; background: var(--accent); color: var(--accent-ink); font-size: 14px; letter-spacing: .06em; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hi); }
+.btn:disabled { opacity: .45; cursor: default; }
+
+/* İlerleme */
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.step { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--dim); transition: color .2s; }
+.step .dot { width: 18px; height: 18px; flex: none; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font-size: 10px; }
+.step.active { color: var(--accent-hi); }
+.step.active .dot { border-color: var(--accent); background: var(--accent-soft); animation: pulse 1.4s ease-in-out infinite; }
+.step.done { color: var(--text); }
+.step.done .dot { border-color: var(--ok); background: var(--ok); color: #0c0a08; }
+.step.done .dot::after { content: "✓"; font-weight: 700; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 4px var(--accent-soft); } }
+
+.status-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; font-size: 13px; }
+.status-row #pct { font: 12px "IBM Plex Mono", monospace; color: var(--muted); }
+.bar { height: 5px; margin-top: 8px; border-radius: 5px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.bar-fill { height: 100%; width: 0; border-radius: 5px; background: var(--accent); transition: width .2s ease; }
+.bar.indeterminate .bar-fill { width: 30%; animation: slide 1.2s ease-in-out infinite; }
+@keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+.detail { margin-top: 6px; min-height: 18px; font: 11.5px "IBM Plex Mono", monospace; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Bitiş */
+.done-head { display: flex; align-items: center; gap: 12px; }
+.done-head .mark { width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--ok); color: #0c0a08; display: grid; place-items: center; font-weight: 700; }
+.done-head h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.done-head p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+.done-head .mono { font-family: "IBM Plex Mono", monospace; }
+
+.error-box { margin-top: 12px; padding: 10px 12px; border: 1px solid rgba(226, 96, 74, .35); border-radius: 8px; background: rgba(226, 96, 74, .08); color: #f0b3a7; font-size: 12.5px; }
+</style>
+</head>
+<body>
+    <div class="stage" aria-hidden="true"></div>
+
+    <div class="top" id="drag">
+        <img src="logo.png" alt="">
+        <span class="label">Kurulum</span>
+        <button id="minimize" aria-label="Küçült" title="Küçült"><svg viewBox="0 0 12 12"><path d="M2 6h8"/></svg></button>
+        <button id="close" aria-label="Kapat" title="Kapat"><svg viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg></button>
+    </div>
+
+    <main>
+        <svg class="title" viewBox="-3 -831 4401 1182" role="img" aria-label="vulu Launcher">
+        <defs>
+        <linearGradient id="title-gold" gradientUnits="userSpaceOnUse" x1="-3" y1="-831" x2="4398" y2="351">
+        <stop offset="0" stop-color="#8a5a2b"/>
+        <stop offset=".3" stop-color="#e3b37a"/>
+        <stop offset=".5" stop-color="#f3d6a4"/>
+        <stop offset=".7" stop-color="#c27e3e"/>
+        <stop offset="1" stop-color="#7a4d24"/>
+        </linearGradient>
+        </defs>
+        <path pathLength="1" style="--i:0" d="M92 7Q61 7 49.0 -9.0Q37 -25 37 -50Q37 -76 46.0 -109.0Q55 -142 70 -183Q59 -183 59 -193Q67 -213 76.5 -238.5Q86 -264 86 -296Q86 -312 82.0 -323.0Q78 -334 70 -336Q70 -336 80.5 -338.0Q91 -340 103.0 -342.0Q115 -344 119 -344Q125 -345 130.0 -345.5Q135 -346 139 -346Q149 -346 152.5 -338.0Q156 -330 155 -303Q154 -278 145.0 -242.5Q136 -207 126 -181Q113 -147 102.0 -112.0Q91 -77 91 -54Q91 -34 102 -28Q110 -25 116 -25Q139 -25 161.0 -47.0Q183 -69 202.5 -100.5Q222 -132 235 -161Q229 -184 229 -216Q229 -250 237.0 -285.0Q245 -320 262.0 -343.5Q279 -367 306 -367Q325 -367 325 -350Q325 -346 315.5 -316.0Q306 -286 291.0 -245.0Q276 -204 259 -166Q255 -158 252 -150Q256 -133 267.0 -122.5Q278 -112 294 -112Q314 -112 331.5 -130.5Q349 -149 368 -193Q380 -193 380 -184Q364 -144 341.5 -120.0Q319 -96 291 -96Q257 -96 242 -131Q225 -96 202.0 -64.5Q179 -33 151.5 -13.0Q124 7 92 7Z"/>
+        <path pathLength="1" style="--i:1" d="M397 0Q386 0 370.5 -5.0Q355 -10 343.5 -23.5Q332 -37 332 -64Q332 -90 349.0 -124.0Q366 -158 379 -184Q368 -184 368 -193Q369 -196 377.0 -212.0Q385 -228 396.0 -250.0Q407 -272 417.5 -292.5Q428 -313 434 -324Q446 -346 472 -346H534Q517 -333 503.5 -317.5Q490 -302 470 -261Q470 -261 463.0 -247.0Q456 -233 445.5 -211.5Q435 -190 424.5 -168.0Q414 -146 407 -131Q394 -103 390.0 -86.5Q386 -70 386 -56Q386 -23 408 -23Q432 -23 466 -62Q494 -95 521.0 -141.0Q548 -187 572.5 -236.0Q597 -285 616 -324Q627 -346 655 -346H710Q688 -328 665.5 -292.0Q643 -256 616 -200Q609 -185 598.0 -162.0Q587 -139 578.5 -113.0Q570 -87 570 -61Q570 -26 595 -26Q629 -26 661.0 -73.0Q693 -120 724 -193Q732 -193 733.5 -192.0Q735 -191 736 -184Q725 -157 709.5 -125.5Q694 -94 674.5 -65.0Q655 -36 631.5 -18.0Q608 0 580 0Q555 0 539.0 -18.5Q523 -37 523 -71Q523 -98 533 -129Q516 -99 494.0 -69.0Q472 -39 447.0 -19.5Q422 0 397 0Z"/>
+        <path pathLength="1" style="--i:2" d="M771 3Q734 3 716.5 -19.5Q699 -42 699 -73Q699 -105 708.0 -139.0Q717 -173 724 -196Q740 -252 764.5 -315.5Q789 -379 818.5 -440.5Q848 -502 877 -551Q900 -590 926.5 -609.5Q953 -629 973 -629Q989 -629 998.5 -617.5Q1008 -606 1008 -583Q1008 -567 1002.5 -545.0Q997 -523 984 -495Q949 -417 900.5 -339.0Q852 -261 778 -193Q766 -165 758.0 -133.0Q750 -101 750 -81Q750 -19 792 -19Q824 -19 863.0 -65.5Q902 -112 937 -193Q941 -193 945.0 -191.5Q949 -190 949 -184Q938 -157 921.5 -124.5Q905 -92 883.5 -63.0Q862 -34 834.0 -15.5Q806 3 771 3ZM786 -225Q822 -262 856.0 -310.5Q890 -359 919.5 -411.5Q949 -464 969 -511Q976 -526 980.5 -544.0Q985 -562 985 -574Q985 -588 978 -588Q974 -588 966.0 -580.5Q958 -573 945 -555Q926 -530 903.5 -487.0Q881 -444 858.0 -395.0Q835 -346 816.0 -300.5Q797 -255 786 -225Z"/>
+        <path pathLength="1" style="--i:3" d="M966 0Q955 0 939.5 -5.0Q924 -10 912.5 -23.5Q901 -37 901 -64Q901 -90 918.0 -124.0Q935 -158 948 -184Q937 -184 937 -193Q938 -196 946.0 -212.0Q954 -228 965.0 -250.0Q976 -272 986.5 -292.5Q997 -313 1003 -324Q1015 -346 1041 -346H1103Q1086 -333 1072.5 -317.5Q1059 -302 1039 -261Q1039 -261 1032.0 -247.0Q1025 -233 1014.5 -211.5Q1004 -190 993.5 -168.0Q983 -146 976 -131Q963 -103 959.0 -86.5Q955 -70 955 -56Q955 -23 977 -23Q1001 -23 1035 -62Q1063 -95 1090.0 -141.0Q1117 -187 1141.5 -236.0Q1166 -285 1185 -324Q1196 -346 1224 -346H1279Q1257 -328 1234.5 -292.0Q1212 -256 1185 -200Q1178 -185 1167.0 -162.0Q1156 -139 1147.5 -113.0Q1139 -87 1139 -61Q1139 -26 1164 -26Q1198 -26 1230.0 -73.0Q1262 -120 1293 -193Q1301 -193 1302.5 -192.0Q1304 -191 1305 -184Q1294 -157 1278.5 -125.5Q1263 -94 1243.5 -65.0Q1224 -36 1200.5 -18.0Q1177 0 1149 0Q1124 0 1108.0 -18.5Q1092 -37 1092 -71Q1092 -98 1102 -129Q1085 -99 1063.0 -69.0Q1041 -39 1016.0 -19.5Q991 0 966 0Z"/>
+        <path pathLength="1" style="--i:4" d="M2204 311Q2194 311 2191.0 307.5Q2188 304 2188 300Q2206 297 2223.0 273.5Q2240 250 2240 219Q2240 170 2208.0 124.5Q2176 79 2118.0 41.0Q2060 3 1982.5 -24.5Q1905 -52 1813 -65Q1779 -17 1736.5 23.5Q1694 64 1642.5 88.5Q1591 113 1531 113Q1468 113 1435.0 84.0Q1402 55 1402 17Q1402 -18 1430.5 -53.5Q1459 -89 1517.5 -112.5Q1576 -136 1666 -136Q1735 -136 1806 -124Q1831 -168 1851.0 -212.0Q1871 -256 1886 -295Q1787 -299 1730.0 -325.5Q1673 -352 1649.0 -392.0Q1625 -432 1625 -474Q1625 -527 1657.0 -574.5Q1689 -622 1744.0 -652.0Q1799 -682 1867 -682Q1875 -682 1877.0 -676.0Q1879 -670 1879 -666Q1841 -666 1805.5 -649.0Q1770 -632 1742.0 -603.5Q1714 -575 1697.5 -540.0Q1681 -505 1681 -468Q1681 -432 1700.0 -397.5Q1719 -363 1765.0 -340.0Q1811 -317 1894 -315Q1903 -338 1909.5 -357.5Q1916 -377 1921 -391Q1945 -463 1972.5 -534.0Q2000 -605 2035.5 -663.0Q2071 -721 2120.0 -756.0Q2169 -791 2237 -791Q2281 -791 2305.5 -766.0Q2330 -741 2330 -697Q2330 -654 2310.0 -602.5Q2290 -551 2254.0 -500.0Q2218 -449 2169.0 -405.0Q2120 -361 2062.0 -332.0Q2004 -303 1940 -296Q1925 -264 1902.0 -215.5Q1879 -167 1847 -116Q1934 -96 2011.5 -62.0Q2089 -28 2148.5 15.5Q2208 59 2242.0 108.5Q2276 158 2276 207Q2276 251 2254.0 281.0Q2232 311 2204 311ZM2237 -740Q2194 -740 2156.0 -702.5Q2118 -665 2083.5 -603.5Q2049 -542 2016.0 -467.0Q1983 -392 1950 -318Q2009 -326 2060.0 -354.0Q2111 -382 2153.0 -422.5Q2195 -463 2225.0 -509.0Q2255 -555 2271.0 -599.5Q2287 -644 2287 -679Q2287 -707 2275.0 -723.5Q2263 -740 2237 -740ZM1427 31Q1427 56 1454.0 74.5Q1481 93 1531 93Q1605 93 1665.0 45.5Q1725 -2 1772 -70Q1719 -75 1666 -75Q1584 -75 1531.0 -58.5Q1478 -42 1452.5 -17.5Q1427 7 1427 31Z"/>
+        <path pathLength="1" style="--i:5" d="M2397 3Q2374 3 2356.5 -10.0Q2339 -23 2339 -63Q2339 -80 2341.5 -95.0Q2344 -110 2348 -127Q2339 -112 2323.0 -90.0Q2307 -68 2287.5 -47.0Q2268 -26 2247.5 -12.0Q2227 2 2209 2Q2183 2 2167.0 -21.5Q2151 -45 2151 -83Q2151 -124 2170.0 -171.0Q2189 -218 2222.0 -261.0Q2255 -304 2298.0 -331.0Q2341 -358 2388 -358Q2411 -358 2432.0 -350.5Q2453 -343 2469 -326Q2476 -319 2476 -310Q2476 -304 2471.0 -300.0Q2466 -296 2458 -298Q2447 -333 2411 -333Q2394 -333 2372 -322Q2345 -308 2314.5 -277.5Q2284 -247 2257.5 -208.5Q2231 -170 2214.0 -131.0Q2197 -92 2197 -60Q2197 -27 2222 -27Q2244 -27 2267.5 -48.0Q2291 -69 2312.5 -100.5Q2334 -132 2352.0 -163.0Q2370 -194 2380 -213Q2395 -240 2408.0 -258.0Q2421 -276 2445 -276Q2456 -276 2467.0 -273.0Q2478 -270 2490 -272Q2460 -242 2437.5 -201.0Q2415 -160 2403.0 -120.5Q2391 -81 2391 -54Q2391 -24 2411 -24Q2427 -24 2445.5 -42.0Q2464 -60 2481.5 -87.5Q2499 -115 2514.0 -143.5Q2529 -172 2538 -193Q2543 -193 2546.5 -192.0Q2550 -191 2550 -184Q2549 -180 2546.5 -175.5Q2544 -171 2539 -160Q2531 -144 2517.0 -117.0Q2503 -90 2484.0 -62.5Q2465 -35 2443.0 -16.0Q2421 3 2397 3Z"/>
+        <path pathLength="1" style="--i:6" d="M2567 0Q2556 0 2540.5 -5.0Q2525 -10 2513.5 -23.5Q2502 -37 2502 -64Q2502 -90 2519.0 -124.0Q2536 -158 2549 -184Q2538 -184 2538 -193Q2539 -196 2547.0 -212.0Q2555 -228 2566.0 -250.0Q2577 -272 2587.5 -292.5Q2598 -313 2604 -324Q2616 -346 2642 -346H2704Q2687 -333 2673.5 -317.5Q2660 -302 2640 -261Q2640 -261 2633.0 -247.0Q2626 -233 2615.5 -211.5Q2605 -190 2594.5 -168.0Q2584 -146 2577 -131Q2564 -103 2560.0 -86.5Q2556 -70 2556 -56Q2556 -23 2578 -23Q2602 -23 2636 -62Q2664 -95 2691.0 -141.0Q2718 -187 2742.5 -236.0Q2767 -285 2786 -324Q2797 -346 2825 -346H2880Q2858 -328 2835.5 -292.0Q2813 -256 2786 -200Q2779 -185 2768.0 -162.0Q2757 -139 2748.5 -113.0Q2740 -87 2740 -61Q2740 -26 2765 -26Q2799 -26 2831.0 -73.0Q2863 -120 2894 -193Q2902 -193 2903.5 -192.0Q2905 -191 2906 -184Q2895 -157 2879.5 -125.5Q2864 -94 2844.5 -65.0Q2825 -36 2801.5 -18.0Q2778 0 2750 0Q2725 0 2709.0 -18.5Q2693 -37 2693 -71Q2693 -98 2703 -129Q2686 -99 2664.0 -69.0Q2642 -39 2617.0 -19.5Q2592 0 2567 0Z"/>
+        <path pathLength="1" style="--i:7" d="M2798 8Q2834 -65 2867.0 -136.5Q2900 -208 2935 -273Q2955 -309 2969.0 -323.5Q2983 -338 3006 -338Q3014 -338 3023.0 -335.5Q3032 -333 3041 -333Q3047 -333 3050 -334Q3036 -326 3013.5 -294.5Q2991 -263 2968.0 -222.0Q2945 -181 2927 -145Q2946 -168 2967.0 -191.0Q2988 -214 3013 -235Q3037 -256 3070.5 -278.5Q3104 -301 3136.0 -316.0Q3168 -331 3187 -331Q3194 -331 3197 -330Q3197 -330 3186.0 -310.5Q3175 -291 3158.5 -259.5Q3142 -228 3125.0 -192.5Q3108 -157 3094.5 -124.5Q3081 -92 3077 -70Q3074 -57 3074 -46Q3074 -30 3080.0 -25.0Q3086 -20 3093 -20Q3112 -20 3132.0 -37.0Q3152 -54 3170.5 -80.5Q3189 -107 3205.0 -137.0Q3221 -167 3232 -193Q3244 -193 3244 -184Q3233 -157 3216.5 -124.5Q3200 -92 3179.5 -63.0Q3159 -34 3134.0 -15.0Q3109 4 3080 4Q3060 4 3038.5 -10.0Q3017 -24 3017 -62Q3017 -73 3019.0 -85.5Q3021 -98 3026 -113Q3034 -133 3045.0 -156.0Q3056 -179 3081 -219Q3088 -230 3089.5 -236.0Q3091 -242 3091 -246Q3091 -258 3080 -258Q3071 -258 3053.5 -248.0Q3036 -238 3010 -213Q2985 -189 2950.5 -145.0Q2916 -101 2871 -15Q2864 -2 2855.5 -1.0Q2847 0 2832 1Q2822 2 2813.0 2.5Q2804 3 2798 8Z"/>
+        <path pathLength="1" style="--i:8" d="M3318 4Q3263 4 3236.5 -25.0Q3210 -54 3210 -103Q3210 -126 3219.0 -156.0Q3228 -186 3243.0 -217.0Q3258 -248 3276 -272Q3305 -311 3340.0 -332.5Q3375 -354 3411 -354Q3449 -354 3465.5 -337.5Q3482 -321 3482 -299Q3482 -278 3472.0 -261.5Q3462 -245 3449.5 -235.0Q3437 -225 3428 -225Q3420 -225 3414 -231Q3422 -241 3431.0 -255.0Q3440 -269 3444 -282Q3448 -294 3448 -306Q3448 -332 3424 -332Q3395 -332 3367.5 -308.0Q3340 -284 3317.5 -246.5Q3295 -209 3281.5 -167.5Q3268 -126 3268 -91Q3268 -59 3281.5 -38.0Q3295 -17 3326 -17Q3367 -17 3398.0 -43.5Q3429 -70 3453.0 -110.5Q3477 -151 3495 -193Q3499 -193 3503.0 -191.5Q3507 -190 3507 -184Q3487 -134 3460.0 -91.0Q3433 -48 3398.5 -22.0Q3364 4 3318 4Z"/>
+        <path pathLength="1" style="--i:9" d="M3398 8Q3440 -78 3485.5 -172.5Q3531 -267 3579.0 -363.0Q3627 -459 3674 -546Q3691 -576 3705.5 -593.0Q3720 -610 3744 -610Q3753 -610 3765.0 -607.0Q3777 -604 3788 -606Q3775 -592 3752.5 -557.0Q3730 -522 3702.5 -473.0Q3675 -424 3644.5 -367.5Q3614 -311 3584.5 -253.5Q3555 -196 3530 -146Q3550 -172 3571.0 -195.0Q3592 -218 3612 -235Q3634 -255 3667.5 -277.0Q3701 -299 3734.5 -315.0Q3768 -331 3788 -331Q3795 -331 3798 -330Q3798 -330 3787.0 -310.0Q3776 -290 3759.5 -259.0Q3743 -228 3725.5 -192.0Q3708 -156 3695.0 -123.5Q3682 -91 3678 -70Q3675 -54 3675 -43Q3675 -27 3681.0 -21.5Q3687 -16 3694 -16Q3711 -16 3730.5 -33.5Q3750 -51 3769.0 -78.0Q3788 -105 3804.5 -135.5Q3821 -166 3831 -193Q3843 -193 3843 -184Q3832 -157 3815.5 -124.5Q3799 -92 3778.0 -63.0Q3757 -34 3732.0 -15.0Q3707 4 3679 4Q3659 4 3638.0 -10.0Q3617 -24 3617 -61Q3617 -72 3619.0 -84.5Q3621 -97 3626 -113Q3632 -133 3646.0 -157.5Q3660 -182 3682 -219Q3692 -236 3692 -246Q3692 -258 3680 -258Q3670 -258 3653.0 -248.0Q3636 -238 3610 -213Q3585 -189 3548.0 -143.0Q3511 -97 3469 -14Q3462 -1 3453.5 -0.5Q3445 0 3431 1Q3422 2 3413.0 2.5Q3404 3 3398 8Z"/>
+        <path pathLength="1" style="--i:10" d="M3903 4Q3866 4 3836.5 -20.0Q3807 -44 3807 -93Q3807 -134 3825.5 -180.0Q3844 -226 3874.5 -266.5Q3905 -307 3942.5 -332.5Q3980 -358 4018 -358Q4037 -358 4055.0 -347.0Q4073 -336 4073 -309Q4073 -284 4054.0 -254.0Q4035 -224 4000 -198Q3985 -187 3962.0 -177.0Q3939 -167 3916.0 -160.5Q3893 -154 3878 -154Q3873 -142 3868.5 -122.0Q3864 -102 3864 -81Q3864 -56 3874.0 -36.0Q3884 -16 3911 -16Q3944 -16 3972.5 -35.0Q4001 -54 4023.5 -83.0Q4046 -112 4062.0 -142.0Q4078 -172 4087 -193Q4099 -193 4099 -184Q4086 -156 4069.5 -123.0Q4053 -90 4030.5 -61.5Q4008 -33 3976.5 -14.5Q3945 4 3903 4ZM3885 -172Q3899 -172 3932.0 -182.5Q3965 -193 3992 -216Q4018 -239 4032.0 -266.5Q4046 -294 4046 -313Q4046 -335 4030 -335Q4018 -335 3997.0 -319.0Q3976 -303 3945 -265Q3926 -241 3909.0 -213.0Q3892 -185 3885 -172Z"/>
+        <path pathLength="1" style="--i:11" d="M4088 -196Q4096 -213 4109.0 -250.5Q4122 -288 4136.0 -334.0Q4150 -380 4157 -421Q4160 -437 4168.0 -444.5Q4176 -452 4185 -452Q4198 -452 4209.0 -439.5Q4220 -427 4220 -404Q4220 -376 4203.5 -356.0Q4187 -336 4163 -318Q4173 -317 4184.0 -316.5Q4195 -316 4208 -316Q4255 -316 4301 -322Q4303 -316 4303 -313Q4303 -300 4295.5 -280.0Q4288 -260 4280 -244Q4276 -235 4264.0 -211.5Q4252 -188 4238.0 -158.5Q4224 -129 4214.5 -100.5Q4205 -72 4205 -52Q4205 -26 4225 -26Q4244 -26 4278.0 -70.5Q4312 -115 4346 -193Q4358 -193 4358 -184Q4347 -157 4330.5 -125.0Q4314 -93 4294.0 -64.5Q4274 -36 4251.0 -17.5Q4228 1 4203 1Q4184 1 4165.0 -14.5Q4146 -30 4146 -65Q4146 -96 4158.0 -125.5Q4170 -155 4185.0 -181.0Q4200 -207 4212.0 -227.0Q4224 -247 4224 -259Q4224 -277 4201.5 -285.0Q4179 -293 4143 -294Q4125 -248 4116.0 -226.0Q4107 -204 4099 -184Q4083 -184 4088 -196Z"/>
+        </svg>
+        <div class="subtitle">Minecraft launcher · <span class="ver" id="version">sürüm bilgisi alınıyor…</span></div>
+
+        <!-- Seçenekler -->
+        <section class="card" id="page-options">
+            <div class="field-label">Kurulum klasörü</div>
+            <div class="path-row">
+                <input id="dir" type="text" spellcheck="false" aria-label="Kurulum klasörü">
+                <button class="btn" id="browse">Değiştir</button>
+            </div>
+            <div class="hint" id="dir-hint">Oyun dosyaları ve dünyalar da bu klasörde durur.</div>
+
+            <div class="options">
+                <label class="check"><input type="checkbox" id="opt-desktop" checked> Masaüstü kısayolu</label>
+                <label class="check"><input type="checkbox" id="opt-start" checked> Başlat menüsü kısayolu</label>
+            </div>
+
+            <div id="release-error" class="error-box" hidden></div>
+
+            <div class="actions">
+                <span class="spacer" id="size-info"></span>
+                <button class="btn-primary btn" id="install" disabled>Kur</button>
+            </div>
+        </section>
+
+        <!-- İlerleme -->
+        <section class="card" id="page-progress" hidden>
+            <div class="steps">
+                <div class="step" data-step="download"><span class="dot"></span>İndir</div>
+                <div class="step" data-step="verify"><span class="dot"></span>Doğrula</div>
+                <div class="step" data-step="install"><span class="dot"></span>Kur</div>
+                <div class="step" data-step="shortcuts"><span class="dot"></span>Kısayollar</div>
+            </div>
+            <div class="status-row"><span id="status-title">Hazırlanıyor…</span><span id="pct"></span></div>
+            <div class="bar indeterminate" id="bar"><div class="bar-fill" id="fill"></div></div>
+            <div class="detail" id="detail"></div>
+            <div id="install-error" class="error-box" hidden></div>
+            <div class="actions" id="error-actions" hidden>
+                <span class="spacer"></span>
+                <button class="btn" id="back">Geri</button>
+                <button class="btn-primary btn" id="retry">Tekrar dene</button>
+            </div>
+        </section>
+
+        <!-- Bitiş -->
+        <section class="card" id="page-done" hidden>
+            <div class="done-head">
+                <div class="mark">✓</div>
+                <div>
+                    <h2>Kurulum tamamlandı</h2>
+                    <p>vulu Launcher <span class="mono" id="done-version"></span> · <span class="mono" id="done-dir"></span></p>
+                </div>
+            </div>
+            <div class="actions">
+                <span class="spacer">Güncellemeler bundan sonra otomatik gelir.</span>
+                <button class="btn" id="finish">Kapat</button>
+                <button class="btn-primary btn" id="play">▶&nbsp;&nbsp;OYNA</button>
+            </div>
+        </section>
+    </main>
+
+<script>
+const $ = id => document.getElementById(id);
+const send = (cmd, data = {}) => { if (window.external && window.external.sendMessage) window.external.sendMessage(JSON.stringify({ cmd, ...data })); };
+const state = { dir: '', release: null, installedDir: '' };
+const STEPS = ['download', 'verify', 'install', 'shortcuts'];
+
+function showPage(id) {
+    for (const p of ['page-options', 'page-progress', 'page-done']) $(p).hidden = p !== id;
+}
+
+function formatMb(mb) { return mb >= 1024 ? (mb / 1024).toFixed(1).replace('.', ',') + ' GB' : Math.round(mb) + ' MB'; }
+
+function setDirHint(freeMb, error) {
+    const hint = $('dir-hint');
+    hint.classList.toggle('error', !!error);
+    if (error) { hint.textContent = error; return; }
+    hint.replaceChildren('Oyun dosyaları ve dünyalar da bu klasörde durur.');
+    if (freeMb != null) {
+        const free = document.createElement('span');
+        free.className = 'mono';
+        free.textContent = ` · Boş alan: ${formatMb(freeMb)}`;
+        hint.append(free);
+    }
+}
+
+function updateInstallButton() {
+    $('install').disabled = !state.release || !$('dir').value.trim();
+}
+
+function renderStatus(s) {
+    const index = STEPS.indexOf(s.step);
+    for (const el of document.querySelectorAll('.step')) {
+        const i = STEPS.indexOf(el.dataset.step);
+        el.classList.toggle('done', i < index || s.step === 'done');
+        el.classList.toggle('active', i === index);
+    }
+    $('status-title').textContent = s.title;
+    $('detail').textContent = s.detail || '';
+    const determinate = typeof s.progress === 'number';
+    $('bar').classList.toggle('indeterminate', !determinate);
+    $('fill').style.width = determinate ? Math.round(s.progress * 100) + '%' : '';
+    $('pct').textContent = determinate ? Math.round(s.progress * 100) + '%' : '';
+}
+
+function receive(msg) {
+    switch (msg.type) {
+        case 'init':
+            state.installedDir = msg.reinstall ? msg.dir : '';
+            $('dir').value = msg.dir;
+            setDirHint(msg.freeMb);
+            if (msg.reinstall) $('install').textContent = 'Güncelle / Onar';
+            break;
+        case 'release':
+            state.release = msg;
+            $('version').textContent = 'v' + msg.version;
+            $('size-info').textContent = `İndirme ${formatMb(msg.downloadMb)} · Kurulum ${formatMb(msg.installMb)}`;
+            $('release-error').hidden = true;
+            updateInstallButton();
+            break;
+        case 'release-error':
+            $('version').textContent = 'sürüm bilgisi alınamadı';
+            $('release-error').textContent = msg.message;
+            $('release-error').hidden = false;
+            break;
+        case 'dir':
+            $('dir').value = msg.dir;
+            setDirHint(msg.freeMb, msg.error);
+            updateInstallButton();
+            break;
+        case 'status':
+            renderStatus(msg);
+            break;
+        case 'installed':
+            state.dir = msg.dir;
+            $('done-version').textContent = state.release ? 'v' + state.release.version : '';
+            $('done-dir').textContent = msg.dir;
+            showPage('page-done');
+            $('play').focus();
+            break;
+        case 'error':
+            $('install-error').textContent = msg.message;
+            $('install-error').hidden = false;
+            $('error-actions').hidden = false;
+            $('bar').classList.remove('indeterminate');
+            $('fill').style.width = '0';
+            break;
+    }
+}
+
+function startInstall() {
+    $('install-error').hidden = true;
+    $('error-actions').hidden = true;
+    renderStatus({ step: 'download', title: 'Hazırlanıyor…' });
+    showPage('page-progress');
+    send('install', { dir: $('dir').value.trim(), desktop: $('opt-desktop').checked, startMenu: $('opt-start').checked });
+}
+
+if (window.external && window.external.receiveMessage)
+    window.external.receiveMessage(raw => { try { receive(JSON.parse(raw)); } catch (e) { console.error(e); } });
+
+$('install').addEventListener('click', startInstall);
+$('retry').addEventListener('click', startInstall);
+$('back').addEventListener('click', () => showPage('page-options'));
+$('browse').addEventListener('click', () => send('pickFolder'));
+$('dir').addEventListener('change', () => send('checkDir', { dir: $('dir').value }));
+$('dir').addEventListener('input', updateInstallButton);
+$('play').addEventListener('click', () => send('launch', { dir: state.dir }));
+$('finish').addEventListener('click', () => send('close'));
+$('minimize').addEventListener('click', () => send('minimize'));
+$('close').addEventListener('click', () => send('close'));
+
+// Çerçevesiz pencere: düğme ve kutular dışında her yerden sürüklenir
+let dragging = false, framePending = false;
+document.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || e.target.closest('button, input, label, .card')) return;
+    dragging = true;
+    document.body.setPointerCapture(e.pointerId);
+    send('dragStart');
+});
+document.addEventListener('pointermove', () => {
+    if (!dragging || framePending) return;
+    framePending = true;
+    requestAnimationFrame(() => { framePending = false; if (dragging) send('dragMove'); });
+});
+document.addEventListener('pointerup', () => { dragging = false; });
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+window.addEventListener('DOMContentLoaded', () => send('ready'));
+</script>
+</body>
+</html>

@@ -7,7 +7,7 @@ namespace Updater
 {
     /// <summary>Arayüze gönderilen anlık durum.</summary>
     internal sealed record UpdateStatus(
-        string State,               // checking | downloading | verifying | installing | launching | error
+        string State,               // checking | downloading | verifying | installing | launching | error | confirm | uninstalled
         string Title,
         string Detail = "",
         double? Progress = null,    // 0..1; null = belirsiz
@@ -307,6 +307,7 @@ namespace Updater
                 };
                 File.WriteAllText(Path.Combine(_installDir, Releases.InstallFileName),
                     JsonSerializer.Serialize(install, Releases.Json));
+                UpdateRegisteredVersion(install.Version);
             }
             catch
             {
@@ -322,6 +323,19 @@ namespace Updater
                 }
                 throw;
             }
+        }
+
+        /// <summary>"Program ekle/kaldır"daki sürüm, yalnızca kayıtlı kurulum bu klasörse güncellenir.</summary>
+        private void UpdateRegisteredVersion(string version)
+        {
+            try
+            {
+                string? registered = InstallInfo.InstalledDirectory();
+                if (registered != null && string.Equals(Path.GetFullPath(registered).TrimEnd(Path.DirectorySeparatorChar),
+                        Path.GetFullPath(_installDir).TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase))
+                    InstallInfo.UpdateRegisteredVersion(version);
+            }
+            catch { /* kayıt yazılamazsa güncelleme yine geçerlidir */ }
         }
 
         private static string Normalize(string relativePath) =>

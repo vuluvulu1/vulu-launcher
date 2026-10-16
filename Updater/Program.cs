@@ -13,6 +13,8 @@ namespace Updater
     ///
     /// Argümanlar:
     ///   --wait-pid &lt;pid&gt;   kurulumdan önce kapanması beklenecek süreç (launcher'dan başlatılınca)
+    ///   --uninstall         "Program ekle/kaldır"dan çağrılır: güncelleme yerine kaldırma onayı gösterilir
+    ///   --silent            --uninstall ile: soru sormadan kaldırır (--delete-data oyun dosyalarını da siler)
     /// Eski sürümün konumsal argümanları (indirme adresi, exe yolu, sha256) yok sayılır.
     /// </summary>
     internal static class Program
@@ -26,6 +28,9 @@ namespace Updater
         private static UpdateEngine _engine = null!;
         private static CancellationTokenSource _cancel = new();
         private static bool _started;
+        private static bool _uninstallMode;
+        private static bool _uninstalling;
+        private static string _installDir = "";
 
         // Pencere sürükleme: başlangıçtaki pencere ve imleç konumu
         private static Point _dragWindowStart;
@@ -35,7 +40,31 @@ namespace Updater
         private static void Main(string[] args)
         {
             string installDir = AppContext.BaseDirectory;
+            _installDir = installDir;
             var waitPids = ParseWaitPids(args);
+            _uninstallMode = args.Contains(VuluShared.InstallInfo.UninstallSwitch, StringComparer.OrdinalIgnoreCase);
+
+            if (_uninstallMode && args.Contains("--silent", StringComparer.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    Uninstaller.RunAsync(installDir, args.Contains("--delete-data", StringComparer.OrdinalIgnoreCase), _ => { })
+                        .GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    // Sessiz kaldırmada hata görünmez; nedeni geçici klasöre yazılır
+                    try { File.WriteAllText(Path.Combine(Path.GetTempPath(), "vulu-uninstall.log"), ex.ToString()); } catch { }
+                    Environment.ExitCode = 1;
+                }
+                return;
+            }
+
+            if (_uninstallMode && !WebView2Installed())
+            {
+                UninstallWithoutUi(installDir);
+                return;
+            }
 
             if (!WebView2Installed())
             {
@@ -47,10 +76,12 @@ namespace Updater
             double scale = Math.Max(1, GetDpiForSystem() / 96.0);
 
             _window = new PhotinoWindow()
-                .SetTitle("vulu Launcher Güncelleyici")
+                .SetTitle(_uninstallMode ? "vulu Launcher Kaldır" : "vulu Launcher Güncelleyici")
                 .SetIconFile(Path.Combine(installDir, "vuluLauncher-logo-prototip.ico"))
-                .SetTemporaryFilesPath(Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "vuluLauncher", "updater-browser"))
+                // Kaldırırken kullanıcı verisi silinebileceği için tarayıcı önbelleği geçici klasörde tutulur
+                .SetTemporaryFilesPath(_uninstallMode
+                    ? Path.Combine(Path.GetTempPath(), "vulu-uninstall-browser")
+                    : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "vuluLauncher", "updater-browser"))
                 .SetChromeless(true)
                 .SetResizable(false)
                 .SetUseOsDefaultSize(false)
@@ -69,7 +100,7 @@ namespace Updater
                 VuluShared.WindowIcon.Apply(_window.WindowHandle, Path.Combine(installDir, "vuluLauncher-logo-prototip.ico"));
             };
             // Dosyalar yer değiştirirken kapatılırsa kurulum yarım kalır; o sırada kapatma engellenir
-            _window.WindowClosing += (_, _) => _engine.IsApplying;
+            _window.WindowClosing += (_, _) => _engine.IsApplying || _uninstalling;
 
             _engine = new UpdateEngine(installDir, waitPids, Send);
             _window.RegisterWebMessageReceivedHandler((_, message) => HandleMessage(message));
@@ -83,8 +114,35 @@ namespace Updater
         private static void HandleMessage(string raw)
         {
             string cmd;
-            try { cmd = JsonDocument.Parse(raw).RootElement.GetProperty("cmd").GetString() ?? ""; }
+            JsonElement root;
+            try
+            {
+                root = JsonDocument.Parse(raw).RootElement;
+                cmd = root.GetProperty("cmd").GetString() ?? "";
+            }
             catch { return; }
+
+            if (_uninstallMode)
+            {
+                switch (cmd)
+                {
+                    case "ready":
+                    case "retry":
+                        Send(new UpdateStatus("confirm", "vulu Launcher kaldırılsın mı?",
+                            Path.GetFullPath(_installDir).TrimEnd(Path.DirectorySeparatorChar)));
+                        return;
+                    case "uninstall":
+                        if (_uninstalling) return;
+                        bool deleteData = root.TryGetProperty("deleteData", out var flag) && flag.ValueKind == JsonValueKind.True;
+                        _ = UninstallAsync(deleteData);
+                        return;
+                    case "launch":
+                        return;
+                    case "close":
+                        if (!_uninstalling) _window.Close();
+                        return;
+                }
+            }
 
             switch (cmd)
             {
@@ -133,6 +191,47 @@ namespace Updater
             }
         }
 
+        private static async Task UninstallAsync(bool deleteData)
+        {
+            _uninstalling = true;
+            try
+            {
+                await Uninstaller.RunAsync(_installDir, deleteData, Send);
+            }
+            catch (Exception ex)
+            {
+                Send(new UpdateStatus("error", "Kaldırılamadı", ex.Message));
+            }
+            finally
+            {
+                _uninstalling = false;
+            }
+        }
+
+        /// <summary>WebView2 yoksa (nadiren) kaldırma Windows'un kendi sorularıyla yapılır.</summary>
+        private static void UninstallWithoutUi(string installDir)
+        {
+            const uint YesNo = 0x4, YesNoCancel = 0x3, Question = 0x20, Info = 0x40, Error = 0x10;
+            const int Yes = 6, No = 7;
+
+            if (MessageBox(IntPtr.Zero, "vulu Launcher kaldırılsın mı?", "vulu Launcher Kaldır", YesNo | Question) != Yes) return;
+            int answer = MessageBox(IntPtr.Zero,
+                "Oyun dosyaları, dünyalar ve ayarlar da silinsin mi?\n\nHayır dersen yalnızca launcher kaldırılır; dünyaların klasörde kalır.",
+                "vulu Launcher Kaldır", YesNoCancel | Question);
+            if (answer != Yes && answer != No) return;
+
+            try
+            {
+                UpdateStatus? last = null;
+                Uninstaller.RunAsync(installDir, answer == Yes, s => last = s).GetAwaiter().GetResult();
+                MessageBox(IntPtr.Zero, last?.Detail ?? "vulu Launcher kaldırıldı.", "vulu Launcher kaldırıldı", Info);
+            }
+            catch (Exception ex)
+            {
+                MessageBox(IntPtr.Zero, ex.Message, "Kaldırılamadı", Error);
+            }
+        }
+
         private static void LaunchAndClose()
         {
             try
@@ -162,7 +261,8 @@ namespace Updater
                 .Replace("__FONT__", "data:font/ttf;base64," + Convert.ToBase64String(ReadResource("IBMPlexMono.ttf")))
                 .Replace("__SANS__", "data:font/ttf;base64," + Convert.ToBase64String(ReadResource("IBMPlexSans.ttf")))
                 .Replace("__LOGO__", "data:image/png;base64," + Convert.ToBase64String(ReadResource("logo.png")))
-                .Replace("__VERSION__", VuluShared.Releases.Clean(version));
+                .Replace("__VERSION__", VuluShared.Releases.Clean(version))
+                .Replace("__MODE__", _uninstallMode ? "uninstall" : "update");
         }
 
         private static byte[] ReadResource(string name)
@@ -220,6 +320,7 @@ namespace Updater
 
         [DllImport("user32.dll")] private static extern bool GetCursorPos(out POINT point);
         [DllImport("user32.dll")] private static extern uint GetDpiForSystem();
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int MessageBox(IntPtr hwnd, string text, string caption, uint type);
         [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     }
 }

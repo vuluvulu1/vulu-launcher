@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="Launcher/vuluLauncher.csproj" />
   <Project Path="Updater/Updater.csproj" Id="a5507476-417e-477c-a9f5-a562b8d163df" />
+  <Project Path="Installer/Installer.csproj" />
 </Solution>

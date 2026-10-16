@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>vulu-launcher-setup</AssemblyName>
+    <RootNamespace>Installer</RootNamespace>
+    <ApplicationIcon>..\Launcher\logo.ico</ApplicationIcon>
+    <Version>0.8.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
+    <!-- Tek dosya olarak dağıtılır ve .NET kurulu olmayan bilgisayarda da çalışır.
+         Photino'nun yerel kütüphaneleri de içine gömülür, çalışırken geçici klasöre açılır. -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Photino.NET" Version="4.0.16" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Launcher ve Updater ile ortak: GitHub release bilgisi, pencere ikonu, kurulum kaydı ve kısayollar -->
+    <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
+    <Compile Include="..\Shared\WindowIcon.cs" Link="Shared\WindowIcon.cs" />
+    <Compile Include="..\Shared\InstallInfo.cs" Link="Shared\InstallInfo.cs" />
+
+    <!-- Arayüz exe'nin içine gömülür, çalışırken geçici klasöre açılıp oradan yüklenir -->
+    <EmbeddedResource Include="ui\setup.html" LogicalName="ui/setup.html" />
+    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\IBMPlexSans.ttf" LogicalName="ui/IBMPlexSans.ttf" />
+    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\IBMPlexMono-Medium.ttf" LogicalName="ui/IBMPlexMono.ttf" />
+    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\GreatVibes-Regular.ttf" LogicalName="ui/GreatVibes.ttf" />
+    <EmbeddedResource Include="..\Launcher\wwwroot\assets\logo.png" LogicalName="ui/logo.png" />
+    <EmbeddedResource Include="..\Launcher\logo.ico" LogicalName="logo.ico" />
+  </ItemGroup>
+
+</Project>

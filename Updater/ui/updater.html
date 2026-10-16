@@ -74,10 +74,24 @@ body.error .bar { visibility: hidden; }
 .btn-primary { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
 .btn-primary:hover { background: var(--accent-hi); border-color: var(--accent-hi); }
 
+/* Kaldırma */
+.confirm { margin-top: 16px; }
+.check { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; }
+.check:hover { border-color: var(--line-strong); }
+.check input { appearance: none; -webkit-appearance: none; flex: none; width: 16px; height: 16px; margin: 1px 0 0; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); display: grid; place-items: center; cursor: pointer; }
+.check input:checked { border-color: var(--error); background: var(--error); }
+.check input:checked::after { content: ""; width: 8px; height: 4px; border: solid #fff; border-width: 0 0 1.6px 1.6px; transform: translateY(-1px) rotate(-45deg); }
+.check b { display: block; font-size: 12.5px; font-weight: 600; }
+.check span { display: block; margin-top: 2px; font-size: 11.5px; color: var(--muted); }
+.btn-danger { border: 1px solid #a8321f; background: #a8321f; color: #fff; }
+.btn-danger:hover { background: #c03a24; border-color: #c03a24; }
+body.confirm .bar, body.uninstalled .bar { visibility: hidden; }
+body.uninstalled #title { color: var(--ok); }
+
 [hidden] { display: none !important; }
 </style>
 </head>
-<body class="checking">
+<body class="checking" data-mode="__MODE__">
     <div class="top" id="drag">
         <div class="brand"><img src="__LOGO__" alt=""><b>vulu Launcher</b></div>
         <button id="minimize" aria-label="Küçült" title="Küçült"><svg viewBox="0 0 12 12"><path d="M2 6h8"/></svg></button>
@@ -85,7 +99,7 @@ body.error .bar { visibility: hidden; }
     </div>
 
     <main id="main">
-        <div class="label">Güncelleyici · v__VERSION__</div>
+        <div class="label" id="label">Güncelleyici · v__VERSION__</div>
 
         <div class="status" role="status" aria-live="polite">
             <div id="title">Başlatılıyor…</div>
@@ -95,18 +109,40 @@ body.error .bar { visibility: hidden; }
 
         <div id="notes" class="notes" hidden><b id="notes-title"></b><span id="notes-text"></span></div>
 
+        <div id="confirm" class="confirm" hidden>
+            <label class="check">
+                <input type="checkbox" id="delete-data">
+                <div><b>Oyun dosyalarını da sil</b><span>Dünyalar, instance'lar, Java ve launcher ayarları kalıcı olarak silinir.</span></div>
+            </label>
+        </div>
+
         <div id="actions" class="actions" hidden>
             <button id="launch" class="btn">Yine de aç</button>
             <button id="retry" class="btn-primary">Tekrar dene</button>
+        </div>
+
+        <div id="confirm-actions" class="actions" hidden>
+            <button id="cancel" class="btn">Vazgeç</button>
+            <button id="uninstall" class="btn-danger">Kaldır</button>
+        </div>
+
+        <div id="done-actions" class="actions" hidden>
+            <button id="done" class="btn-primary">Kapat</button>
         </div>
     </main>
 
 <script>
 const $ = id => document.getElementById(id);
-const send = (cmd) => { if (window.external && window.external.sendMessage) window.external.sendMessage(JSON.stringify({ cmd })); };
+const send = (cmd, extra) => { if (window.external && window.external.sendMessage) window.external.sendMessage(JSON.stringify({ cmd, ...extra })); };
+const uninstallMode = document.body.dataset.mode === 'uninstall';
+if (uninstallMode) {
+    $('label').textContent = 'Kaldırma · v__VERSION__';
+    $('launch').hidden = true;
+}
 
 function render(status) {
     document.body.className = status.state;
+    if (status.state === 'confirm') $('uninstall').disabled = false;
     $('title').textContent = status.title;
     $('detail').textContent = status.detail || '';
 
@@ -122,7 +158,11 @@ function render(status) {
     }
 
     $('actions').hidden = status.state !== 'error';
+    $('confirm').hidden = $('confirm-actions').hidden = status.state !== 'confirm';
+    $('done-actions').hidden = status.state !== 'uninstalled';
     if (status.state === 'error') $('retry').focus();
+    if (status.state === 'confirm') $('cancel').focus();
+    if (status.state === 'uninstalled') $('done').focus();
 }
 
 if (window.external && window.external.receiveMessage)
@@ -132,11 +172,17 @@ $('minimize').addEventListener('click', () => send('minimize'));
 $('close').addEventListener('click', () => send('close'));
 $('retry').addEventListener('click', () => send('retry'));
 $('launch').addEventListener('click', () => send('launch'));
+$('cancel').addEventListener('click', () => send('close'));
+$('done').addEventListener('click', () => send('close'));
+$('uninstall').addEventListener('click', () => {
+    $('uninstall').disabled = true;
+    send('uninstall', { deleteData: $('delete-data').checked });
+});
 
 // Çerçevesiz pencere: düğmeler dışında her yerden sürüklenir
 let dragging = false, framePending = false;
 document.addEventListener('pointerdown', e => {
-    if (e.button !== 0 || e.target.closest('button, .notes')) return;
+    if (e.button !== 0 || e.target.closest('button, .notes, .check')) return;
     dragging = true;
     document.body.setPointerCapture(e.pointerId);
     send('dragStart');

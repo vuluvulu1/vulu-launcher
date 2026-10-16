@@ -6,7 +6,11 @@
     1. Launcher ve Updater'ı aynı klasöre self-contained (win-x64) olarak yayınlar.
     2. Her dosyanın SHA-256'sını içeren install.json'u klasöre yazar.
     3. Klasörü zip'ler ve zip'i anlatan release.json'u üretir.
-    4. -Publish verilirse ikisini "gh release create" ile GitHub'a yükler.
+    4. Kurulum programını (vulu-launcher-setup.exe, tek dosya) derler.
+    5. -Publish verilirse üçünü "gh release create" ile GitHub'a yükler.
+
+    Kurulum programı paketi içermez; çalışınca en son release'i GitHub'dan indirir. Bu yüzden
+    eski bir release'teki setup.exe de her zaman en yeni sürümü kurar.
 
     Kullanıcıların Updater'ı her açılışta en son release'i okur; release.json'daki sürüm
     kuruludan büyükse zip'i indirir, doğrular ve yalnızca değişen dosyaları değiştirir.
@@ -57,6 +61,13 @@ Write-Host "==> Updater derleniyor"
 dotnet publish (Join-Path $root "Updater\Updater.csproj") @common
 if ($LASTEXITCODE -ne 0) { throw "Updater derlenemedi." }
 
+Write-Host "==> Kurulum programı derleniyor"
+dotnet publish (Join-Path $root "Installer\Installer.csproj") -c Release -r win-x64 --self-contained true "-p:Version=$Version" "-p:DebugType=none" -o (Join-Path $outDir "setup") --nologo
+if ($LASTEXITCODE -ne 0) { throw "Kurulum programı derlenemedi." }
+$setupPath = Join-Path $outDir "vulu-launcher-setup.exe"
+Move-Item (Join-Path $outDir "setup\vulu-launcher-setup.exe") $setupPath
+Remove-Item (Join-Path $outDir "setup") -Recurse -Force
+
 # Oyun ve kullanıcı dosyaları pakete girmez (derleme klasöründen kopyalanmış olabilirler)
 foreach ($skip in @("instances", "java", "minecraft_core", ".update")) {
     $path = Join-Path $appDir $skip
@@ -99,8 +110,9 @@ Write-Host ""
 Write-Host "Hazır: $($files.Count) dosya, $sizeMb MB" -ForegroundColor Green
 Write-Host "  $zipPath"
 Write-Host "  $releaseJson"
+Write-Host "  $setupPath ($([math]::Round((Get-Item $setupPath).Length / 1MB, 1)) MB)"
 
-$ghArgs = @("release", "create", "v$Version", $zipPath, $releaseJson, "--repo", $Repository, "--title", "vulu Launcher v$Version", "--notes", $(if ($Notes) { $Notes } else { "vulu Launcher v$Version" }))
+$ghArgs = @("release", "create", "v$Version", $zipPath, $releaseJson, $setupPath, "--repo", $Repository, "--title", "vulu Launcher v$Version", "--notes", $(if ($Notes) { $Notes } else { "vulu Launcher v$Version" }))
 
 if (-not $Publish) {
     Write-Host ""
