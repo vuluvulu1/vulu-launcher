@@ -159,6 +159,7 @@ namespace VuluLauncher
 
             var project = await ProjectAsync(projectId);
             string? folder = FolderFor(project.ProjectType);
+            if (folder == null && isDependency) return;
             if (folder == null)
                 throw new InvalidOperationException($"{project.Title}: bu içerik türü ({project.ProjectType}) instance'a kurulamıyor.");
 
@@ -176,6 +177,13 @@ namespace VuluLauncher
             if (version == null)
             {
                 string target = isMod ? $"{instance.McVersion} / {instance.Loader}" : instance.McVersion;
+                // Birden çok yükleyiciye uyan jar'lar (ör. Fabric + NeoForge) her yükleyicinin bağımlılığını birlikte
+                // bildirir; Fabric API gibi başka yükleyiciye ait olanların burada sürümü yoktur ve gerekmez.
+                if (isDependency)
+                {
+                    _log($"{project.Title} {target} için yok, atlandı (bu yükleyicide gerekmiyor).", "muted");
+                    return;
+                }
                 throw new InvalidOperationException($"{project.Title}: {target} için uyumlu sürüm yok.");
             }
 
