@@ -18,11 +18,9 @@ function renderUsersTab(body) {
             el('button', { class: 'btn btn-sm btn-primary', onclick: () => editUser(null, body) }, '+ Kullanıcı ekle'));
 
         const rows = users.map(user => el('div', { class: 'user-row' + (user.isActive ? '' : ' inactive') },
-            el('div', {},
-                el('div', { class: 'uname' }, user.username,
-                    user.isAdmin && el('span', { class: 'badge' }, 'admin'),
-                    !user.isActive && el('span', { class: 'badge' }, 'pasif')),
-                el('div', { class: 'meta' }, 'Paketler: ' + (user.allowedPacks.join(', ') || '—'))),
+            el('div', { class: 'uname' }, user.username,
+                user.isAdmin && el('span', { class: 'badge' }, 'admin'),
+                !user.isActive && el('span', { class: 'badge' }, 'pasif')),
             el('button', { class: 'btn btn-sm', onclick: () => editUser(user, body) }, 'Düzenle'),
             el('button', { class: 'btn btn-sm btn-danger', onclick: () => deleteUser(user, body) }, 'Sil')));
 
@@ -70,7 +68,6 @@ function editUser(user, body) {
     return openModal(close => {
         const username = el('input', { type: 'text', value: isEdit ? user.username : '', maxLength: 16, spellcheck: false, autofocus: true });
         const password = el('input', { type: 'password', placeholder: isEdit ? 'Boş bırakırsan değişmez' : '' });
-        const packs = el('input', { type: 'text', value: isEdit ? user.allowedPacks.join(', ') : 'Vanilla', placeholder: 'Vanilla, AGLR, R', spellcheck: false });
         const isAdmin = el('input', { type: 'checkbox', checked: isEdit && user.isAdmin });
         const isActive = el('input', { type: 'checkbox', checked: !isEdit || user.isActive });
         const error = el('div', { class: 'form-error' });
@@ -85,7 +82,6 @@ function editUser(user, body) {
                     id: isEdit ? user.id : '',
                     username: username.value.trim(),
                     password: password.value,
-                    allowedPacks: packs.value.split(',').map(p => p.trim()).filter(Boolean),
                     isAdmin: isAdmin.checked,
                     isActive: isActive.checked,
                 });
@@ -102,7 +98,6 @@ function editUser(user, body) {
             el('div', { class: 'modal-body form' },
                 el('label', {}, 'Kullanıcı adı'), username,
                 el('label', {}, 'Şifre'), password,
-                el('label', {}, 'Paketler (virgülle ayır)'), packs,
                 el('div', { class: 'row', style: 'margin-top:10px' },
                     el('label', { class: 'check' }, isAdmin, el('span', {}, 'Admin')),
                     el('label', { class: 'check' }, isActive, el('span', {}, 'Aktif'))),

@@ -13,11 +13,10 @@ namespace VuluLauncher
 
         public string? Token { get; private set; }
         public bool IsAdmin { get; private set; }
-        public List<string> AllowedPacks { get; private set; } = new();
         public string Username { get; private set; } = string.Empty;
 
         /// <summary>
-        /// API'ye login isteği atar. Başarılıysa token ve izinli paketleri saklar.
+        /// API'ye login isteği atar. Başarılıysa token'ı saklar.
         /// </summary>
         public async Task<LoginResult> LoginAsync(string username, string password)
         {
@@ -33,7 +32,6 @@ namespace VuluLauncher
                 {
                     var data = await response.Content.ReadFromJsonAsync<LoginResponse>();
                     Token = data?.Token;
-                    AllowedPacks = data?.AllowedPacks ?? new List<string>();
                     IsAdmin = data?.IsAdmin ?? false;
                     Username = username;
                     return new LoginResult(true, null);
@@ -50,10 +48,6 @@ namespace VuluLauncher
             }
         }
 
-        public bool IsPackAllowed(string packName)
-        {
-            return AllowedPacks.Contains(packName, StringComparer.OrdinalIgnoreCase);
-        }
     }
 
     public record LoginResult(bool Success, string? ErrorMessage);
@@ -63,8 +57,6 @@ namespace VuluLauncher
         [JsonPropertyName("token")]
         public string? Token { get; set; }
 
-        [JsonPropertyName("allowedPacks")]
-        public List<string>? AllowedPacks { get; set; }
         [JsonPropertyName("isAdmin")]
         public bool IsAdmin { get; set; }
     }

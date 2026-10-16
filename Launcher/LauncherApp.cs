@@ -156,9 +156,6 @@ namespace VuluLauncher
             };
         }
 
-        private bool IsPackAllowed(Pack pack) =>
-            _login.IsPackAllowed(pack.PermissionKey) || _login.IsPackAllowed(pack.FolderName);
-
         private void RequireLogin()
         {
             if (string.IsNullOrEmpty(_login.Token))
@@ -298,6 +295,8 @@ namespace VuluLauncher
             {
                 var service = new AdminService(username.Trim(), password);
                 await service.TestConnectionAsync();
+                // Eski paket izinleri veritabanından temizlenir (bir kez iş yapar, sonra eşleşen kayıt kalmaz)
+                try { await service.RemoveLegacyFieldsAsync(); } catch { /* yazma izni yoksa kayıtlar olduğu gibi kalır */ }
                 _admin = service;
                 return new { success = true, error = (string?)null };
             }
@@ -315,7 +314,6 @@ namespace VuluLauncher
             {
                 id = u.Id,
                 username = u.Username,
-                allowedPacks = u.AllowedPacks,
                 isActive = u.IsActive,
                 isAdmin = u.IsAdmin
             });
@@ -328,7 +326,6 @@ namespace VuluLauncher
             string id = args.Str("id");
             string username = args.Str("username").Trim();
             string password = args.Str("password");
-            var packs = args.StrList("allowedPacks");
             bool isAdmin = args.Bool("isAdmin");
             bool isActive = args.Bool("isActive");
 
@@ -344,7 +341,6 @@ namespace VuluLauncher
                 {
                     Username = username,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
-                    AllowedPacks = packs,
                     IsAdmin = isAdmin,
                     IsActive = isActive
                 });
@@ -353,7 +349,6 @@ namespace VuluLauncher
             {
                 var update = Builders<AdminUser>.Update
                     .Set(u => u.Username, username)
-                    .Set(u => u.AllowedPacks, packs)
                     .Set(u => u.IsActive, isActive)
                     .Set(u => u.IsAdmin, isAdmin);
 

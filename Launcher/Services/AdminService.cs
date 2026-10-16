@@ -37,6 +37,14 @@ namespace VuluLauncher
                 .RunCommandAsync((Command<BsonDocument>)"{ping:1}");
         }
 
+        /// <summary>Kaldırılan paket izinleri (allowedPacks) kullanıcı kayıtlarından silinir.</summary>
+        public async Task RemoveLegacyFieldsAsync()
+        {
+            await _users.UpdateManyAsync(
+                Builders<AdminUser>.Filter.Exists("allowedPacks"),
+                Builders<AdminUser>.Update.Unset("allowedPacks"));
+        }
+
         public async Task<List<AdminUser>> GetUsersAsync()
         {
             return await _users.Find(_ => true).ToListAsync();
@@ -79,9 +87,6 @@ namespace VuluLauncher
 
         [BsonElement("passwordHash")]
         public string PasswordHash { get; set; } = string.Empty;
-
-        [BsonElement("allowedPacks")]
-        public List<string> AllowedPacks { get; set; } = new();
 
         [BsonElement("isActive")]
         public bool IsActive { get; set; } = true;

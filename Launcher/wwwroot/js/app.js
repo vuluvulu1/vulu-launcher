@@ -1,6 +1,6 @@
 // Ana akış: giriş → açılış animasyonu → ana ekran. Sayfa geçişleri, paket seçimi, oyna ve konsol.
 const state = {
-    instances: [],          // sunucu paketleri (kind: 'server') + kullanıcı instance'ları (kind: 'custom')
+    instances: [],          // hazır paketler (kind: 'server', yalnızca Vanilla) + kullanıcı instance'ları (kind: 'custom')
     selected: null,
     ramOptionsGb: [4, 8, 12, 16],
     ramGb: 8,
@@ -319,8 +319,6 @@ async function enterLauncher(session) {
     clearConsole();
     showPage('home');
     await reloadInstances(store.get('lastPack', ''));
-    if (!state.instances.some(i => !i.locked))
-        appendLog({ text: 'Hesabınıza tanımlı bir paket yok. Yeni bir instance oluşturabilirsiniz.', level: 'warn' });
 
     if (!useSplash) {
         showView('view-main');
@@ -369,8 +367,7 @@ async function reloadInstances(selectId) {
     renderInstanceLists();
 
     const wanted = selectId || (state.selected && state.selected.id);
-    const usable = state.instances.filter(i => !i.locked);
-    const next = usable.find(i => i.id === wanted) || usable[0] || null;
+    const next = state.instances.find(i => i.id === wanted) || state.instances[0] || null;
     if (next) selectInstance(next);
     else clearSelection();
 }
@@ -385,18 +382,6 @@ function renderInstanceLists() {
         const thumb = el('div', { class: 'thumb' + (instance.thumbnail ? '' : ' plain') });
         if (instance.thumbnail) thumb.style.backgroundImage = `url("${instance.thumbnail}")`;
 
-        if (instance.locked) {
-            return el('button', {
-                class: 'pack-card locked', 'data-id': instance.id, disabled: true,
-                title: 'Bu paket için yetkin yok', 'aria-label': instance.name + ' (yetki gerekli)',
-            },
-                thumb,
-                el('div', { class: 'info' },
-                    el('span', { class: 'name' }, instance.name),
-                    el('span', { class: 'ver' }, 'Yetki gerekli')),
-                fromMarkup('<svg class="lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>'));
-        }
-
         return el('button', { class: 'pack-card', 'data-id': instance.id, onclick: () => { selectInstance(instance); showPage('home'); } },
             thumb,
             instance.iconUrl && el('img', { class: 'card-icon', src: instance.iconUrl, alt: '' }),
@@ -405,13 +390,11 @@ function renderInstanceLists() {
                 el('span', { class: 'ver' }, loaderLabel(instance))));
     };
 
-    // Kilitli paketler listenin sonunda durur
-    const servers = state.instances.filter(i => i.kind === 'server').sort((a, b) => a.locked - b.locked);
+    // Vanilla en üstte tek başına durur; altında kullanıcının instance'ları
+    const servers = state.instances.filter(i => i.kind === 'server');
     const customs = state.instances.filter(i => i.kind === 'custom');
 
-    $('pack-list').replaceChildren(...(servers.length
-        ? servers.map(card)
-        : [el('p', { class: 'pack-empty' }, 'Hesabınıza tanımlı paket yok.')]));
+    $('pack-list').replaceChildren(...servers.map(card));
 
     $('instance-list').replaceChildren(...(customs.length
         ? customs.map(card)

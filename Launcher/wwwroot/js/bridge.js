@@ -57,9 +57,9 @@ const mockBackend = (() => {
         bridge._dispatch({ event: 'log', data: [{ time: new Date().toTimeString().slice(0, 8), text, level, replace }] });
 
     let users = [
-        { id: '1', username: 'vulu', allowedPacks: ['Vanilla', 'AGLR', 'R'], isActive: true, isAdmin: true },
-        { id: '2', username: 'misafir', allowedPacks: ['Vanilla'], isActive: true, isAdmin: false },
-        { id: '3', username: 'eskiuye', allowedPacks: ['Vanilla', 'AGLR'], isActive: false, isAdmin: false },
+        { id: '1', username: 'vulu', isActive: true, isAdmin: true },
+        { id: '2', username: 'misafir', isActive: true, isAdmin: false },
+        { id: '3', username: 'eskiuye', isActive: false, isAdmin: false },
     ];
 
     let settings = {
@@ -69,8 +69,6 @@ const mockBackend = (() => {
 
     let instances = [
         { id: 'pack:vanilla', kind: 'server', name: 'Vanilla', description: 'Modsuz, sade Minecraft.', mcVersion: '1.20.1', loader: 'vanilla', loaderVersion: null, recommendedRamGb: 4, logo: 'assets/minecraftlogo.png', background: 'assets/launchervanillabg.jpg', backgroundStyle: 'cover', thumbnail: 'assets/launchervanillabg.jpg', iconUrl: null },
-        { id: 'pack:aglr', kind: 'server', name: 'AGLR', description: 'Forge tabanlı ana mod paketi.', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', recommendedRamGb: 8, logo: 'assets/aglr.png', background: 'assets/mainmenu.png', backgroundStyle: 'side', thumbnail: 'assets/mainmenu.png', iconUrl: null },
-        { id: 'pack:rng', kind: 'server', locked: true, name: 'R', description: 'Özel paket.', mcVersion: '1.20.1', loader: 'vanilla', loaderVersion: null, recommendedRamGb: 8, logo: null, background: null, backgroundStyle: 'cover', thumbnail: null, iconUrl: null },
         { id: 'inst:fabric-121', kind: 'custom', name: 'Fabric 1.21', description: 'Kişisel instance', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', recommendedRamGb: 8, logo: null, background: null, backgroundStyle: 'cover', thumbnail: null, iconUrl: null },
     ];
 
@@ -194,7 +192,6 @@ const mockBackend = (() => {
         'instances.details': async args => {
             await wait(350);
             const daysAgo = n => new Date(Date.now() - n * 86400000).toISOString();
-            if (args.id === 'pack:aglr') return { installed: true, modCount: 187, sizeMb: 2380.4, updatedAt: daysAgo(3) };
             if (args.id === 'pack:vanilla') return { installed: true, modCount: 0, sizeMb: 612, updatedAt: daysAgo(0) };
             return { installed: false, modCount: 0, sizeMb: 0, updatedAt: null };
         },

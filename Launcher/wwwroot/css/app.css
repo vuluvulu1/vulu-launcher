@@ -315,6 +315,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .rail-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 6px 8px 8px; }
 .rail h2 { margin: 0; padding: 12px 8px 8px; }
 .rail-head { display: flex; align-items: center; justify-content: space-between; }
+/* Vanilla başlıksız en üstte; instance'lar ince bir çizgiyle ayrılır */
+#pack-list { padding-top: 4px; }
+#pack-list:not(:empty) + .rail-head { margin-top: 2px; border-top: 1px solid var(--line); padding-top: 14px; }
 .mini-btn { border: 0; border-radius: var(--r-sm); background: var(--accent-soft); color: var(--accent-hi); padding: 2px 8px; font: 600 11px var(--font); }
 .mini-btn:hover { background: color-mix(in srgb, var(--accent) 26%, transparent); }
 
@@ -338,11 +341,6 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .pack-card .card-icon { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; object-fit: cover; border-radius: var(--r-sm); }
 .pack-card:has(.card-icon) .info { padding-right: 42px; }
 
-.pack-card.locked { cursor: default; }
-.pack-card.locked .thumb { filter: grayscale(1); opacity: .35; }
-.pack-card.locked .name, .pack-card.locked .ver { color: var(--dim); }
-.pack-card.locked:hover { background: transparent; }
-.pack-card .lock { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; fill: none; stroke: var(--dim); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Müzik */
 .music { margin: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }

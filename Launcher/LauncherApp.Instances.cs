@@ -57,7 +57,6 @@ namespace VuluLauncher
         {
             RequireLogin();
 
-            // İzin verilmeyen paketler de listelenir ama kilitli gösterilir; başlatma ResolveTarget'ta yine engellenir
             var packs = PackCatalog.All.Select(p =>
             {
                 string? custom = BackgroundUrl(PackPrefix + p.Id);
@@ -65,7 +64,6 @@ namespace VuluLauncher
             {
                 id = PackPrefix + p.Id,
                 kind = "server",
-                locked = !IsPackAllowed(p),
                 name = p.Name,
                 description = p.Description,
                 mcVersion = p.McVersion,
@@ -89,7 +87,6 @@ namespace VuluLauncher
             {
                 id = InstancePrefix + m.Folder,
                 kind = "custom",
-                locked = false,
                 name = m.Name,
                 description = !string.IsNullOrWhiteSpace(m.Description) ? m.Description
                     : m.ModpackProjectId != null ? $"Modrinth modpack · {m.ModpackVersion}"
@@ -122,8 +119,6 @@ namespace VuluLauncher
             {
                 var pack = PackCatalog.Find(id[PackPrefix.Length..])
                     ?? throw new InvalidOperationException("Bilinmeyen paket.");
-                if (!IsPackAllowed(pack))
-                    throw new InvalidOperationException($"{pack.Name} paketine erişim izniniz yok.");
                 folder = pack.FolderName;
             }
             else
@@ -168,15 +163,13 @@ namespace VuluLauncher
             return (true, modCount, size, modsChanged);
         }
 
-        /// <summary>Arayüzden gelen kimliği başlatılabilir hedefe çevirir; izinleri burada denetler.</summary>
+        /// <summary>Arayüzden gelen kimliği başlatılabilir hedefe çevirir.</summary>
         private (LaunchTarget Target, int RecommendedRamGb) ResolveTarget(string id)
         {
             if (id.StartsWith(PackPrefix, StringComparison.Ordinal))
             {
                 var pack = PackCatalog.Find(id[PackPrefix.Length..])
                     ?? throw new InvalidOperationException("Lütfen bir sürüm seçin!");
-                if (!IsPackAllowed(pack))
-                    throw new InvalidOperationException($"{pack.Name} paketine erişim izniniz yok.");
 
                 return (new LaunchTarget(pack.Name, pack.FolderName, pack.McVersion, pack.Loader, pack.LoaderVersion),
                     pack.RecommendedRamGb);
