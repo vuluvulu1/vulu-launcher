@@ -35,6 +35,8 @@ namespace VuluLauncher
         /// <summary>vulu Packs'ten kurulduysa (ya da oradan yayınlandıysa) paketin kimliği ve revizyonu.</summary>
         public string? SharedPackId { get; set; }
         public int SharedPackRevision { get; set; }
+        /// <summary>Paketin logosu bir kez indirildi mi (kullanıcı sonradan kaldırırsa geri getirilmez).</summary>
+        public bool PackLogoSynced { get; set; }
         public string? Description { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public List<InstalledContent> Content { get; set; } = new();

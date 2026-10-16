@@ -106,22 +106,48 @@ namespace VuluLauncher
         }
 
         /// <summary>Paketin logosu instance'ın logosu olur (güncellemede de yenilenir); alınamazsa sessizce geçilir.</summary>
-        private async Task UsePackLogoAsync(PackStore store, SharedPack pack, InstanceMeta meta)
+        private async Task<bool> UsePackLogoAsync(PackStore store, SharedPack pack, InstanceMeta meta)
         {
-            if (!pack.HasLogo) return;
+            if (!pack.HasLogo) return false;
             string ext = CoverExtensions.Contains(pack.LogoExt) ? pack.LogoExt! : ".png";
             string id = InstancePrefix + meta.Folder;
             string target = Path.Combine(AppPaths.Logos, BackgroundKey(id) + ext);
-            string temp = target + ".part";
+            // Geçici dosya logo klasörünün dışında: eski logolar "<kimlik>.*" deseniyle silinirken o da silinmesin
+            string temp = Path.Combine(Path.GetTempPath(), $"vulu-logo-{Guid.NewGuid():N}{ext}");
             try
             {
                 Directory.CreateDirectory(AppPaths.Logos);
                 await store.DownloadLogoAsync(pack, temp);
                 DeleteLogoFiles(id);
                 File.Move(temp, target, overwrite: true);
+                meta.PackLogoSynced = true;
+                InstanceStore.Save(meta);
+                return true;
             }
-            catch { /* logo olmadan da paket çalışır */ }
+            catch { return false; /* logo olmadan da paket çalışır */ }
             finally { if (File.Exists(temp)) File.Delete(temp); }
+        }
+
+        /// <summary>
+        /// Eski sürümlerdeki bir hata yüzünden paketten kurulan instance'lara logo inmiyordu. Girişten sonra bir kez,
+        /// logosu hiç inmemiş paket instance'larına paketin logosu indirilir; ana ekran yenilenir.
+        /// </summary>
+        private async Task RepairPackLogosAsync()
+        {
+            try
+            {
+                var missing = InstanceStore.List().Where(m => m.SharedPackId != null && !m.PackLogoSynced && LogoFile(InstancePrefix + m.Folder) == null).ToList();
+                if (missing.Count == 0) return;
+                var store = Packs;
+                bool changed = false;
+                foreach (var meta in missing)
+                {
+                    var pack = await store.GetAsync(meta.SharedPackId!);
+                    if (pack != null && await UsePackLogoAsync(store, pack, meta)) changed = true;
+                }
+                if (changed) _bridge.Emit("logosChanged");
+            }
+            catch { /* bir sonraki açılışta yeniden denenir */ }
         }
 
         // ── Kurulum ve güncelleme ─────────────────────────────────────────

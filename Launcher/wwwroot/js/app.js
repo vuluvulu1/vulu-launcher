@@ -751,6 +751,7 @@ function setConsoleExpanded(expanded) {
 function setupConsole() {
     bridge.on('log', lines => lines.forEach(appendLog));
     bridge.on('gameExited', () => { state.gameRunning = false; updatePlayButton(); loadDetails(); });
+    bridge.on('logosChanged', () => reloadInstances(state.selected && state.selected.id));
 
     $('console-clear').addEventListener('click', clearConsole);
     $('console-toggle').addEventListener('click', () => setConsoleExpanded(!$('console').classList.contains('expanded')));

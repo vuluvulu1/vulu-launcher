@@ -102,7 +102,7 @@ namespace VuluLauncher
         }
 
         /// <summary>
-        /// Oyun açık: instance adı, sürüm ve süre. vulu Packs'ten kurulan paketlerde büyük resim paketin kapağı/logosu olur,
+        /// Oyun açık: instance adı, sürüm ve süre. vulu Packs'ten kurulan paketlerde büyük resim paketin logosu (yoksa kapağı) olur,
         /// köşede vulu logosu kalır.
         /// </summary>
         public void ShowPlaying(string instanceName, string mcVersion, string loader, string? packImageUrl = null)
