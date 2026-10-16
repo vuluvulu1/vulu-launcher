@@ -134,8 +134,8 @@ async function openSettingsPage() {
         el('h2', {}, 'Ses ve görünüm'),
         settingRow('Tema', 'Neon: siberpunk renkler ve farklı bir yerleşim. Bu bilgisayar için hatırlanır.',
             segmentedControl([['classic', 'Klasik'], ['neon', 'Neon']], theme, async value => {
-                setUiTheme(value);
-                openSettingsPage(); // vurgu rengi satırı yalnızca klasik temada var
+                // Vurgu rengi satırı yalnızca klasik temada var; sayfa, tema değiştiği anda yenilenir
+                await setUiTheme(value, () => openSettingsPage());
                 return true;
             })),
         settingRow('Menü müziği', null, toggleControl(s.musicEnabled, async value => {
@@ -165,11 +165,42 @@ async function openSettingsPage() {
     body.replaceChildren(game, behaviour, look, account);
 }
 
-/** Temayı hemen uygular; yalnızca CSS değiştiği için sayfa yeniden yüklenmez. */
-function setUiTheme(theme) {
-    document.documentElement.dataset.ui = theme;
-    store.set('uiTheme', theme);
-    if (typeof renderDownloads === 'function') renderDownloads();
+// Tema geçiş efektleri: ekranı kapatan katmanın süresi ve temanın değiştiği an (ms)
+const THEME_FX = {
+    neon: { className: 'glitch', rootClass: 'fx-glitch', swapAt: 340, duration: 760 },   // klasik → neon: sinyal bozulması
+    classic: { className: 'iris', rootClass: null, swapAt: 550, duration: 1100 },        // neon → klasik: altın iris
+};
+let themeFxRunning = false;
+
+/**
+ * Temayı değiştirir. Yalnızca CSS değiştiği için sayfa yeniden yüklenmez; değişim, ekranı kısa süre kapatan
+ * bir efektin ortasında olur. onSwap tema değiştiği anda çağrılır.
+ */
+async function setUiTheme(theme, onSwap) {
+    const root = document.documentElement;
+    const apply = () => {
+        root.dataset.ui = theme;
+        store.set('uiTheme', theme);
+        if (typeof renderDownloads === 'function') renderDownloads();
+        if (onSwap) onSwap();
+    };
+
+    const fx = THEME_FX[theme];
+    if (root.dataset.ui === theme || !fx || themeFxRunning) { apply(); return; }
+
+    themeFxRunning = true;
+    const layer = el('div', { id: 'theme-fx', class: fx.className, 'aria-hidden': 'true' });
+    document.body.append(layer);
+    if (fx.rootClass) root.classList.add(fx.rootClass);
+    try {
+        await wait(fx.swapAt);
+        apply();
+        await wait(fx.duration - fx.swapAt);
+    } finally {
+        layer.remove();
+        if (fx.rootClass) root.classList.remove(fx.rootClass);
+        themeFxRunning = false;
+    }
 }
 
 async function logout() {
