@@ -80,8 +80,10 @@ html[data-ui="atlas"] .user-chip { background: rgba(250, 246, 236, .6); border-c
 html[data-ui="atlas"] .user-chip:hover, html[data-ui="atlas"] .user-chip.active { background: var(--surface); border-color: var(--accent); }
 html[data-ui="atlas"] .avatar { background: rgba(168, 55, 45, .12); color: var(--accent); }
 
+/* Sekmeler markanın hemen ardından gelir (sabit konum değil), marka genişliği ne olursa olsun üst üste binmez */
 html[data-ui="atlas"] .tb-tabs {
-    left: 214px; top: auto; bottom: -1px; height: 36px; transform: none; align-items: flex-end; gap: 3px;
+    position: relative; left: auto; top: auto; bottom: auto; transform: none;
+    align-self: flex-end; height: 36px; margin: 0 auto -1px 26px; align-items: flex-end; gap: 3px;
 }
 html[data-ui="atlas"] .tb-tabs button {
     height: 32px; padding: 0 16px; gap: 7px; border: 1px solid rgba(70, 45, 20, .22); border-bottom: 0;
@@ -237,17 +239,21 @@ html[data-ui="atlas"] .music-seek { background: linear-gradient(90deg, var(--acc
 /* ── Oyna: defter sayfası ──────────────────────────────────────────── */
 html[data-ui="atlas"] .stage { padding: 30px 40px 22px; }
 /* Arka plan resmi tam ekran değil: sağ üstte bantla tutturulmuş, hafif eğik bir fotoğraf */
+/* Resim elemanın tamamını kaplar; beyaz kenar ayrı bir katmanda (::after) dışarıda çizilir */
 html[data-ui="atlas"] .stage-bg {
-    inset: 34px 42px auto auto; width: 42%; aspect-ratio: 16 / 10; z-index: 1;
-    border: 10px solid #fbf8f0; border-bottom-width: 34px; border-radius: 2px;
-    background-size: cover !important; background-position: center !important; background-color: #d9cdb4;
-    background-origin: padding-box; background-clip: padding-box;
+    inset: 44px 52px auto auto; width: 41%; aspect-ratio: 16 / 10; z-index: 1;
+    border: 0; border-radius: 0;
+    background-color: #d9cdb4 !important; background-size: cover !important; background-position: center !important;
+    background-repeat: no-repeat !important; background-origin: border-box; background-clip: border-box;
     transform: rotate(1.8deg); filter: sepia(.18) saturate(.92) contrast(1.02);
-    box-shadow: 0 2px 4px rgba(70, 45, 20, .2), 0 14px 30px rgba(70, 45, 20, .25);
 }
-html[data-ui="atlas"] .stage-bg::after { display: none; }
+html[data-ui="atlas"] .stage-bg::after {
+    display: block; content: ""; position: absolute; inset: -10px -10px -34px -10px; background: none;
+    border: 10px solid #fbf8f0; border-bottom-width: 34px; border-radius: 2px;
+    box-shadow: inset 0 0 0 1px rgba(70, 45, 20, .1), 0 2px 4px rgba(70, 45, 20, .2), 0 14px 30px rgba(70, 45, 20, .25);
+}
 html[data-ui="atlas"] .stage-bg::before {
-    content: ""; position: absolute; left: 50%; top: -24px; width: 110px; height: 30px;
+    content: ""; position: absolute; z-index: 1; left: 50%; top: -30px; width: 110px; height: 30px;
     transform: translateX(-50%) rotate(-3deg);
     background: rgba(240, 228, 196, .72); border-left: 1px dashed rgba(70, 45, 20, .12); border-right: 1px dashed rgba(70, 45, 20, .12);
     box-shadow: 0 1px 2px rgba(70, 45, 20, .12);
@@ -356,7 +362,7 @@ html[data-ui="atlas"] .pack-tile { background: var(--paper-noise), var(--surface
 html[data-ui="atlas"] .pack-tile:nth-child(odd) { transform: rotate(-.6deg); }
 html[data-ui="atlas"] .pack-tile:nth-child(even) { transform: rotate(.5deg); }
 html[data-ui="atlas"] .pack-tile:hover { transform: rotate(0) translateY(-2px); border-color: rgba(70, 45, 20, .3); box-shadow: 0 2px 4px rgba(70, 45, 20, .15), 0 14px 30px rgba(70, 45, 20, .18); }
-html[data-ui="atlas"] .pack-cover { margin: 10px 10px 0; border-radius: 1px; filter: sepia(.15); box-shadow: inset 0 0 0 1px rgba(70, 45, 20, .12); }
+html[data-ui="atlas"] .pack-cover { flex: none; width: calc(100% - 20px); margin: 10px 10px 0; background-size: cover !important; background-position: center !important; border-radius: 1px; filter: sepia(.15); box-shadow: inset 0 0 0 1px rgba(70, 45, 20, .12); }
 html[data-ui="atlas"] .pack-cover.plain { background: repeating-linear-gradient(90deg, rgba(46, 107, 102, .1) 0 1px, transparent 1px 30px), repeating-linear-gradient(0deg, rgba(46, 107, 102, .1) 0 1px, transparent 1px 30px), #ece2cd; }
 html[data-ui="atlas"] .pack-cover.plain span { font: italic 700 28px var(--font-serif); color: var(--ink); }
 html[data-ui="atlas"] .pack-badge { top: 16px; left: 16px; background: var(--accent); color: var(--accent-ink); font: italic 600 12px var(--font-serif); transform: rotate(-3deg); }
