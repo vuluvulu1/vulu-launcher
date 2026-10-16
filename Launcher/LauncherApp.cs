@@ -243,7 +243,8 @@ namespace VuluLauncher
                 if (!PackCatalog.RamOptionsGb.Contains(ramGb))
                     ramGb = AppSettings.Current.DefaultRamGb > 0 ? AppSettings.Current.DefaultRamGb : recommendedRamGb;
 
-                await _game.LaunchAsync(target, _login.Username, ramGb);
+                var skins = await PrepareSkinsAsync();
+                await _game.LaunchAsync(target, _login.Username, ramGb, skins);
 
                 // Ayarlardaki "oyun açılınca" davranışı
                 switch (AppSettings.Current.OnGameStart)
@@ -262,6 +263,38 @@ namespace VuluLauncher
             {
                 Log(ex.Message, "error");
                 return new { started = false, error = ex.Message };
+            }
+        }
+
+        /// <summary>
+        /// Skin sistemi için oyun oturumu, API bilgisi ve authlib-injector hazırlanır. Biri olmazsa oyun eskisi gibi
+        /// çevrimdışı ve varsayılan skinlerle açılır; skin sistemi oyunun açılmasını hiçbir zaman engellemez.
+        /// </summary>
+        private async Task<SkinSession?> PrepareSkinsAsync()
+        {
+            try
+            {
+                // Adres sunucunun cevabından değil, launcher'ın bildiği API adresinden kurulur
+                string apiRoot = ApiConfig.BaseUrl.TrimEnd('/') + "/yggdrasil";
+                var session = await _api.PostAsync<JsonElement>("/users/me/game-session", new { });
+                string accessToken = session.GetProperty("accessToken").GetString() ?? "";
+                string profileId = session.GetProperty("profileId").GetString() ?? "";
+                if (!System.Text.RegularExpressions.Regex.IsMatch(profileId, "^[0-9a-f]{32}$") || accessToken.Length == 0)
+                    throw new InvalidDataException("Sunucu geçersiz bir oyun oturumu döndürdü.");
+
+                using var cancel = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                string metadata = await Downloader.Http.GetStringAsync(apiRoot, cancel.Token);
+
+                string? agent = await AuthlibInjector.EnsureAsync(Log);
+                if (agent == null) throw new InvalidOperationException("authlib-injector indirilemedi.");
+
+                Log("Skinler etkin.", "muted");
+                return new SkinSession(accessToken, profileId, apiRoot, metadata, agent);
+            }
+            catch (Exception ex)
+            {
+                Log("Skin sistemi şu an kullanılamıyor; oyun varsayılan skinlerle açılıyor. (" + ex.Message + ")", "warn");
+                return null;
             }
         }
 

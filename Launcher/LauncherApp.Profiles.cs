@@ -31,6 +31,31 @@ namespace VuluLauncher
             _bridge.On("profile.pickAvatar", async _ => await PickAvatarAsync());
             _bridge.On("profile.removeAvatar", async _ => { RequireLogin(); return await _api.DeleteAsync<JsonElement>("/users/me/avatar"); });
             _bridge.On("profile.changePassword", async args => await ChangePasswordAsync(args));
+
+            // Skin: 64×64 PNG; beden tipi "default" (Klasik/Steve) ya da "slim" (İnce/Alex)
+            _bridge.On("profile.pickSkin", async args => await PickSkinAsync(args.Str("model") == "slim" ? "slim" : "default"));
+            _bridge.On("profile.setSkinModel", async args =>
+            {
+                RequireLogin();
+                return await _api.PutAsync<JsonElement>("/users/me/skin/model", new { model = args.Str("model") == "slim" ? "slim" : "default" });
+            });
+            _bridge.On("profile.removeSkin", async _ => { RequireLogin(); return await _api.DeleteAsync<JsonElement>("/users/me/skin"); });
+        }
+
+        /// <summary>Skin dosyası seçtirir ve yükler (boyutu sunucu da denetler). Vazgeçilirse null.</summary>
+        private async Task<object?> PickSkinAsync(string model)
+        {
+            RequireLogin();
+            var files = _window.ShowOpenFile("Skin seçin (64×64 PNG)", null, false, new[] { ("PNG", new[] { "png" }) });
+            if (files is not { Length: > 0 }) return null;
+
+            string path = files[0];
+            if (!string.Equals(Path.GetExtension(path), ".png", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Skin bir PNG dosyası olmalı.");
+            if (new FileInfo(path).Length > 64 * 1024)
+                throw new InvalidOperationException("Skin dosyası 64 KB'tan büyük olamaz.");
+
+            return await _api.PutBytesAsync<JsonElement>($"/users/me/skin?model={model}", await File.ReadAllBytesAsync(path), "image/png");
         }
 
         /// <summary>Resim seçtirir ve yükler. Vazgeçilirse null döner.</summary>

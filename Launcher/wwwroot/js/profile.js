@@ -74,7 +74,8 @@ function renderProfile(user) {
         own ? bioEditor(user) : el('section', { class: 'profile-section' },
             el('h2', {}, 'Hakkında'),
             el('p', { class: 'profile-bio' + (user.bio ? '' : ' empty') }, user.bio || 'Henüz bir şey yazmamış.')),
-    ];
+        skinSection(user, own),
+    ].filter(Boolean);
 
     if (user.packs && user.packs.length) {
         sections.push(el('section', { class: 'profile-section' },

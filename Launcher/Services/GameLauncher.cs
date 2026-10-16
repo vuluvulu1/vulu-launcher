@@ -70,7 +70,8 @@ namespace VuluLauncher
         /// Gerekli Java'yı, oyun dosyalarını ve mod yükleyiciyi kurup oyunu başlatır.
         /// Başlatılamazsa nedenini açıklayan bir hata fırlatır.
         /// </summary>
-        public async Task LaunchAsync(LaunchTarget target, string username, int ramGb)
+        /// <param name="skins">Verilirse oyun vulu skin sistemiyle (authlib-injector) açılır; null ise eskisi gibi çevrimdışı.</param>
+        public async Task LaunchAsync(LaunchTarget target, string username, int ramGb, SkinSession? skins = null)
         {
             if (!UsernameRegex.IsMatch(username))
                 throw new InvalidOperationException(
@@ -100,7 +101,10 @@ namespace VuluLauncher
                 var option = new MLaunchOption
                 {
                     MaximumRamMb = ramGb * 1024,
-                    Session = MSession.CreateOfflineSession(username),
+                    // Skin sisteminde kimlik çevrimdışı kimliğin aynısıdır; token LAN/sunucu doğrulaması için kullanılır
+                    Session = skins == null
+                        ? MSession.CreateOfflineSession(username)
+                        : new MSession(username, skins.AccessToken, skins.ProfileId) { UserType = "mojang" },
                     JavaPath = javaPath,
                     FullScreen = settings.Fullscreen
                 };
@@ -117,6 +121,8 @@ namespace VuluLauncher
 
                 var process = await launcher.InstallAndBuildProcessAsync(
                     versionName, option, FileProgress(), ByteProgress(), CancellationToken.None);
+
+                if (skins != null) AddSkinAgent(process.StartInfo, skins);
 
                 // Launcher oyun açılınca kapanacaksa çıktı yönlendirilmez; okuyan kalmayacağı için
                 bool closeAfterStart = settings.OnGameStart == "close";
@@ -151,6 +157,27 @@ namespace VuluLauncher
                 job.Fail(ex.Message);
                 Interlocked.Exchange(ref _running, 0);
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// authlib-injector'ı Java ajanı olarak ekler: oyun skinleri ve oturum doğrulamayı vulu-api'den alır.
+        /// JVM seçenekleri ana sınıftan önce gelmeli; komutun en başına eklenir (yolda boşluk olabileceği için tırnaklı).
+        /// </summary>
+        private static void AddSkinAgent(ProcessStartInfo info, SkinSession skins)
+        {
+            string agent = $"-javaagent:{skins.AgentJar}={skins.ApiRoot}";
+            string prefetched = "-Dauthlibinjector.yggdrasil.prefetched=" +
+                Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(skins.Metadata));
+
+            if (info.ArgumentList.Count > 0)
+            {
+                info.ArgumentList.Insert(0, prefetched);
+                info.ArgumentList.Insert(0, agent);
+            }
+            else
+            {
+                info.Arguments = $"\"{agent}\" {prefetched} {info.Arguments}";
             }
         }
 

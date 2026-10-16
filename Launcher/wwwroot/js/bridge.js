@@ -199,6 +199,10 @@ const mockBackend = (() => {
         'profile.saveBio': async args => { await wait(300); members[0].bio = args.bio.trim(); return members[0]; },
         'profile.pickAvatar': async () => null,
         'profile.removeAvatar': async () => { members[0].avatarVersion = 0; return members[0]; },
+        // Tarayıcı ön izlemesinde skin dosyası yok; önizlemeyi denemek için skinUrl'e bir data: adresi verilebilir
+        'profile.pickSkin': async args => { await wait(300); Object.assign(members[0], { skinHash: 'demo', skinModel: args.model || 'default' }); return members[0]; },
+        'profile.setSkinModel': async args => { members[0].skinModel = args.model; return members[0]; },
+        'profile.removeSkin': async () => { Object.assign(members[0], { skinHash: '', skinModel: 'default' }); return members[0]; },
         'profile.changePassword': async args => {
             await wait(400);
             if (args.currentPassword !== 'sifre') throw new Error('Mevcut şifre yanlış.');
