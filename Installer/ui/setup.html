@@ -36,6 +36,8 @@ body {
 }
 button { font: inherit; color: inherit; cursor: pointer; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.error-box .link { border: 0; padding: 0; background: none; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.error-box .link:disabled { opacity: .5; cursor: default; }
 [hidden] { display: none !important; }
 
 /* Spot: yukarıdan inen huzme ve başlığa düşen ışık havuzu */
@@ -192,7 +194,7 @@ main { position: relative; z-index: 1; flex: 1; min-height: 0; display: flex; fl
                 <label class="check"><input type="checkbox" id="opt-start" checked> Başlat menüsü kısayolu</label>
             </div>
 
-            <div id="release-error" class="error-box" hidden></div>
+            <div id="release-error" class="error-box" hidden><span id="release-error-text"></span> <button class="link" id="release-retry">Tekrar dene</button></div>
 
             <div class="actions">
                 <span class="spacer" id="size-info"></span>
@@ -297,7 +299,8 @@ function receive(msg) {
             break;
         case 'release-error':
             $('version').textContent = 'sürüm bilgisi alınamadı';
-            $('release-error').textContent = msg.message;
+            $('release-error-text').textContent = msg.message;
+            $('release-retry').disabled = false;
             $('release-error').hidden = false;
             break;
         case 'dir':
@@ -337,6 +340,11 @@ if (window.external && window.external.receiveMessage)
     window.external.receiveMessage(raw => { try { receive(JSON.parse(raw)); } catch (e) { console.error(e); } });
 
 $('install').addEventListener('click', startInstall);
+$('release-retry').addEventListener('click', () => {
+    $('release-retry').disabled = true;
+    $('version').textContent = 'sürüm bilgisi alınıyor…';
+    send('reloadRelease');
+});
 $('retry').addEventListener('click', startInstall);
 $('back').addEventListener('click', () => showPage('page-options'));
 $('browse').addEventListener('click', () => send('pickFolder'));

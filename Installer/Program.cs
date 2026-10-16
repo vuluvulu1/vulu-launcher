@@ -108,6 +108,9 @@ namespace Installer
                     try { Send(new { type = "dir", dir = InstallEngine.ValidateDirectory(asked), freeMb = InstallEngine.FreeSpaceMb(asked) }); }
                     catch (Exception ex) { Send(new { type = "dir", dir = asked, error = ex.Message }); }
                     break;
+                case "reloadRelease":
+                    _ = LoadReleaseAsync();
+                    break;
                 case "install":
                     if (_installing) return;
                     var options = new InstallOptions(
@@ -159,9 +162,21 @@ namespace Installer
                     installMb = Math.Round(m.Files.Sum(f => f.Size) / 1024.0 / 1024.0)
                 });
             }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Send(new { type = "release-error", message = "GitHub'da henüz yayınlanmış bir vulu Launcher sürümü yok." });
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode is System.Net.HttpStatusCode.Forbidden or System.Net.HttpStatusCode.TooManyRequests)
+            {
+                Send(new { type = "release-error", message = "GitHub şu an çok fazla istek aldı. Birkaç dakika sonra tekrar dene." });
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                Send(new { type = "release-error", message = "Sunucuya ulaşılamadı. İnternet bağlantını kontrol edip tekrar dene." });
+            }
             catch (Exception ex)
             {
-                Send(new { type = "release-error", message = "Sunucuya ulaşılamadı. İnternet bağlantını kontrol edip tekrar dene. (" + ex.Message + ")" });
+                Send(new { type = "release-error", message = "Sürüm bilgisi okunamadı: " + ex.Message });
             }
         }
 
