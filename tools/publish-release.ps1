@@ -120,7 +120,11 @@ Write-Host "  $zipPath"
 Write-Host "  $releaseJson"
 Write-Host "  $setupPath ($([math]::Round((Get-Item $setupPath).Length / 1MB, 1)) MB)"
 
-$ghArgs = @("release", "create", "v$Version", $zipPath, $releaseJson, $setupPath, "--repo", $Repository, "--title", "vulu Launcher v$Version", "--notes", $(if ($Notes) { $Notes } else { "vulu Launcher v$Version" }))
+# Notlar dosyadan verilir: Windows PowerShell, metindeki çift tırnakları programa geçirirken bozar
+# ve gh notların geri kalanını dosya adı sanar.
+$notesPath = Join-Path $outDir "notes.md"
+[IO.File]::WriteAllText($notesPath, $(if ($Notes) { $Notes } else { "vulu Launcher v$Version" }), $utf8)
+$ghArgs = @("release", "create", "v$Version", $zipPath, $releaseJson, $setupPath, "--repo", $Repository, "--title", "vulu Launcher v$Version", "--notes-file", $notesPath)
 
 if ($Local) {
     # Yerel "en son sürüm": GitHub'daki latest release'in yerini tutar
