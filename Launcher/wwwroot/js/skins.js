@@ -2,7 +2,8 @@
 // (authlib-injector); değişiklik oyunun bir sonraki açılışında geçerli olur.
 
 function skinUrl(user) {
-    return user && user.skinHash ? `${state.apiBase}/yggdrasil/textures/${user.skinHash}` : null;
+    // ?c=1: CORS başlığı eklenmeden önce önbelleğe alınmış (önizlemede açılamayan) cevabı atlar
+    return user && user.skinHash ? `${state.apiBase}/yggdrasil/textures/${user.skinHash}?c=1` : null;
 }
 
 /**
