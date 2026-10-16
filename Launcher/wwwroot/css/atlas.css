@@ -1,0 +1,422 @@
+/*
+ * vulu Launcher — Atlas teması
+ *
+ * <html data-ui="atlas"> iken geçerlidir. Bir kâşifin seyir defteri: parşömen kâğıt, mürekkep, pusula kırmızısı,
+ * serif başlıklar. Diğer temalar koyu; bu açık renkli. Aynı HTML ve JS, farklı yerleşim:
+ *   - sayfa sekmeleri başlık çubuğunun solunda klasör sekmeleri olur, seçili sekme sayfayla birleşir,
+ *   - instance'lar solda noktalı çizgili bir "İçindekiler" listesine dönüşür,
+ *   - arka plan resmi sayfaya bantla tutturulmuş bir fotoğraf olur, OYNA kırmızı bir mühür,
+ *   - konsol çizgili bir defter sayfası,
+ *   - açılışta başlık kâğıda mürekkeple yazılır, ardından katlanmış harita iki yana açılır.
+ * Büyük harf dönüşümü kullanılmaz (Türkçe "i" → "İ").
+ */
+
+html[data-ui="atlas"] {
+    color-scheme: light;
+
+    --bg: #efe6d3;
+    --panel: #f5eedf;
+    --surface: #faf6ec;
+    --raised: #e6dbc4;
+    --hover: rgba(70, 45, 20, .06);
+    --line: rgba(70, 45, 20, .14);
+    --line-strong: rgba(70, 45, 20, .26);
+
+    --text: #2a2017;
+    --muted: #6d5d48;
+    --dim: #9a8a72;
+
+    /* Ayarlardaki vurgu rengi bu temada kullanılmaz */
+    --accent: #a8372d !important;
+    --accent-hi: #8f2b22;
+    --accent-soft: rgba(168, 55, 45, .1);
+    --accent-ink: #fff6ea;
+    --teal: #2e6b66;
+
+    --ok: #3b7a4b;
+    --warn: #a8721a;
+    --error: #b0352a;
+
+    --glass: rgba(250, 246, 236, .9);
+    --r-sm: 3px;
+    --r: 4px;
+    --r-lg: 6px;
+    --shadow-pop: 0 1px 0 rgba(255, 255, 255, .7) inset, 0 10px 30px rgba(70, 45, 20, .22);
+    --paper-shadow: 0 1px 2px rgba(70, 45, 20, .12), 0 6px 18px rgba(70, 45, 20, .1);
+
+    --titlebar-h: 46px;
+    --font-serif: Georgia, Cambria, "Times New Roman", serif;
+    --font-pixel: Georgia, Cambria, serif;
+    --ink: #2b1d12;
+    --paper-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .2  0 0 0 0 .1  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.16'/></svg>");
+}
+
+html[data-ui="atlas"] body { background: var(--paper-noise), radial-gradient(ellipse at 50% 40%, #f3ebda, #e6d9bf 95%), var(--bg); }
+html[data-ui="atlas"] ::selection { background: rgba(168, 55, 45, .22); }
+html[data-ui="atlas"] ::-webkit-scrollbar-thumb { background: rgba(70, 45, 20, .2); background-clip: padding-box; }
+html[data-ui="atlas"] ::-webkit-scrollbar-thumb:hover { background: rgba(70, 45, 20, .35); background-clip: padding-box; }
+
+html[data-ui="atlas"] .rail h2, html[data-ui="atlas"] .stat-label, html[data-ui="atlas"] .dock-label,
+html[data-ui="atlas"] .set-section h2, html[data-ui="atlas"] .profile-section h2, html[data-ui="atlas"] .mr-filter-title,
+html[data-ui="atlas"] .mr-field > span, html[data-ui="atlas"] .share-title, html[data-ui="atlas"] .console-head > span {
+    font: italic 400 13px var(--font-serif); letter-spacing: 0; color: var(--muted);
+}
+
+/* ── Başlık çubuğu ve klasör sekmeleri ─────────────────────────────── */
+html[data-ui="atlas"] #titlebar {
+    background: var(--paper-noise), linear-gradient(180deg, #e3d5b8, #dccbaa);
+    border-bottom: 1px solid rgba(70, 45, 20, .3);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .45) inset;
+}
+html[data-ui="atlas"] .tb-brand img { image-rendering: pixelated; filter: sepia(.35); }
+html[data-ui="atlas"] .tb-brand span:first-of-type { font: italic 700 16px var(--font-serif); color: var(--ink); letter-spacing: 0; }
+html[data-ui="atlas"] .tb-tag { font: 600 9.5px var(--font-mono); color: var(--accent); background: transparent; border: 1px solid rgba(168, 55, 45, .5); border-radius: 2px; transform: rotate(-4deg); }
+html[data-ui="atlas"] .tb-btn svg { stroke: var(--muted); }
+html[data-ui="atlas"] .tb-btn:hover { background: rgba(70, 45, 20, .08); }
+html[data-ui="atlas"] .tb-btn:hover svg { stroke: var(--ink); }
+html[data-ui="atlas"] .tb-close:hover { background: #b0352a; }
+html[data-ui="atlas"] .tb-sep { background: rgba(70, 45, 20, .2); }
+html[data-ui="atlas"] .user-chip { background: rgba(250, 246, 236, .6); border-color: rgba(70, 45, 20, .2); font: 600 13px var(--font-serif); }
+html[data-ui="atlas"] .user-chip:hover, html[data-ui="atlas"] .user-chip.active { background: var(--surface); border-color: var(--accent); }
+html[data-ui="atlas"] .avatar { background: rgba(168, 55, 45, .12); color: var(--accent); }
+
+html[data-ui="atlas"] .tb-tabs {
+    left: 214px; top: auto; bottom: -1px; height: 36px; transform: none; align-items: flex-end; gap: 3px;
+}
+html[data-ui="atlas"] .tb-tabs button {
+    height: 32px; padding: 0 16px; gap: 7px; border: 1px solid rgba(70, 45, 20, .22); border-bottom: 0;
+    border-radius: 7px 7px 0 0; background: linear-gradient(180deg, #d9c8a6, #d2bf9b); color: #5c4b36;
+    font: 500 14px var(--font-serif);
+}
+html[data-ui="atlas"] .tb-tabs button svg { width: 13px; height: 13px; }
+html[data-ui="atlas"] .tb-tabs button:hover { color: var(--ink); background: linear-gradient(180deg, #e3d4b5, #dccaa7); }
+/* Seçili sekme sayfanın kâğıdıyla birleşir */
+html[data-ui="atlas"] .tb-tabs button.active {
+    height: 36px; color: var(--ink); background: #efe6d3; border-color: rgba(70, 45, 20, .3);
+    box-shadow: 0 -2px 6px rgba(70, 45, 20, .08);
+}
+html[data-ui="atlas"] .tb-tabs button.active svg { color: var(--accent); }
+
+/* ── Butonlar ve form ──────────────────────────────────────────────── */
+html[data-ui="atlas"] .btn {
+    background: var(--surface); border-color: rgba(70, 45, 20, .25); color: var(--ink);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .8) inset, 0 1px 2px rgba(70, 45, 20, .12);
+}
+html[data-ui="atlas"] .btn:hover:not(:disabled) { background: #fffcf4; border-color: rgba(70, 45, 20, .4); }
+html[data-ui="atlas"] .btn-primary { background: var(--accent); border-color: #8f2b22; color: var(--accent-ink); box-shadow: 0 1px 0 rgba(255, 255, 255, .25) inset, 0 2px 4px rgba(120, 30, 20, .25); }
+html[data-ui="atlas"] .btn-primary:hover:not(:disabled) { background: #b9443a; border-color: #8f2b22; }
+html[data-ui="atlas"] .btn-danger { color: var(--error); background: transparent; border-color: rgba(176, 53, 42, .4); box-shadow: none; }
+html[data-ui="atlas"] .btn-danger:hover:not(:disabled) { background: rgba(176, 53, 42, .08); }
+html[data-ui="atlas"] .btn-accent { color: var(--teal); background: rgba(46, 107, 102, .08); border-color: rgba(46, 107, 102, .4); }
+html[data-ui="atlas"] .btn-accent:hover:not(:disabled) { background: rgba(46, 107, 102, .14); border-color: var(--teal); }
+html[data-ui="atlas"] .link-btn:hover { color: var(--ink); }
+html[data-ui="atlas"] .mini-btn { background: transparent; color: var(--accent); border: 1px dashed rgba(168, 55, 45, .5); font: italic 600 12px var(--font-serif); }
+html[data-ui="atlas"] .mini-btn:hover { background: var(--accent-soft); }
+
+html[data-ui="atlas"] input[type=text], html[data-ui="atlas"] input[type=password], html[data-ui="atlas"] input[type=url],
+html[data-ui="atlas"] input[type=number], html[data-ui="atlas"] select, html[data-ui="atlas"] .textarea {
+    background: #fffcf5; border-color: rgba(70, 45, 20, .25); color: var(--ink);
+    box-shadow: inset 0 1px 2px rgba(70, 45, 20, .08);
+}
+html[data-ui="atlas"] input[type=text]:focus, html[data-ui="atlas"] input[type=password]:focus, html[data-ui="atlas"] input[type=url]:focus,
+html[data-ui="atlas"] input[type=number]:focus, html[data-ui="atlas"] select:focus, html[data-ui="atlas"] .textarea:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(168, 55, 45, .14);
+}
+html[data-ui="atlas"] option { background: #fffcf5; color: var(--ink); }
+html[data-ui="atlas"] input[type=range] { background: rgba(70, 45, 20, .16); }
+html[data-ui="atlas"] input[type=range]::-webkit-slider-thumb { background: var(--accent); box-shadow: 0 1px 2px rgba(70, 45, 20, .3); }
+html[data-ui="atlas"] .switch span { background: rgba(70, 45, 20, .18); }
+html[data-ui="atlas"] .switch span::after { background: #fffcf5; box-shadow: 0 1px 2px rgba(70, 45, 20, .3); }
+html[data-ui="atlas"] .switch input:checked + span { background: var(--accent); }
+html[data-ui="atlas"] .switch input:checked + span::after { background: #fffcf5; }
+
+html[data-ui="atlas"] .segmented { background: rgba(70, 45, 20, .06); border-color: rgba(70, 45, 20, .16); }
+html[data-ui="atlas"] .segmented button { font-family: var(--font-serif); font-size: 13.5px; }
+html[data-ui="atlas"] .segmented button.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(70, 45, 20, .18), inset 0 -2px 0 var(--accent); }
+html[data-ui="atlas"] .chip { border-color: rgba(70, 45, 20, .22); font-family: var(--font-serif); font-size: 12.5px; }
+html[data-ui="atlas"] .chip.active { background: var(--accent-soft); border-color: rgba(168, 55, 45, .55); color: var(--accent); }
+html[data-ui="atlas"] .badge { background: transparent; color: var(--accent); border: 1px solid rgba(168, 55, 45, .45); font-family: var(--font-serif); font-style: italic; }
+/* Etiketler: kâğıda basılmış küçük damgalar */
+html[data-ui="atlas"] .tag {
+    background: transparent; color: var(--teal); border: 1px solid rgba(46, 107, 102, .5); border-radius: 2px;
+    font: 600 11.5px var(--font-mono); letter-spacing: .02em;
+}
+html[data-ui="atlas"] .tag + .tag { color: var(--accent); border-color: rgba(168, 55, 45, .45); }
+html[data-ui="atlas"] .spinner { border-color: rgba(168, 55, 45, .18); border-top-color: var(--accent); }
+
+/* ── Giriş ─────────────────────────────────────────────────────────── */
+html[data-ui="atlas"] #view-login { background: transparent; }
+html[data-ui="atlas"] .login-card { background: var(--paper-noise), var(--surface); border-color: rgba(70, 45, 20, .2); box-shadow: var(--paper-shadow); }
+html[data-ui="atlas"] .login-card h1 { font: italic 700 26px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .login-logo { filter: sepia(.3); }
+html[data-ui="atlas"] .login-card label:not(.check) { font: italic 400 13px var(--font-serif); }
+
+/* ── Açılış: mürekkep ve açılan harita ─────────────────────────────── */
+html[data-ui="atlas"] #view-splash {
+    background: var(--paper-noise), radial-gradient(ellipse at 50% 45%, #f2e9d6, #d9c7a3 100%);
+}
+html[data-ui="atlas"] #view-splash.open { background-color: transparent; background-image: none; }
+/* Katlanmış haritanın iki yarısı: enlem-boylam çizgileri, ortadaki katta gölge */
+html[data-ui="atlas"] .curtain {
+    width: 50%;
+    background:
+        var(--paper-noise),
+        repeating-linear-gradient(90deg, rgba(46, 107, 102, .12) 0 1px, transparent 1px 64px),
+        repeating-linear-gradient(0deg, rgba(46, 107, 102, .12) 0 1px, transparent 1px 64px),
+        radial-gradient(ellipse at 50% 50%, #f3ead7, #e2d2b2);
+    backface-visibility: hidden;
+    transition: transform 1.15s cubic-bezier(.6, 0, .3, 1);
+}
+html[data-ui="atlas"] .curtain-left { box-shadow: inset -40px 0 50px -30px rgba(70, 45, 20, .35); }
+html[data-ui="atlas"] .curtain-right { box-shadow: inset 40px 0 50px -30px rgba(70, 45, 20, .35); }
+/* Haritanın üstünde kesik çizgili bir rota */
+html[data-ui="atlas"] .curtain-left::after, html[data-ui="atlas"] .curtain-right::after {
+    content: ""; position: absolute; top: 62%; height: 0; border-top: 2px dashed rgba(168, 55, 45, .45);
+}
+html[data-ui="atlas"] .curtain-left::after { left: 18%; right: 0; transform: rotate(-6deg); transform-origin: right; }
+html[data-ui="atlas"] .curtain-right::after { left: 0; right: 30%; transform: rotate(4deg); transform-origin: left; }
+html[data-ui="atlas"] .open .curtain-left { transform: perspective(1600px) rotateY(105deg); }
+html[data-ui="atlas"] .open .curtain-right { transform: perspective(1600px) rotateY(-105deg); }
+html[data-ui="atlas"] .valance { display: none; }
+html[data-ui="atlas"] .stage-vignette {
+    background: radial-gradient(ellipse 70% 70% at 50% 48%, transparent 55%, rgba(90, 60, 25, .28) 100%);
+}
+html[data-ui="atlas"] .stage-vignette::before { display: none; }
+/* Uygulama açılırken düz kâğıt; yazı başlayınca harita görünür */
+html[data-ui="atlas"] .stage-vignette::after { background: #ebe1cc; }
+html[data-ui="atlas"] .stage-name { filter: none; }
+html[data-ui="atlas"] .stage-name path { fill: var(--ink); stroke: #3b2a1a; stroke-width: 1.4px; }
+html[data-ui="atlas"] .stage-ornament { background: linear-gradient(90deg, transparent, rgba(168, 55, 45, .8) 30%, rgba(168, 55, 45, .8) 70%, transparent) center / 100% 1px no-repeat; }
+html[data-ui="atlas"] .stage-ornament::after { background: var(--accent); }
+html[data-ui="atlas"] .stage-greeting { font: italic 400 17px var(--font-serif); letter-spacing: .02em; color: #5a4632; }
+html[data-ui="atlas"] .stage-status { font: italic 400 13px var(--font-serif); color: rgba(90, 70, 50, .7); }
+@keyframes status-pulse { 50% { color: rgba(90, 70, 50, 1); } }
+
+/* ── Ana ekran: İçindekiler ────────────────────────────────────────── */
+html[data-ui="atlas"] #view-main { grid-template-columns: 260px 1fr; }
+html[data-ui="atlas"] .rail {
+    background: var(--paper-noise), linear-gradient(90deg, #e9dec7, #e4d6bb);
+    border-right: 1px solid rgba(70, 45, 20, .25);
+    box-shadow: inset -12px 0 18px -14px rgba(70, 45, 20, .35);
+}
+html[data-ui="atlas"] .rail-scroll { padding: 10px 16px 10px 18px; }
+html[data-ui="atlas"] #pack-list::before {
+    content: "İçindekiler"; display: block; padding: 6px 0 10px; margin-bottom: 4px;
+    font: italic 700 19px var(--font-serif); color: var(--ink); border-bottom: 1px solid rgba(70, 45, 20, .25);
+}
+html[data-ui="atlas"] #pack-list:not(:empty) + .rail-head { border-top: 0; margin-top: 8px; padding-top: 10px; }
+html[data-ui="atlas"] .rail h2 { padding: 10px 0 6px; }
+html[data-ui="atlas"] .pack-list { gap: 0; }
+html[data-ui="atlas"] .pack-empty { padding: 4px 0; font: italic 13px var(--font-serif); }
+
+/* Satır: ad ........ sürüm */
+html[data-ui="atlas"] .pack-card { height: 38px; border: 0; border-radius: 0; background: transparent; }
+html[data-ui="atlas"] .pack-card .thumb, html[data-ui="atlas"] .pack-card .card-icon { display: none; }
+html[data-ui="atlas"] .pack-card .info { inset: 0; padding: 0 2px 0 14px; flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 6px; padding-top: 10px; }
+html[data-ui="atlas"] .pack-card .name { flex: 0 1 auto; max-width: 62%; font: 400 15.5px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .pack-card .info::after { content: ""; order: 1; flex: 1 1 12px; min-width: 12px; border-bottom: 1.5px dotted rgba(70, 45, 20, .35); transform: translateY(-4px); }
+html[data-ui="atlas"] .pack-card .ver { order: 2; flex: 0 1 auto; font: 11.5px var(--font-mono); color: var(--muted); }
+html[data-ui="atlas"] .pack-card:hover { background: rgba(70, 45, 20, .05); }
+html[data-ui="atlas"] .pack-card.selected { background: transparent; }
+html[data-ui="atlas"] .pack-card.selected .name { color: var(--accent); font-weight: 700; }
+/* Seçili satırda kırmızı kurdele ayraç */
+html[data-ui="atlas"] .pack-card.selected::before {
+    left: -18px; top: 8px; bottom: 6px; width: 14px; border-radius: 0; background: var(--accent);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%); transform: rotate(-90deg) translateX(4px);
+}
+
+/* Müzik: gramofon kartı */
+html[data-ui="atlas"] .music { margin: 10px 14px 14px; background: var(--paper-noise), var(--surface); border-color: rgba(70, 45, 20, .2); box-shadow: var(--paper-shadow); }
+html[data-ui="atlas"] .music-art { border-radius: 50%; background: radial-gradient(circle, #3a2a1c 0 22%, #1d140c 23% 100%); }
+html[data-ui="atlas"] .music-art svg { stroke: #e9d7b6; }
+html[data-ui="atlas"] .music:not(.paused) .music-art { animation: atlas-spin 3s linear infinite; }
+@keyframes atlas-spin { to { transform: rotate(360deg); } }
+html[data-ui="atlas"] .music-title { font: italic 700 13.5px var(--font-serif); }
+html[data-ui="atlas"] .music-seek { background: linear-gradient(90deg, var(--accent) var(--pct), rgba(70, 45, 20, .15) var(--pct)) !important; }
+
+/* ── Oyna: defter sayfası ──────────────────────────────────────────── */
+html[data-ui="atlas"] .stage { padding: 30px 40px 22px; }
+/* Arka plan resmi tam ekran değil: sağ üstte bantla tutturulmuş, hafif eğik bir fotoğraf */
+html[data-ui="atlas"] .stage-bg {
+    inset: 34px 42px auto auto; width: 42%; aspect-ratio: 16 / 10; z-index: 1;
+    border: 10px solid #fbf8f0; border-bottom-width: 34px; border-radius: 2px;
+    background-size: cover !important; background-position: center !important; background-color: #d9cdb4;
+    background-origin: padding-box; background-clip: padding-box;
+    transform: rotate(1.8deg); filter: sepia(.18) saturate(.92) contrast(1.02);
+    box-shadow: 0 2px 4px rgba(70, 45, 20, .2), 0 14px 30px rgba(70, 45, 20, .25);
+}
+html[data-ui="atlas"] .stage-bg::after { display: none; }
+html[data-ui="atlas"] .stage-bg::before {
+    content: ""; position: absolute; left: 50%; top: -24px; width: 110px; height: 30px;
+    transform: translateX(-50%) rotate(-3deg);
+    background: rgba(240, 228, 196, .72); border-left: 1px dashed rgba(70, 45, 20, .12); border-right: 1px dashed rgba(70, 45, 20, .12);
+    box-shadow: 0 1px 2px rgba(70, 45, 20, .12);
+}
+html[data-ui="atlas"] .stage-bg.plain { display: none; }
+html[data-ui="atlas"] .stage > .dock { z-index: 3; }
+
+html[data-ui="atlas"] .stage-body { align-items: flex-start; padding-bottom: 18px; }
+html[data-ui="atlas"] .stage-hero { max-width: 52%; justify-content: flex-start; gap: 14px; }
+html[data-ui="atlas"] .pack-title { font: 700 54px/1.05 var(--font-serif); color: var(--ink); text-shadow: none; letter-spacing: -.01em; }
+html[data-ui="atlas"] .pack-logo { object-position: left center; filter: drop-shadow(0 2px 0 rgba(43, 29, 18, .55)) drop-shadow(0 6px 10px rgba(70, 45, 20, .25)); }
+html[data-ui="atlas"] .pack-desc { font: italic 400 16px/1.55 var(--font-serif); color: #4c3d2c; }
+
+/* Göstergeler: dizin tablosu gibi, noktalı çizgiyle */
+html[data-ui="atlas"] .stats { flex-direction: column; flex-wrap: nowrap; gap: 0; width: 300px; max-width: 100%; }
+html[data-ui="atlas"] .stat { flex-direction: row; align-items: baseline; gap: 8px; min-width: 0; padding: 6px 0; background: transparent; border: 0; border-radius: 0; border-bottom: 1px dotted rgba(70, 45, 20, .3); }
+html[data-ui="atlas"] .stat-label { flex: 1; }
+html[data-ui="atlas"] .stat-value { font: 700 15px var(--font-serif); color: var(--ink); font-variant-numeric: lining-nums tabular-nums; }
+
+html[data-ui="atlas"] .pack-actions .btn { background: var(--surface); border-color: rgba(70, 45, 20, .25); }
+html[data-ui="atlas"] .pack-actions .btn-accent { background: rgba(46, 107, 102, .08); border-color: rgba(46, 107, 102, .4); }
+html[data-ui="atlas"] .pack-actions .btn-danger { background: transparent; }
+
+/* Alt şerit: kâğıt bir kart; sağda mühür */
+html[data-ui="atlas"] .dock {
+    align-items: center; padding: 10px 14px 10px 6px; gap: 10px; min-height: 92px;
+    background: var(--paper-noise), var(--surface); border-color: rgba(70, 45, 20, .2); box-shadow: var(--paper-shadow);
+}
+html[data-ui="atlas"] .dock-value { font: 700 15px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .dock .version-select { background: #fffcf5; }
+html[data-ui="atlas"] .dock-status { border-left: 1px dashed rgba(70, 45, 20, .25); }
+html[data-ui="atlas"] #status-text { font: italic 14px var(--font-serif); }
+html[data-ui="atlas"] #status-pct { color: var(--muted); }
+html[data-ui="atlas"] .bar { height: 6px; background: rgba(70, 45, 20, .12); }
+html[data-ui="atlas"] .bar-fill { background: var(--accent); }
+html[data-ui="atlas"] .bar.running .bar-fill { background: var(--ok); }
+html[data-ui="atlas"] .ram-btn { background: #fffcf5; border-color: rgba(70, 45, 20, .25); font: 600 14px var(--font-serif); }
+html[data-ui="atlas"] .ram-btn:hover, html[data-ui="atlas"] .ram-btn[aria-expanded="true"] { background: var(--surface); border-color: rgba(70, 45, 20, .45); }
+html[data-ui="atlas"] .ram-btn svg { stroke: var(--teal); }
+html[data-ui="atlas"] .ram-pop { background: var(--surface); border-color: rgba(70, 45, 20, .25); }
+html[data-ui="atlas"] .ram-options button { font-family: var(--font-serif); font-size: 14px; }
+html[data-ui="atlas"] .ram-options button[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); }
+html[data-ui="atlas"] .ram-options .note { color: var(--accent); font-style: italic; }
+
+/* OYNA: balmumu mühür */
+html[data-ui="atlas"] .btn-play {
+    width: 84px; height: 84px; padding: 6px; border-radius: 50%; flex-direction: column; gap: 2px;
+    font: 700 15px/1.1 var(--font-serif); letter-spacing: .04em; color: #fbe9dc;
+    background: radial-gradient(circle at 38% 32%, #c84d40, #a8372d 45%, #82241c 100%);
+    box-shadow:
+        0 0 0 3px #a8372d, 0 0 0 5px rgba(130, 36, 28, .55),
+        inset 0 2px 3px rgba(255, 210, 190, .35), inset 0 -4px 8px rgba(70, 10, 5, .45),
+        0 6px 14px rgba(110, 30, 20, .35);
+    text-shadow: 0 -1px 0 rgba(60, 10, 5, .6);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+html[data-ui="atlas"] .btn-play::before {
+    content: ""; position: absolute; inset: 9px; border-radius: 50%; border: 1px dashed rgba(255, 220, 200, .45); pointer-events: none;
+}
+html[data-ui="atlas"] .btn-play svg { width: 12px; height: 12px; }
+html[data-ui="atlas"] .btn-play:hover:not(:disabled) { background: radial-gradient(circle at 38% 32%, #d45a4c, #b23e33 45%, #8a2820 100%); transform: rotate(-6deg) scale(1.03); }
+html[data-ui="atlas"] .btn-play:disabled {
+    background: radial-gradient(circle at 38% 32%, #e7dcc8, #d5c6a9 60%, #c2b090); color: var(--muted); border: 0;
+    box-shadow: 0 0 0 3px #cdbd9e, inset 0 -3px 6px rgba(70, 45, 20, .2);
+    font: italic 600 11.5px/1.15 var(--font-serif); letter-spacing: 0; text-shadow: none;
+}
+html[data-ui="atlas"] .btn-play:disabled::before { border-color: rgba(70, 45, 20, .25); }
+html[data-ui="atlas"] #play-label { white-space: normal; text-align: center; }
+
+/* Konsol: çizgili defter sayfası, solda kırmızı kenar çizgisi */
+html[data-ui="atlas"] .console {
+    background:
+        linear-gradient(90deg, transparent 46px, rgba(168, 55, 45, .35) 46px 47px, transparent 47px),
+        repeating-linear-gradient(180deg, transparent 0 18.5px, rgba(46, 107, 102, .16) 18.5px 19.2px),
+        #fbf7ec;
+    background-attachment: local;
+    border-color: rgba(70, 45, 20, .2); box-shadow: var(--paper-shadow);
+}
+html[data-ui="atlas"] .console-head { background: #f3ecdc; border-bottom-color: rgba(70, 45, 20, .18); }
+html[data-ui="atlas"] .console-head > span { font: italic 700 14px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .console-head > span::after { content: " · seyir defteri"; font-weight: 400; color: var(--muted); }
+html[data-ui="atlas"] .console-body { font: 12px/19.2px var(--font-mono); color: #3b2e20; padding: 4px 14px 8px 56px; background: inherit; }
+html[data-ui="atlas"] .log-line .t { color: var(--dim); }
+html[data-ui="atlas"] .log-line.ok { color: var(--ok); }
+html[data-ui="atlas"] .log-line.accent { color: var(--accent); }
+html[data-ui="atlas"] .log-line.muted { color: var(--muted); }
+html[data-ui="atlas"] .log-line.game { color: #6f6150; }
+
+/* ── Modal ─────────────────────────────────────────────────────────── */
+html[data-ui="atlas"] .modal-backdrop { background: rgba(60, 45, 25, .35); }
+html[data-ui="atlas"] .modal { background: var(--paper-noise), var(--surface); border-color: rgba(70, 45, 20, .25); box-shadow: 0 2px 4px rgba(70, 45, 20, .15), 0 24px 60px rgba(70, 45, 20, .3); }
+html[data-ui="atlas"] .modal-head { font: italic 700 17px var(--font-serif); color: var(--ink); border-bottom-color: rgba(70, 45, 20, .15); }
+html[data-ui="atlas"] .modal-body { color: #3d3022; }
+html[data-ui="atlas"] .modal-foot { background: rgba(70, 45, 20, .04); border-top-color: rgba(70, 45, 20, .15); }
+
+/* ── Sayfalar ──────────────────────────────────────────────────────── */
+html[data-ui="atlas"] .page-scroll { background: transparent; padding: 30px 40px 60px; }
+html[data-ui="atlas"] .page-head { padding-bottom: 14px; border-bottom: 1px solid rgba(70, 45, 20, .2); }
+html[data-ui="atlas"] .page-head h1 { font: italic 700 32px var(--font-serif); color: var(--ink); letter-spacing: -.01em; }
+html[data-ui="atlas"] .page-sub { font: italic 14px var(--font-serif); }
+html[data-ui="atlas"] .page-note { font-style: italic; }
+
+/* vulu Packs: köşesi bantlı kartpostallar */
+html[data-ui="atlas"] .packs-grid { gap: 22px; }
+html[data-ui="atlas"] .pack-tile { background: var(--paper-noise), var(--surface); border-color: rgba(70, 45, 20, .18); border-radius: 3px; box-shadow: var(--paper-shadow); overflow: visible; transition: transform .2s ease, box-shadow .2s ease; }
+html[data-ui="atlas"] .pack-tile:nth-child(odd) { transform: rotate(-.6deg); }
+html[data-ui="atlas"] .pack-tile:nth-child(even) { transform: rotate(.5deg); }
+html[data-ui="atlas"] .pack-tile:hover { transform: rotate(0) translateY(-2px); border-color: rgba(70, 45, 20, .3); box-shadow: 0 2px 4px rgba(70, 45, 20, .15), 0 14px 30px rgba(70, 45, 20, .18); }
+html[data-ui="atlas"] .pack-cover { margin: 10px 10px 0; border-radius: 1px; filter: sepia(.15); box-shadow: inset 0 0 0 1px rgba(70, 45, 20, .12); }
+html[data-ui="atlas"] .pack-cover.plain { background: repeating-linear-gradient(90deg, rgba(46, 107, 102, .1) 0 1px, transparent 1px 30px), repeating-linear-gradient(0deg, rgba(46, 107, 102, .1) 0 1px, transparent 1px 30px), #ece2cd; }
+html[data-ui="atlas"] .pack-cover.plain span { font: italic 700 28px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .pack-badge { top: 16px; left: 16px; background: var(--accent); color: var(--accent-ink); font: italic 600 12px var(--font-serif); transform: rotate(-3deg); }
+html[data-ui="atlas"] .pack-name { font: 700 18px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .pack-meta { font: italic 12.5px var(--font-serif); }
+html[data-ui="atlas"] .pack-desc-text { color: #4a3b2a; }
+html[data-ui="atlas"] .pack-tile .tag { background: transparent; }
+html[data-ui="atlas"] .packs-empty { border-color: rgba(70, 45, 20, .3); }
+html[data-ui="atlas"] .btn-feedback .count { background: var(--accent); color: var(--accent-ink); }
+
+/* Modrinth */
+html[data-ui="atlas"] .mr-side { background: var(--paper-noise), var(--surface); border-color: rgba(70, 45, 20, .18); box-shadow: var(--paper-shadow); }
+html[data-ui="atlas"] .mr-filters, html[data-ui="atlas"] .mr-filter-foot { border-color: rgba(70, 45, 20, .15); }
+html[data-ui="atlas"] .mr-hit { background: var(--surface); border-color: rgba(70, 45, 20, .16); box-shadow: 0 1px 2px rgba(70, 45, 20, .08); }
+html[data-ui="atlas"] .mr-hit:hover { background: #fffcf5; border-color: rgba(70, 45, 20, .3); }
+html[data-ui="atlas"] .mr-title { font: 700 16px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .mr-desc { color: #4a3b2a; }
+html[data-ui="atlas"] .mr-icon.plain, html[data-ui="atlas"] .content-icon.plain { background: rgba(46, 107, 102, .12); }
+
+/* Ayarlar, profil, admin */
+html[data-ui="atlas"] .set-section, html[data-ui="atlas"] .profile-card, html[data-ui="atlas"] .members,
+html[data-ui="atlas"] .user-row, html[data-ui="atlas"] .inst-card, html[data-ui="atlas"] .admin-connect, html[data-ui="atlas"] .admin-log {
+    background: var(--paper-noise), var(--surface); border-color: rgba(70, 45, 20, .18); box-shadow: var(--paper-shadow);
+}
+html[data-ui="atlas"] .set-section h2 { font: italic 700 15px var(--font-serif); color: var(--accent); border-bottom-color: rgba(70, 45, 20, .15); }
+html[data-ui="atlas"] .set-row + .set-row { border-top-color: rgba(70, 45, 20, .1); }
+html[data-ui="atlas"] .set-title { font: 700 14.5px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .swatch.active { outline-color: var(--ink); }
+
+html[data-ui="atlas"] .profile-banner {
+    background: repeating-linear-gradient(90deg, rgba(46, 107, 102, .16) 0 1px, transparent 1px 34px),
+        repeating-linear-gradient(0deg, rgba(46, 107, 102, .16) 0 1px, transparent 1px 34px), #e3d4b5;
+}
+html[data-ui="atlas"] .profile-head .avatar-xl { border-color: var(--surface); box-shadow: 0 2px 6px rgba(70, 45, 20, .25); }
+html[data-ui="atlas"] .profile-id h1 { font: italic 700 26px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .profile-bio { font: 15px/1.65 var(--font-serif); color: #3d3022; }
+html[data-ui="atlas"] .profile-pack { background: #fffcf5; }
+html[data-ui="atlas"] .profile-foot { background: rgba(70, 45, 20, .04); }
+html[data-ui="atlas"] .members-head h2 { font: italic 700 16px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .member.active { background: var(--accent-soft); }
+html[data-ui="atlas"] .user-row .uname { font: 700 15px var(--font-serif); color: var(--ink); }
+
+/* İşlem göstergesi ve indirme paneli */
+html[data-ui="atlas"] .activity { background: var(--surface); border-color: rgba(70, 45, 20, .25); color: var(--ink); }
+html[data-ui="atlas"] .dl-card { background: var(--paper-noise), var(--surface); border-color: rgba(70, 45, 20, .25); box-shadow: 0 2px 4px rgba(70, 45, 20, .15), 0 16px 34px rgba(70, 45, 20, .25); }
+html[data-ui="atlas"] .dl-titles b { font: 700 14px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .dl-bar, html[data-ui="atlas"] .dl-mini { background: rgba(70, 45, 20, .12); }
+html[data-ui="atlas"] .dl.running .dl-bar i::after { display: none; }
+html[data-ui="atlas"] .dl-stats b, html[data-ui="atlas"] .dl-pct { color: var(--ink); }
+html[data-ui="atlas"] .dl-eta { color: var(--accent); }
+html[data-ui="atlas"] .dl-error { color: var(--error); }
+html[data-ui="atlas"] .dl-details { border-top-color: rgba(70, 45, 20, .15); }
+
+/* Geri bildirim, görünüm ve paylaş pencereleri */
+html[data-ui="atlas"] .fb-compose, html[data-ui="atlas"] .fb-item, html[data-ui="atlas"] .look-slot, html[data-ui="atlas"] .share-list { background: #fffcf5; border-color: rgba(70, 45, 20, .18); }
+html[data-ui="atlas"] .fb-item.done { background: rgba(70, 45, 20, .04); }
+html[data-ui="atlas"] .fb-text, html[data-ui="atlas"] .fb-text-body { color: #3d3022; }
+html[data-ui="atlas"] .fb-head b { font-family: var(--font-serif); font-size: 14px; }
+html[data-ui="atlas"] .fb-kind.request { color: var(--accent); }
+html[data-ui="atlas"] .fb-reply { color: #3d3022; }
+html[data-ui="atlas"] .look-preview.logo { background: radial-gradient(ellipse at 30% 60%, #f6efe0, #ddcdad 80%); }
+html[data-ui="atlas"] .look-name { font: italic 700 24px var(--font-serif); color: var(--ink); }
+html[data-ui="atlas"] .error-box { color: var(--error); }

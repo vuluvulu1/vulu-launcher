@@ -129,11 +129,11 @@ async function openSettingsPage() {
     })));
     renderSwatches(s.accentColor);
 
-    const theme = document.documentElement.dataset.ui === 'neon' ? 'neon' : 'classic';
+    const theme = ['neon', 'atlas'].includes(document.documentElement.dataset.ui) ? document.documentElement.dataset.ui : 'classic';
     const look = el('section', { class: 'set-section' },
         el('h2', {}, 'Ses ve görünüm'),
-        settingRow('Tema', 'Neon: siberpunk renkler ve farklı bir yerleşim. Bu bilgisayar için hatırlanır.',
-            segmentedControl([['classic', 'Klasik'], ['neon', 'Neon']], theme, async value => {
+        settingRow('Tema', 'Neon: siberpunk, koyu ve parlak. Atlas: kâşif defteri, açık renkli. Bu bilgisayar için hatırlanır.',
+            segmentedControl([['classic', 'Klasik'], ['neon', 'Neon'], ['atlas', 'Atlas']], theme, async value => {
                 // Vurgu rengi satırı yalnızca klasik temada var; sayfa, tema değiştiği anda yenilenir
                 await setUiTheme(value, () => openSettingsPage());
                 return true;
@@ -167,8 +167,9 @@ async function openSettingsPage() {
 
 // Tema geçiş efektleri: ekranı kapatan katmanın süresi ve temanın değiştiği an (ms)
 const THEME_FX = {
-    neon: { className: 'glitch', rootClass: 'fx-glitch', swapAt: 340, duration: 760 },   // klasik → neon: sinyal bozulması
-    classic: { className: 'iris', rootClass: null, swapAt: 550, duration: 1100 },        // neon → klasik: altın iris
+    neon: { className: 'glitch', rootClass: 'fx-glitch', swapAt: 340, duration: 760 },   // → neon: sinyal bozulması
+    classic: { className: 'iris', rootClass: null, swapAt: 550, duration: 1100 },        // → klasik: altın iris
+    atlas: { className: 'page', rootClass: null, swapAt: 500, duration: 1000 },          // → atlas: sayfa çevrilir
 };
 let themeFxRunning = false;
 

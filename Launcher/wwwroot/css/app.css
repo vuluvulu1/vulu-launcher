@@ -884,3 +884,22 @@ html.fx-glitch .view:not(#view-splash) { animation: fx-jitter .76s steps(1); }
     45%, 55% { --iris: 0px; }
     100% { --iris: 120vmax; }
 }
+
+/* → Atlas: bir kâğıt sayfa sağdan sola çevrilir; sayfa ekranı kapatınca tema değişir */
+#theme-fx.page { overflow: hidden; }
+#theme-fx.page::before {
+    content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 100%;
+    background:
+        linear-gradient(90deg, rgba(70, 45, 20, .35), rgba(70, 45, 20, 0) 60px),
+        radial-gradient(ellipse at 50% 45%, #f3ebda, #e3d4b5 95%);
+    box-shadow: -40px 0 60px rgba(40, 25, 10, .35);
+    animation: fx-page 1s cubic-bezier(.55, 0, .35, 1) forwards;
+}
+/* Sayfanın kıvrılan kenarı */
+#theme-fx.page::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 90px;
+    background: linear-gradient(90deg, rgba(255, 252, 240, .9), rgba(220, 200, 165, .6) 60%, rgba(70, 45, 20, .25));
+    animation: fx-page-edge 1s cubic-bezier(.55, 0, .35, 1) forwards;
+}
+@keyframes fx-page { 0% { transform: translateX(100%); } 45%, 55% { transform: translateX(0); } 100% { transform: translateX(-105%); } }
+@keyframes fx-page-edge { 0% { left: 100%; } 45%, 55% { left: -90px; } 100% { left: -90px; opacity: 0; } }

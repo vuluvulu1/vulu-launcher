@@ -6,8 +6,9 @@
     <title>vulu Launcher</title>
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="css/neon.css">
+    <link rel="stylesheet" href="css/atlas.css">
     <!-- Tema, ilk çizimden önce seçilir ki açılış animasyonu da doğru temada başlasın -->
-    <script>try { document.documentElement.dataset.ui = localStorage.getItem('uiTheme') === 'neon' ? 'neon' : 'classic'; } catch { }</script>
+    <script>try { const t = localStorage.getItem('uiTheme'); document.documentElement.dataset.ui = t === 'neon' || t === 'atlas' ? t : 'classic'; } catch { }</script>
 </head>
 <body>
     <!-- ── Başlık çubuğu (pencere çerçevesiz; sürükleme buradan) ───────── -->
