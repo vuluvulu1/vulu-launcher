@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>vulu Launcher</title>
     <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/neon.css">
+    <!-- Tema, ilk çizimden önce seçilir ki açılış animasyonu da doğru temada başlasın -->
+    <script>try { document.documentElement.dataset.ui = localStorage.getItem('uiTheme') === 'neon' ? 'neon' : 'classic'; } catch { }</script>
 </head>
 <body>
     <!-- ── Başlık çubuğu (pencere çerçevesiz; sürükleme buradan) ───────── -->

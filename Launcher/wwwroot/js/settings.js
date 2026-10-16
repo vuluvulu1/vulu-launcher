@@ -129,15 +129,22 @@ async function openSettingsPage() {
     })));
     renderSwatches(s.accentColor);
 
+    const theme = document.documentElement.dataset.ui === 'neon' ? 'neon' : 'classic';
     const look = el('section', { class: 'set-section' },
         el('h2', {}, 'Ses ve görünüm'),
+        settingRow('Tema', 'Neon: siberpunk renkler ve farklı bir yerleşim. Bu bilgisayar için hatırlanır.',
+            segmentedControl([['classic', 'Klasik'], ['neon', 'Neon']], theme, async value => {
+                setUiTheme(value);
+                openSettingsPage(); // vurgu rengi satırı yalnızca klasik temada var
+                return true;
+            })),
         settingRow('Menü müziği', null, toggleControl(s.musicEnabled, async value => {
             if (!(await changeSetting({ musicEnabled: value }))) return false;
             if (value) $('music').play().catch(() => { });
             return true;
         })),
         settingRow('Ses düzeyi', null, el('div', { class: 'set-inline' }, volume)),
-        settingRow('Vurgu rengi', null, swatches));
+        theme === 'classic' && settingRow('Vurgu rengi', null, swatches));
 
     // ── Hesap ve dosyalar ─────────────────────────────────────────────
     const account = el('section', { class: 'set-section' },
@@ -156,6 +163,13 @@ async function openSettingsPage() {
         settingRow('Sürüm', null, el('span', { class: 'set-value' }, 'vulu Launcher v' + info.version)));
 
     body.replaceChildren(game, behaviour, look, account);
+}
+
+/** Temayı hemen uygular; yalnızca CSS değiştiği için sayfa yeniden yüklenmez. */
+function setUiTheme(theme) {
+    document.documentElement.dataset.ui = theme;
+    store.set('uiTheme', theme);
+    if (typeof renderDownloads === 'function') renderDownloads();
 }
 
 async function logout() {
