@@ -48,6 +48,18 @@ function showPage(name) {
     if (name === 'admin') openAdminPage();
     if (name === 'packs') openPacksPage();
     refreshActivity();
+    reportPresence();
+}
+
+/** Discord durumu için bulunulan sayfa ve Oyna'da seçili instance. */
+function reportPresence() {
+    const selected = state.page === 'home' && state.selected;
+    bridge.invoke('discord.page', {
+        page: state.page || 'home',
+        instance: selected ? selected.name : '',
+        mcVersion: selected ? selected.mcVersion : '',
+        loader: selected ? selected.loader : '',
+    }).catch(() => {});
 }
 
 /** Uzun süren bir işlemi sarar: bittiğine kadar "meşgul" göstergesi açık kalır. */
@@ -449,6 +461,7 @@ function clearSelection() {
 
 function selectInstance(instance) {
     state.selected = instance;
+    reportPresence();
     store.set('lastPack', instance.id);
     markSelectedCard();
 

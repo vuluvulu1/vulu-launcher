@@ -23,7 +23,12 @@ namespace VuluLauncher
         private readonly CancellationTokenSource _stop = new();
         private readonly SemaphoreSlim _changed = new(0, 1);
         private JsonObject? _activity;           // gösterilmek istenen durum; null = boş
+        private JsonObject? _browsing;           // launcher'daki son sayfa; oyun kapanınca buna dönülür
+        private bool _playing;
         private bool _enabled;
+        private readonly long _sessionStart = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        // Discord durum güncellemesini sınırlar (~20 sn'de 5); hızlı sayfa geçişleri birleştirilir
+        private static readonly TimeSpan MinInterval = TimeSpan.FromSeconds(4);
         private Task? _loop;
 
         public void SetEnabled(bool enabled)
@@ -38,24 +43,72 @@ namespace VuluLauncher
             Signal();
         }
 
-        /// <summary>Launcher'da geziniyor.</summary>
-        public void ShowIdle() => Set(new JsonObject
+        /// <summary>Oyun kapandı: launcher'daki son sayfanın durumuna dönülür.</summary>
+        public void ShowIdle()
         {
-            ["details"] = "Launcher'da",
-            ["assets"] = Assets(null),
-        });
+            JsonObject activity;
+            lock (_gate)
+            {
+                _playing = false;
+                activity = _browsing ?? Browsing("Launcher'da", null);
+            }
+            Set(activity);
+        }
 
-        /// <summary>Oyun açık: instance adı, sürüm ve süre.</summary>
-        public void ShowPlaying(string instanceName, string mcVersion, string loader)
+        /// <summary>
+        /// Launcher'da hangi sayfada olunduğu (ve Oyna'da seçili instance). Oyun açıkken saklanır, oyun kapanınca gösterilir.
+        /// </summary>
+        public void ShowPage(string page, string? instanceName, string? mcVersion, string? loader)
+        {
+            var (details, state) = page switch
+            {
+                "home" => ("Launcher'da", instanceName == null ? null : $"Seçili: {instanceName} · {Describe(mcVersion, loader)}"),
+                "packs" => ("Keşfet'te geziniyor", "vulu Packs'e bakıyor"),
+                "modrinth" => ("Keşfet'te geziniyor", "Modrinth'te içerik arıyor"),
+                "settings" => ("Ayarlarda", (string?)null),
+                "profile" => ("Profillere bakıyor", null),
+                "admin" => ("Yönetim panelinde", null),
+                _ => ("Launcher'da", null),
+            };
+            var activity = Browsing(details, state);
+            bool show;
+            lock (_gate)
+            {
+                _browsing = activity;
+                show = !_playing;
+            }
+            if (show) Set(activity.DeepClone().AsObject());
+        }
+
+        private JsonObject Browsing(string details, string? state)
+        {
+            var activity = new JsonObject
+            {
+                ["details"] = Trim(details),
+                ["timestamps"] = new JsonObject { ["start"] = _sessionStart },   // launcher ne zamandır açık
+                ["assets"] = Assets(null),
+            };
+            if (state != null) activity["state"] = Trim(state);
+            return activity;
+        }
+
+        private static string Describe(string? mcVersion, string? loader)
         {
             string loaderName = loader switch
             {
                 "fabric" => "Fabric", "forge" => "Forge", "neoforge" => "NeoForge", "quilt" => "Quilt", _ => "Vanilla",
             };
+            return string.IsNullOrEmpty(mcVersion) ? loaderName : $"{mcVersion} {loaderName}";
+        }
+
+        /// <summary>Oyun açık: instance adı, sürüm ve süre.</summary>
+        public void ShowPlaying(string instanceName, string mcVersion, string loader)
+        {
+            lock (_gate) _playing = true;
             Set(new JsonObject
             {
                 ["details"] = Trim($"{instanceName} oynuyor"),
-                ["state"] = Trim($"Minecraft {mcVersion} · {loaderName}"),
+                ["state"] = Trim($"Minecraft {Describe(mcVersion, loader)}"),
                 ["timestamps"] = new JsonObject { ["start"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds() },
                 ["assets"] = Assets($"Minecraft {mcVersion}"),
             });
@@ -112,10 +165,14 @@ namespace VuluLauncher
                         // Okuma döngüsü: ping'lere cevap verir, bağlantı koparsa biter
                         using var linked = CancellationTokenSource.CreateLinkedTokenSource(stop);
                         var reader = Task.Run(() => ReadLoopAsync(pipe, linked.Token));
+                        var lastSent = DateTime.MinValue;
                         try
                         {
                             while (!stop.IsCancellationRequested && !reader.IsCompleted)
                             {
+                                var wait = lastSent + MinInterval - DateTime.UtcNow;
+                                if (wait > TimeSpan.Zero) await Task.Delay(wait, linked.Token);   // bu sürede gelen değişiklikler birleşir
+                                lastSent = DateTime.UtcNow;
                                 JsonObject? activity;
                                 lock (_gate) { enabled = _enabled; activity = _activity; }
                                 await SendActivityAsync(pipe, enabled ? activity : null, stop);

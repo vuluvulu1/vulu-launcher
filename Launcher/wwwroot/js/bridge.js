@@ -265,6 +265,7 @@ const mockBackend = (() => {
                 ],
             };
         },
+        'discord.page': async () => null,
         'packs.pickCover': async () => ({ path: 'C:\\kapak.jpg', url: 'assets/mainmenu.png' }),
         'packs.publish': async args => {
             log(`${args.name} hazırlanıyor...`, 'accent'); await wait(500);

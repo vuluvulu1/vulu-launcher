@@ -38,6 +38,14 @@ namespace VuluLauncher
             _modrinth = new ModrinthService(Log);
             _game = new GameLauncher(Log, _java);
             _game.Exited += () => { _bridge.Emit("gameExited"); _discord.ShowIdle(); };
+            // Arayüz hangi sayfada olunduğunu (ve Oyna'da seçili instance'ı) bildirir
+            _bridge.On("discord.page", args =>
+            {
+                string page = args.Str("page");
+                string? name = string.IsNullOrWhiteSpace(args.Str("instance")) ? null : args.Str("instance").Trim();
+                _discord.ShowPage(page, name, args.Str("mcVersion"), args.Str("loader"));
+                return Task.FromResult<object?>(null);
+            });
             _discord.ShowIdle();
             _discord.SetEnabled(AppSettings.Current.DiscordPresence);
             DownloadJob.Emit = snapshot => _bridge.Emit("download", snapshot);
