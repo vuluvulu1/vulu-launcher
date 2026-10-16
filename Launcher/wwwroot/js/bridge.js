@@ -295,6 +295,14 @@ const mockBackend = (() => {
             instances = instances.map(i => i.id === args.id ? { ...i, background: 'assets/launchervanillabg.jpg', backgroundStyle: 'cover', hasCustomBackground: true, thumbnail: i.kind === 'custom' ? 'assets/launchervanillabg.jpg' : i.thumbnail } : i);
             return { changed: true };
         },
+        'instances.pickLogo': async args => {
+            instances = instances.map(i => i.id === args.id ? { ...i, logo: 'assets/minecraftlogo.png', hasCustomLogo: true } : i);
+            return { changed: true };
+        },
+        'instances.clearLogo': async args => {
+            instances = instances.map(i => i.id === args.id ? { ...i, logo: i.kind === 'custom' ? null : 'assets/minecraftlogo.png', hasCustomLogo: false } : i);
+            return { changed: true };
+        },
         'instances.clearBackground': async args => {
             instances = instances.map(i => i.id === args.id ? { ...i, background: i.kind === 'custom' ? null : i.background, hasCustomBackground: false, thumbnail: i.kind === 'custom' ? null : i.thumbnail } : i);
             return { changed: true };

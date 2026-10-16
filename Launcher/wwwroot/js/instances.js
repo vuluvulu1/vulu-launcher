@@ -182,36 +182,76 @@ async function deleteInstance(instance) {
     }
 }
 
-/** Seçili paketin/instance'ın ana ekrandaki arka plan resmini değiştirir ya da kaldırır. */
-function openBackgroundDialog(instance) {
+/**
+ * Görünüm: ana ekrandaki arka plan resmi ve ismin yerine geçen logo. Değişiklik hemen uygulanır;
+ * pencere açık kalır ki ikisi birlikte ayarlanabilsin.
+ */
+function openAppearanceDialog(instance) {
+    let current = instance;
+
     return openModal(close => {
         const error = el('div', { class: 'form-error' });
+        const slots = el('div', { class: 'look-slots' });
 
         async function run(command) {
             error.textContent = '';
             try {
-                const result = await bridge.invoke(command, { id: instance.id });
+                const result = await bridge.invoke(command, { id: current.id });
                 if (!result.changed) return; // dosya seçmeden kapattı
-                close(true);
-                await reloadInstances(instance.id);
+                await reloadInstances(current.id);
+                current = state.instances.find(i => i.id === current.id) || current;
+                render();
             } catch (err) {
                 error.textContent = err.message;
             }
         }
 
+        function slot({ title, hint, preview, hasCustom, pick, clear, resetHint }) {
+            return el('section', { class: 'look-slot' },
+                preview,
+                el('div', { class: 'look-info' },
+                    el('b', {}, title),
+                    el('p', { class: 'hint' }, hint),
+                    hasCustom && resetHint && el('p', { class: 'hint' }, resetHint),
+                    el('div', { class: 'look-actions' },
+                        el('button', { class: 'btn btn-sm btn-primary', onclick: () => run(pick) }, hasCustom ? 'Değiştir' : 'Resim seç'),
+                        hasCustom && el('button', { class: 'btn btn-sm btn-danger', onclick: () => run(clear) }, 'Kaldır'))));
+        }
+
+        function render() {
+            const bg = el('div', { class: 'look-preview bg' + (current.background ? '' : ' empty') });
+            if (current.background) bg.style.backgroundImage = `url("${current.background}")`;
+            else bg.append(el('span', {}, 'Arka plan yok'));
+
+            // Logo, ana ekrandaki gibi karanlık zeminde gösterilir; yoksa ismin yazıyla hali
+            const logo = el('div', { class: 'look-preview logo' },
+                current.logo ? el('img', { src: current.logo, alt: '' }) : el('span', { class: 'look-name' }, current.name));
+
+            slots.replaceChildren(
+                slot({
+                    title: 'Logo', preview: logo, hasCustom: current.hasCustomLogo,
+                    hint: 'Ana ekranda paket adının yerine görünür. Saydam arka planlı PNG en iyisi; en çok 4 MB.',
+                    resetHint: current.kind === 'server' ? 'Kaldırırsan paketin kendi logosuna dönülür.' : 'Kaldırırsan ad yazıyla gösterilir.',
+                    pick: 'instances.pickLogo', clear: 'instances.clearLogo',
+                }),
+                slot({
+                    title: 'Arka plan', preview: bg, hasCustom: current.hasCustomBackground,
+                    hint: 'Ana ekranda arkada görünür. PNG, JPG, WEBP ya da GIF; geniş (16:9) resimler en iyisi.',
+                    resetHint: current.kind === 'server' ? 'Kaldırırsan paketin kendi arka planına dönülür.' : null,
+                    pick: 'instances.pickBackground', clear: 'instances.clearBackground',
+                }));
+        }
+
+        render();
         return [
-            el('div', { class: 'modal-head' }, `${instance.name} — arka plan`),
-            el('div', { class: 'modal-body form' },
-                el('p', { class: 'hint', style: 'margin-top:0' },
-                    'Ana ekranda bu paketin arkasında görünecek resmi seç. PNG, JPG, WEBP ya da GIF; geniş (16:9) resimler en iyi sonucu verir.'),
-                instance.kind === 'server' && instance.hasCustomBackground &&
-                    el('p', { class: 'hint' }, 'Kaldırırsan paketin kendi arka planına dönülür.'),
+            el('div', { class: 'modal-head' }, `${instance.name} — görünüm`),
+            el('div', { class: 'modal-body look-body' },
+                slots,
+                current.sharedPackId && el('p', { class: 'hint look-note' },
+                    'Paylaştığın paketlerde logo da pakete eklenir; "Paylaşımı güncelle" ile kuranlara da gider.'),
                 error),
             el('div', { class: 'modal-foot' },
-                el('button', { class: 'btn', onclick: () => close(false) }, 'Vazgeç'),
-                instance.hasCustomBackground &&
-                    el('button', { class: 'btn btn-danger', onclick: () => run('instances.clearBackground') }, 'Kaldır'),
-                el('button', { class: 'btn btn-primary', onclick: () => run('instances.pickBackground') }, 'Resim seç')),
+                el('button', { class: 'btn btn-primary', onclick: () => close(true) }, 'Tamam')),
         ];
     });
 }

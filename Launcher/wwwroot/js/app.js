@@ -457,7 +457,7 @@ function selectInstance(instance) {
         isCustom && state.isAdmin && el('button', { class: 'btn btn-sm btn-accent', onclick: () => openShareDialog(instance) },
             instance.sharedPackId ? 'Paylaşımı güncelle' : 'Paylaş'),
         el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'instance', id: instance.id }) }, 'Klasörü aç'),
-        el('button', { class: 'btn btn-sm', onclick: () => openBackgroundDialog(instance) }, 'Arka plan'),
+        el('button', { class: 'btn btn-sm', onclick: () => openAppearanceDialog(instance) }, 'Görünüm'),
         isCustom && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deleteInstance(instance) }, 'Sil'),
     ].filter(Boolean));
 

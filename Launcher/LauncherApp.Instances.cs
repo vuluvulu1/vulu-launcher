@@ -35,6 +35,8 @@ namespace VuluLauncher
 
             _bridge.On("instances.pickBackground", args => Task.FromResult<object?>(PickBackground(args.Str("id"))));
             _bridge.On("instances.clearBackground", args => Task.FromResult<object?>(ClearBackground(args.Str("id"))));
+            _bridge.On("instances.pickLogo", args => Task.FromResult<object?>(PickLogo(args.Str("id"))));
+            _bridge.On("instances.clearLogo", args => Task.FromResult<object?>(ClearLogo(args.Str("id"))));
 
             _bridge.On("settings.get", _ => Task.FromResult<object?>(GetSettings()));
             _bridge.On("settings.save", args => Task.FromResult<object?>(SaveSettings(args)));
@@ -60,6 +62,7 @@ namespace VuluLauncher
             var packs = PackCatalog.All.Select(p =>
             {
                 string? custom = BackgroundUrl(PackPrefix + p.Id);
+                string? customLogo = LogoUrl(PackPrefix + p.Id);
                 return (object)new
             {
                 id = PackPrefix + p.Id,
@@ -70,7 +73,8 @@ namespace VuluLauncher
                 loader = p.Loader,
                 loaderVersion = p.LoaderVersion,
                 recommendedRamGb = p.RecommendedRamGb,
-                logo = p.Logo,
+                logo = customLogo ?? p.Logo,
+                hasCustomLogo = customLogo != null,
                 // Kullanıcının seçtiği resim, paketin kendi arka planının yerine geçer
                 background = custom ?? p.Background,
                 backgroundStyle = custom != null ? "cover" : p.BackgroundStyle,
@@ -83,6 +87,7 @@ namespace VuluLauncher
             var custom = InstanceStore.List().Select(m =>
             {
                 string? background = BackgroundUrl(InstancePrefix + m.Folder);
+                string? logo = LogoUrl(InstancePrefix + m.Folder);
                 return (object)new
             {
                 id = InstancePrefix + m.Folder,
@@ -96,7 +101,8 @@ namespace VuluLauncher
                 loader = m.Loader,
                 loaderVersion = m.LoaderVersion,
                 recommendedRamGb = m.Loader == "vanilla" ? 4 : 8,
-                logo = (string?)null,
+                logo,
+                hasCustomLogo = logo != null,
                 background,
                 backgroundStyle = "cover",
                 hasCustomBackground = background != null,
@@ -228,6 +234,7 @@ namespace VuluLauncher
 
             InstanceStore.Delete(meta.Folder);
             DeleteBackgroundFiles(id);
+            DeleteLogoFiles(id);
             Log($"{meta.Name} silindi.", "muted");
             return new { success = true };
         }
@@ -440,60 +447,86 @@ namespace VuluLauncher
         }
 
         // ════════════════════════════════════════════════════════════════
-        // ARKA PLAN RESİMLERİ
+        // ARKA PLAN VE LOGO RESİMLERİ
+        // Her paket/instance için kullanıcının seçtiği resimler; dosya adı kimlikten türetilir.
         // ════════════════════════════════════════════════════════════════
         private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg", ".webp", ".gif" };
+
+        /// <summary>Logo vulu Packs'te de paylaşılabildiği için sunucunun kabul ettiği biçimlerle sınırlıdır.</summary>
+        private static readonly string[] LogoExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
 
         /// <summary>"pack:vanilla" → "pack_vanilla": dosya adında kullanılabilir hale getirir.</summary>
         private static string BackgroundKey(string id) =>
             string.Concat(id.Select(c => char.IsLetterOrDigit(c) || c is '-' or '_' ? c : '_'));
 
-        private static string? BackgroundFile(string id)
+        private static string? ImageFile(string folder, string id)
         {
-            if (!Directory.Exists(AppPaths.Backgrounds)) return null;
-            return Directory.GetFiles(AppPaths.Backgrounds, BackgroundKey(id) + ".*")
+            if (!Directory.Exists(folder)) return null;
+            return Directory.GetFiles(folder, BackgroundKey(id) + ".*")
                 .FirstOrDefault(f => ImageExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()));
         }
 
         /// <summary>Arayüzün doğrudan gösterebileceği adres; resim değişince yenilensin diye sonuna zaman eklenir.</summary>
-        private static string? BackgroundUrl(string id)
+        private static string? ImageUrl(string folder, string id)
         {
-            string? file = BackgroundFile(id);
+            string? file = ImageFile(folder, id);
             return file == null ? null : $"{new Uri(file).AbsoluteUri}?v={File.GetLastWriteTimeUtc(file).Ticks}";
         }
 
-        private static void DeleteBackgroundFiles(string id)
+        private static void DeleteImageFiles(string folder, string id)
         {
-            if (!Directory.Exists(AppPaths.Backgrounds)) return;
-            foreach (var file in Directory.GetFiles(AppPaths.Backgrounds, BackgroundKey(id) + ".*"))
+            if (!Directory.Exists(folder)) return;
+            foreach (var file in Directory.GetFiles(folder, BackgroundKey(id) + ".*"))
                 File.Delete(file);
         }
 
-        private object PickBackground(string id)
+        private static string? BackgroundFile(string id) => ImageFile(AppPaths.Backgrounds, id);
+        private static string? BackgroundUrl(string id) => ImageUrl(AppPaths.Backgrounds, id);
+        private static void DeleteBackgroundFiles(string id) => DeleteImageFiles(AppPaths.Backgrounds, id);
+
+        private static string? LogoFile(string id) => ImageFile(AppPaths.Logos, id);
+        private static string? LogoUrl(string id) => ImageUrl(AppPaths.Logos, id);
+        private static void DeleteLogoFiles(string id) => DeleteImageFiles(AppPaths.Logos, id);
+
+        private object PickImage(string folder, string id, string title, string[] extensions, long maxBytes)
         {
             _ = ResolveTarget(id); // kimlik geçerli ve kullanıcıya açık mı
 
-            var files = _window.ShowOpenFile("Arka plan resmi seçin", null, false,
-                new[] { ("Resimler", new[] { "png", "jpg", "jpeg", "webp", "gif" }) });
+            var files = _window.ShowOpenFile(title, null, false,
+                new[] { ("Resimler", extensions.Select(e => e.TrimStart('.')).ToArray()) });
             if (files is not { Length: > 0 }) return new { changed = false };
 
             string source = files[0];
             string extension = Path.GetExtension(source).ToLowerInvariant();
-            if (!ImageExtensions.Contains(extension))
-                throw new InvalidOperationException("Desteklenen biçimler: PNG, JPG, WEBP, GIF.");
-            if (new FileInfo(source).Length > 25L * 1024 * 1024)
-                throw new InvalidOperationException("Resim 25 MB'tan büyük olamaz.");
+            if (!extensions.Contains(extension))
+                throw new InvalidOperationException("Desteklenen biçimler: " +
+                    string.Join(", ", extensions.Where(e => e != ".jpeg").Select(e => e.TrimStart('.').ToUpperInvariant())) + ".");
+            if (new FileInfo(source).Length > maxBytes)
+                throw new InvalidOperationException($"Resim {maxBytes / 1024 / 1024} MB'tan büyük olamaz.");
 
-            Directory.CreateDirectory(AppPaths.Backgrounds);
-            DeleteBackgroundFiles(id);
-            File.Copy(source, Path.Combine(AppPaths.Backgrounds, BackgroundKey(id) + extension), overwrite: true);
+            Directory.CreateDirectory(folder);
+            DeleteImageFiles(folder, id);
+            File.Copy(source, Path.Combine(folder, BackgroundKey(id) + extension), overwrite: true);
             return new { changed = true };
         }
+
+        private object PickBackground(string id) =>
+            PickImage(AppPaths.Backgrounds, id, "Arka plan resmi seçin", ImageExtensions, 25L * 1024 * 1024);
+
+        private object PickLogo(string id) =>
+            PickImage(AppPaths.Logos, id, "Logo resmi seçin (saydam PNG önerilir)", LogoExtensions, 4L * 1024 * 1024);
 
         private object ClearBackground(string id)
         {
             _ = ResolveTarget(id);
             DeleteBackgroundFiles(id);
+            return new { changed = true };
+        }
+
+        private object ClearLogo(string id)
+        {
+            _ = ResolveTarget(id);
+            DeleteLogoFiles(id);
             return new { changed = true };
         }
 

@@ -100,6 +100,25 @@ namespace VuluLauncher
             catch { /* kapak olmadan da kurulum tamamdır */ }
         }
 
+        /// <summary>Paketin logosu instance'ın logosu olur (güncellemede de yenilenir); alınamazsa sessizce geçilir.</summary>
+        private async Task UsePackLogoAsync(PackStore store, SharedPack pack, InstanceMeta meta)
+        {
+            if (!pack.HasLogo) return;
+            string ext = CoverExtensions.Contains(pack.LogoExt) ? pack.LogoExt! : ".png";
+            string id = InstancePrefix + meta.Folder;
+            string target = Path.Combine(AppPaths.Logos, BackgroundKey(id) + ext);
+            string temp = target + ".part";
+            try
+            {
+                Directory.CreateDirectory(AppPaths.Logos);
+                await store.DownloadLogoAsync(pack, temp);
+                DeleteLogoFiles(id);
+                File.Move(temp, target, overwrite: true);
+            }
+            catch { /* logo olmadan da paket çalışır */ }
+            finally { if (File.Exists(temp)) File.Delete(temp); }
+        }
+
         // ── Kurulum ve güncelleme ─────────────────────────────────────────
         private async Task<object?> InstallPackAsync(string id)
         {
@@ -117,6 +136,7 @@ namespace VuluLauncher
                 Log($"{pack.Name} kuruluyor...", "accent");
                 await ApplyPackAsync(store, pack, meta, job);
                 await UseCoverAsBackgroundAsync(store, pack, meta);
+                await UsePackLogoAsync(store, pack, meta);
 
                 Log($"{pack.Name} kuruldu.", "ok");
                 job.Complete($"{pack.Name} kuruldu");
@@ -145,6 +165,7 @@ namespace VuluLauncher
             try
             {
                 await ApplyPackAsync(store, pack, meta, job);
+                await UsePackLogoAsync(store, pack, meta);
             }
             catch (Exception ex)
             {
@@ -304,6 +325,7 @@ namespace VuluLauncher
                 loader = meta.Loader,
                 modrinthCount = meta.Content.Count(c => File.Exists(Path.Combine(dir, c.File))),
                 entries,
+                hasLogo = LogoFile(InstancePrefix + meta.Folder) != null,
                 existing = existing == null ? null : new { id = existing.Id, revision = existing.Revision, hasCover = existing.HasCover }
             };
         }
@@ -375,7 +397,10 @@ namespace VuluLauncher
                 pack.Includes = includes;
 
                 Log($"{name} yükleniyor ({fileCount} dosya, {mods.Count} Modrinth içeriği)...", "replace");
-                pack = await store.PublishAsync(pack, zipPath, cover);
+                // Instance'a logo atandıysa paketle paylaşılır; logo seçilmediyse paketin logosu da kalkar
+                string? logo = LogoFile(InstancePrefix + meta.Folder);
+                if (logo != null && !CoverExtensions.Contains(Path.GetExtension(logo).ToLowerInvariant())) logo = null;
+                pack = await store.PublishAsync(pack, zipPath, cover, logo);
 
                 meta.SharedPackId = pack.Id;
                 meta.SharedPackRevision = pack.Revision;

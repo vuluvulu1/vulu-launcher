@@ -13,6 +13,9 @@ namespace VuluLauncher
         /// <summary>Kullanıcının paketlere/instance'lara atadığı arka plan resimleri.</summary>
         public static readonly string Backgrounds = Path.Combine(AppData, "backgrounds");
 
+        /// <summary>Ana ekranda paket adının yerine gösterilen logolar.</summary>
+        public static readonly string Logos = Path.Combine(AppData, "logos");
+
         /// <summary>Oyun dosyaları (java, minecraft_core, instances) exe'nin yanında durur.</summary>
         public static readonly string Base = AppContext.BaseDirectory;
         public static readonly string Instances = Path.Combine(Base, "instances");

@@ -27,6 +27,9 @@ namespace VuluLauncher
         public Task DownloadOverridesAsync(SharedPack pack, string path, IProgress<long>? bytesRead = null) =>
             _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/overrides", path, bytesRead);
 
+        public Task DownloadLogoAsync(SharedPack pack, string path) =>
+            _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/logo?v={pack.Revision}", path);
+
         public Task DownloadCoverAsync(SharedPack pack, string path) =>
             _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/cover?v={pack.Revision}", path);
 
@@ -34,11 +37,23 @@ namespace VuluLauncher
         public static string? CoverUrl(SharedPack pack) =>
             pack.HasCover ? $"{ApiConfig.BaseUrl}/packs/{Uri.EscapeDataString(pack.Id)}/cover?v={pack.Revision}" : null;
 
-        /// <summary>Dosyaları yükler ve paketi yayınlar. pack.Id doluysa o paketin yeni revizyonu olur.</summary>
-        public async Task<SharedPack> PublishAsync(SharedPack pack, string overridesZip, string? coverPath)
+        /// <summary>
+        /// Dosyaları yükler ve paketi yayınlar. pack.Id doluysa o paketin yeni revizyonu olur.
+        /// logoPath null ise paketin logosu kaldırılır (instance'ta logo yok demektir).
+        /// </summary>
+        public async Task<SharedPack> PublishAsync(SharedPack pack, string overridesZip, string? coverPath, string? logoPath)
         {
             var overrides = await _api.UploadFileAsync<UploadResult>("/packs/files?kind=overrides", overridesZip);
             UploadResult? cover = coverPath == null ? null : await _api.UploadFileAsync<UploadResult>("/packs/files?kind=cover", coverPath);
+
+            // Logoyu tanımayan eski sunucu bu türü reddeder; paket logosuz yayınlanır
+            UploadResult? logo = null;
+            bool logoSupported = true;
+            if (logoPath != null)
+            {
+                try { logo = await _api.UploadFileAsync<UploadResult>("/packs/files?kind=logo", logoPath); }
+                catch (ApiException ex) when (ex.Status == HttpStatusCode.BadRequest) { logoSupported = false; }
+            }
 
             return await _api.PostAsync<SharedPack>("/packs", new
             {
@@ -53,7 +68,10 @@ namespace VuluLauncher
                 includes = pack.Includes,
                 overridesFileId = overrides.FileId,
                 coverFileId = cover?.FileId,
-                coverExt = coverPath == null ? null : Path.GetExtension(coverPath).ToLowerInvariant()
+                coverExt = coverPath == null ? null : Path.GetExtension(coverPath).ToLowerInvariant(),
+                logoFileId = logo?.FileId,
+                logoExt = logo == null ? null : Path.GetExtension(logoPath!).ToLowerInvariant(),
+                clearLogo = logoPath == null && logoSupported
             });
         }
 
@@ -85,6 +103,8 @@ namespace VuluLauncher
         public long OverridesSize { get; set; }
         public bool HasCover { get; set; }
         public string? CoverExt { get; set; }
+        public bool HasLogo { get; set; }
+        public string? LogoExt { get; set; }
     }
 
     /// <summary>Modrinth'ten indirilecek bir içerik; sürümü yayınlandığı anda sabitlenir.</summary>

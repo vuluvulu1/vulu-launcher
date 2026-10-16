@@ -387,7 +387,24 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 
 .stage-body { flex: 1; min-height: 0; display: flex; align-items: flex-end; padding-bottom: 22px; }
 .stage-hero { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 14px; }
-.pack-logo { max-height: 100px; max-width: 400px; object-fit: contain; object-position: left center; }
+.pack-logo { max-height: 110px; max-width: 420px; object-fit: contain; object-position: left center; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .45)); }
+
+/* Görünüm penceresi: logo ve arka plan */
+.modal:has(.look-body) { width: 620px; }
+.look-body { white-space: normal; display: flex; flex-direction: column; gap: 4px; }
+.look-slots { display: flex; flex-direction: column; gap: 10px; }
+.look-slot { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); }
+.look-preview { aspect-ratio: 16 / 9; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r); }
+.look-preview.bg { background: var(--bg) center / cover no-repeat; }
+.look-preview.empty span { font-size: 12px; color: var(--dim); }
+.look-preview.logo { padding: 14px; background: radial-gradient(ellipse at 30% 60%, #2a231d, #0d0b0a 75%); }
+.look-preview.logo img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .45)); }
+.look-name { font: 700 22px/1.05 var(--font-pixel); color: var(--text); text-align: center; overflow-wrap: anywhere; }
+.look-info { min-width: 0; display: flex; flex-direction: column; }
+.look-info b { font: 600 13.5px var(--font); }
+.look-info .hint { margin-top: 4px; }
+.look-actions { display: flex; gap: 6px; margin-top: 10px; }
+.look-note { margin-top: 8px; }
 .pack-title { margin: 0; font: 700 56px/1 var(--font-pixel); letter-spacing: .01em; color: var(--text); text-shadow: 0 2px 0 rgba(0, 0, 0, .4); overflow-wrap: anywhere; }
 .pack-desc { margin: 0; max-width: 540px; font-size: 15px; line-height: 1.55; color: #e2d9ce; }
 .pack-tags { display: flex; gap: 6px; flex-wrap: wrap; }
