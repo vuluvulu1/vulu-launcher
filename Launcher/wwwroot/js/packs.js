@@ -68,6 +68,7 @@ function packTile(pack, result) {
                 el('span', { class: 'tag' }, pack.loader === 'vanilla' ? 'Vanilla'
                     : `${LOADER_NAMES[pack.loader] || pack.loader} ${pack.loaderVersion || ''}`.trim()),
                 pack.modCount > 0 && el('span', { class: 'tag' }, pack.modCount + ' mod'),
+                ...contentTags(pack),
                 el('span', { class: 'tag' }, formatSize(pack.sizeMb))),
             el('div', { class: 'pack-foot' },
                 primary,
@@ -126,7 +127,28 @@ async function deletePack(pack) {
     openPacksPage();
 }
 
+/** Paketin mod dışındaki içerikleri: kaynak paketleri, shaderlar, KubeJS ve config. */
+function contentTags(pack) {
+    const has = folder => (pack.includes || []).some(p => p.toLowerCase() === folder);
+    const tags = [];
+    if (pack.resourcePackCount > 0) tags.push(pack.resourcePackCount + ' kaynak paketi');
+    else if (has('resourcepacks')) tags.push('Kaynak paketleri');
+    if (pack.shaderCount > 0) tags.push(pack.shaderCount + ' shader');
+    else if (has('shaderpacks')) tags.push('Shader');
+    if (has('kubejs')) tags.push('KubeJS');
+    if (has('config') || has('defaultconfigs')) tags.push('Config');
+    return tags.map(t => el('span', { class: 'tag' }, t));
+}
+
 // ── Paylaş (admin) ────────────────────────────────────────────────────
+// Paylaş penceresinde klasör adlarının yanında görünen açıklamalar
+const SHARE_LABELS = {
+    'config': 'Mod ayarları', 'defaultconfigs': 'Varsayılan mod ayarları', 'kubejs': 'KubeJS betikleri',
+    'mods': 'Modlar', 'resourcepacks': 'Kaynak paketleri', 'shaderpacks': 'Shaderlar', 'datapacks': 'Veri paketleri',
+    'global_packs': 'Genel veri ve kaynak paketleri', 'openloader': 'OpenLoader paketleri', 'fancymenu_data': 'FancyMenu ekranları',
+    'optionsshaders.txt': 'Seçili shader (OptiFine)', 'options.txt': 'Oyun ayarları', 'servers.dat': 'Sunucu listesi',
+    'schematics': 'Şemalar', 'journeymap': 'JourneyMap ayarları', 'xaero': 'Xaero harita ayarları',
+};
 /** Yalnızca admin işaretli hesaplarda görünür; yetkiyi sunucu da ayrıca denetler. */
 async function openShareDialog(instance) {
     let info;
@@ -160,7 +182,9 @@ async function openShareDialog(instance) {
                 box,
                 row: el('label', { class: 'share-entry' },
                     box,
-                    el('span', { class: 'share-path' }, entry.path + (entry.isDir ? '/' : '')),
+                    el('span', { class: 'share-name' },
+                        SHARE_LABELS[entry.path.toLowerCase()] && el('b', {}, SHARE_LABELS[entry.path.toLowerCase()]),
+                        el('span', { class: 'share-path' }, entry.path + (entry.isDir ? '/' : ''))),
                     entry.note && el('span', { class: 'share-note' }, entry.note),
                     el('span', { class: 'share-size' }, `${entry.files} dosya · ${formatSize(entry.sizeMb)}`)),
             };
@@ -201,7 +225,8 @@ async function openShareDialog(instance) {
                 el('div', { class: 'share-right' },
                     el('div', { class: 'share-title' }, 'Pakete dahil edilecekler'),
                     el('p', { class: 'hint' }, 'Modrinth\'te bulunan modlar, kaynak paketleri ve shaderlar dosya yerine bağlantı olarak eklenir; '
-                        + 'kuranlar Modrinth\'ten indirir. Görev kitabı ve özel dosyalar genelde config/ ve kubejs/ içindedir.'),
+                        + 'kuranlar Modrinth\'ten indirir. Açık kaynak paketleri ve seçili shader kuranlarda da açık gelir. '
+                        + 'Görev kitabı ve özel tarifler genelde config/ ve kubejs/ içindedir.'),
                     el('div', { class: 'share-list' }, checks.length
                         ? checks.map(c => c.row)
                         : el('p', { class: 'hint' }, 'Paylaşılacak dosya bulunamadı.')),

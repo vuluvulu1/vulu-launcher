@@ -23,7 +23,8 @@ namespace VuluLauncher
         private static readonly HashSet<string> SharedByDefault = new(StringComparer.OrdinalIgnoreCase)
         {
             "config", "kubejs", "defaultconfigs", "mods", "resourcepacks", "shaderpacks",
-            "fancymenu_data", "global_packs", "global_data", "openloader", "datapacks"
+            "fancymenu_data", "global_packs", "global_data", "openloader", "datapacks",
+            "optionsshaders.txt" // OptiFine'da seçili shader (Iris/Oculus'unki config/ içinde)
         };
 
         private static readonly string[] CoverExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
@@ -76,6 +77,8 @@ namespace VuluLauncher
                         revision = p.Revision,
                         updatedAt = p.UpdatedAt.ToString("o"),
                         modCount = p.Mods.Count(m => m.Type == "mod"),
+                        resourcePackCount = p.Mods.Count(m => m.Type == "resourcepack"),
+                        shaderCount = p.Mods.Count(m => m.Type == "shader"),
                         sizeMb = Math.Round((p.OverridesSize + p.Mods.Sum(m => m.Size)) / 1024.0 / 1024.0, 1),
                         includes = p.Includes,
                         coverUrl = PackStore.CoverUrl(p),
@@ -270,6 +273,12 @@ namespace VuluLauncher
                     {
                         if (entry.FullName.EndsWith('/')) continue;
                         if (string.Equals(entry.FullName, "instance.json", StringComparison.OrdinalIgnoreCase)) continue;
+                        if (string.Equals(entry.FullName, PackOptions.FileName, StringComparison.Ordinal))
+                        {
+                            using var options = entry.Open();
+                            PackOptions.Apply(dir, options);     // açık kaynak paketleri → options.txt
+                            continue;
+                        }
                         string? path = Downloader.ResolveInside(dir, entry.FullName);
                         if (path == null) continue;
                         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -320,7 +329,7 @@ namespace VuluLauncher
                             files = files.Count,
                             sizeMb = Math.Round(files.Sum(f => new FileInfo(f).Length) / 1024.0 / 1024.0, 2),
                             checkedByDefault = SharedByDefault.Contains(e.Name),
-                            note = ContentFolders.Contains(e.Name, StringComparer.OrdinalIgnoreCase) ? "Modrinth'te bulunanlar bağlantı olur" : null
+                            note = ShareNote(e.Name)
                         };
                     })
                     .Where(e => e.files > 0)
@@ -342,6 +351,15 @@ namespace VuluLauncher
                 existing = existing == null ? null : new { id = existing.Id, revision = existing.Revision, hasCover = existing.HasCover }
             };
         }
+
+        private static string? ShareNote(string entry) => entry.ToLowerInvariant() switch
+        {
+            "resourcepacks" => "Modrinth'te bulunanlar bağlantı olur · açık olanlar kuranlarda da açık gelir",
+            "shaderpacks" => "Modrinth'te bulunanlar bağlantı olur · seçili shader config/ ile gider",
+            "options.txt" => "Kişisel ayarlar; genelde paylaşılmaz",
+            _ when ContentFolders.Contains(entry, StringComparer.OrdinalIgnoreCase) => "Modrinth'te bulunanlar bağlantı olur",
+            _ => null
+        };
 
         private object PickCover()
         {
@@ -395,7 +413,9 @@ namespace VuluLauncher
             string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-share-{Guid.NewGuid():N}.zip");
             try
             {
-                int fileCount = await Task.Run(() => BuildOverridesZip(zipPath, dir, includes, tracked, fallbackFiles));
+                // Kaynak paketleri paylaşılıyorsa hangilerinin açık olduğu da gider (kuranda da açık gelsin)
+                var resourcePacks = includes.Contains("resourcepacks", StringComparer.OrdinalIgnoreCase) ? PackOptions.ReadResourcePacks(dir) : null;
+                int fileCount = await Task.Run(() => BuildOverridesZip(zipPath, dir, includes, tracked, fallbackFiles, resourcePacks));
                 if (new FileInfo(zipPath).Length > MaxOverridesBytes)
                     throw new InvalidOperationException("Paket dosyaları 200 MB'ı aşıyor. Büyük klasörleri (ör. resourcepacks) çıkarmayı dene.");
 
@@ -535,7 +555,8 @@ namespace VuluLauncher
         }
 
         /// <summary>Seçilen klasör/dosyaları zip'ler. Modrinth'ten bağlantı olarak gidecek içerikler hariç tutulur.</summary>
-        private static int BuildOverridesZip(string zipPath, string dir, List<string> includes, HashSet<string> tracked, List<string> fallbackFiles)
+        private static int BuildOverridesZip(string zipPath, string dir, List<string> includes, HashSet<string> tracked, List<string> fallbackFiles,
+            List<string>? resourcePacks)
         {
             int count = 0;
             using var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create);
@@ -557,6 +578,12 @@ namespace VuluLauncher
             {
                 string? path = Downloader.ResolveInside(dir, relative);
                 if (path != null && File.Exists(path)) Add(path);
+            }
+
+            if (resourcePacks is { Count: > 0 })
+            {
+                using var stream = zip.CreateEntry(PackOptions.FileName).Open();
+                stream.Write(PackOptions.Serialize(resourcePacks));
             }
             return count;
         }

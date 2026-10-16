@@ -122,7 +122,7 @@ const mockBackend = (() => {
         { id: 'f4', pack: 'general', kind: 'request', text: 'Biraz daha hafif bir survival paketi olabilir mi? Laptopta 142 modu kaldıramıyorum.', author: 'KaiKaenn', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: daysAgoIso(1), mine: false, canDelete: true },
     ];
     let packs = [
-        { id: 'p1', name: 'Create Macera', description: 'Create ve FTB Quests ile ilerlenen teknoloji/macera paketi. Görev kitabı baştan sona Türkçe.', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 3, updatedAt: daysAgoIso(2), modCount: 142, sizeMb: 512.4, includes: ['config', 'kubejs', 'defaultconfigs'], coverUrl: 'assets/mainmenu.png', installed: null },
+        { id: 'p1', name: 'Create Macera', description: 'Create ve FTB Quests ile ilerlenen teknoloji/macera paketi. Görev kitabı baştan sona Türkçe.', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 3, updatedAt: daysAgoIso(2), modCount: 142, resourcePackCount: 2, shaderCount: 1, sizeMb: 512.4, includes: ['config', 'kubejs', 'defaultconfigs', 'resourcepacks', 'shaderpacks'], coverUrl: 'assets/mainmenu.png', installed: null },
         { id: 'p2', name: 'Hafif Survival', description: 'Performans modları ve birkaç küçük eklenti. Düşük bilgisayarlar için.', author: 'vulu', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', revision: 2, updatedAt: daysAgoIso(9), modCount: 24, sizeMb: 61.7, includes: ['config'], coverUrl: 'assets/launchervanillabg.jpg', installed: { instanceId: 'inst:fabric-121', revision: 1 } },
         { id: 'p3', name: 'Skyblock', description: '', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 1, updatedAt: daysAgoIso(30), modCount: 68, sizeMb: 140.2, includes: ['config', 'kubejs'], coverUrl: null, installed: null },
     ];
@@ -257,7 +257,9 @@ const mockBackend = (() => {
                     { path: 'config', isDir: true, files: 184, sizeMb: 2.4, checkedByDefault: true, note: null },
                     { path: 'kubejs', isDir: true, files: 37, sizeMb: 5.1, checkedByDefault: true, note: null },
                     { path: 'mods', isDir: true, files: 1, sizeMb: 0.4, checkedByDefault: true, note: 'Modrinth dışından eklenenler' },
-                    { path: 'resourcepacks', isDir: true, files: 2, sizeMb: 18.2, checkedByDefault: true, note: 'Modrinth dışından eklenenler' },
+                    { path: 'resourcepacks', isDir: true, files: 2, sizeMb: 18.2, checkedByDefault: true, note: "Modrinth'te bulunanlar bağlantı olur · açık olanlar kuranlarda da açık gelir" },
+                    { path: 'shaderpacks', isDir: true, files: 1, sizeMb: 3.1, checkedByDefault: true, note: "Modrinth'te bulunanlar bağlantı olur · seçili shader config/ ile gider" },
+                    { path: 'optionsshaders.txt', isDir: false, files: 1, sizeMb: 0.01, checkedByDefault: true, note: null },
                     { path: 'options.txt', isDir: false, files: 1, sizeMb: 0.01, checkedByDefault: false, note: null },
                     { path: 'servers.dat', isDir: false, files: 1, sizeMb: 0.01, checkedByDefault: false, note: null },
                 ],
