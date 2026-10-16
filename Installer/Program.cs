@@ -162,6 +162,10 @@ namespace Installer
                     installMb = Math.Round(m.Files.Sum(f => f.Size) / 1024.0 / 1024.0)
                 });
             }
+            catch (ReleaseSignatureException ex)
+            {
+                Send(new { type = "release-error", message = ex.Message });
+            }
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 Send(new { type = "release-error", message = "GitHub'da henüz yayınlanmış bir vulu Launcher sürümü yok." });

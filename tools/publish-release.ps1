@@ -113,25 +113,32 @@ Write-Json $releaseJson ([ordered]@{
     files       = $files
 })
 
+# release.json imzalanır; Updater ve kurulum programı imzası doğrulanmayan sürümü kurmaz.
+# Özel anahtar yalnızca bu bilgisayarda durur (%APPDATA%\vulu-release), repoda değil.
+Write-Host "==> release.json imzalanıyor"
+dotnet run --project (Join-Path $root "tools\ReleaseSigner") -c Release -- sign $releaseJson
+if ($LASTEXITCODE -ne 0) { throw "release.json imzalanamadı (anahtar eksik ya da gömülü açık anahtarla uyuşmuyor)." }
+$signaturePath = "$releaseJson.sig"
+
 $sizeMb = [math]::Round($zip.Length / 1MB, 1)
 Write-Host ""
 Write-Host "Hazır: $($files.Count) dosya, $sizeMb MB" -ForegroundColor Green
 Write-Host "  $zipPath"
-Write-Host "  $releaseJson"
+Write-Host "  $releaseJson (+ imza)"
 Write-Host "  $setupPath ($([math]::Round((Get-Item $setupPath).Length / 1MB, 1)) MB)"
 
 # Notlar dosyadan verilir: Windows PowerShell, metindeki çift tırnakları programa geçirirken bozar
 # ve gh notların geri kalanını dosya adı sanar.
 $notesPath = Join-Path $outDir "notes.md"
 [IO.File]::WriteAllText($notesPath, $(if ($Notes) { $Notes } else { "vulu Launcher v$Version" }), $utf8)
-$ghArgs = @("release", "create", "v$Version", $zipPath, $releaseJson, $setupPath, "--repo", $Repository, "--title", "vulu Launcher v$Version", "--notes-file", $notesPath)
+$ghArgs = @("release", "create", "v$Version", $zipPath, $releaseJson, $signaturePath, $setupPath, "--repo", $Repository, "--title", "vulu Launcher v$Version", "--notes-file", $notesPath)
 
 if ($Local) {
     # Yerel "en son sürüm": GitHub'daki latest release'in yerini tutar
     $latestDir = Join-Path $root "artifacts\release\latest"
     if (Test-Path $latestDir) { Remove-Item $latestDir -Recurse -Force }
     New-Item -ItemType Directory -Force $latestDir | Out-Null
-    Copy-Item $zipPath, $releaseJson, $setupPath $latestDir
+    Copy-Item $zipPath, $releaseJson, $signaturePath, $setupPath $latestDir
     Write-Host ""
     Write-Host "Yerel en son sürüm: v$Version (artifacts\release\latest)" -ForegroundColor Green
     Write-Host "Yerel sunucu açık değilse: .\tools\local-test.ps1"

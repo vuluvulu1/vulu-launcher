@@ -51,6 +51,13 @@ namespace Updater
                 {
                     latest = await Releases.GetLatestAsync(http, token);
                 }
+                catch (ReleaseSignatureException ex)
+                {
+                    // İmzası doğrulanamayan güncelleme kurulmaz; elde olan sürüm açılır
+                    _report(new UpdateStatus("launching", "Güncelleme doğrulanamadı", ex.Message + " Mevcut sürümle açılıyor…"));
+                    await Task.Delay(3500, token);
+                    return true;
+                }
                 catch (Exception) when (!token.IsCancellationRequested)
                 {
                     // Discord gibi: denetlenemezse eldeki sürümle devam edilir
