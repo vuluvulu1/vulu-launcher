@@ -56,7 +56,10 @@ namespace VuluLauncher
             string current = args.Str("currentPassword");
             string next = args.Str("newPassword");
 
-            await _api.PostAsync<JsonElement>("/users/me/password", new { currentPassword = current, newPassword = next });
+            var result = await _api.PostAsync<JsonElement>("/users/me/password", new { currentPassword = current, newPassword = next });
+            // Sunucu bu hesabın bütün eski oturumlarını kapatır; bu oturum yeni token'la devam eder
+            if (result.TryGetProperty("token", out var token) && token.GetString() is { Length: > 0 } fresh)
+                _login.UpdateToken(fresh);
 
             // "Beni hatırla" ile kayıtlıysa yeni şifre kaydedilir; yoksa bir sonraki girişte eski şifre denenirdi
             var saved = CredentialManager.Load();

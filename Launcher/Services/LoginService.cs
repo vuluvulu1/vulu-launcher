@@ -12,6 +12,9 @@ namespace VuluLauncher
 
 
         public string? Token { get; private set; }
+
+        /// <summary>Şifre değişince sunucu yeni token verir; eski token'lar geçersiz olur.</summary>
+        public void UpdateToken(string token) => Token = token;
         public bool IsAdmin { get; private set; }
         public string Username { get; private set; } = string.Empty;
 

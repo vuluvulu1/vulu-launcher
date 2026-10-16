@@ -126,6 +126,7 @@ namespace VuluLauncher
             RequireLogin();
             var store = Packs;
             var pack = await store.GetAsync(id) ?? throw new InvalidOperationException("Paket bulunamadı.");
+            ValidatePackVersions(pack);
 
             if (InstanceStore.List().Any(m => m.SharedPackId == id))
                 throw new InvalidOperationException($"{pack.Name} zaten kurulu.");
@@ -158,6 +159,7 @@ namespace VuluLauncher
 
             var store = Packs;
             var pack = await store.GetAsync(id) ?? throw new InvalidOperationException("Paket bulunamadı.");
+            ValidatePackVersions(pack);
             var meta = InstanceStore.List().FirstOrDefault(m => m.SharedPackId == id)
                 ?? throw new InvalidOperationException($"{pack.Name} kurulu değil.");
 
@@ -183,6 +185,16 @@ namespace VuluLauncher
         /// olmayan ya da sürümü değişen modlar kaldırılır; kullanıcının kendi eklediği modlara dokunulmaz.
         /// Paketteki config dosyaları instance'takilerin üzerine yazılır.
         /// </summary>
+        private static readonly System.Text.RegularExpressions.Regex PackVersion = new(@"^[A-Za-z0-9][A-Za-z0-9._+-]{0,39}$");
+
+        /// <summary>Sürümler klasör ve dosya adlarına dönüşür; sunucudan gelse de beklenmedik karakterler reddedilir.</summary>
+        private static void ValidatePackVersions(SharedPack pack)
+        {
+            if (!PackVersion.IsMatch(pack.McVersion) || !PackCatalog.Loaders.Contains(pack.Loader) ||
+                (pack.Loader != "vanilla" && !PackVersion.IsMatch(pack.LoaderVersion ?? "")))
+                throw new InvalidDataException($"{pack.Name}: paketin sürüm bilgisi geçersiz.");
+        }
+
         private async Task ApplyPackAsync(PackStore store, SharedPack pack, InstanceMeta meta, DownloadJob job)
         {
             string dir = InstanceStore.PathOf(meta.Folder);

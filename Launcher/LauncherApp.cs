@@ -354,8 +354,9 @@ namespace VuluLauncher
                     .Set(u => u.IsAdmin, isAdmin);
 
                 // Şifre boş bırakıldıysa değişmez
+                // Şifre değişirse kullanıcının açık oturumları da kapanır (sunucu tokenVersion'a bakar)
                 if (!string.IsNullOrEmpty(password))
-                    update = update.Set(u => u.PasswordHash, BCrypt.Net.BCrypt.HashPassword(password));
+                    update = update.Set(u => u.PasswordHash, BCrypt.Net.BCrypt.HashPassword(password)).Inc("tokenVersion", 1);
 
                 await admin.UpdateUserAsync(id, update);
             }
