@@ -53,9 +53,9 @@ function renderDownloads() {
         el('div', { class: 'dl-titles' },
             el('b', { title: job.title }, running ? job.title : (job.message || job.title)),
             el('span', { class: 'dl-phase' }, running ? (job.phase || 'Hazırlanıyor') : job.state === 'done' ? job.title.replace(/ (kuruluyor|güncelleniyor|hazırlanıyor)$/, '') : 'Başarısız')),
-        el('button', { class: 'dl-btn', title: downloads.expanded ? 'Ayrıntıları gizle' : 'Ayrıntıları göster', onclick: () => { downloads.expanded = !downloads.expanded; store.set('downloadsExpanded', downloads.expanded); renderDownloads(); } },
+        el('button', { class: 'dl-btn', 'data-action': 'toggle', title: downloads.expanded ? 'Ayrıntıları gizle' : 'Ayrıntıları göster' },
             fromMarkup(DL_ICONS.chevron)),
-        !running && el('button', { class: 'dl-btn', title: 'Kapat', onclick: closeDownloads }, fromMarkup(DL_ICONS.close)));
+        !running && el('button', { class: 'dl-btn', 'data-action': 'close', title: 'Kapat' }, fromMarkup(DL_ICONS.close)));
 
     const bar = el('div', { class: 'dl-bar' + (pct === null ? ' indeterminate' : '') }, el('i', { style: pct === null ? '' : `width:${pct.toFixed(1)}%` }));
 
@@ -131,6 +131,26 @@ function setupDownloads() {
     const root = $('downloads');
     root.addEventListener('mouseenter', () => { downloads.hovered = true; });
     root.addEventListener('mouseleave', () => { downloads.hovered = false; });
+
+    // Panel saniyede birkaç kez yeniden çizildiği için düğmeler basılıp bırakılana kadar değişebilir;
+    // tıklama yerine basma anında işlenir. Klavyeyle (Enter/Boşluk) gelen tıklama ayrıca karşılanır.
+    const act = action => {
+        if (action === 'toggle') {
+            downloads.expanded = !downloads.expanded;
+            store.set('downloadsExpanded', downloads.expanded);
+            renderDownloads();
+        } else if (action === 'close') closeDownloads();
+    };
+    root.addEventListener('pointerdown', event => {
+        const button = event.button === 0 && event.target.closest('[data-action]');
+        if (!button) return;
+        event.preventDefault();
+        act(button.dataset.action);
+    });
+    root.addEventListener('click', event => {
+        const button = event.detail === 0 && event.target.closest('[data-action]');
+        if (button) act(button.dataset.action);
+    });
 
     let framePending = false;
     bridge.on('download', job => {
