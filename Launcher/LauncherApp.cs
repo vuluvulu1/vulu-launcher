@@ -235,7 +235,7 @@ namespace VuluLauncher
         // ════════════════════════════════════════════════════════════════
         // OYUN
         // ════════════════════════════════════════════════════════════════
-        /// <summary>Instance vulu Packs'ten geldiyse paketin logosu (yoksa kapağı); Discord durumunda gösterilir.</summary>
+        /// <summary>Instance vulu Packs'ten geldiyse paketin logosu (kare zeminde; yoksa kapağı); Discord durumunda gösterilir.</summary>
         private async Task<string?> PackImageUrlAsync(string instanceId)
         {
             if (!instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal)) return null;
@@ -247,7 +247,7 @@ namespace VuluLauncher
                 if (await Task.WhenAny(lookup, Task.Delay(TimeSpan.FromSeconds(6))) != lookup) return null;
                 var pack = await lookup;
                 if (pack == null) return null;
-                return (pack.HasLogo ? $"{ApiConfig.BaseUrl}/packs/{Uri.EscapeDataString(pack.Id)}/logo?v={pack.Revision}" : null)
+                return (pack.HasLogo ? $"{ApiConfig.BaseUrl}/packs/{Uri.EscapeDataString(pack.Id)}/logo/square?v={pack.Revision}" : null)
                     ?? PackStore.CoverUrl(pack);
             }
             catch { return null; }   // paket bilgisi alınamazsa vulu logosu kalır
