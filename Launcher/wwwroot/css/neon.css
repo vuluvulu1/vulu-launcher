@@ -373,11 +373,21 @@ html[data-ui="neon"] .dock {
     border-radius: 0; border: 1px solid rgba(0, 234, 255, .3);
     background: linear-gradient(180deg, rgba(10, 10, 22, .92), rgba(6, 6, 14, .96));
     box-shadow: 0 0 30px rgba(0, 234, 255, .08), inset 0 1px 0 rgba(0, 234, 255, .25);
-    clip-path: var(--notch);
+    /* clip-path kullanılmaz: içinden yukarı açılan RAM menüsünü de keserdi; köşeler parantezle vurgulanır */
 }
 html[data-ui="neon"] .dock::before {
     content: "launch"; position: absolute; top: 8px; right: 18px; font: 500 9.5px var(--font-hud); letter-spacing: .3em; color: var(--dim);
 }
+html[data-ui="neon"] .dock::after {
+    content: ""; position: absolute; inset: -1px; pointer-events: none;
+    background:
+        linear-gradient(var(--pink), var(--pink)) left top / 14px 2px no-repeat,
+        linear-gradient(var(--pink), var(--pink)) left top / 2px 14px no-repeat,
+        linear-gradient(var(--accent), var(--accent)) right bottom / 14px 2px no-repeat,
+        linear-gradient(var(--accent), var(--accent)) right bottom / 2px 14px no-repeat;
+}
+/* RAM menüsü panelin üstünden taşarak yukarı açılır */
+html[data-ui="neon"] .ram-pop { z-index: 30; box-shadow: var(--shadow-pop); }
 html[data-ui="neon"] .dock-ver { width: auto; padding: 0; }
 html[data-ui="neon"] .dock-value { font: 600 15px var(--font-hud); color: var(--text); }
 html[data-ui="neon"] .dock .version-select { background: rgba(4, 4, 10, .9); }
