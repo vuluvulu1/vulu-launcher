@@ -373,6 +373,12 @@ html[data-ui="neon"] .stat-value { font: 600 17px var(--font-hud); color: var(--
 
 html[data-ui="neon"] .pack-actions .btn { background: rgba(4, 4, 12, .7); }
 html[data-ui="neon"] .pack-actions .btn-accent { background: var(--pink-soft); }
+html[data-ui="neon"] .more-menu { border-radius: 0; background: #0b0b18; border-color: rgba(0, 234, 255, .35); clip-path: var(--notch-sm); box-shadow: 0 0 24px rgba(0, 234, 255, .12); }
+html[data-ui="neon"] .more-item { border-radius: 0; font: 500 12.5px var(--font-hud); letter-spacing: .03em; }
+html[data-ui="neon"] .more-item:hover, html[data-ui="neon"] .more-item:focus-visible { background: rgba(0, 234, 255, .1); color: var(--accent-hi); }
+html[data-ui="neon"] .more-item.accent { color: var(--pink); }
+html[data-ui="neon"] .more-item.accent:hover { background: var(--pink-soft); color: var(--pink); }
+html[data-ui="neon"] .more-sep { background: rgba(0, 234, 255, .14); }
 
 /* Fırlatma paneli: sağda dikey, en altta büyük OYNA */
 html[data-ui="neon"] .dock {

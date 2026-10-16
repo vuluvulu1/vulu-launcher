@@ -476,24 +476,17 @@ function selectInstance(instance) {
     if (instance.logo) { logo.src = instance.logo; logo.alt = instance.name; }
     else title.textContent = instance.name;
 
-    $('pack-desc').textContent = instance.description;
+    // Varsayılan "Kişisel instance" açıklaması bilgi taşımaz; yalnızca gerçek açıklamalar gösterilir
+    const desc = instance.description && instance.description !== 'Kişisel instance' ? instance.description : '';
+    $('pack-desc').textContent = desc;
+    $('pack-desc').hidden = !desc;
     $('pack-tags').replaceChildren(
         el('span', { class: 'tag', id: 'tag-mc' }, 'Minecraft ' + mcVersionOf(instance)),
         el('span', { class: 'tag' }, instance.loader === 'vanilla'
             ? 'Vanilla'
             : `${LOADER_NAMES[instance.loader]} ${instance.loaderVersion || ''}`.trim()));
 
-    const isCustom = instance.kind === 'custom';
-    $('pack-actions').replaceChildren(...[
-        isCustom && el('button', { class: 'btn btn-sm', onclick: () => openNewInstanceDialog(instance) }, 'Düzenle'),
-        isCustom && el('button', { class: 'btn btn-sm', onclick: () => openInstanceContent(instance) }, 'İçerik'),
-        isCustom && el('button', { class: 'btn btn-sm', onclick: () => { openModrinthFor(instance); } }, 'Mod ekle'),
-        isCustom && state.isAdmin && el('button', { class: 'btn btn-sm btn-accent', onclick: () => openShareDialog(instance) },
-            instance.sharedPackId ? 'Paylaşımı güncelle' : 'Paylaş'),
-        el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'instance', id: instance.id }) }, 'Klasörü aç'),
-        el('button', { class: 'btn btn-sm', onclick: () => openAppearanceDialog(instance) }, 'Görünüm'),
-        isCustom && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deleteInstance(instance) }, 'Sil'),
-    ].filter(Boolean));
+    renderPackActions(instance);
 
     // Öncelik: bu paket için yapılmış seçim → ayarlardaki varsayılan → paketin önerdiği
     const saved = parseInt(store.get('ram_' + instance.id, ''), 10);
@@ -507,6 +500,58 @@ function selectInstance(instance) {
     loadDetails();
     updatePlayButton();
 }
+
+/**
+ * Seçili paketin işlemleri: sık kullanılanlar düğme olarak görünür, diğerleri "⋯" menüsünde toplanır.
+ */
+function renderPackActions(instance) {
+    const isCustom = instance.kind === 'custom';
+    const item = (label, onclick, cls = '') => el('button', {
+        type: 'button', role: 'menuitem', class: 'more-item ' + cls,
+        onclick: () => { closePackMenu(); onclick(); },
+    }, label);
+
+    const menuItems = [
+        isCustom && item('Düzenle', () => openNewInstanceDialog(instance)),
+        item('Görünüm', () => openAppearanceDialog(instance)),
+        item('Klasörü aç', () => bridge.invoke('files.open', { target: 'instance', id: instance.id })),
+        isCustom && state.isAdmin && item(instance.sharedPackId ? 'Paylaşımı güncelle' : "vulu Packs'te paylaş", () => openShareDialog(instance), 'accent'),
+        isCustom && el('div', { class: 'more-sep', role: 'separator' }),
+        isCustom && item('Sil', () => deleteInstance(instance), 'danger'),
+    ].filter(Boolean);
+
+    const menu = el('div', { id: 'pack-menu', class: 'more-menu', role: 'menu', hidden: true }, menuItems);
+    const toggle = el('button', {
+        id: 'btn-pack-more', class: 'btn btn-sm btn-more', title: 'Diğer işlemler', 'aria-haspopup': 'menu', 'aria-expanded': 'false',
+        onclick: () => (menu.hidden ? openPackMenu() : closePackMenu()),
+    }, '⋯');
+
+    $('pack-actions').replaceChildren(...[
+        isCustom && el('button', { class: 'btn btn-sm', onclick: () => openInstanceContent(instance) }, 'İçerik'),
+        isCustom && el('button', { class: 'btn btn-sm', onclick: () => openModrinthFor(instance) }, 'Mod ekle'),
+        el('div', { class: 'more-wrap' }, toggle, menu),
+    ].filter(Boolean));
+}
+
+function openPackMenu() {
+    const menu = $('pack-menu');
+    if (!menu) return;
+    menu.hidden = false;
+    $('btn-pack-more').setAttribute('aria-expanded', 'true');
+    menu.querySelector('button')?.focus();
+}
+
+function closePackMenu() {
+    const menu = $('pack-menu');
+    if (!menu || menu.hidden) return;
+    menu.hidden = true;
+    $('btn-pack-more').setAttribute('aria-expanded', 'false');
+}
+
+document.addEventListener('mousedown', event => { if (!event.target.closest('.more-wrap')) closePackMenu(); });
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && $('pack-menu') && !$('pack-menu').hidden) { closePackMenu(); $('btn-pack-more').focus(); }
+});
 
 // ── Vanilla sürüm seçimi ──────────────────────────────────────────────
 /** Sunucunun Vanilla paketinde Minecraft sürümü seçilebilir; modlu paketlerin sürümü sabittir. */

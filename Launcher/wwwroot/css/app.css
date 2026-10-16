@@ -427,6 +427,21 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .pack-actions .btn:hover:not(:disabled) { background: var(--raised); }
 .pack-actions .btn-accent { background: color-mix(in srgb, var(--accent) 22%, var(--panel)); }
 .pack-actions .btn-danger { background: var(--glass); }
+.more-wrap { position: relative; }
+.btn-more { min-width: 36px; padding: 0 10px; font-size: 16px; letter-spacing: 1px; line-height: 1; }
+.btn-more[aria-expanded="true"] { background: var(--raised); }
+.more-menu {
+    position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 25; min-width: 190px; padding: 5px;   /* yukarı açılır: altta başlatma bölümü var */
+    display: flex; flex-direction: column; gap: 1px;
+    border: 1px solid var(--line-strong); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-pop);
+}
+.more-menu[hidden] { display: none; }
+.more-item { height: 32px; padding: 0 10px; display: flex; align-items: center; border: 0; border-radius: var(--r); background: transparent; color: var(--text); font: 500 13px var(--font); text-align: left; }
+.more-item:hover, .more-item:focus-visible { background: var(--hover); outline: none; }
+.more-item.accent { color: var(--accent-hi); }
+.more-item.danger { color: var(--error); }
+.more-item.danger:hover { background: rgba(226, 96, 74, .1); }
+.more-sep { height: 1px; margin: 4px 6px; background: var(--line); }
 
 /* Alt şerit: sürüm | durum | RAM | OYNA */
 .dock {
