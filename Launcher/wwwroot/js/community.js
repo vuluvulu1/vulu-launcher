@@ -24,12 +24,13 @@ async function refreshPresence() {
     if (state.page === 'profile' && typeof renderMembers === 'function' && profile.members) renderMembers();
     if (state.page === 'servers') renderFriends();
     if (state.page === 'servers') renderServers();
+    if (state.page === 'friends') renderFriendsPage();
 }
 
 /** Sunucular ve profil sayfası açıkken durumlar düzenli yenilenir. */
 function schedulePresence() {
     clearInterval(community.timer);
-    if (state.page === 'servers' || state.page === 'profile')
+    if (state.page === 'servers' || state.page === 'profile' || state.page === 'friends')
         community.timer = setInterval(() => { refreshPresence(); if (state.page === 'servers') pingAll(); }, PRESENCE_REFRESH_MS);
 }
 

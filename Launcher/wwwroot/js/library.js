@@ -35,12 +35,13 @@ function formatPlayTime(seconds) {
 }
 
 // ── Ekran görüntüleri ─────────────────────────────────────────────────
-async function openScreenshots(instance) {
+/** Galeri. { pick: true } ile açılırsa tıklanan görüntünün adını döndürür (paylaşmak için seçim). */
+async function openScreenshots(instance, { pick = false } = {}) {
     let data;
     try { data = await bridge.invoke('screenshots.list', { id: instance.id }); }
     catch (err) { await alertDialog({ title: 'Ekran görüntüleri', message: err.message }); return; }
 
-    await openModal(close => {
+    return openModal(close => {
         const grid = el('div', { class: 'shot-grid' });
         const summary = el('span', { class: 'hint shot-summary' });
         const render = () => {
@@ -48,7 +49,7 @@ async function openScreenshots(instance) {
                 ? `${data.total} ekran görüntüsü · ${formatSize(data.totalMb)}` + (data.total > data.shots.length ? ` · en yeni ${data.shots.length} tanesi gösteriliyor` : '')
                 : '';
             grid.replaceChildren(...(data.shots.length ? data.shots.map((shot, index) =>
-                el('button', { class: 'shot', title: formatDate(new Date(shot.takenAt)), onclick: () => viewShot(index) },
+                el('button', { class: 'shot', title: formatDate(new Date(shot.takenAt)), onclick: () => (pick ? close(shot.name) : viewShot(index)) },
                     el('img', { src: shot.url, alt: shot.name, loading: 'lazy', decoding: 'async' })))
                 : [el('div', { class: 'dm-empty' },
                     el('p', {}, 'Henüz ekran görüntüsü yok.'),
@@ -56,6 +57,7 @@ async function openScreenshots(instance) {
         };
 
         async function viewShot(index) {
+            let onKey;
             const result = await openModal(closeView => {
                 const img = el('img', { class: 'shot-full', alt: '' });
                 const caption = el('span', { class: 'shot-caption' });
@@ -73,12 +75,12 @@ async function openScreenshots(instance) {
                     try { await bridge.invoke(command, { id: instance.id, name: data.shots[index].name }); if (done) status.textContent = done; }
                     catch (err) { status.textContent = err.message; }
                 };
-                const onKey = e => {
+                onKey = e => {
                     if (e.key === 'ArrowLeft') show(index - 1);
                     else if (e.key === 'ArrowRight') show(index + 1);
                 };
                 document.addEventListener('keydown', onKey);
-                const done = value => { document.removeEventListener('keydown', onKey); closeView(value); };
+                const done = value => closeView(value);
                 show(index);
                 return [
                     el('div', { class: 'shot-view' },
@@ -87,6 +89,7 @@ async function openScreenshots(instance) {
                         el('button', { class: 'shot-nav next', title: 'Sonraki (→)', onclick: () => show(index + 1), disabled: data.shots.length < 2 }, '›')),
                     el('div', { class: 'modal-foot shot-foot' },
                         caption, status,
+                        el('button', { class: 'btn btn-sm btn-primary', title: 'Sosyal\'de bütün vulu üyeleriyle paylaş', onclick: () => done({ share: index }) }, 'Paylaş'),
                         el('button', { class: 'btn btn-sm', onclick: () => act('screenshots.copy', 'Kopyalandı ✓ Discord\'a ya da bir klasöre yapıştırabilirsin.') }, 'Kopyala'),
                         el('button', { class: 'btn btn-sm', onclick: () => act('screenshots.open') }, 'Aç'),
                         el('button', { class: 'btn btn-sm', onclick: () => act('screenshots.reveal') }, 'Klasörde göster'),
@@ -94,7 +97,9 @@ async function openScreenshots(instance) {
                         el('button', { class: 'btn btn-sm', onclick: () => done(null) }, 'Kapat')),
                 ];
             }, { wide: true });
+            document.removeEventListener('keydown', onKey);   // Esc ya da arka plan tıklamasıyla kapansa da
             if (result && result.remove != null) await removeShot(result.remove);
+            if (result && result.share != null && await shareScreenshot(instance, data.shots[result.share].name)) close();
         }
 
         async function removeShot(index) {
@@ -111,14 +116,14 @@ async function openScreenshots(instance) {
 
         render();
         return [
-            el('div', { class: 'modal-head' }, `${instance.name} · Ekran görüntüleri`),
+            el('div', { class: 'modal-head' }, pick ? 'Paylaşılacak ekran görüntüsünü seç' : `${instance.name} · Ekran görüntüleri`),
             el('div', { class: 'modal-body shot-body' }, grid),
             el('div', { class: 'modal-foot' },
                 summary,
                 el('button', { class: 'btn', onclick: () => bridge.invoke('files.open', { target: 'screenshots', id: instance.id }).catch(() => {}) }, 'Klasörü aç'),
-                el('button', { class: 'btn btn-primary', onclick: () => close() }, 'Kapat')),
+                el('button', { class: 'btn btn-primary', onclick: () => close() }, pick ? 'Vazgeç' : 'Kapat')),
         ];
-    }, { wide: true });
+    }, { wide: true }).then(v => (typeof v === 'string' ? v : null));
 }
 
 // ── Bildirime tıklama ─────────────────────────────────────────────────

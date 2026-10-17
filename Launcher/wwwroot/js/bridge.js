@@ -53,6 +53,19 @@ const bridge = (() => {
 // sahte bir arka uç. Gerçek launcher'da hiç kullanılmaz.
 const mockBackend = (() => {
     const mockFlags = {};
+    const feedImg = (c, t) => 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270"><rect width="480" height="270" fill="${c}"/><rect y="180" width="480" height="90" fill="#222" opacity=".45"/><text x="20" y="50" font-size="28" fill="#fff" font-family="sans-serif">${t}</text></svg>`);
+    let mockFeed = [
+        ['Steve_TR', 'Sonunda üssün çatısı bitti 🏠', 'AGLR SMP', 4, true, '#4f6b3d'],
+        ['halil', '', 'Create Macera', 2, false, '#6b4f3d'],
+        ['KaiKaenn', 'Bu gün batımı', 'AGLR SMP', 9, false, '#6b3d5e'],
+        ['vulu', 'Yeni harita', 'Vanilla', 1, false, '#3d4f6b'],
+        ['Steve_TR', 'Tren hattı', 'Create Macera', 0, false, '#3d6b6b'],
+        ['halil', 'Nether portalı', 'AGLR SMP', 3, false, '#6b3d3d'],
+        ['KaiKaenn', '', 'Hafif Survival', 5, true, '#556b3d'],
+    ].map(([author, caption, packName, likes, liked, color], i) => ({
+        id: String(i + 1).padStart(24, 'a'), author, caption, packName, likes, liked, canDelete: author === 'vulu',
+        createdAt: new Date(Date.now() - i * 5 * 3600000).toISOString(), thumbUrl: feedImg(color, caption || packName), width: 1920, height: 1080,
+    }));
     let mockShots = Array.from({ length: 9 }, (_, i) => `2026-10-${String(17 - i).padStart(2, '0')}_21.0${i}.12.png`);
     const mockDm = {
         conversations: [{ username: 'Steve_TR', lastAt: new Date(Date.now() - 300000).toISOString(), unread: 2 }, { username: 'halil', lastAt: new Date(Date.now() - 86400000).toISOString(), unread: 0 }],
@@ -431,6 +444,26 @@ const mockBackend = (() => {
             const shot = (c, i) => 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect width="1920" height="1080" fill="${c}"/><rect y="700" width="1920" height="380" fill="#2b2b2b" opacity=".5"/><text x="80" y="160" font-size="96" fill="#fff" font-family="sans-serif">Ekran görüntüsü ${i + 1}</text></svg>`);
             const shots = mockShots.map((n, i) => ({ name: n, url: shot(colors[i % colors.length], i), takenAt: new Date(Date.now() - i * 7200000).toISOString(), sizeKb: 2400 + i * 37 }));
             return { total: shots.length, totalMb: shots.reduce((a, s) => a + s.sizeKb, 0) / 1024, shots };
+        },
+        'social.feed': async args => {
+            await wait(300);
+            const list = mockFeed.filter(s => (!args.author || s.author === args.author) && (!args.before || s.createdAt < args.before));
+            return { shots: list.slice(0, 6), more: list.length > 6 };
+        },
+        'social.image': async args => { await wait(400); return { url: mockFeed.find(s => s.id === args.id).thumbUrl }; },
+        'social.like': async args => { const s = mockFeed.find(x => x.id === args.id); if (args.like !== s.liked) { s.liked = !!args.like; s.likes += args.like ? 1 : -1; } return { likes: s.likes, liked: s.liked }; },
+        'social.delete': async args => { mockFeed = mockFeed.filter(s => s.id !== args.id); return { success: true }; },
+        'social.save': async () => ({ path: 'C:\\Users\\vulu\\Pictures\\vulu Launcher\\x.webp' }),
+        'social.localImage': async () => {
+            const c = document.createElement('canvas'); c.width = 1920; c.height = 1080;
+            const g = c.getContext('2d'); g.fillStyle = '#3d6b4f'; g.fillRect(0, 0, 1920, 1080); g.fillStyle = '#fff'; g.font = '96px sans-serif'; g.fillText('Yerel görüntü', 80, 160);
+            return { dataUrl: c.toDataURL('image/png') };
+        },
+        'social.share': async args => {
+            await wait(500);
+            const s = { id: String(Date.now()).padStart(24, '0'), author: 'vulu', caption: args.caption, packName: 'Fabric 1.21', likes: 0, liked: false, canDelete: true, createdAt: new Date().toISOString(), thumbUrl: args.thumb, width: args.width, height: args.height };
+            mockFeed.unshift(s);
+            return s;
         },
         'screenshots.open': async () => ({ opened: true }),
         'screenshots.reveal': async () => ({ opened: true }),

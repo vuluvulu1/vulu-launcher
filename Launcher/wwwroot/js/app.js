@@ -33,15 +33,20 @@ function showView(id) {
 
 // Keşfet sekmesi iki sayfayı (vulu Packs, Modrinth) kapsar; son açılan hatırlanır
 const DISCOVER_PAGES = ['packs', 'modrinth'];
+// Sosyal sekmesi: ekran görüntüleri, mesajlar, arkadaşlar
+const SOCIAL_PAGES = ['shots', 'messages', 'friends'];
 
 function showPage(name) {
     if (name === 'discover') name = store.get('discoverSource', 'packs') === 'modrinth' ? 'modrinth' : 'packs';
     if (DISCOVER_PAGES.includes(name)) store.set('discoverSource', name);
+    if (name === 'social') { name = store.get('socialSource', 'shots'); if (!SOCIAL_PAGES.includes(name)) name = 'shots'; }
+    if (SOCIAL_PAGES.includes(name)) store.set('socialSource', name);
 
     state.page = name;
     for (const page of document.querySelectorAll('.page')) page.hidden = page.id !== 'page-' + name;
     for (const button of document.querySelectorAll('#page-tabs button'))
-        button.classList.toggle('active', button.dataset.page === name || (button.dataset.page === 'discover' && DISCOVER_PAGES.includes(name)));
+        button.classList.toggle('active', button.dataset.page === name || (button.dataset.page === 'discover' && DISCOVER_PAGES.includes(name))
+            || (button.dataset.page === 'social' && SOCIAL_PAGES.includes(name)));
     $('btn-user').classList.toggle('active', name === 'profile');
 
     if (name === 'modrinth') openModrinthPage();
@@ -50,6 +55,8 @@ function showPage(name) {
     if (name === 'packs') openPacksPage();
     if (name === 'servers') openServersPage();
     if (name === 'messages') openMessagesPage();
+    if (name === 'shots') openShotsPage();
+    if (name === 'friends') openFriendsPage();
     if (name === 'profile') refreshPresence();
     schedulePresence();
     refreshActivity();
@@ -938,6 +945,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupServersPage();
     setupMessagesPage();
     setupLibrary();
+    setupSocial();
     for (const button of document.querySelectorAll('.discover-switch button'))
         button.addEventListener('click', () => showPage(button.dataset.source));
     setupRegisterForm();

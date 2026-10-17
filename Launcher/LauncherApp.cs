@@ -93,6 +93,7 @@ namespace VuluLauncher
             RegisterWorldCommands();
             RegisterMessageCommands();
             RegisterLibraryCommands();
+            RegisterSocialCommands();
 
             // vulu-api ücretsiz planda boşta kalınca uyuyor; açılışta uyandırılır ki giriş yapılana kadar hazır olsun
             _ = Task.Run(async () => { try { using var _ = await Downloader.Http.GetAsync(ApiConfig.BaseUrl + "/ping"); } catch { } });
