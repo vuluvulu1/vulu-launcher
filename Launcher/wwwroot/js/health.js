@@ -89,3 +89,72 @@ function selectAndPlay(instanceId) {
     showPage('home');
     play();
 }
+
+// ── Dünyalar ve yedekler ──────────────────────────────────────────────
+function openWorldsDialog(instance) {
+    return openModal(close => {
+        const body = el('div', { class: 'admin-body' });
+
+        async function act(fn, okText) {
+            try { await withActivity(fn); if (okText) appendLog({ text: okText, level: 'ok' }); }
+            catch (err) { await alertDialog({ title: 'Olmadı', message: err.message }); }
+            render();
+        }
+
+        async function render() {
+            body.replaceChildren(el('p', { class: 'admin-toolbar' }, 'Yükleniyor...'));
+            let data;
+            try { data = await bridge.invoke('worlds.list', { id: instance.id }); }
+            catch (err) { body.replaceChildren(el('p', { class: 'form-error' }, err.message)); return; }
+
+            const toolbar = el('div', { class: 'admin-toolbar' },
+                el('span', {}, data.worlds.length ? `${data.worlds.length} dünya` : ''),
+                el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('worlds.openBackups', { id: instance.id }) }, 'Yedek klasörünü aç'));
+            const rows = data.worlds.map(w => el('div', { class: 'world' },
+                el('div', { class: 'world-head' },
+                    w.icon ? el('img', { class: 'world-icon', src: w.icon, alt: '' }) : el('span', { class: 'world-icon plain' }),
+                    el('div', { class: 'world-text' },
+                        el('b', {}, w.name),
+                        el('span', {}, `Son oynanma: ${relativeDate(new Date(w.lastPlayed)).toLowerCase()} · ${w.sizeMb} MB`)),
+                    el('button', { class: 'btn btn-sm btn-primary', disabled: data.running, title: data.running ? 'Önce oyunu kapat' : null,
+                        onclick: () => act(() => bridge.invoke('worlds.backup', { id: instance.id, world: w.name }), `${w.name} yedeklendi.`) }, 'Yedekle')),
+                w.backups.length > 0 && el('div', { class: 'world-backups' }, w.backups.map(b => el('div', { class: 'world-backup' },
+                    el('span', {}, `${relativeDate(new Date(b.createdAt))} · ${b.sizeMb} MB` + (b.auto ? ' · otomatik' : b.name.includes('-geri-yukleme-oncesi-') ? ' · geri yükleme öncesi' : '')),
+                    el('button', { class: 'link-btn', disabled: data.running, onclick: async () => {
+                        if (!await confirmDialog({ title: 'Geri yükle', message: `'${w.name}' bu yedekteki hâline döndürülsün mü? Şimdiki hâli önce ayrıca yedeklenir.`, okText: 'Geri yükle', cancelText: 'Vazgeç' })) return;
+                        act(() => bridge.invoke('worlds.restore', { id: instance.id, world: w.name, backup: b.name }), `${w.name} geri yüklendi.`);
+                    } }, 'Geri yükle'),
+                    el('button', { class: 'link-btn danger', onclick: async () => {
+                        if (!await confirmDialog({ title: 'Yedeği sil', message: 'Bu yedek kalıcı olarak silinsin mi?', okText: 'Sil', cancelText: 'Vazgeç', danger: true })) return;
+                        act(() => bridge.invoke('worlds.deleteBackup', { id: instance.id, world: w.name, backup: b.name }));
+                    } }, 'Sil'))))));
+
+            body.replaceChildren(toolbar,
+                data.running && el('p', { class: 'hint' }, 'Oyun açıkken yedekleme ve geri yükleme yapılamaz.'),
+                ...(rows.length ? rows : [el('p', { class: 'pack-empty' }, 'Bu instance\'ta henüz dünya yok.')]),
+                el('p', { class: 'hint' }, 'Paket güncellenmeden önce dünyalar otomatik yedeklenir; her dünyanın son 5 otomatik yedeği tutulur.'));
+        }
+
+        queueMicrotask(render);
+        return [
+            el('div', { class: 'modal-head' }, `${instance.name} — dünyalar`, el('button', { class: 'link-btn', onclick: () => close() }, 'Kapat')),
+            body,
+        ];
+    }, { wide: true });
+}
+
+async function duplicateInstance(instance) {
+    const name = await promptDialog({ title: 'Instance\'ı çoğalt', label: 'Kopyanın adı', value: `${instance.name} (kopya)`, okText: 'Çoğalt' });
+    if (!name) return;
+    try {
+        const result = await withActivity(() => bridge.invoke('instances.duplicate', { id: instance.id, name }));
+        await reloadInstances(result.id);
+    } catch (err) { await alertDialog({ title: 'Çoğaltılamadı', message: err.message }); }
+}
+
+async function exportMrpack(instance) {
+    try {
+        const result = await withActivity(() => bridge.invoke('instances.exportMrpack', { id: instance.id }));
+        appendLog({ text: `Kaydedildi: ${result.path}`, level: 'ok' });
+    } catch (err) { await alertDialog({ title: 'Dışa aktarılamadı', message: err.message }); }
+}

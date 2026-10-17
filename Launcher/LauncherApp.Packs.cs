@@ -194,6 +194,8 @@ namespace VuluLauncher
                 ?? throw new InvalidOperationException($"{pack.Name} kurulu değil.");
 
             Log($"{pack.Name} güncelleniyor (rev {meta.SharedPackRevision} → {pack.Revision})...", "accent");
+            // Paket config'leri ve modları değiştirebilir: önce dünyalar otomatik yedeklenir
+            await Task.Run(() => AutoBackupWorlds(meta, "paket güncellemesi"));
             using var job = new DownloadJob($"{pack.Name} güncelleniyor");
             try
             {

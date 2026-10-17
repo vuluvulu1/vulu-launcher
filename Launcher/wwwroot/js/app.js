@@ -525,7 +525,10 @@ function renderPackActions(instance) {
     const menuItems = [
         isCustom && item('Düzenle', () => openNewInstanceDialog(instance)),
         item('Görünüm', () => openAppearanceDialog(instance)),
+        item('Dünyalar ve yedekler', () => openWorldsDialog(instance)),
         item('Klasörü aç', () => bridge.invoke('files.open', { target: 'instance', id: instance.id })),
+        isCustom && item('Çoğalt', () => duplicateInstance(instance)),
+        isCustom && instance.loader !== 'vanilla' && item('.mrpack olarak dışa aktar', () => exportMrpack(instance)),
         isCustom && state.isAdmin && item(instance.sharedPackId ? 'Paylaşımı güncelle' : "vulu Packs'te paylaş", () => openShareDialog(instance), 'accent'),
         isCustom && el('div', { class: 'more-sep', role: 'separator' }),
         isCustom && item('Sil', () => deleteInstance(instance), 'danger'),

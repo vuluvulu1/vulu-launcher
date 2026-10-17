@@ -1071,3 +1071,14 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .member-sub.online { color: #6fd18c; }
 .form-sub { display: flex; flex-direction: column; gap: 6px; }
 .form-sub[hidden] { display: none; }
+
+/* ── Dünyalar ───────────────────────────────────────────────────────── */
+.world { border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); margin-bottom: 8px; }
+.world-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.world-icon { width: 40px; height: 40px; flex: none; border-radius: var(--r-sm); image-rendering: pixelated; object-fit: cover; }
+.world-icon.plain { background: var(--raised); }
+.world-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--muted); }
+.world-text b { font-size: 13.5px; color: var(--text); }
+.world-backups { border-top: 1px solid var(--line); padding: 4px 12px 6px 62px; }
+.world-backup { display: flex; align-items: center; gap: 12px; padding: 4px 0; font-size: 12px; color: var(--muted); }
+.world-backup span { flex: 1; }

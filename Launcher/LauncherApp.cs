@@ -86,6 +86,7 @@ namespace VuluLauncher
             RegisterPackCommands();
             RegisterHealthCommands();
             RegisterCommunityCommands();
+            RegisterWorldCommands();
 
             // vulu-api ücretsiz planda boşta kalınca uyuyor; açılışta uyandırılır ki giriş yapılana kadar hazır olsun
             _ = Task.Run(async () => { try { using var _ = await Downloader.Http.GetAsync(ApiConfig.BaseUrl + "/ping"); } catch { } });
@@ -101,7 +102,7 @@ namespace VuluLauncher
         }
 
         private void Log(string text, string level) =>
-            _bridge.Log(text, level == "replace" ? "accent" : level, replaceLast: level == "replace");
+            _bridge?.Log(text, level == "replace" ? "accent" : level, replaceLast: level == "replace");
 
         // ════════════════════════════════════════════════════════════════
         // UYGULAMA / GİRİŞ

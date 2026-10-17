@@ -66,6 +66,21 @@ function confirmDialog({ title, message, okText = 'Evet', cancelText = 'Hayır',
     ]).then(result => result === true);
 }
 
+/** Tek satırlık metin isteyen pencere; vazgeçilirse null döner. */
+function promptDialog({ title, label, value = '', okText = 'Tamam', cancelText = 'Vazgeç', maxLength = 40 }) {
+    return openModal(close => {
+        const input = el('input', { type: 'text', value, maxLength, spellcheck: false, autofocus: true });
+        const submit = event => { event.preventDefault(); const v = input.value.trim(); if (v) close(v); };
+        queueMicrotask(() => { input.focus(); input.select(); });
+        return el('form', { onsubmit: submit, style: 'display:contents' },
+            el('div', { class: 'modal-head' }, title),
+            el('div', { class: 'modal-body form' }, el('label', {}, label), input),
+            el('div', { class: 'modal-foot' },
+                el('button', { class: 'btn', type: 'button', onclick: () => close(null) }, cancelText),
+                el('button', { class: 'btn btn-primary', type: 'submit' }, okText)));
+    }).then(v => (typeof v === 'string' ? v : null));
+}
+
 /** Tek butonlu bilgi penceresi. */
 function alertDialog({ title, message, okText = 'Tamam' }) {
     return openModal(close => [
