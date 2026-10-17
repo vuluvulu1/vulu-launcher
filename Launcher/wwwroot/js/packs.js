@@ -10,6 +10,7 @@ async function openPacksPage() {
     status.textContent = 'Yükleniyor…';
     if (!grid.childElementCount) grid.replaceChildren(...[0, 1, 2].map(() => el('div', { class: 'pack-tile skeleton' })));
 
+    const slow = setTimeout(() => { if (status.textContent === 'Yükleniyor…') status.textContent = WAKING_TEXT; }, 4000);
     try {
         const result = await bridge.invoke('packs.list');
         renderPacks(result);
@@ -18,6 +19,7 @@ async function openPacksPage() {
         status.textContent = 'Paketler alınamadı: ' + err.message;
         status.classList.add('error');
     } finally {
+        clearTimeout(slow);
         packsLoading = false;
     }
 }

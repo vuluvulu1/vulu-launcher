@@ -229,9 +229,17 @@ async function autoLoginBehindCurtain(savedUsername) {
     $('login-submit').focus();
 }
 
+/** Ücretsiz sunucu uykudaysa ilk istek uzun sürer; birkaç saniye geçince kullanıcıya nedeni söylenir. */
+const WAKING_TEXT = 'vulu sunucusu uyanıyor… Bir süre kullanılmadıysa bu bir dakika kadar sürebilir.';
+
 async function requestLogin(args) {
+    const slow = setTimeout(() => {
+        if (!$('view-login').hidden) setLoginStatus(WAKING_TEXT);
+        else $('splash-status').textContent = WAKING_TEXT;
+    }, 4000);
     try { return await bridge.invoke('auth.login', args); }
     catch (err) { return { success: false, error: err.message }; }
+    finally { clearTimeout(slow); if ($('splash-status').textContent === WAKING_TEXT) $('splash-status').textContent = ''; }
 }
 
 async function tryLogin() {
