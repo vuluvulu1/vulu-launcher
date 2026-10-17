@@ -592,7 +592,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .mr-actions { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
 .mr-actions .btn { min-width: 128px; }
 
-.content-row { grid-template-columns: 1fr auto auto; }
+.content-row { grid-template-columns: 1fr auto auto auto; align-items: center; }
+.content-row.disabled .content-main { opacity: .5; }
+.off-tag { margin-left: 8px; padding: 1px 6px; border-radius: 4px; background: var(--raised); color: var(--muted); font: 600 10px var(--font); text-transform: uppercase; letter-spacing: .04em; vertical-align: middle; }
+.toolbar-actions { display: flex; gap: 6px; }
 .content-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .content-icon { width: 32px; height: 32px; flex: none; object-fit: cover; border-radius: var(--r-sm); }
 .content-main .uname { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1027,3 +1030,19 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .skin-controls > label { font: 600 12px var(--font); color: var(--muted); margin-top: 6px; }
 .skin-buttons { display: flex; gap: 6px; }
 .skin-controls .hint { margin-top: 4px; }
+
+/* ── Oyun sağlığı (eksik bağımlılık, çökme özeti) ───────────────────── */
+.health-body { display: flex; flex-direction: column; gap: 12px; white-space: normal; }
+.health-body .hint { margin: 0; }
+.health-list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); max-height: 320px; overflow-y: auto; }
+.health-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; }
+.health-item + .health-item { border-top: 1px solid var(--line); }
+.health-icon { width: 32px; height: 32px; flex: none; border-radius: var(--r-sm); background: var(--raised); object-fit: cover; }
+.health-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; color: var(--muted); }
+.health-text b { font-size: 13.5px; color: var(--text); }
+.health-warn { color: var(--warn, #d9a441); }
+.crash-item { align-items: flex-start; }
+.crash-mark { width: 26px; height: 26px; flex: none; display: grid; place-items: center; border-radius: 50%; background: rgba(226, 96, 74, .14); color: var(--error); font-weight: 700; }
+.crash-fix { color: var(--text); opacity: .85; }
+.crash-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.modal-foot .spacer { flex: 1; }

@@ -37,7 +37,7 @@ namespace VuluLauncher
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
             _game = new GameLauncher(Log, _java);
-            _game.Exited += () => { _bridge.Emit("gameExited"); _discord.ShowIdle(); };
+            _game.Exited += () => { _bridge.Emit("gameExited"); _discord.ShowIdle(); _ = ReportCrashIfAnyAsync(); };
             // Arayüz hangi sayfada olunduğunu (ve Oyna'da seçili instance'ı) bildirir
             _bridge.On("discord.page", args =>
             {
@@ -78,11 +78,13 @@ namespace VuluLauncher
             _bridge.On("launcher.check", async _ => await CheckLauncherVersionAsync());
             _bridge.On("launcher.update", _ => Task.FromResult<object?>(StartLauncherUpdate()));
 
-            _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion")));
+            _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion"), args.Bool("ignoreMissing")));
+            _bridge.On("mods.installMissing", async args => await InstallMissingAsync(args.Str("instanceId"), args.StrList("projectIds")));
             _bridge.On("game.versions", async _ => { RequireLogin(); return await LoaderCatalog.MinecraftVersionsAsync(); });
 
             RegisterInstanceCommands();
             RegisterPackCommands();
+            RegisterHealthCommands();
             RegisterProfileCommands();
 
             // ── Admin ─────────────────────────────────────────────────────
@@ -253,13 +255,55 @@ namespace VuluLauncher
             catch { return null; }   // paket bilgisi alınamazsa vulu logosu kalır
         }
 
-        private async Task<object?> PlayAsync(string instanceId, int ramGb, string mcVersion)
+        /// <summary>
+        /// Oyun açılmadan önce mods klasörü taranır; zorunlu bir bağımlılık eksikse oyun açılmaz, liste arayüze döner
+        /// (kendi instance'larında Modrinth karşılığıyla birlikte). Tarama hata verirse oyun engellenmez.
+        /// </summary>
+        private async Task<object?> MissingDependenciesAsync(string instanceId, LaunchTarget target)
+        {
+            if (target.Loader == "vanilla") return null;
+            try
+            {
+                var scan = await Task.Run(() => ModScanner.Scan(Path.Combine(AppPaths.Instances, target.Folder), target.Loader));
+                if (scan.Missing.Count == 0) return null;
+
+                var meta = instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(instanceId[InstancePrefix.Length..]) : null;
+                Dictionary<string, MrProject?> projects = new();
+                if (meta != null)
+                {
+                    var lookup = _modrinth.ResolveModIdsAsync(meta, scan, scan.Missing);
+                    if (await Task.WhenAny(lookup, Task.Delay(TimeSpan.FromSeconds(12))) == lookup) projects = await lookup;
+                }
+                Log($"Eksik bağımlılık: {string.Join(", ", scan.Missing.Select(m => m.Id))}", "warn");
+                return scan.Missing.Select(m =>
+                {
+                    projects.TryGetValue(m.Id, out var p);
+                    return new { id = m.Id, requiredBy = m.RequiredBy, projectId = p?.Id, title = p?.Title, iconUrl = p?.IconUrl };
+                }).ToList();
+            }
+            catch (Exception) { return null; }
+        }
+
+        private async Task<object?> InstallMissingAsync(string instanceId, List<string> projectIds)
+        {
+            var meta = RequireCustomInstance(instanceId);
+            if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken mod kurulamaz.");
+            var installed = new List<string>();
+            foreach (var id in projectIds.Where(i => System.Text.RegularExpressions.Regex.IsMatch(i, "^[A-Za-z0-9]{6,16}$")).Distinct())
+                installed.AddRange(await _modrinth.InstallAsync(meta, id));
+            Log($"Eksik bağımlılıklar kuruldu: {string.Join(", ", installed.Distinct())}", "ok");
+            return new { installed };
+        }
+
+        private async Task<object?> PlayAsync(string instanceId, int ramGb, string mcVersion, bool ignoreMissing = false)
         {
             RequireLogin();
 
             try
             {
                 var (target, recommendedRamGb) = ResolveTarget(instanceId);
+                if (!ignoreMissing && await MissingDependenciesAsync(instanceId, target) is { } missing)
+                    return new { started = false, error = (string?)null, missing };
 
                 // Sunucunun Vanilla paketinde kullanıcı Minecraft sürümünü seçebilir; modlu paketlerin sürümü sabittir
                 if (!string.IsNullOrWhiteSpace(mcVersion) && mcVersion != target.McVersion &&

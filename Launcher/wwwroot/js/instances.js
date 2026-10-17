@@ -125,6 +125,27 @@ const CONTENT_TYPE_NAMES = { mod: 'Mod', resourcepack: 'Kaynak paketi', shader: 
 function openInstanceContent(instance) {
     return openModal(close => {
         const body = el('div', { class: 'admin-body' });
+        let updates = null;          // denetlendiyse: dosya → güncelleme
+        let checking = false;
+
+        async function checkUpdates() {
+            checking = true; render();
+            try {
+                const result = await bridge.invoke('instances.checkUpdates', { id: instance.id });
+                updates = Object.fromEntries(result.updates.map(u => [u.file, u]));
+            } catch (err) { appendLog({ text: 'Güncellemeler denetlenemedi: ' + err.message, level: 'error' }); updates = null; }
+            checking = false; render();
+        }
+
+        async function update(list) {
+            for (const u of list) {
+                try { await withActivity(() => bridge.invoke('mods.update', { instanceId: instance.id, projectId: u.projectId, versionId: u.versionId })); }
+                catch (err) { appendLog({ text: err.message, level: 'error' }); }
+            }
+            updates = null;
+            render();
+            loadDetails();
+        }
 
         async function render() {
             body.replaceChildren(el('p', { class: 'admin-toolbar' }, 'Yükleniyor...'));
@@ -132,31 +153,52 @@ function openInstanceContent(instance) {
             try { content = await bridge.invoke('instances.content', { id: instance.id }); }
             catch (err) { body.replaceChildren(el('p', { class: 'form-error' }, 'Hata: ' + err.message)); return; }
 
+            const stable = updates ? Object.values(updates).filter(u => u.stable) : [];
             const toolbar = el('div', { class: 'admin-toolbar' },
                 el('span', {}, `${content.items.length} dosya · Minecraft ${content.mcVersion} · ${LOADER_NAMES[content.loader] || content.loader}`),
-                el('button', { class: 'btn btn-sm btn-primary', onclick: () => { close(); openModrinthFor(instance); } }, '+ Modrinth\'ten ekle'));
+                el('span', { class: 'toolbar-actions' },
+                    updates && stable.length > 0
+                        ? el('button', { class: 'btn btn-sm btn-accent', onclick: () => update(stable) }, `Tümünü güncelle (${stable.length})`)
+                        : el('button', { class: 'btn btn-sm', disabled: checking, onclick: checkUpdates },
+                            checking ? 'Denetleniyor…' : updates ? 'Güncel ✓' : 'Güncellemeleri denetle'),
+                    el('button', { class: 'btn btn-sm btn-primary', onclick: () => { close(); openModrinthFor(instance); } }, '+ Modrinth\'ten ekle')));
 
-            const rows = content.items.map(item => el('div', { class: 'user-row content-row' },
-                el('div', { class: 'content-main' },
-                    item.iconUrl ? el('img', { class: 'content-icon', src: item.iconUrl, alt: '' }) : el('div', { class: 'content-icon plain' }),
-                    el('div', {},
-                        el('div', { class: 'uname' }, item.title),
-                        el('div', { class: 'meta' },
-                            [CONTENT_TYPE_NAMES[item.type], item.version, `${item.sizeMb} MB`].filter(Boolean).join(' · ')))),
-                el('span', {}),
-                el('button', {
-                    class: 'btn btn-sm btn-danger',
-                    onclick: async () => {
-                        const accepted = await confirmDialog({
-                            title: 'Dosyayı kaldır', message: `'${item.title}' bu instance'tan kaldırılsın mı?`,
-                            okText: 'Kaldır', cancelText: 'Vazgeç', danger: true,
-                        });
-                        if (!accepted) return;
-                        try { await bridge.invoke('instances.removeContent', { id: instance.id, file: item.file }); }
-                        catch (err) { await alertDialog({ title: 'Kaldırılamadı', message: err.message }); }
-                        render();
-                    },
-                }, 'Kaldır')));
+            const rows = content.items.map(item => {
+                const upd = updates && updates[item.file];
+                const toggle = el('input', { type: 'checkbox', checked: item.enabled !== false, 'aria-label': item.enabled !== false ? 'Kapat' : 'Aç' });
+                toggle.addEventListener('change', async () => {
+                    toggle.disabled = true;
+                    try { await bridge.invoke('instances.setContentEnabled', { id: instance.id, file: item.file, enabled: toggle.checked }); updates = null; }
+                    catch (err) { await alertDialog({ title: 'Değiştirilemedi', message: err.message }); }
+                    render();
+                    loadDetails();
+                });
+                return el('div', { class: 'user-row content-row' + (item.enabled === false ? ' disabled' : '') },
+                    el('div', { class: 'content-main' },
+                        item.iconUrl ? el('img', { class: 'content-icon', src: item.iconUrl, alt: '' }) : el('div', { class: 'content-icon plain' }),
+                        el('div', {},
+                            el('div', { class: 'uname' }, item.title, item.enabled === false && el('span', { class: 'off-tag' }, 'kapalı')),
+                            el('div', { class: 'meta' },
+                                [CONTENT_TYPE_NAMES[item.type], item.version, `${item.sizeMb} MB`].filter(Boolean).join(' · ')))),
+                    upd
+                        ? el('button', { class: 'btn btn-sm btn-accent', title: `${upd.from} → ${upd.to}`, onclick: () => update([upd]) },
+                            upd.stable ? `Güncelle (${upd.to})` : `Güncelle (${upd.to} · ${upd.type})`)
+                        : el('span', {}),
+                    el('label', { class: 'switch', title: item.enabled !== false ? 'Açık · kapatmak için tıkla' : 'Kapalı · açmak için tıkla' }, toggle, el('span', {})),
+                    el('button', {
+                        class: 'btn btn-sm btn-danger',
+                        onclick: async () => {
+                            const accepted = await confirmDialog({
+                                title: 'Dosyayı kaldır', message: `'${item.title}' bu instance'tan kaldırılsın mı?`,
+                                okText: 'Kaldır', cancelText: 'Vazgeç', danger: true,
+                            });
+                            if (!accepted) return;
+                            try { await bridge.invoke('instances.removeContent', { id: instance.id, file: item.file }); }
+                            catch (err) { await alertDialog({ title: 'Kaldırılamadı', message: err.message }); }
+                            render();
+                        },
+                    }, 'Kaldır'));
+            });
 
             body.replaceChildren(toolbar, ...(rows.length
                 ? rows

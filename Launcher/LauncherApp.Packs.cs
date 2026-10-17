@@ -331,7 +331,9 @@ namespace VuluLauncher
         private static void DeleteContentFile(string dir, string relative)
         {
             string? path = Downloader.ResolveInside(dir, relative);
-            if (path != null && File.Exists(path)) File.Delete(path);
+            if (path == null) return;
+            if (File.Exists(path)) File.Delete(path);
+            if (File.Exists(path + DisabledSuffix)) File.Delete(path + DisabledSuffix);   // kapatılmış hâli
         }
 
         // ── Paylaşma (admin) ──────────────────────────────────────────────
@@ -633,7 +635,9 @@ namespace VuluLauncher
             foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
             {
                 string relative = Path.GetRelativePath(dir, file).Replace('\\', '/');
-                if (tracked.Contains(relative) || file.EndsWith(".part", StringComparison.OrdinalIgnoreCase)) continue;
+                // Kapatılmış modlar (.disabled) paylaşılmaz
+                if (tracked.Contains(relative) || file.EndsWith(".part", StringComparison.OrdinalIgnoreCase)
+                    || file.EndsWith(DisabledSuffix, StringComparison.OrdinalIgnoreCase)) continue;
                 yield return file;
             }
         }

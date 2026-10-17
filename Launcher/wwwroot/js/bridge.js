@@ -52,6 +52,7 @@ const bridge = (() => {
 // Sayfa launcher dışında (normal tarayıcıda) açılırsa arayüz üzerinde çalışabilmek için
 // sahte bir arka uç. Gerçek launcher'da hiç kullanılmaz.
 const mockBackend = (() => {
+    const mockFlags = {};
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
     const log = (text, level = 'info', replace = false) =>
         bridge._dispatch({ event: 'log', data: [{ time: new Date().toTimeString().slice(0, 8), text, level, replace }] });
@@ -135,7 +136,8 @@ const mockBackend = (() => {
     ];
 
     let content = [
-        { file: 'mods/sodium-fabric-0.6.jar', type: 'mod', title: 'Sodium', version: 'mc1.21.1-0.6.13', iconUrl: null, sizeMb: 1.2 },
+        { file: 'mods/sodium-fabric-0.6.jar', type: 'mod', title: 'Sodium', version: 'mc1.21.1-0.6.13', iconUrl: null, sizeMb: 1.2, enabled: true, projectId: 'AANobbMI' },
+        { file: 'mods/zoomify.jar.disabled', type: 'mod', title: 'Zoomify', version: '2.17.0', iconUrl: null, sizeMb: 0.3, enabled: false, projectId: 'w7ThoJFB' },
         { file: 'mods/elle-eklenen.jar', type: 'mod', title: 'elle-eklenen.jar', version: null, iconUrl: null, sizeMb: 0.4 },
         { file: 'shaderpacks/ComplementaryReimagined.zip', type: 'shader', title: 'Complementary Reimagined', version: 'r5.5', iconUrl: null, sizeMb: 0.6 },
     ];
@@ -176,6 +178,15 @@ const mockBackend = (() => {
         'auth.forgetPassword': async () => ({ success: true }),
         'launcher.check': async () => { log('Launcher güncel.', 'muted'); return { status: 'upToDate' }; },
         'game.play': async args => {
+            // Bir kez eksik bağımlılık senaryosu (Fabric 1.21)
+            if (args.instanceId === 'inst:fabric-121' && !args.ignoreMissing && !mockFlags.depsShown) {
+                mockFlags.depsShown = true;
+                await wait(400);
+                return { started: false, error: null, missing: [
+                    { id: 'yet_another_config_lib_v3', requiredBy: ['Zoomify'], projectId: '1eAoo2KR', title: 'YetAnotherConfigLib (YACL)', iconUrl: null },
+                    { id: 'secretlib', requiredBy: ['Gizli Mod', 'Başka Mod'], projectId: null, title: null, iconUrl: null },
+                ] };
+            }
             log(`${args.instanceId} hazırlanıyor...`, 'accent');
             await wait(700);
             for (let n = 0; n <= 2400; n += 600) { log(`Dosyalar kontrol ediliyor... ${n}/2400  assets`, 'accent', true); await wait(250); }
@@ -266,6 +277,7 @@ const mockBackend = (() => {
             };
         },
         'discord.page': async () => null,
+        'mods.installMissing': async args => { log(`Eksik bağımlılıklar kuruluyor: ${args.projectIds.join(', ')}`, 'accent'); await wait(600); return { installed: ['YetAnotherConfigLib (YACL)'] }; },
         'packs.pickCover': async () => ({ path: 'C:\\kapak.jpg', url: 'assets/mainmenu.png' }),
         'packs.publish': async args => {
             log(`${args.name} hazırlanıyor...`, 'accent'); await wait(500);
@@ -298,6 +310,18 @@ const mockBackend = (() => {
         'instances.delete': async args => { instances = instances.filter(i => i.id !== args.id); return { success: true }; },
         'instances.content': async () => ({ name: 'Fabric 1.21', mcVersion: '1.21.1', loader: 'fabric', items: content }),
         'instances.removeContent': async args => { content = content.filter(c => c.file !== args.file); return { success: true }; },
+        'instances.setContentEnabled': async args => {
+            const item = content.find(c => c.file === args.file);
+            const base = args.file.replace(/\.disabled$/, '');
+            if (item) { item.enabled = args.enabled; item.file = args.enabled ? base : base + '.disabled'; }
+            return { file: item && item.file, enabled: args.enabled };
+        },
+        'instances.checkUpdates': async () => { await wait(700); return { updates: [
+            { file: 'mods/sodium-fabric-0.6.jar', projectId: 'AANobbMI', versionId: 'v2', from: 'mc1.21.1-0.6.13', to: 'mc1.21.1-0.6.14', type: 'release', stable: true },
+            { file: 'shaderpacks/ComplementaryReimagined.zip', projectId: 'HVnmMxH1', versionId: 'v3', from: 'r5.5', to: 'r5.6-beta', type: 'beta', stable: false },
+        ] }; },
+        'mods.update': async args => { await wait(500); const c = content.find(x => x.projectId === args.projectId); if (c) c.version = 'güncel'; return { installed: [args.projectId] }; },
+        'crash.openReport': async () => ({ opened: true }),
 
         'modrinth.search': async args => { await wait(350); return { total: 38, offset: args.offset, hits: sampleHits(args.type) }; },
         'modrinth.filters': async args => {

@@ -123,6 +123,8 @@ namespace VuluLauncher
         }
 
         /// <summary>Quilt, Fabric modlarını da çalıştırır; diğerleri yalnızca kendi modlarını.</summary>
+        public static string[] CompatibleLoadersOf(string loader) => CompatibleLoaders(loader);
+
         private static string[] CompatibleLoaders(string loader) =>
             loader == "quilt" ? new[] { "quilt", "fabric" } : new[] { loader };
 
@@ -190,6 +192,13 @@ namespace VuluLauncher
             var file = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.FirstOrDefault()
                 ?? throw new InvalidOperationException($"{project.Title}: indirilecek dosya yok.");
 
+            // Kararlı sürüm seçildi ama daha yeni bir beta/alpha varsa haber verilir: yeni yükleyici sürümlerinde
+            // düzeltme çoğu zaman yalnızca betada olur (ör. Sodium 0.9.2 ↔ NeoForge 26.3.0.65+)
+            var newest = versions.OrderByDescending(v => v.DatePublished).FirstOrDefault();
+            if (string.IsNullOrEmpty(versionId) && newest != null && newest.Id != version.Id && newest.VersionType != "release"
+                && string.CompareOrdinal(newest.DatePublished, version.DatePublished) > 0)
+                _log($"Not: {project.Title} için daha yeni bir {newest.VersionType} sürümü var ({newest.VersionNumber}). Oyun açılmazsa sürüm seçiciden onu deneyebilirsin.", "muted");
+
             string instanceDir = InstanceStore.PathOf(instance.Folder);
             string relative = $"{folder}/{Path.GetFileName(file.Filename)}";
             string path = Downloader.ResolveInside(instanceDir, relative)
@@ -207,6 +216,7 @@ namespace VuluLauncher
                 string? oldPath = Downloader.ResolveInside(instanceDir, previous.File);
                 if (oldPath != null && !string.Equals(oldPath, path, StringComparison.OrdinalIgnoreCase) && File.Exists(oldPath))
                     File.Delete(oldPath);
+                if (oldPath != null && File.Exists(oldPath + ".disabled")) File.Delete(oldPath + ".disabled");   // kapatılmış eski sürüm
                 instance.Content.Remove(previous);
             }
 
@@ -227,6 +237,88 @@ namespace VuluLauncher
                 if (dependency.DependencyType != "required" || string.IsNullOrEmpty(dependency.ProjectId)) continue;
                 await InstallRecursiveAsync(instance, dependency.ProjectId, visited, installed, isDependency: true);
             }
+        }
+
+        // ── Eksik bağımlılıkları Modrinth projelerine eşleme ──────────────
+        public async Task<List<MrProject>> ProjectsAsync(IEnumerable<string> ids)
+        {
+            var result = new List<MrProject>();
+            foreach (var chunk in ids.Distinct().Chunk(100))
+                result.AddRange(await GetAsync<List<MrProject>>($"{Api}/projects?ids={Uri.EscapeDataString(JsonSerializer.Serialize(chunk))}"));
+            return result;
+        }
+
+        private static string Normalize(string s) => new(s.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
+
+        /// <summary>
+        /// Jar'daki mod kimliklerini (ör. "yet_another_config_lib_v3") Modrinth projelerine eşler; bulunamayanlar null döner.
+        ///   1. İsteyen modun dosyası Modrinth'teyse, o sürümün bildirdiği zorunlu bağımlılıklar arasından aranır
+        ///      (kimlik ile proje adresi farklı olsa da doğru projeyi verir).
+        ///   2. Olmazsa kimlik doğrudan proje adresi olarak, sonra aramayla denenir.
+        /// Yalnızca instance'ın Minecraft sürümü ve yükleyicisiyle uyumlu sürümü olan projeler döner.
+        /// </summary>
+        public async Task<Dictionary<string, MrProject?>> ResolveModIdsAsync(InstanceMeta instance, ModScan scan, IReadOnlyList<MissingDependency> missing)
+        {
+            var result = missing.ToDictionary(m => m.Id, _ => (MrProject?)null, StringComparer.OrdinalIgnoreCase);
+            if (missing.Count == 0) return result;
+            string dir = InstanceStore.PathOf(instance.Folder);
+            var loaders = CompatibleLoaders(instance.Loader);
+            var installedProjects = new HashSet<string>(instance.Content.Select(c => c.ProjectId));
+
+            async Task<bool> Compatible(MrProject p) =>
+                p.ProjectType == "mod" && (await VersionsAsync(p.Id, instance.McVersion, loaders)).Count > 0;
+
+            // 1) İsteyen modların Modrinth sürümlerindeki zorunlu bağımlılıklar
+            try
+            {
+                var requesters = scan.Mods.Where(m => missing.Any(x => x.RequiredBy.Contains(m.Name))).ToList();
+                var hashes = requesters.ToDictionary(m => m.File, m =>
+                {
+                    using var s = File.OpenRead(Path.Combine(dir, "mods", m.File));
+                    return Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(s)).ToLowerInvariant();
+                });
+                var versions = await VersionsByHashesAsync(hashes.Values);
+                var depIds = versions.Values.SelectMany(v => v.Dependencies ?? new())
+                    .Where(d => d.DependencyType == "required" && !string.IsNullOrEmpty(d.ProjectId) && !installedProjects.Contains(d.ProjectId!))
+                    .Select(d => d.ProjectId!).Distinct().ToList();
+                var candidates = depIds.Count == 0 ? new List<MrProject>() : await ProjectsAsync(depIds);
+
+                foreach (var dep in missing)
+                {
+                    string key = Normalize(dep.Id);
+                    var match = candidates.FirstOrDefault(p => Normalize(p.Slug) == key || Normalize(p.Title) == key)
+                        ?? candidates.FirstOrDefault(p => key.StartsWith(Normalize(p.Slug)) || Normalize(p.Title).StartsWith(key) || key.StartsWith(Normalize(p.Title)));
+                    // İsteyen modun tek bir eksik bağımlılığı ve tek bir kurulmamış adayı varsa ikisi aynıdır
+                    if (match == null && candidates.Count == 1 && missing.Count == 1) match = candidates[0];
+                    if (match != null && await Compatible(match)) result[dep.Id] = match;
+                }
+            }
+            catch (Exception) { /* Modrinth'e ulaşılamazsa aşağıdaki yollar denenir */ }
+
+            // 2) Kimlik doğrudan proje adresi, sonra arama
+            foreach (var dep in missing.Where(d => result[d.Id] == null))
+            {
+                try
+                {
+                    foreach (var slug in new[] { dep.Id, dep.Id.Replace('_', '-') }.Distinct())
+                    {
+                        try
+                        {
+                            var p = await ProjectAsync(slug);
+                            if (await Compatible(p)) { result[dep.Id] = p; break; }
+                        }
+                        catch (HttpRequestException) { }
+                    }
+                    if (result[dep.Id] != null) continue;
+
+                    var hits = await SearchAsync(dep.Id.Replace('_', ' ').Replace('-', ' '), "mod", instance.McVersion, instance.Loader, 0);
+                    string key = Normalize(dep.Id);
+                    var hit = hits.Hits.FirstOrDefault(h => Normalize(h.Slug) == key || Normalize(h.Title) == key);
+                    if (hit != null) result[dep.Id] = new MrProject { Id = hit.ProjectId, Slug = hit.Slug, Title = hit.Title, ProjectType = "mod", IconUrl = hit.IconUrl };
+                }
+                catch (Exception) { }
+            }
+            return result;
         }
 
         // ── Modpack ───────────────────────────────────────────────────────

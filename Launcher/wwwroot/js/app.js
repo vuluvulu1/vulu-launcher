@@ -732,25 +732,44 @@ function refreshStatus() {
     bar.className = 'bar' + (mode ? ' ' + mode : '');
 }
 
-async function play() {
+async function play({ ignoreMissing = false } = {}) {
     if (!state.selected || state.gameRunning || launching) return;
 
-    clearConsole();
+    const instance = state.selected;
+    if (!ignoreMissing) clearConsole();
     state.activityText = '';
     launching = true;
     updatePlayButton();
+    let missing = null;
     try {
         const result = await bridge.invoke('game.play', {
-            instanceId: state.selected.id,
+            instanceId: instance.id,
             ramGb: state.ramGb,
-            mcVersion: canPickVersion(state.selected) ? mcVersionOf(state.selected) : '',
+            mcVersion: canPickVersion(instance) ? mcVersionOf(instance) : '',
+            ignoreMissing,
         });
         state.gameRunning = result.started;
+        missing = result.missing || null;
     } catch (err) {
         appendLog({ text: err.message, level: 'error' });
     }
     launching = false;
     updatePlayButton();
+
+    // Eksik bağımlılık: kullanıcıya sor, kurulursa yeniden dene
+    if (missing && missing.length) {
+        const choice = await missingDepsDialog(missing, instance);
+        if (choice === 'install') {
+            try {
+                await withActivity(() => bridge.invoke('mods.installMissing', {
+                    instanceId: instance.id, projectIds: missing.filter(m => m.projectId).map(m => m.projectId),
+                }));
+                loadDetails();
+            } catch (err) { appendLog({ text: err.message, level: 'error' }); return; }
+            return play({ ignoreMissing: missing.some(m => !m.projectId) });
+        }
+        if (choice === 'ignore') return play({ ignoreMissing: true });
+    }
 }
 
 // ── Konsol ────────────────────────────────────────────────────────────
@@ -797,6 +816,7 @@ function setupConsole() {
     bridge.on('log', lines => lines.forEach(appendLog));
     bridge.on('gameExited', () => { state.gameRunning = false; updatePlayButton(); loadDetails(); });
     bridge.on('logosChanged', () => reloadInstances(state.selected && state.selected.id));
+    bridge.on('gameCrashed', crash => showCrashDialog(crash));
 
     $('console-clear').addEventListener('click', clearConsole);
     $('console-toggle').addEventListener('click', () => setConsoleExpanded(!$('console').classList.contains('expanded')));

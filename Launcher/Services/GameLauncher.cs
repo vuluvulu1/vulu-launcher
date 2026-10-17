@@ -20,6 +20,9 @@ namespace VuluLauncher
     /// Oyunu kurar ve başlatır. Bütün instance'lar oyun dosyalarını (assets, libraries, versions)
     /// minecraft_core klasöründe paylaşır; her birinin kendi oyun klasörü (mods, saves, config) vardır.
     /// </summary>
+    /// <summary>Kapanan oyun hakkında çökme yardımcısının ihtiyaç duyduğu bilgiler.</summary>
+    internal sealed record GameExit(LaunchTarget Target, string InstanceDir, int ExitCode, DateTime StartedUtc, IReadOnlyList<string> Output);
+
     internal sealed class GameLauncher
     {
         private static readonly Regex UsernameRegex = new(@"^[a-zA-Z0-9_]{1,16}$", RegexOptions.Compiled);
@@ -38,6 +41,12 @@ namespace VuluLauncher
 
         /// <summary>Oyun kapandığında çağrılır.</summary>
         public event Action? Exited;
+
+        /// <summary>Son kapanan oyunun bilgileri (çıkış kodu, oyun çıktısının son satırları).</summary>
+        public GameExit? LastExit { get; private set; }
+
+        private const int OutputKeep = 600;
+        private readonly Queue<string> _output = new();
 
         public static string CorePath => Path.Combine(AppPaths.Base, "minecraft_core");
 
@@ -131,12 +140,25 @@ namespace VuluLauncher
                 process.StartInfo.RedirectStandardOutput = !closeAfterStart;
                 process.StartInfo.RedirectStandardError = !closeAfterStart;
 
-                process.OutputDataReceived += (_, ev) => { if (ev.Data != null) _log(ev.Data, "game"); };
-                process.ErrorDataReceived += (_, ev) => { if (ev.Data != null) _log(ev.Data, "gameError"); };
+                lock (_output) _output.Clear();
+                void Keep(string line)
+                {
+                    lock (_output)
+                    {
+                        _output.Enqueue(line);
+                        while (_output.Count > OutputKeep) _output.Dequeue();
+                    }
+                }
+                process.OutputDataReceived += (_, ev) => { if (ev.Data != null) { Keep(ev.Data); _log(ev.Data, "game"); } };
+                process.ErrorDataReceived += (_, ev) => { if (ev.Data != null) { Keep(ev.Data); _log(ev.Data, "gameError"); } };
 
+                var startedUtc = DateTime.UtcNow;
                 process.EnableRaisingEvents = true;
                 process.Exited += (_, _) =>
                 {
+                    int code;
+                    try { code = process.ExitCode; } catch { code = 0; }
+                    lock (_output) LastExit = new GameExit(target, instanceDir, code, startedUtc, _output.ToList());
                     Interlocked.Exchange(ref _running, 0);
                     _log("Oyun kapatıldı. İyi günler!", "warn");
                     Exited?.Invoke();

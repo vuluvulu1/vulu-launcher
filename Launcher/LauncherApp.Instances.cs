@@ -254,13 +254,18 @@ namespace VuluLauncher
 
                 foreach (var path in Directory.GetFiles(dir).OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase))
                 {
+                    if (path.EndsWith(".part", StringComparison.OrdinalIgnoreCase)) continue;
                     string relative = $"{folder}/{Path.GetFileName(path)}";
-                    tracked.TryGetValue(relative, out var info);
+                    bool enabled = !relative.EndsWith(DisabledSuffix, StringComparison.OrdinalIgnoreCase);
+                    string baseFile = enabled ? relative : relative[..^DisabledSuffix.Length];
+                    tracked.TryGetValue(baseFile, out var info);
                     items.Add(new
                     {
                         file = relative,
+                        enabled,
+                        projectId = info?.ProjectId,
                         type = folder == "mods" ? "mod" : folder == "resourcepacks" ? "resourcepack" : "shader",
-                        title = info?.Title ?? Path.GetFileName(path),
+                        title = info?.Title ?? Path.GetFileName(baseFile),
                         version = info?.VersionNumber,
                         iconUrl = info?.IconUrl,
                         sizeMb = Math.Round(new FileInfo(path).Length / 1024.0 / 1024.0, 1)
@@ -283,7 +288,8 @@ namespace VuluLauncher
 
             if (File.Exists(path)) File.Delete(path);
 
-            meta.Content.RemoveAll(c => string.Equals(c.File, normalized, StringComparison.OrdinalIgnoreCase));
+            string baseFile = normalized.EndsWith(DisabledSuffix, StringComparison.OrdinalIgnoreCase) ? normalized[..^DisabledSuffix.Length] : normalized;
+            meta.Content.RemoveAll(c => string.Equals(c.File, baseFile, StringComparison.OrdinalIgnoreCase));
             InstanceStore.Save(meta);
             return new { success = true };
         }
