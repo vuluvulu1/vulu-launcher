@@ -80,7 +80,8 @@ namespace VuluLauncher
         /// Başlatılamazsa nedenini açıklayan bir hata fırlatır.
         /// </summary>
         /// <param name="skins">Verilirse oyun vulu skin sistemiyle (authlib-injector) açılır; null ise eskisi gibi çevrimdışı.</param>
-        public async Task LaunchAsync(LaunchTarget target, string username, int ramGb, SkinSession? skins = null)
+        /// <param name="serverAddress">Verilirse oyun açılınca doğrudan bu sunucuya bağlanır (host ya da host:port).</param>
+        public async Task LaunchAsync(LaunchTarget target, string username, int ramGb, SkinSession? skins = null, string? serverAddress = null)
         {
             if (!UsernameRegex.IsMatch(username))
                 throw new InvalidOperationException(
@@ -117,6 +118,12 @@ namespace VuluLauncher
                     JavaPath = javaPath,
                     FullScreen = settings.Fullscreen
                 };
+                if (!string.IsNullOrEmpty(serverAddress))
+                {
+                    var (host, port) = ServerPing.Split(serverAddress);
+                    option.ServerIp = host;
+                    option.ServerPort = port;
+                }
                 if (settings.GameWidth > 0 && settings.GameHeight > 0)
                 {
                     option.ScreenWidth = settings.GameWidth;

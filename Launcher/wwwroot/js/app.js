@@ -47,6 +47,9 @@ function showPage(name) {
     if (name === 'settings') openSettingsPage();
     if (name === 'admin') openAdminPage();
     if (name === 'packs') openPacksPage();
+    if (name === 'servers') openServersPage();
+    if (name === 'profile') refreshPresence();
+    schedulePresence();
     refreshActivity();
     reportPresence();
 }
@@ -740,7 +743,7 @@ function refreshStatus() {
     bar.className = 'bar' + (mode ? ' ' + mode : '');
 }
 
-async function play({ ignoreMissing = false } = {}) {
+async function play({ ignoreMissing = false, join = '' } = {}) {
     if (!state.selected || state.gameRunning || launching) return;
 
     const instance = state.selected;
@@ -755,6 +758,7 @@ async function play({ ignoreMissing = false } = {}) {
             ramGb: state.ramGb,
             mcVersion: canPickVersion(instance) ? mcVersionOf(instance) : '',
             ignoreMissing,
+            join,
         });
         state.gameRunning = result.started;
         missing = result.missing || null;
@@ -774,9 +778,9 @@ async function play({ ignoreMissing = false } = {}) {
                 }));
                 loadDetails();
             } catch (err) { appendLog({ text: err.message, level: 'error' }); return; }
-            return play({ ignoreMissing: missing.some(m => !m.projectId) });
+            return play({ ignoreMissing: missing.some(m => !m.projectId), join });
         }
-        if (choice === 'ignore') return play({ ignoreMissing: true });
+        if (choice === 'ignore') return play({ ignoreMissing: true, join });
     }
 }
 
@@ -913,6 +917,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupPopovers();
     setupVersionPicker();
     setupPacksPage();
+    setupServersPage();
     for (const button of document.querySelectorAll('.discover-switch button'))
         button.addEventListener('click', () => showPage(button.dataset.source));
     setupRegisterForm();
@@ -921,7 +926,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupDownloads();
     setupMusic();
     setupLoginForm();
-    $('btn-play').addEventListener('click', play);
+    $('btn-play').addEventListener('click', () => play());
     $('btn-ram').addEventListener('click', () => setPopover('ram-pop', 'btn-ram', $('ram-pop').hidden));
     $('btn-new-instance').addEventListener('click', () => openNewInstanceDialog());
     for (const button of document.querySelectorAll('#page-tabs button'))

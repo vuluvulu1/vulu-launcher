@@ -199,17 +199,22 @@ async function loadMembers(force) {
 
 function renderMembers() {
     const query = $('members-search').value.trim().toLocaleLowerCase('tr');
-    const list = profile.members.filter(u => !query || u.username.toLocaleLowerCase('tr').includes(query));
+    // Çevrimiçi olanlar (önce oynayanlar) üstte
+    const rank = u => { const p = presenceOf(u.username); return !p ? 2 : p.state === 'playing' ? 0 : 1; };
+    const list = profile.members.filter(u => !query || u.username.toLocaleLowerCase('tr').includes(query))
+        .slice().sort((a, b) => rank(a) - rank(b));
     $('members-count').textContent = `${profile.members.length} kişi`;
 
     $('members-list').replaceChildren(...(list.length ? list.map(user =>
         el('button', { class: 'member', 'data-username': user.username, onclick: () => openProfile(user.username) },
-            avatarEl(user, 'avatar-md'),
+            el('span', { class: 'presence-avatar' }, avatarEl(user, 'avatar-md'),
+                presenceOf(user.username) && el('span', { class: 'presence-dot', 'data-state': presenceOf(user.username).state })),
             el('span', { class: 'member-text' },
                 el('span', { class: 'member-name' }, user.username,
                     user.isAdmin && adminMark(),
                     user.username === state.username && el('span', { class: 'member-you' }, 'sen')),
-                el('span', { class: 'member-sub' }, user.bio || lastSeenText(user)))))
+                el('span', { class: 'member-sub' + (presenceOf(user.username) ? ' online' : '') },
+                    presenceText(presenceOf(user.username)) || user.bio || lastSeenText(user)))))
         : [el('p', { class: 'hint' }, 'Kimse bulunamadı.')]));
     markActiveMember();
 }

@@ -25,6 +25,7 @@ async function openPacksPage() {
 }
 
 function renderPacks(result) {
+    state.packsCache = result.packs;
     const grid = $('packs-grid'), status = $('packs-status');
     $('packs-request').hidden = !result.feedbackEnabled;
     $('packs-request-count').textContent = result.generalFeedback || '';

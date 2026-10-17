@@ -53,6 +53,10 @@ const bridge = (() => {
 // sahte bir arka uç. Gerçek launcher'da hiç kullanılmaz.
 const mockBackend = (() => {
     const mockFlags = {};
+    let mockServers = [
+        { id: 's1', name: 'AGLR SMP', address: 'aglr.vulu.net', description: 'Ana survival sunucusu', packId: 'p1', mcVersion: '', instanceId: null },
+        { id: 's2', name: 'Vanilla Lobi', address: 'kapali.vulu.net:25570', description: '', packId: null, mcVersion: '1.21.1', instanceId: 'pack:vanilla' },
+    ];
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
     const log = (text, level = 'info', replace = false) =>
         bridge._dispatch({ event: 'log', data: [{ time: new Date().toTimeString().slice(0, 8), text, level, replace }] });
@@ -322,6 +326,24 @@ const mockBackend = (() => {
         ] }; },
         'mods.update': async args => { await wait(500); const c = content.find(x => x.projectId === args.projectId); if (c) c.version = 'güncel'; return { installed: [args.projectId] }; },
         'crash.openReport': async () => ({ opened: true }),
+        'community.presence': async () => [
+            { username: 'Steve_TR', state: 'playing', instance: 'AGLR SMP', mcVersion: '26.3', loader: 'neoforge', packId: 'p1', server: 'aglr.vulu.net', since: new Date(Date.now() - 1500000).toISOString() },
+            { username: 'ardak', state: 'launcher', instance: '', mcVersion: '', loader: '', packId: null, server: '', since: new Date().toISOString() },
+            { username: 'vulu', state: 'launcher', instance: '', mcVersion: '', loader: '', packId: null, server: '', since: new Date().toISOString() },
+        ],
+        'community.servers': async () => { await wait(300); return mockServers; },
+        'community.ping': async args => {
+            await wait(400 + Math.random() * 500);
+            return args.address.startsWith('kapali')
+                ? { online: false }
+                : { online: true, players: 3, maxPlayers: 20, version: 'NeoForge 26.3', motd: 'AGLR SMP · Hoş geldin!', ping: 38, sample: ['Steve_TR', 'ardak', 'Notch'] };
+        },
+        'servers.save': async args => {
+            const entry = { id: args.id || 's' + Date.now(), name: args.name, address: args.address, description: args.description, packId: args.packId || null, mcVersion: args.packId ? '' : args.mcVersion, instanceId: args.packId ? null : 'pack:vanilla' };
+            mockServers = mockServers.filter(x => x.id !== entry.id).concat(entry);
+            return entry;
+        },
+        'servers.delete': async args => { mockServers = mockServers.filter(x => x.id !== args.id); return { success: true }; },
 
         'modrinth.search': async args => { await wait(350); return { total: 38, offset: args.offset, hits: sampleHits(args.type) }; },
         'modrinth.filters': async args => {

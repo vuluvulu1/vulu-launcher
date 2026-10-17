@@ -26,6 +26,8 @@ namespace VuluLauncher
         public bool ConsoleExpanded { get; set; }
         /// <summary>Discord'da "vulu Launcher oynuyor" durumu.</summary>
         public bool DiscordPresence { get; set; } = true;
+        /// <summary>Arkadaşlar ne görsün: "full" (ne oynadığım) | "online" (yalnızca çevrimiçi) | "hidden" (görünmez).</summary>
+        public string PresenceMode { get; set; } = "full";
 
         // ── Ses ve görünüm ────────────────────────────────────────────────
         public bool MusicEnabled { get; set; } = true;

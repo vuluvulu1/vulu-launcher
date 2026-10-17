@@ -37,7 +37,7 @@ namespace VuluLauncher
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
             _game = new GameLauncher(Log, _java);
-            _game.Exited += () => { _bridge.Emit("gameExited"); _discord.ShowIdle(); _ = ReportCrashIfAnyAsync(); };
+            _game.Exited += () => { _bridge.Emit("gameExited"); _discord.ShowIdle(); PresenceIdle(); _ = ReportCrashIfAnyAsync(); };
             // Arayüz hangi sayfada olunduğunu (ve Oyna'da seçili instance'ı) bildirir
             _bridge.On("discord.page", args =>
             {
@@ -78,13 +78,14 @@ namespace VuluLauncher
             _bridge.On("launcher.check", async _ => await CheckLauncherVersionAsync());
             _bridge.On("launcher.update", _ => Task.FromResult<object?>(StartLauncherUpdate()));
 
-            _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion"), args.Bool("ignoreMissing")));
+            _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion"), args.Bool("ignoreMissing"), args.Str("join")));
             _bridge.On("mods.installMissing", async args => await InstallMissingAsync(args.Str("instanceId"), args.StrList("projectIds")));
             _bridge.On("game.versions", async _ => { RequireLogin(); return await LoaderCatalog.MinecraftVersionsAsync(); });
 
             RegisterInstanceCommands();
             RegisterPackCommands();
             RegisterHealthCommands();
+            RegisterCommunityCommands();
 
             // vulu-api ücretsiz planda boşta kalınca uyuyor; açılışta uyandırılır ki giriş yapılana kadar hazır olsun
             _ = Task.Run(async () => { try { using var _ = await Downloader.Http.GetAsync(ApiConfig.BaseUrl + "/ping"); } catch { } });
@@ -159,6 +160,7 @@ namespace VuluLauncher
             if (remember) CredentialManager.Save(username, password);
             else CredentialManager.Clear();
             _ = RepairPackLogosAsync();
+            StartPresence();
 
             return new
             {
@@ -298,7 +300,7 @@ namespace VuluLauncher
             return new { installed };
         }
 
-        private async Task<object?> PlayAsync(string instanceId, int ramGb, string mcVersion, bool ignoreMissing = false)
+        private async Task<object?> PlayAsync(string instanceId, int ramGb, string mcVersion, bool ignoreMissing = false, string? join = null)
         {
             RequireLogin();
 
@@ -321,7 +323,13 @@ namespace VuluLauncher
                     ramGb = AppSettings.Current.DefaultRamGb > 0 ? AppSettings.Current.DefaultRamGb : recommendedRamGb;
 
                 var skins = await PrepareSkinsAsync();
-                await _game.LaunchAsync(target, _login.Username, ramGb, skins);
+                if (string.IsNullOrWhiteSpace(join)) join = null;
+                else if (!System.Text.RegularExpressions.Regex.IsMatch(join, @"^[A-Za-z0-9](?:[A-Za-z0-9.\-]{0,118}[A-Za-z0-9])?(?::\d{1,5})?$"))
+                    throw new InvalidOperationException("Sunucu adresi geçersiz.");
+
+                await _game.LaunchAsync(target, _login.Username, ramGb, skins, join);
+                string? packId = instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(instanceId[InstancePrefix.Length..])?.SharedPackId : null;
+                PresencePlaying(target, packId, join);
                 _discord.ShowPlaying(target.Name, target.McVersion, target.Loader, await PackImageUrlAsync(instanceId));
 
                 // Ayarlardaki "oyun açılınca" davranışı
