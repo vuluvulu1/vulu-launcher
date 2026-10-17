@@ -553,7 +553,7 @@ namespace VuluLauncher
 
             var hashes = await Task.Run(() => candidates.ToDictionary(
                 c => c.Relative,
-                c => { using var s = File.OpenRead(c.Path); return Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(s)).ToLowerInvariant(); }));
+                c => Downloader.Sha1Of(c.Path)));
 
             Dictionary<string, MrVersion> found;
             try { found = await _modrinth.VersionsByHashesAsync(hashes.Values); }

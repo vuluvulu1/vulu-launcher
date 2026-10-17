@@ -69,6 +69,13 @@ namespace VuluLauncher
         /// Göreli yolu kök klasörün içindeki tam yola çevirir; kökün dışına çıkıyorsa null döner.
         /// Modpack ve zip içeriklerindeki yollar buradan geçer.
         /// </summary>
+        /// <summary>Dosyanın SHA-1'i (küçük harf onaltılık); Modrinth'te dosyadan sürüm bulmak için.</summary>
+        public static string Sha1Of(string path)
+        {
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            return Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(stream)).ToLowerInvariant();
+        }
+
         public static string? ResolveInside(string root, string relativePath)
         {
             if (string.IsNullOrWhiteSpace(relativePath)) return null;

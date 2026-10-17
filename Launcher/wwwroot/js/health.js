@@ -87,7 +87,8 @@ function selectAndPlay(instanceId) {
     if (!instance) return;
     if (!state.selected || state.selected.id !== instanceId) selectInstance(instance);
     showPage('home');
-    play();
+    const last = state.lastLaunch;
+    play({ join: last && last.instanceId === instanceId ? last.join : '' });
 }
 
 // ── Dünyalar ve yedekler ──────────────────────────────────────────────

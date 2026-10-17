@@ -568,6 +568,7 @@ namespace VuluLauncher
 
             AppSettings.Save(settings);
             _discord.SetEnabled(settings.DiscordPresence);
+            SignalPresence();   // "görünmez" seçilince arkadaş listesinden hemen düşülür
             return new { settings = AppSettings.Current };
         }
 
@@ -613,6 +614,10 @@ namespace VuluLauncher
             if (_game.IsRunning)
                 throw new InvalidOperationException("Oyun çalışırken çıkış yapılamaz.");
 
+            // Arkadaş listesinden hemen düşülür (oturum kapanmadan önce, eski token'la)
+            string? oldToken = _login.Token;
+            var api = new ApiClient(() => oldToken);
+            _ = Task.Run(async () => { try { await api.DeleteAsync<System.Text.Json.JsonElement>("/users/me/presence"); } catch { } });
             _login = new LoginService();
             return new { success = true };
         }

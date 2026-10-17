@@ -18,7 +18,7 @@ namespace VuluLauncher
 
         private void RegisterWorldCommands()
         {
-            _bridge.On("worlds.list", args => Task.FromResult<object?>(ListWorlds(args.Str("id"))));
+            _bridge.On("worlds.list", async args => await Task.Run(() => ListWorlds(args.Str("id"))));
             _bridge.On("worlds.backup", async args => await Task.Run(() => BackupWorld(args.Str("id"), args.Str("world"), "elle")));
             _bridge.On("worlds.restore", async args => await Task.Run(() => RestoreWorld(args.Str("id"), args.Str("world"), args.Str("backup"))));
             _bridge.On("worlds.deleteBackup", args => Task.FromResult<object?>(DeleteBackup(args.Str("id"), args.Str("world"), args.Str("backup"))));
@@ -188,6 +188,8 @@ namespace VuluLauncher
                 .Where(e => !e.Equals("optionsshaders.txt", StringComparison.OrdinalIgnoreCase)).ToList();
             mods.AddRange(await ResolveUntrackedByHashAsync(dir, includes, tracked));
 
+            // Bağlantı olamayanlar (Modrinth'te SHA-512'si ya da adresi yok) pakete dosya olarak girer, kaybolmaz
+            fallback.AddRange(mods.Where(m => string.IsNullOrEmpty(m.Sha512) || string.IsNullOrEmpty(m.Url)).Select(m => m.File));
             var files = mods.Where(m => !string.IsNullOrEmpty(m.Sha512) && !string.IsNullOrEmpty(m.Url)).Select(m => new
             {
                 path = m.File,

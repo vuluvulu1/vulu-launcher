@@ -239,6 +239,25 @@ namespace VuluLauncher
             }
         }
 
+        /// <summary>
+        /// Dosyaların (SHA-1) bu yükleyiciler ve Minecraft sürümü için en yeni sürümleri; tek istekte
+        /// (POST /version_files/update). Modrinth'te olmayan ya da uyumlu sürümü olmayan dosyalar sonuçta yer almaz.
+        /// </summary>
+        public async Task<Dictionary<string, MrVersion>> LatestByHashesAsync(IEnumerable<string> sha1Hashes, IEnumerable<string> loaders, string mcVersion)
+        {
+            var result = new Dictionary<string, MrVersion>(StringComparer.OrdinalIgnoreCase);
+            foreach (var chunk in sha1Hashes.Distinct(StringComparer.OrdinalIgnoreCase).Chunk(500))
+            {
+                using var response = await Downloader.Http.PostAsJsonAsync($"{Api}/version_files/update",
+                    new { hashes = chunk, algorithm = "sha1", loaders, game_versions = new[] { mcVersion } });
+                if (!response.IsSuccessStatusCode)
+                    throw new HttpRequestException($"Modrinth isteği başarısız oldu ({(int)response.StatusCode}).");
+                var found = await response.Content.ReadFromJsonAsync<Dictionary<string, MrVersion>>(Json);
+                foreach (var (hash, version) in found ?? new()) result[hash] = version;
+            }
+            return result;
+        }
+
         // ── Eksik bağımlılıkları Modrinth projelerine eşleme ──────────────
         public async Task<List<MrProject>> ProjectsAsync(IEnumerable<string> ids)
         {
@@ -249,6 +268,19 @@ namespace VuluLauncher
         }
 
         private static string Normalize(string s) => new(s.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
+
+        /// <summary>
+        /// Mod kimliği bu projeye mi ait: adres ya da ad (parantezli kısa adlar atılarak) kimlikle aynı ya da biri ötekinin başı.
+        /// "yet_another_config_lib_v3" ↔ "YetAnotherConfigLib (YACL)", "cloth_config" ↔ "cloth-config".
+        /// </summary>
+        private static bool LooksLike(string modId, string slug, string title)
+        {
+            string key = Normalize(modId);
+            string baseTitle = Normalize(System.Text.RegularExpressions.Regex.Replace(title, @"\([^)]*\)|\[[^\]]*\]", ""));
+            foreach (var name in new[] { Normalize(slug), Normalize(title), baseTitle })
+                if (name == key || (name.Length >= 4 && key.Length >= 4 && (key.StartsWith(name) || name.StartsWith(key)))) return true;
+            return false;
+        }
 
         /// <summary>
         /// Jar'daki mod kimliklerini (ör. "yet_another_config_lib_v3") Modrinth projelerine eşler; bulunamayanlar null döner.
@@ -272,26 +304,27 @@ namespace VuluLauncher
             try
             {
                 var requesters = scan.Mods.Where(m => missing.Any(x => x.RequiredBy.Contains(m.Name))).ToList();
-                var hashes = requesters.ToDictionary(m => m.File, m =>
-                {
-                    using var s = File.OpenRead(Path.Combine(dir, "mods", m.File));
-                    return Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(s)).ToLowerInvariant();
-                });
+                var hashes = requesters.ToDictionary(m => m.File, m => Downloader.Sha1Of(Path.Combine(dir, "mods", m.File)));
                 var versions = await VersionsByHashesAsync(hashes.Values);
                 var depIds = versions.Values.SelectMany(v => v.Dependencies ?? new())
                     .Where(d => d.DependencyType == "required" && !string.IsNullOrEmpty(d.ProjectId) && !installedProjects.Contains(d.ProjectId!))
                     .Select(d => d.ProjectId!).Distinct().ToList();
-                var candidates = depIds.Count == 0 ? new List<MrProject>() : await ProjectsAsync(depIds);
+                // Yalnızca bu instance'ta çalışabilecek adaylar (çok yükleyicili jar'ların Fabric bağımlılıkları NeoForge'da elenir)
+                var candidates = new List<MrProject>();
+                foreach (var p in depIds.Count == 0 ? new List<MrProject>() : await ProjectsAsync(depIds))
+                    if (await Compatible(p)) candidates.Add(p);
 
+                var unmatched = new List<MissingDependency>();
                 foreach (var dep in missing)
                 {
                     string key = Normalize(dep.Id);
-                    var match = candidates.FirstOrDefault(p => Normalize(p.Slug) == key || Normalize(p.Title) == key)
-                        ?? candidates.FirstOrDefault(p => key.StartsWith(Normalize(p.Slug)) || Normalize(p.Title).StartsWith(key) || key.StartsWith(Normalize(p.Title)));
-                    // İsteyen modun tek bir eksik bağımlılığı ve tek bir kurulmamış adayı varsa ikisi aynıdır
-                    if (match == null && candidates.Count == 1 && missing.Count == 1) match = candidates[0];
-                    if (match != null && await Compatible(match)) result[dep.Id] = match;
+                    var match = candidates.FirstOrDefault(p => Normalize(p.Slug) == key || Normalize(p.Title) == key)   // önce tam eşleşme
+                        ?? candidates.FirstOrDefault(p => LooksLike(dep.Id, p.Slug, p.Title));
+                    if (match != null) { result[dep.Id] = match; candidates.Remove(match); }
+                    else unmatched.Add(dep);
                 }
+                // Geriye tek eksik ve tek uyumlu aday kaldıysa ikisi aynıdır
+                if (unmatched.Count == 1 && candidates.Count == 1) result[unmatched[0].Id] = candidates[0];
             }
             catch (Exception) { /* Modrinth'e ulaşılamazsa aşağıdaki yollar denenir */ }
 
@@ -313,7 +346,8 @@ namespace VuluLauncher
 
                     var hits = await SearchAsync(dep.Id.Replace('_', ' ').Replace('-', ' '), "mod", instance.McVersion, instance.Loader, 0);
                     string key = Normalize(dep.Id);
-                    var hit = hits.Hits.FirstOrDefault(h => Normalize(h.Slug) == key || Normalize(h.Title) == key);
+                    var hit = hits.Hits.FirstOrDefault(h => Normalize(h.Slug) == key || Normalize(h.Title) == key)
+                        ?? hits.Hits.Take(3).FirstOrDefault(h => LooksLike(dep.Id, h.Slug, h.Title));
                     if (hit != null) result[dep.Id] = new MrProject { Id = hit.ProjectId, Slug = hit.Slug, Title = hit.Title, ProjectType = "mod", IconUrl = hit.IconUrl };
                 }
                 catch (Exception) { }

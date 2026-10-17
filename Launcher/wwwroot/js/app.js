@@ -750,6 +750,8 @@ async function play({ ignoreMissing = false, join = '' } = {}) {
     if (!state.selected || state.gameRunning || launching) return;
 
     const instance = state.selected;
+    // Çökme penceresindeki "Tekrar oyna" aynı sunucuya yeniden bağlanabilsin
+    state.lastLaunch = { instanceId: instance.id, join };
     if (!ignoreMissing) clearConsole();
     state.activityText = '';
     launching = true;

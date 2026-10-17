@@ -65,7 +65,8 @@ namespace VuluLauncher
             {
                 if (finding.Kind == "missing")
                 {
-                    var missing = finding.ModIds.Select(id => new MissingDependency(id, Array.Empty<string>())).ToList();
+                    var missing = finding.ModIds.Select(id =>
+                        scan.Missing.FirstOrDefault(m => m.Id.Equals(id, StringComparison.OrdinalIgnoreCase)) ?? new MissingDependency(id, Array.Empty<string>())).ToList();
                     var lookup = _modrinth.ResolveModIdsAsync(meta, scan, missing);
                     if (await Task.WhenAny(lookup, Task.Delay(TimeSpan.FromSeconds(12))) != lookup) return actions;
                     var projects = (await lookup).Values.Where(p => p != null).Select(p => p!).ToList();
@@ -100,8 +101,7 @@ namespace VuluLauncher
         private async Task<(MrVersion Version, MrVersion Current)?> NewerVersionAsync(InstanceMeta meta, string path)
         {
             if (!File.Exists(path)) return null;
-            string sha1;
-            using (var s = File.OpenRead(path)) sha1 = Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(s)).ToLowerInvariant();
+            string sha1 = Downloader.Sha1Of(path);
             var found = await _modrinth.VersionsByHashesAsync(new[] { sha1 });
             if (!found.TryGetValue(sha1, out var current)) return null;
             var versions = await _modrinth.VersionsAsync(current.ProjectId, meta.McVersion, ModrinthService.CompatibleLoadersOf(meta.Loader));
@@ -155,33 +155,54 @@ namespace VuluLauncher
                 .SelectMany(f => Directory.GetFiles(Path.Combine(dir, f)).Select(p => (Folder: f, Path: p)))
                 .Where(x => !x.Path.EndsWith(".part", StringComparison.OrdinalIgnoreCase))
                 .ToList();
-            var hashes = await Task.Run(() => files.ToDictionary(x => x.Path, x =>
-            {
-                using var s = File.OpenRead(x.Path);
-                return Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(s)).ToLowerInvariant();
-            }));
+            var hashes = await Task.Run(() => files.ToDictionary(x => x.Path, x => Downloader.Sha1Of(x.Path)));
             var current = await _modrinth.VersionsByHashesAsync(hashes.Values);
 
-            var updates = new List<object>();
-            await Parallel.ForEachAsync(files, new ParallelOptions { MaxDegreeOfParallelism = 6 }, async (x, _) =>
+            // Klasöre göre "yükleyici": modlarda instance'ınki, kaynak paketlerinde minecraft, shaderlarda shader yükleyicileri
+            var loadersOf = new Dictionary<string, string[]>
             {
-                if (!current.TryGetValue(hashes[x.Path], out var cur)) return;
-                bool isMod = x.Folder == "mods";
-                List<MrVersion> versions;
-                try { versions = await _modrinth.VersionsAsync(cur.ProjectId, meta.McVersion, isMod ? ModrinthService.CompatibleLoadersOf(meta.Loader) : null); }
-                catch (Exception) { return; }
-                var newer = versions.Where(v => string.CompareOrdinal(v.DatePublished, cur.DatePublished) > 0).OrderByDescending(v => v.DatePublished).ToList();
-                if (newer.Count == 0) return;
-                var release = newer.FirstOrDefault(v => v.VersionType == "release");
-                var pick = release ?? newer[0];
-                string relative = $"{x.Folder}/{Path.GetFileName(x.Path)}";
-                lock (updates)
-                    updates.Add(new
+                ["mods"] = ModrinthService.CompatibleLoadersOf(meta.Loader),
+                ["resourcepacks"] = new[] { "minecraft" },
+                ["shaderpacks"] = new[] { "iris", "optifine", "canvas", "vanilla" },
+            };
+            var latest = new Dictionary<string, MrVersion>(StringComparer.OrdinalIgnoreCase);
+            foreach (var group in files.Where(x => current.ContainsKey(hashes[x.Path])).GroupBy(x => x.Folder))
+            {
+                try
+                {
+                    foreach (var (hash, version) in await _modrinth.LatestByHashesAsync(group.Select(x => hashes[x.Path]), loadersOf[group.Key], meta.McVersion))
+                        latest[hash] = version;
+                }
+                catch (Exception) { /* bu tür denetlenemedi; diğerleri gösterilir */ }
+            }
+
+            var updates = new List<object>();
+            foreach (var x in files)
+            {
+                string hash = hashes[x.Path];
+                if (!current.TryGetValue(hash, out var cur) || !latest.TryGetValue(hash, out var newest)) continue;
+                if (newest.Id == cur.Id || string.CompareOrdinal(newest.DatePublished, cur.DatePublished) <= 0) continue;
+
+                // En yenisi beta/alpha ise daha yeni bir kararlı sürüm var mı (yalnızca bu birkaç proje için ayrı istek)
+                var pick = newest;
+                bool stable = newest.VersionType == "release";
+                if (!stable)
+                {
+                    try
                     {
-                        file = relative, projectId = cur.ProjectId, versionId = pick.Id,
-                        from = cur.VersionNumber, to = pick.VersionNumber, type = pick.VersionType, stable = release != null,
-                    });
-            });
+                        var release = (await _modrinth.VersionsAsync(cur.ProjectId, meta.McVersion, loadersOf[x.Folder]))
+                            .Where(v => v.VersionType == "release" && string.CompareOrdinal(v.DatePublished, cur.DatePublished) > 0)
+                            .OrderByDescending(v => v.DatePublished).FirstOrDefault();
+                        if (release != null) { pick = release; stable = true; }
+                    }
+                    catch (Exception) { }
+                }
+                updates.Add(new
+                {
+                    file = $"{x.Folder}/{Path.GetFileName(x.Path)}", projectId = cur.ProjectId, versionId = pick.Id,
+                    from = cur.VersionNumber, to = pick.VersionNumber, type = pick.VersionType, stable,
+                });
+            }
             return new { updates };
         }
 
@@ -192,14 +213,15 @@ namespace VuluLauncher
             if (!Regex.IsMatch(projectId, "^[A-Za-z0-9]{6,16}$") || !Regex.IsMatch(versionId, "^[A-Za-z0-9]{6,16}$"))
                 throw new InvalidOperationException("Geçersiz sürüm.");
 
-            // Elle eklenmiş (izlenmeyen) bir dosyaysa eskisi hash'ten bulunup kaldırılır; izlenenleri InstallAsync değiştirir
+            // Elle eklenmiş (izlenmeyen) dosyalar hash'ten bulunur. Önce yenisi kurulur, eskiler ancak ondan sonra silinir:
+            // indirme başarısız olursa mod kaybolmaz. İzlenen dosyaları InstallAsync kendisi değiştirir.
             string dir = InstanceStore.PathOf(meta.Folder);
-            if (!meta.Content.Any(c => c.ProjectId == projectId))
-            {
-                var stale = await FilesOfProjectAsync(dir, projectId);
-                foreach (var path in stale) File.Delete(path);
-            }
+            var stale = meta.Content.Any(c => c.ProjectId == projectId) ? new List<string>() : await FilesOfProjectAsync(dir, projectId);
             var installed = await _modrinth.InstallAsync(meta, projectId, versionId);
+            var keep = meta.Content.Where(c => c.ProjectId == projectId)
+                .Select(c => Downloader.ResolveInside(dir, c.File)).Where(p => p != null).Select(p => p!)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var path in stale.Where(p => !keep.Contains(p) && File.Exists(p))) File.Delete(path);
             return new { installed };
         }
 
@@ -208,11 +230,7 @@ namespace VuluLauncher
         {
             var files = ContentFolders.Where(f => Directory.Exists(Path.Combine(dir, f)))
                 .SelectMany(f => Directory.GetFiles(Path.Combine(dir, f))).ToList();
-            var hashes = files.ToDictionary(p => p, p =>
-            {
-                using var s = File.OpenRead(p);
-                return Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(s)).ToLowerInvariant();
-            });
+            var hashes = await Task.Run(() => files.ToDictionary(p => p, Downloader.Sha1Of));
             var found = await _modrinth.VersionsByHashesAsync(hashes.Values);
             return files.Where(p => found.TryGetValue(hashes[p], out var v) && v.ProjectId == projectId).ToList();
         }
