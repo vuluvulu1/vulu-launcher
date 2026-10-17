@@ -619,6 +619,13 @@ namespace VuluLauncher
             var api = new ApiClient(() => oldToken);
             _ = Task.Run(async () => { try { await api.DeleteAsync<System.Text.Json.JsonElement>("/users/me/presence"); } catch { } });
             _login = new LoginService();
+            // Mesaj anahtarı bellekten silinir: bu bilgisayarda sonra giriş yapan biri önceki kullanıcının anahtarını kullanamaz
+            lock (_dmGate)
+            {
+                _dmKey?.Dispose();
+                _dmKey = null; _dmPublic = null; _dmKeyId = null; _dmUser = null; _dmSince = null;
+                _dmPeers.Clear();
+            }
             return new { success = true };
         }
     }

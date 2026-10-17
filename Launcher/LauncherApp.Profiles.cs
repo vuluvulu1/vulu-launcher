@@ -91,6 +91,7 @@ namespace VuluLauncher
             if (string.Equals(saved.Username, _login.Username, StringComparison.Ordinal) && !string.IsNullOrEmpty(saved.Password))
                 CredentialManager.Save(_login.Username, next);
 
+            await RewrapMessageKeyAsync(next);   // mesaj anahtarının yedeği yeni şifreyle
             Log("Şifren değiştirildi.", "ok");
             return new { success = true };
         }

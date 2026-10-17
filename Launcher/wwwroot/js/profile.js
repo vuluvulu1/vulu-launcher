@@ -66,7 +66,9 @@ function renderProfile(user) {
                 [joined && 'Katıldı: ' + formatDate(joined), lastSeenText(user)].filter(Boolean).join(' · '))),
         own && el('div', { class: 'profile-head-actions' },
             el('button', { class: 'btn btn-sm', onclick: changeAvatar }, 'Resmi değiştir'),
-            user.avatarVersion > 0 && el('button', { class: 'btn btn-sm', onclick: removeAvatar }, 'Kaldır')));
+            user.avatarVersion > 0 && el('button', { class: 'btn btn-sm', onclick: removeAvatar }, 'Kaldır')),
+        !own && el('div', { class: 'profile-head-actions' },
+            el('button', { class: 'btn btn-sm btn-primary', onclick: () => { showPage('messages'); openMessagesPage(user.username); } }, 'Mesaj gönder')));
 
     const sections = [
         el('div', { class: 'profile-banner', 'aria-hidden': 'true' }),

@@ -48,6 +48,7 @@ function showPage(name) {
     if (name === 'admin') openAdminPage();
     if (name === 'packs') openPacksPage();
     if (name === 'servers') openServersPage();
+    if (name === 'messages') openMessagesPage();
     if (name === 'profile') refreshPresence();
     schedulePresence();
     refreshActivity();
@@ -923,6 +924,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupVersionPicker();
     setupPacksPage();
     setupServersPage();
+    setupMessagesPage();
     for (const button of document.querySelectorAll('.discover-switch button'))
         button.addEventListener('click', () => showPage(button.dataset.source));
     setupRegisterForm();

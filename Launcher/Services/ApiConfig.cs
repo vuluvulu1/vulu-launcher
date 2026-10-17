@@ -5,6 +5,11 @@ namespace VuluLauncher
     /// </summary>
     internal static class ApiConfig
     {
-        public const string BaseUrl = "https://vulu-api.onrender.com";
+        public static readonly string BaseUrl =
+#if DEBUG
+            // Yalnızca geliştirme derlemesinde: testler yerel bir vulu-api'ye yönlendirilebilir. Yayın derlemesinde adres sabittir.
+            Environment.GetEnvironmentVariable("VULU_API_URL") ??
+#endif
+            "https://vulu-api.onrender.com";
     }
 }

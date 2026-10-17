@@ -53,6 +53,17 @@ const bridge = (() => {
 // sahte bir arka uç. Gerçek launcher'da hiç kullanılmaz.
 const mockBackend = (() => {
     const mockFlags = {};
+    const mockDm = {
+        conversations: [{ username: 'Steve_TR', lastAt: new Date(Date.now() - 300000).toISOString(), unread: 2 }, { username: 'halil', lastAt: new Date(Date.now() - 86400000).toISOString(), unread: 0 }],
+        threads: {
+            Steve_TR: [
+                { id: 'a1', from: 'vulu', to: 'Steve_TR', mine: true, text: 'Bu akşam AGLR\'ye giriyor musun?', problem: null, createdAt: new Date(Date.now() - 900000).toISOString(), read: true, peer: 'Steve_TR' },
+                { id: 'a2', from: 'Steve_TR', to: 'vulu', mine: false, text: 'Evet, 9 gibi.\nYACL\'ı kurmayı unutma 😄', problem: null, createdAt: new Date(Date.now() - 600000).toISOString(), read: true, peer: 'Steve_TR' },
+                { id: 'a3', from: 'Steve_TR', to: 'vulu', mine: false, text: null, problem: 'Bu mesaj eski bir anahtarınla şifrelenmiş; okunamıyor.', createdAt: new Date(Date.now() - 300000).toISOString(), read: false, peer: 'Steve_TR' },
+            ],
+            halil: [],
+        },
+    };
     let mockServers = [
         { id: 's1', name: 'AGLR SMP', address: 'aglr.vulu.net', description: 'Ana survival sunucusu', packId: 'p1', mcVersion: '', instanceId: null },
         { id: 's2', name: 'Vanilla Lobi', address: 'kapali.vulu.net:25570', description: '', packId: null, mcVersion: '1.21.1', instanceId: 'pack:vanilla' },
@@ -326,6 +337,22 @@ const mockBackend = (() => {
         ] }; },
         'mods.update': async args => { await wait(500); const c = content.find(x => x.projectId === args.projectId); if (c) c.version = 'güncel'; return { installed: [args.projectId] }; },
         'crash.openReport': async () => ({ opened: true }),
+        'dm.status': async () => ({ ready: true, error: null }),
+        'dm.conversations': async () => mockDm.conversations,
+        'dm.history': async args => {
+            await wait(200);
+            return { messages: (mockDm.threads[args.user] || []).filter(m => !args.before || m.createdAt < args.before),
+                peerReady: args.user !== 'eskiuye', peerError: null, keyChanged: args.user === 'halil', verified: false };
+        },
+        'dm.send': async args => {
+            const m = { id: 'm' + Date.now(), from: 'vulu', to: args.user, mine: true, text: args.text, problem: null, createdAt: new Date().toISOString(), read: false, peer: args.user };
+            (mockDm.threads[args.user] = mockDm.threads[args.user] || []).push(m);
+            return { message: m, keyChanged: false };
+        },
+        'dm.read': async () => ({ updated: 0 }),
+        'dm.delete': async () => ({ success: true }),
+        'dm.safety': async () => ({ code: '88891 95687 76438 74195 64398 37156', verified: false, changed: false }),
+        'dm.verify': async () => ({ verified: true }),
         'community.presence': async () => [
             { username: 'Steve_TR', state: 'playing', instance: 'AGLR SMP', mcVersion: '26.3', loader: 'neoforge', packId: 'p1', server: 'aglr.vulu.net', since: new Date(Date.now() - 1500000).toISOString() },
             { username: 'ardak', state: 'launcher', instance: '', mcVersion: '', loader: '', packId: null, server: '', since: new Date().toISOString() },

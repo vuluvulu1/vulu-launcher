@@ -87,6 +87,7 @@ namespace VuluLauncher
             RegisterHealthCommands();
             RegisterCommunityCommands();
             RegisterWorldCommands();
+            RegisterMessageCommands();
 
             // vulu-api ücretsiz planda boşta kalınca uyuyor; açılışta uyandırılır ki giriş yapılana kadar hazır olsun
             _ = Task.Run(async () => { try { using var _ = await Downloader.Http.GetAsync(ApiConfig.BaseUrl + "/ping"); } catch { } });
@@ -162,6 +163,7 @@ namespace VuluLauncher
             else CredentialManager.Clear();
             _ = RepairPackLogosAsync();
             StartPresence();
+            _ = SetUpMessagesAsync(_login.Username, password);
 
             return new
             {

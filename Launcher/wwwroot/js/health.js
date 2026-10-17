@@ -130,10 +130,10 @@ function openWorldsDialog(instance) {
                         act(() => bridge.invoke('worlds.deleteBackup', { id: instance.id, world: w.name, backup: b.name }));
                     } }, 'Sil'))))));
 
-            body.replaceChildren(toolbar,
+            body.replaceChildren(...[toolbar,
                 data.running && el('p', { class: 'hint' }, 'Oyun açıkken yedekleme ve geri yükleme yapılamaz.'),
                 ...(rows.length ? rows : [el('p', { class: 'pack-empty' }, 'Bu instance\'ta henüz dünya yok.')]),
-                el('p', { class: 'hint' }, 'Paket güncellenmeden önce dünyalar otomatik yedeklenir; her dünyanın son 5 otomatik yedeği tutulur.'));
+                el('p', { class: 'hint' }, 'Paket güncellenmeden önce dünyalar otomatik yedeklenir; her dünyanın son 5 otomatik yedeği tutulur.')].filter(Boolean));
         }
 
         queueMicrotask(render);
