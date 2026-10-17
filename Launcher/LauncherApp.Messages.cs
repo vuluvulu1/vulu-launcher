@@ -15,6 +15,50 @@ namespace VuluLauncher
         private static readonly Regex DmName = new(@"^[A-Za-z0-9_]{3,16}$", RegexOptions.Compiled);
         private static readonly string KnownKeysFile = Path.Combine(AppPaths.AppData, "dm-keys.json");
         private const int DmMaxLength = 2000;
+        private static readonly Regex DmCardId = new(@"^[A-Za-z0-9_\-]{1,64}$", RegexOptions.Compiled);
+        private static readonly Regex DmAddress = new(@"^[A-Za-z0-9](?:[A-Za-z0-9.\-]{0,118}[A-Za-z0-9])?(?::\d{1,5})?$", RegexOptions.Compiled);
+        private static readonly JsonSerializerOptions DmJson = new(JsonSerializerDefaults.Web) { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull };
+
+        /// <summary>
+        /// Mesaja eklenen davet kartı: bir vulu pack ya da sunucu. Şifreli içeriğin parçasıdır (sunucu göremez).
+        /// Karşı taraftan geldiği için gösterilmeden önce yeniden doğrulanır.
+        /// </summary>
+        private sealed record DmCard(string Type, string Id, string Name, string? Address = null);
+
+        /// <summary>Şifrelenen düz metin: {"v":1,"text":"…","card":{…}}. Düz metin mesajlar olduğu gibi okunur.</summary>
+        private sealed record DmPayload(int V, string Text, DmCard? Card);
+
+        private static DmCard? CleanCard(DmCard? card)
+        {
+            if (card == null) return null;
+            string name = (card.Name ?? "").Trim();
+            if (name.Length > 64) name = name[..64];
+            if (name.Length == 0 || !DmCardId.IsMatch(card.Id ?? "")) return null;
+            return card.Type switch
+            {
+                "pack" => new DmCard("pack", card.Id!, name),
+                "server" when DmAddress.IsMatch(card.Address ?? "") => new DmCard("server", card.Id!, name, card.Address),
+                _ => null,
+            };
+        }
+
+        private static (string Text, DmCard? Card) ParsePayload(string plain)
+        {
+            if (plain.StartsWith("{\"v\":", StringComparison.Ordinal))
+            {
+                try
+                {
+                    var p = JsonSerializer.Deserialize<DmPayload>(plain, DmJson);
+                    if (p != null)
+                    {
+                        string text = p.Text ?? "";
+                        return (text.Length > DmMaxLength ? text[..DmMaxLength] : text, CleanCard(p.Card));
+                    }
+                }
+                catch (JsonException) { }
+            }
+            return (plain, null);
+        }
 
         private readonly object _dmGate = new();
         private ECDiffieHellman? _dmKey;
@@ -38,7 +82,8 @@ namespace VuluLauncher
             _bridge.On("dm.status", _ => Task.FromResult<object?>(new { ready = _dmKey != null, error = _dmError }));
             _bridge.On("dm.conversations", async _ => await DmConversationsAsync());
             _bridge.On("dm.history", async args => await DmHistoryAsync(args.Str("user"), args.Str("before")));
-            _bridge.On("dm.send", async args => await DmSendAsync(args.Str("user"), args.Str("text")));
+            _bridge.On("dm.send", async args => await DmSendAsync(args.Str("user"), args.Str("text"),
+                args.ValueKind == JsonValueKind.Object && args.TryGetProperty("card", out var c) && c.ValueKind == JsonValueKind.Object ? c.Deserialize<DmCard>(DmJson) : null));
             _bridge.On("dm.read", async args => { RequireDm(args.Str("user")); return await _api.PostAsync<JsonElement>($"/messages/with/{args.Str("user")}/read", new { }); });
             _bridge.On("dm.delete", async args => { RequireLogin(); return await _api.DeleteAsync<JsonElement>($"/messages/{Uri.EscapeDataString(args.Str("id"))}"); });
             _bridge.On("dm.safety", async args => await DmSafetyAsync(args.Str("user")));
@@ -198,6 +243,7 @@ namespace VuluLauncher
             string myKeyIdInMessage = mine ? senderKeyId : recipientKeyId, peerKeyIdInMessage = mine ? recipientKeyId : senderKeyId;
 
             string? text = null, problem = null;
+            DmCard? card = null;
             if (myKeyIdInMessage != _dmKeyId) problem = "Bu mesaj eski bir anahtarınla şifrelenmiş; okunamıyor.";
             else
             {
@@ -209,33 +255,40 @@ namespace VuluLauncher
                 {
                     ECDiffieHellman key;
                     lock (_dmGate) key = _dmKey!;
-                    text = MessageCrypto.Decrypt(key, peerPub, from, to, senderKeyId, recipientKeyId,
+                    string? plain = MessageCrypto.Decrypt(key, peerPub, from, to, senderKeyId, recipientKeyId,
                         new EncryptedMessage(m.GetProperty("cipher").GetString()!, m.GetProperty("nonce").GetString()!, m.GetProperty("salt").GetString()!));
-                    if (text == null) problem = "Bu mesaj çözülemedi (bozulmuş ya da değiştirilmiş olabilir).";
+                    if (plain == null) problem = "Bu mesaj çözülemedi (bozulmuş ya da değiştirilmiş olabilir).";
+                    else (text, card) = ParsePayload(plain);
                 }
             }
             return new
             {
                 id = m.GetProperty("id").GetString(), from, to, mine, text, problem,
+                card = card == null ? null : new { type = card.Type, id = card.Id, name = card.Name, address = card.Address },
                 createdAt = m.GetProperty("createdAt").GetString(),
                 read = m.TryGetProperty("readAt", out var r) && r.ValueKind == JsonValueKind.String,
                 peer = peerName,
             };
         }
 
-        private async Task<object?> DmSendAsync(string user, string text)
+        private async Task<object?> DmSendAsync(string user, string text, DmCard? rawCard = null)
         {
             RequireDm(user);
             text = (text ?? "").Trim();
-            if (text.Length == 0) throw new InvalidOperationException("Boş mesaj gönderilemez.");
+            var card = CleanCard(rawCard);
+            if (rawCard != null && card == null) throw new InvalidOperationException("Paylaşılan paket ya da sunucu geçersiz.");
+            if (text.Length == 0 && card == null) throw new InvalidOperationException("Boş mesaj gönderilemez.");
             if (text.Length > DmMaxLength) throw new InvalidOperationException($"Mesaj en fazla {DmMaxLength} karakter olabilir.");
+            // Zarf gibi başlayan düz metin de zarfa konur; yoksa alıcıda yanlışlıkla zarf sanılır
+            string plain = card == null && !text.StartsWith("{\"v\":", StringComparison.Ordinal)
+                ? text : JsonSerializer.Serialize(new DmPayload(1, text, card), DmJson);
 
             for (int attempt = 0; ; attempt++)
             {
                 var (pub, keyId, known) = await PeerKeyAsync(user, fresh: attempt > 0);
                 ECDiffieHellman mineKey; string myKeyId, me;
                 lock (_dmGate) { mineKey = _dmKey!; myKeyId = _dmKeyId!; me = _dmUser!; }
-                var enc = MessageCrypto.Encrypt(mineKey, pub, me, user, myKeyId, keyId, text);
+                var enc = MessageCrypto.Encrypt(mineKey, pub, me, user, myKeyId, keyId, plain);
                 try
                 {
                     var sent = await _api.PostAsync<JsonElement>("/messages", new { to = user, cipher = enc.Cipher, nonce = enc.Nonce, salt = enc.Salt, senderKeyId = myKeyId, recipientKeyId = keyId });
@@ -262,6 +315,34 @@ namespace VuluLauncher
             k.Verified = true; k.Changed = false;
             SaveKnown(known);
             return new { verified = true };
+        }
+
+        // ── Bildirim ──────────────────────────────────────────────────────
+        /// <summary>Launcher öndeyken değilse gelen mesajlar Windows bildirimi olur (kişi başına bir bildirim).</summary>
+        private void NotifyMessages(List<object> views)
+        {
+            var settings = AppSettings.Current;
+            if (!settings.DmNotifications || views.Count == 0 || TrayNotifier.IsActive(_window.WindowHandle)) return;
+            var incoming = views.Select(v => JsonSerializer.SerializeToElement(v, DmJson)).Where(v => !v.GetProperty("mine").GetBoolean());
+            foreach (var group in incoming.GroupBy(v => v.GetProperty("peer").GetString()!).Take(3))
+            {
+                int count = group.Count();
+                string body;
+                if (!settings.DmNotificationPreview) body = count > 1 ? $"{count} yeni mesaj" : "Yeni mesaj";
+                else
+                {
+                    var last = group.Last();
+                    string? text = last.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() : null;
+                    var card = last.TryGetProperty("card", out var c) && c.ValueKind == JsonValueKind.Object ? c : (JsonElement?)null;
+                    body = !string.IsNullOrWhiteSpace(text) ? text!
+                        : card is { } k ? (k.GetProperty("type").GetString() == "pack"
+                            ? $"📦 Bir paket paylaştı: {k.GetProperty("name").GetString()}"
+                            : $"🎮 Sunucuya davet etti: {k.GetProperty("name").GetString()}")
+                        : "Yeni şifreli mesaj";
+                    if (count > 1) body = $"({count} yeni) " + body;
+                }
+                _tray.Show(group.Key, body, "dm:" + group.Key);
+            }
         }
 
         // ── Yeni mesajları dinleme ────────────────────────────────────────
@@ -293,6 +374,7 @@ namespace VuluLauncher
                                 views.AddRange(group.Select(m => DecryptForView(m, group.Key, known)));
                             }
                             _bridge.Emit("dmUpdate", new { messages = views, unread = update.GetProperty("unread").GetInt32() });
+                            NotifyMessages(views);
                         }
                     }
                     catch (Exception) { /* bağlantı yoksa bir sonraki turda */ }

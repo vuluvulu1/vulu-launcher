@@ -83,6 +83,7 @@ function packTile(pack, result) {
                     fromMarkup('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg>'),
                     'Geri bildirim',
                     pack.openFeedback > 0 && el('span', { class: 'count' }, pack.openFeedback)),
+                el('button', { class: 'btn btn-sm', title: 'Bir arkadaşına mesajla gönder', onclick: () => shareCardWith(packInvite(pack)) }, 'Gönder'),
                 result.isAdmin && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deletePack(pack) }, 'Sil'))));
 }
 
@@ -109,6 +110,7 @@ async function updatePack(pack) {
         const result = await withActivity(() => bridge.invoke('packs.update', { id: pack.id }));
         await reloadInstances(result.id);
         if (state.page === 'packs') openPacksPage();
+        refreshPackUpdates();
     } catch (err) {
         await alertDialog({ title: 'Güncellenemedi', message: err.message });
     }

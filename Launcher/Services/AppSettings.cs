@@ -28,6 +28,12 @@ namespace VuluLauncher
         public bool DiscordPresence { get; set; } = true;
         /// <summary>Arkadaşlar ne görsün: "full" (ne oynadığım) | "online" (yalnızca çevrimiçi) | "hidden" (görünmez).</summary>
         public string PresenceMode { get; set; } = "full";
+        /// <summary>Launcher öndeyken değilse yeni mesajlar Windows bildirimi olarak gösterilir.</summary>
+        public bool DmNotifications { get; set; } = true;
+        /// <summary>Bildirimde mesajın kendisi görünsün mü (kapalıysa yalnızca "yeni mesaj").</summary>
+        public bool DmNotificationPreview { get; set; } = true;
+        /// <summary>Kurulu bir vulu pack güncellenince launcher öndeyken değilse bildirim gösterilir.</summary>
+        public bool PackUpdateNotifications { get; set; } = true;
 
         // ── Ses ve görünüm ────────────────────────────────────────────────
         public bool MusicEnabled { get; set; } = true;

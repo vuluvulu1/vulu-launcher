@@ -53,6 +53,7 @@ const bridge = (() => {
 // sahte bir arka uç. Gerçek launcher'da hiç kullanılmaz.
 const mockBackend = (() => {
     const mockFlags = {};
+    let mockShots = Array.from({ length: 9 }, (_, i) => `2026-10-${String(17 - i).padStart(2, '0')}_21.0${i}.12.png`);
     const mockDm = {
         conversations: [{ username: 'Steve_TR', lastAt: new Date(Date.now() - 300000).toISOString(), unread: 2 }, { username: 'halil', lastAt: new Date(Date.now() - 86400000).toISOString(), unread: 0 }],
         threads: {
@@ -308,8 +309,8 @@ const mockBackend = (() => {
         'instances.details': async args => {
             await wait(350);
             const daysAgo = n => new Date(Date.now() - n * 86400000).toISOString();
-            if (args.id === 'pack:vanilla') return { installed: true, modCount: 0, sizeMb: 612, updatedAt: daysAgo(0) };
-            return { installed: false, modCount: 0, sizeMb: 0, updatedAt: null };
+            if (args.id === 'pack:vanilla') return { installed: true, modCount: 0, sizeMb: 612, updatedAt: daysAgo(0), playTime: { seconds: 45296, sessions: 31, lastPlayed: daysAgo(1) } };
+            return { installed: false, modCount: 0, sizeMb: 0, updatedAt: null, playTime: { seconds: 0, sessions: 0, lastPlayed: null } };
         },
         'instances.options': async () => { await wait(300); return { minecraftVersions: ['1.21.11', '1.21.1', '1.20.1', '1.19.2', '1.16.5', '1.12.2'], loaders: ['vanilla', 'fabric', 'quilt', 'forge', 'neoforge'] }; },
         'instances.loaderVersions': async args => { await wait(300); return args.loader === 'neoforge' && args.mcVersion === '1.20.1' ? [] : ['0.16.14', '0.16.13', '0.16.10']; },
@@ -345,7 +346,7 @@ const mockBackend = (() => {
                 peerReady: args.user !== 'eskiuye', peerError: null, keyChanged: args.user === 'halil', verified: false };
         },
         'dm.send': async args => {
-            const m = { id: 'm' + Date.now(), from: 'vulu', to: args.user, mine: true, text: args.text, problem: null, createdAt: new Date().toISOString(), read: false, peer: args.user };
+            const m = { id: 'm' + Date.now(), from: 'vulu', to: args.user, mine: true, text: args.text, card: args.card || null, problem: null, createdAt: new Date().toISOString(), read: false, peer: args.user };
             (mockDm.threads[args.user] = mockDm.threads[args.user] || []).push(m);
             return { message: m, keyChanged: false };
         },
@@ -424,6 +425,21 @@ const mockBackend = (() => {
         'settings.pickJava': async () => ({ path: 'C:\\Program Files\\Java\\jdk-21\\bin\\java.exe' }),
         'settings.removeJava': async () => ({ removed: 2 }),
         'files.open': async () => ({ opened: true }),
+        'screenshots.list': async () => {
+            await wait(250);
+            const colors = ['#3d6b4f', '#6b4f3d', '#3d4f6b', '#6b3d5e', '#556b3d', '#3d6b6b'];
+            const shot = (c, i) => 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect width="1920" height="1080" fill="${c}"/><rect y="700" width="1920" height="380" fill="#2b2b2b" opacity=".5"/><text x="80" y="160" font-size="96" fill="#fff" font-family="sans-serif">Ekran görüntüsü ${i + 1}</text></svg>`);
+            const shots = mockShots.map((n, i) => ({ name: n, url: shot(colors[i % colors.length], i), takenAt: new Date(Date.now() - i * 7200000).toISOString(), sizeKb: 2400 + i * 37 }));
+            return { total: shots.length, totalMb: shots.reduce((a, s) => a + s.sizeKb, 0) / 1024, shots };
+        },
+        'screenshots.open': async () => ({ opened: true }),
+        'screenshots.reveal': async () => ({ opened: true }),
+        'screenshots.copy': async () => ({ copied: true }),
+        'screenshots.delete': async args => { mockShots = mockShots.filter(n => n !== args.name); return { deleted: true }; },
+        'packs.updates': async () => {
+            const target = instances.find(i => i.kind === 'custom');
+            return { updates: target ? [{ instanceId: target.id, packId: 'p1', name: target.name, from: 3, to: 4 }] : [] };
+        },
 
         'admin.users': async () => { await wait(250); return users.map(u => ({ ...u })); },
         'admin.saveUser': async args => {

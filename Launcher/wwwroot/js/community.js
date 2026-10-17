@@ -90,6 +90,7 @@ function serverCard(s) {
             here.length > 0 && el('span', { class: 'tag tag-friends', title: here.map(p => p.username).join(', ') }, `${here.length} arkadaş burada`)),
         el('div', { class: 'server-foot' },
             join,
+            el('button', { class: 'btn btn-sm', title: 'Bir arkadaşını mesajla davet et', onclick: () => shareCardWith(serverInvite(s)) }, 'Davet et'),
             state.isAdmin && el('button', { class: 'btn btn-sm', onclick: () => openServerDialog(s) }, 'Düzenle'),
             state.isAdmin && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deleteServer(s) }, 'Sil')));
 }

@@ -140,7 +140,8 @@ namespace VuluLauncher
                 installed,
                 modCount,
                 sizeMb = Math.Round(sizeBytes / 1024.0 / 1024.0, 1),
-                updatedAt = modsChanged?.ToString("o")
+                updatedAt = modsChanged?.ToString("o"),
+                playTime = PlayTimeOf(id)
             };
         }
 
@@ -235,6 +236,7 @@ namespace VuluLauncher
             InstanceStore.Delete(meta.Folder);
             DeleteBackgroundFiles(id);
             DeleteLogoFiles(id);
+            PlayTimeStore.Remove(id);
             Log($"{meta.Name} silindi.", "muted");
             return new { success = true };
         }
@@ -601,6 +603,7 @@ namespace VuluLauncher
             {
                 "instances" => AppPaths.Instances,
                 "instance" => Path.Combine(AppPaths.Instances, ResolveTarget(id).Target.Folder),
+                "screenshots" => Path.Combine(AppPaths.Instances, ResolveTarget(id).Target.Folder, "screenshots"),
                 _ => AppPaths.Base
             };
 

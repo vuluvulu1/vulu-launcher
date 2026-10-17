@@ -22,6 +22,7 @@ namespace VuluLauncher
         private readonly ModrinthService _modrinth;
         private readonly GameLauncher _game;
         private readonly DiscordPresence _discord = new();
+        private readonly TrayNotifier _tray = new(Path.Combine(AppContext.BaseDirectory, "logo.ico"));
 
         private VuluShared.ReleaseManifest? _latestLauncher;
 
@@ -37,7 +38,10 @@ namespace VuluLauncher
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
             _game = new GameLauncher(Log, _java);
-            _game.Exited += () => { _bridge.Emit("gameExited"); _discord.ShowIdle(); PresenceIdle(); _ = ReportCrashIfAnyAsync(); };
+            _game.Exited += () => { StopPlayTime(); _bridge.Emit("gameExited"); _discord.ShowIdle(); PresenceIdle(); _ = ReportCrashIfAnyAsync(); };
+            // Bildirime tıklanınca launcher öne gelir ve ilgili sayfa açılır
+            _tray.Clicked += tag => { TrayNotifier.BringToFront(_window.WindowHandle); if (tag != null) _bridge.Emit("notificationClicked", new { tag }); };
+            _tray.IconClicked += () => TrayNotifier.BringToFront(_window.WindowHandle);
             // Arayüz hangi sayfada olunduğunu (ve Oyna'da seçili instance'ı) bildirir
             _bridge.On("discord.page", args =>
             {
@@ -88,6 +92,7 @@ namespace VuluLauncher
             RegisterCommunityCommands();
             RegisterWorldCommands();
             RegisterMessageCommands();
+            RegisterLibraryCommands();
 
             // vulu-api ücretsiz planda boşta kalınca uyuyor; açılışta uyandırılır ki giriş yapılana kadar hazır olsun
             _ = Task.Run(async () => { try { using var _ = await Downloader.Http.GetAsync(ApiConfig.BaseUrl + "/ping"); } catch { } });
@@ -99,6 +104,8 @@ namespace VuluLauncher
 
         public void Shutdown()
         {
+            StopPlayTime();
+            _tray.Dispose();
             _bridge.Shutdown();
         }
 
@@ -164,6 +171,7 @@ namespace VuluLauncher
             _ = RepairPackLogosAsync();
             StartPresence();
             _ = SetUpMessagesAsync(_login.Username, password);
+            StartPackUpdateChecks();
 
             return new
             {
@@ -331,6 +339,8 @@ namespace VuluLauncher
                     throw new InvalidOperationException("Sunucu adresi geçersiz.");
 
                 await _game.LaunchAsync(target, _login.Username, ramGb, skins, join);
+                StartPlayTime(instanceId);
+                if (!_game.IsRunning) StopPlayTime();   // oyun hemen kapandıysa kapanış olayı sayaçtan önce gelmiş olabilir
                 string? packId = instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(instanceId[InstancePrefix.Length..])?.SharedPackId : null;
                 PresencePlaying(target, packId, join);
                 _discord.ShowPlaying(target.Name, target.McVersion, target.Loader, await PackImageUrlAsync(instanceId));

@@ -12,6 +12,7 @@ const state = {
     page: 'home',
     details: null,          // seçili paketin istatistikleri ve yenilikleri (instances.details)
     activityText: '',       // süren işlemin son log satırı; durum çubuğunda gösterilir
+    packUpdates: {},        // güncellemesi olan kurulu vulu pack'ler: instanceId → { packId, name, from, to }
 };
 
 const LOADER_NAMES = { vanilla: 'Vanilla', fabric: 'Fabric', quilt: 'Quilt', forge: 'Forge', neoforge: 'NeoForge' };
@@ -365,7 +366,9 @@ async function enterLauncher(session) {
 
     clearConsole();
     showPage('home');
+    state.packUpdates = {};
     await reloadInstances(store.get('lastPack', ''));
+    refreshPackUpdates();
 
     if (!useSplash) {
         showView('view-main');
@@ -432,6 +435,7 @@ function renderInstanceLists() {
         return el('button', { class: 'pack-card', 'data-id': instance.id, onclick: () => { selectInstance(instance); showPage('home'); } },
             thumb,
             instance.iconUrl && el('img', { class: 'card-icon', src: instance.iconUrl, alt: '' }),
+            state.packUpdates && state.packUpdates[instance.id] && el('span', { class: 'card-update', title: 'Paketin yeni sürümü var' }),
             el('div', { class: 'info' },
                 el('span', { class: 'name' }, instance.name),
                 el('span', { class: 'ver' }, loaderLabel(instance))));
@@ -527,6 +531,7 @@ function renderPackActions(instance) {
         isCustom && item('Düzenle', () => openNewInstanceDialog(instance)),
         item('Görünüm', () => openAppearanceDialog(instance)),
         item('Dünyalar ve yedekler', () => openWorldsDialog(instance)),
+        item('Ekran görüntüleri', () => openScreenshots(instance)),
         item('Klasörü aç', () => bridge.invoke('files.open', { target: 'instance', id: instance.id })),
         isCustom && item('Çoğalt', () => duplicateInstance(instance)),
         isCustom && instance.loader !== 'vanilla' && item('.mrpack olarak dışa aktar', () => exportMrpack(instance)),
@@ -541,7 +546,9 @@ function renderPackActions(instance) {
         onclick: () => (menu.hidden ? openPackMenu() : closePackMenu()),
     }, '⋯');
 
+    const update = state.packUpdates && state.packUpdates[instance.id];
     $('pack-actions').replaceChildren(...[
+        update && el('button', { class: 'btn btn-sm btn-primary', title: `rev ${update.from} → rev ${update.to}`, onclick: () => updateInstancePack(instance) }, 'Paketi güncelle'),
         isCustom && el('button', { class: 'btn btn-sm', onclick: () => openInstanceContent(instance) }, 'İçerik'),
         isCustom && el('button', { class: 'btn btn-sm', onclick: () => openModrinthFor(instance) }, 'Mod ekle'),
         el('div', { class: 'more-wrap' }, toggle, menu),
@@ -664,6 +671,11 @@ function renderDetails() {
         node.classList.toggle('loading', loading);
         node.title = title || '';
     };
+
+    const play = details && details.playTime;
+    const lastPlayed = play && parseDate(play.lastPlayed);
+    setStat('stat-play', play ? formatPlayTime(play.seconds) : '—',
+        lastPlayed ? `Son oynama: ${relativeDate(lastPlayed)} · ${play.sessions} kez açıldı` : 'Henüz oynanmadı');
 
     if (details && details.failed) {
         setStat('stat-mods', '—'); setStat('stat-size', '—'); setStat('stat-updated', '—');
@@ -925,6 +937,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupPacksPage();
     setupServersPage();
     setupMessagesPage();
+    setupLibrary();
     for (const button of document.querySelectorAll('.discover-switch button'))
         button.addEventListener('click', () => showPage(button.dataset.source));
     setupRegisterForm();
