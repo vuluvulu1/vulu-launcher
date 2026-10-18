@@ -1,6 +1,12 @@
 // Profil ve topluluk: kendi profilini düzenle (resim, açıklama, şifre), bütün vulu kullanıcılarını gör.
 const profile = { viewing: '', me: null, members: [], requestId: 0 };
 
+function bannerUrl(user) {
+    return user && user.bannerVersion
+        ? `${state.apiBase}/users/${encodeURIComponent(user.username)}/banner?v=${user.bannerVersion}`
+        : null;
+}
+
 function avatarUrl(user) {
     return user && user.avatarVersion
         ? `${state.apiBase}/users/${encodeURIComponent(user.username)}/avatar?v=${user.avatarVersion}`
@@ -70,8 +76,21 @@ function renderProfile(user) {
         !own && el('div', { class: 'profile-head-actions' },
             el('button', { class: 'btn btn-sm btn-primary', onclick: () => { showPage('messages'); openMessagesPage(user.username); } }, 'Mesaj gönder')));
 
+    const banner = el('div', { class: 'profile-banner' + (user.bannerVersion ? ' has-image' : '') },
+        own && el('div', { class: 'profile-banner-actions' },
+            el('button', { class: 'btn btn-sm', onclick: changeBanner }, user.bannerVersion ? 'Bannerı değiştir' : 'Banner ekle'),
+            user.bannerVersion > 0 && el('button', { class: 'btn btn-sm', onclick: removeBanner }, 'Kaldır')));
+    const url = bannerUrl(user);
+    if (url) {
+        banner.style.background = `center / cover no-repeat url("${url}")`;
+        // Yüklenemezse (silinmiş, ağ yok) düz şerit kalır
+        const probe = new Image();
+        probe.onerror = () => { banner.style.background = ''; banner.classList.remove('has-image'); };
+        probe.src = url;
+    }
+
     const sections = [
-        el('div', { class: 'profile-banner', 'aria-hidden': 'true' }),
+        banner,
         head,
         own ? bioEditor(user) : el('section', { class: 'profile-section' },
             el('h2', {}, 'Hakkında'),
@@ -176,6 +195,26 @@ async function changeAvatar() {
     }
 }
 
+const BANNER_MAX_SIDE = 1600, BANNER_MAX_BYTES = 1400 * 1024;
+
+async function changeBanner() {
+    try {
+        const picked = await bridge.invoke('profile.pickBanner');
+        if (!picked) return; // vazgeçildi
+        // GIF hareketli kalsın diye olduğu gibi; diğerleri küçültülüp WebP'ye çevrilir
+        const dataUrl = picked.type === 'image/gif' ? picked.dataUrl
+            : encodeImage(await loadImage(picked.dataUrl), BANNER_MAX_SIDE, BANNER_MAX_BYTES).dataUrl;
+        afterMyProfileChange(await bridge.invoke('profile.uploadBanner', { dataUrl }));
+    } catch (err) {
+        await alertDialog({ title: 'Banner yüklenemedi', message: err.message });
+    }
+}
+
+async function removeBanner() {
+    try { afterMyProfileChange(await bridge.invoke('profile.removeBanner')); }
+    catch (err) { await alertDialog({ title: 'Banner kaldırılamadı', message: err.message }); }
+}
+
 async function removeAvatar() {
     try { afterMyProfileChange(await bridge.invoke('profile.removeAvatar')); }
     catch (err) { await alertDialog({ title: 'Resim kaldırılamadı', message: err.message }); }
@@ -189,6 +228,15 @@ function afterMyProfileChange(updated) {
 }
 
 // ── Topluluk listesi ──────────────────────────────────────────────────
+/** Üye listesi (avatar sürümleri dahil) bir kez yüklenir; başka sayfalar da avatar için kullanır. */
+async function ensureMembers() {
+    if (!profile.members.length) {
+        try { profile.members = await bridge.invoke('profile.list'); }
+        catch { /* sunucuya ulaşılamazsa baş harfler kalır */ }
+    }
+    return profile.members;
+}
+
 async function loadMembers(force) {
     if (profile.members.length && !force) { renderMembers(); return; }
     try {

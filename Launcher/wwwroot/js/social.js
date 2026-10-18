@@ -10,6 +10,7 @@ async function openShotsPage() {
     social.shots = [];
     social.more = false;
     renderShots();
+    if (!profile.members.length) ensureMembers().then(() => { if (state.page === 'shots') renderShots(); });
     await loadShots();
 }
 
@@ -181,7 +182,7 @@ async function shareScreenshot(instance, name) {
     } catch (err) { await alertDialog({ title: 'Paylaşılamadı', message: err.message }); return false; }
 
     const shared = await openModal(close => {
-        const caption = el('textarea', { rows: 2, maxLength: 200, placeholder: 'Açıklama (isteğe bağlı)', autofocus: true });
+        const caption = el('textarea', { class: 'textarea', rows: 2, maxLength: 200, placeholder: 'Açıklama (isteğe bağlı)', autofocus: true });
         const status = el('p', { class: 'form-error' });
         const submit = el('button', { class: 'btn btn-primary', onclick: async () => {
             submit.disabled = true;
@@ -243,7 +244,7 @@ async function prepareShot(dataUrl) {
 // ── Arkadaşlar ────────────────────────────────────────────────────────
 async function openFriendsPage() {
     renderFriendsPage();
-    await Promise.all([refreshPresence(), profile.members.length ? null : loadMembers(true).catch(() => {})]);
+    await Promise.all([refreshPresence(), ensureMembers()]);
     renderFriendsPage();
 }
 

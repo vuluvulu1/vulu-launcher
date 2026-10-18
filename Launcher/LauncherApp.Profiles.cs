@@ -30,6 +30,9 @@ namespace VuluLauncher
             });
             _bridge.On("profile.pickAvatar", async _ => await PickAvatarAsync());
             _bridge.On("profile.removeAvatar", async _ => { RequireLogin(); return await _api.DeleteAsync<JsonElement>("/users/me/avatar"); });
+            _bridge.On("profile.pickBanner", async _ => await PickBannerAsync());
+            _bridge.On("profile.uploadBanner", async args => await UploadBannerAsync(args.Str("dataUrl")));
+            _bridge.On("profile.removeBanner", async _ => { RequireLogin(); return await _api.DeleteAsync<JsonElement>("/users/me/banner"); });
             _bridge.On("profile.changePassword", async args => await ChangePasswordAsync(args));
 
             // Skin: 64×64 PNG; beden tipi "default" (Klasik/Steve) ya da "slim" (İnce/Alex)
@@ -73,6 +76,39 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Profil resmi 1 MB'tan büyük olamaz.");
 
             return await _api.PutBytesAsync<JsonElement>("/users/me/avatar", await File.ReadAllBytesAsync(path), contentType);
+        }
+
+        private const long BannerSourceMaxBytes = 25 * 1024 * 1024, BannerUploadMaxBytes = 1536 * 1024;
+
+        /// <summary>
+        /// Banner resmi seçtirir ve arayüze data adresi olarak verir: arayüz büyük resimleri yüklemeden önce küçültür
+        /// (GIF'ler hareketli kalsın diye olduğu gibi gönderilir). Vazgeçilirse null.
+        /// </summary>
+        private async Task<object?> PickBannerAsync()
+        {
+            RequireLogin();
+            var files = _window.ShowOpenFile("Banner resmi seçin", null, false,
+                new[] { ("Resimler", new[] { "png", "jpg", "jpeg", "webp", "gif" }) });
+            if (files is not { Length: > 0 }) return null;
+
+            string path = files[0];
+            if (!AvatarTypes.TryGetValue(Path.GetExtension(path), out var contentType))
+                throw new InvalidOperationException("Desteklenen biçimler: PNG, JPG, WEBP, GIF.");
+            long size = new FileInfo(path).Length;
+            if (size > BannerSourceMaxBytes) throw new InvalidOperationException("Resim çok büyük (en fazla 25 MB).");
+            if (contentType == "image/gif" && size > BannerUploadMaxBytes)
+                throw new InvalidOperationException("Hareketli GIF banner en fazla 1,5 MB olabilir.");
+            return new { dataUrl = $"data:{contentType};base64,{Convert.ToBase64String(await File.ReadAllBytesAsync(path))}", type = contentType, size };
+        }
+
+        private async Task<object?> UploadBannerAsync(string dataUrl)
+        {
+            RequireLogin();
+            var match = System.Text.RegularExpressions.Regex.Match(dataUrl ?? "", "^data:(image/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/]+={0,2})$");
+            if (!match.Success) throw new InvalidOperationException("Banner hazırlanamadı.");
+            byte[] bytes = Convert.FromBase64String(match.Groups[2].Value);
+            if (bytes.Length > BannerUploadMaxBytes) throw new InvalidOperationException("Banner 1,5 MB'tan büyük olamaz.");
+            return await _api.PutBytesAsync<JsonElement>("/users/me/banner", bytes, match.Groups[1].Value);
         }
 
         private async Task<object?> ChangePasswordAsync(JsonElement args)

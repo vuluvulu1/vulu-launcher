@@ -12,6 +12,8 @@ function setDmUnread(count) {
 
 async function openMessagesPage(user) {
     await loadConversations();
+    // Avatarlar üye listesinden gelir; liste henüz yüklenmediyse yüklenince yeniden çizilir
+    if (!profile.members.length) ensureMembers().then(() => { if (state.page === 'messages') renderConversations(); });
     if (user) openConversation(user);
     else if (!dm.active && dm.conversations.length) openConversation(dm.conversations[0].username);
     else renderChat();
@@ -82,7 +84,7 @@ function renderChat(loading) {
         return;
     }
     const peer = dm.peer || {};
-    const input = el('textarea', { id: 'dm-input', rows: 2, maxLength: DM_MAX, placeholder: `${dm.active} kişisine yaz…`, spellcheck: true, disabled: peer.peerReady === false });
+    const input = el('textarea', { id: 'dm-input', class: 'textarea', rows: 2, maxLength: DM_MAX, placeholder: `${dm.active} kişisine yaz…`, spellcheck: true, disabled: peer.peerReady === false });
     const counter = el('span', { class: 'dm-counter' });
     const send = el('button', { class: 'btn btn-primary', type: 'submit', disabled: peer.peerReady === false }, 'Gönder');
     input.addEventListener('input', () => { counter.textContent = input.value.length > DM_MAX - 200 ? `${input.value.length}/${DM_MAX}` : ''; });

@@ -46,6 +46,7 @@ async function openServersPage() {
             refreshPresence(),
             // Etiketlerde paket adları için (Keşfet hiç açılmadıysa)
             state.packsCache ? null : bridge.invoke('packs.list').then(r => { state.packsCache = r.packs; }).catch(() => {}),
+            ensureMembers(),   // arkadaş listesindeki avatarlar için
         ]);
         community.servers = servers;
         $('servers-status').textContent = servers.length ? '' : (state.isAdmin

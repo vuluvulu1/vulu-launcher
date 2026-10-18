@@ -53,6 +53,7 @@ const bridge = (() => {
 // sahte bir arka uç. Gerçek launcher'da hiç kullanılmaz.
 const mockBackend = (() => {
     const mockFlags = {};
+    let mockBanner = null;
     const feedImg = (c, t) => 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270"><rect width="480" height="270" fill="${c}"/><rect y="180" width="480" height="90" fill="#222" opacity=".45"/><text x="20" y="50" font-size="28" fill="#fff" font-family="sans-serif">${t}</text></svg>`);
     let mockFeed = [
         ['Steve_TR', 'Sonunda üssün çatısı bitti 🏠', 'AGLR SMP', 4, true, '#4f6b3d'],
@@ -239,6 +240,14 @@ const mockBackend = (() => {
         'profile.saveBio': async args => { await wait(300); members[0].bio = args.bio.trim(); return members[0]; },
         'profile.pickAvatar': async () => null,
         'profile.removeAvatar': async () => { members[0].avatarVersion = 0; return members[0]; },
+        'profile.pickBanner': async () => {
+            const c = document.createElement('canvas'); c.width = 2400; c.height = 800;
+            const g = c.getContext('2d'); const grad = g.createLinearGradient(0, 0, 2400, 800);
+            grad.addColorStop(0, '#f7a35c'); grad.addColorStop(1, '#5a2a6b'); g.fillStyle = grad; g.fillRect(0, 0, 2400, 800);
+            return { dataUrl: c.toDataURL('image/png'), type: 'image/png', size: 900000 };
+        },
+        'profile.uploadBanner': async args => { mockBanner = args.dataUrl; members[0].bannerVersion = Date.now(); return members[0]; },
+        'profile.removeBanner': async () => { mockBanner = null; members[0].bannerVersion = 0; return members[0]; },
         // Tarayıcı ön izlemesinde skin dosyası yok; önizlemeyi denemek için skinUrl'e bir data: adresi verilebilir
         'profile.pickSkin': async args => { await wait(300); Object.assign(members[0], { skinHash: 'demo', skinModel: args.model || 'default' }); return members[0]; },
         'profile.setSkinModel': async args => { members[0].skinModel = args.model; return members[0]; },

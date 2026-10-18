@@ -795,8 +795,12 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .profile-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 20px; align-items: start; max-width: 1060px; }
 .profile-card { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); overflow: hidden; }
 .profile-card.skeleton { height: 420px; }
-.profile-banner { height: 72px; background: var(--accent-soft); border-bottom: 1px solid var(--line); }
-.profile-head { display: flex; align-items: flex-end; gap: 18px; padding: 0 22px 18px; margin-top: -36px; border-bottom: 1px solid var(--line); }
+.profile-banner { position: relative; height: 72px; background: var(--accent-soft); border-bottom: 1px solid var(--line); }
+.profile-banner.has-image { height: auto; aspect-ratio: 4 / 1; min-height: 110px; }
+.profile-banner-actions { position: absolute; top: 10px; right: 12px; display: flex; gap: 6px; opacity: 0; transition: opacity .15s; }
+.profile-banner:hover .profile-banner-actions, .profile-banner-actions:focus-within, .profile-banner:not(.has-image) .profile-banner-actions { opacity: 1; }
+.profile-banner-actions .btn { background: rgba(0, 0, 0, .55); border-color: rgba(255, 255, 255, .18); color: #fff; backdrop-filter: blur(4px); }
+.profile-head { position: relative; display: flex; align-items: flex-end; gap: 18px; padding: 0 22px 18px; margin-top: -36px; border-bottom: 1px solid var(--line); }
 .profile-head .avatar-xl { border: 3px solid var(--panel); }
 .profile-id { flex: 1; min-width: 0; padding-bottom: 2px; }
 .profile-id h1 { margin: 0; font: 600 22px var(--font); display: flex; align-items: center; gap: 2px; overflow-wrap: anywhere; }
