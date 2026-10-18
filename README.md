@@ -1,14 +1,29 @@
+<div align="center">
+
+<img src="docs/logo.svg" width="112" height="112" alt="vulu Launcher" />
+
 # vulu Launcher
 
-<img width="96" height="96" alt="vulu Launcher" src="https://github.com/user-attachments/assets/8566a06d-6fe5-4a4e-aeb1-e812ab9e67b7" />
+Arkadaş grubumuz için yazdığımız Minecraft launcher'ı.
 
-Arkadaş grubumuz için yazdığımız Minecraft launcher'ı. Hesaplar davetle açılıyor: giriş ekranından hesap isteği gönderiyorsun, bir admin onaylıyor.
+[![Sürüm](https://img.shields.io/github/v/release/vuluvulu1/vulu-launcher?style=for-the-badge&label=s%C3%BCr%C3%BCm&color=c27e3e)](https://github.com/vuluvulu1/vulu-launcher/releases/latest)
+[![İndirme](https://img.shields.io/github/downloads/vuluvulu1/vulu-launcher/total?style=for-the-badge&label=indirme&color=3d6b4f)](https://github.com/vuluvulu1/vulu-launcher/releases)
+![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-2b5797?style=for-the-badge&logo=windows11&logoColor=white)
+![.NET](https://img.shields.io/badge/.NET-10-512bd4?style=for-the-badge&logo=dotnet&logoColor=white)
 
-![Ana ekran](docs/screenshots/home.png)
+**[İndir (vulu-launcher-setup.exe)](https://github.com/vuluvulu1/vulu-launcher/releases/latest/download/vulu-launcher-setup.exe)**
+
+<br>
+
+<img src="docs/screenshots/home.png" alt="Ana ekran" width="860" />
+
+</div>
 
 ## Kurulum
 
-[Son sürümden](https://github.com/vuluvulu1/vulu-launcher/releases/latest) `vulu-launcher-setup.exe` dosyasını indirip çalıştır. Launcher her açılışta kendini günceller. Kaldırmak için Windows'un "Uygulamalar" listesini kullanabilirsin.
+`vulu-launcher-setup.exe` dosyasını indirip çalıştır. Launcher her açılışta kendini günceller. Kaldırmak için Windows'un "Uygulamalar" listesini kullanabilirsin.
+
+Hesaplar davetle açılıyor: giriş ekranından hesap isteği gönderiyorsun, bir admin onaylıyor.
 
 Windows ilk seferde SmartScreen uyarısı verebilir: *Ek bilgi → Yine de çalıştır*.
 
