@@ -95,7 +95,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     border-bottom: 1px solid var(--line);
 }
 .tb-brand { display: flex; align-items: center; gap: 10px; pointer-events: none; }
-.tb-brand img { width: 20px; height: 20px; image-rendering: pixelated; border-radius: var(--r-sm); }
+.tb-brand img { width: 20px; height: 20px; border-radius: var(--r-sm); }
 .tb-brand span:first-of-type { font: 700 14px var(--font); letter-spacing: -.01em; }
 .tb-tag { font: 600 10px var(--font-mono); letter-spacing: .06em; color: var(--accent-hi); background: var(--accent-soft); padding: 1px 6px; border-radius: var(--r-sm); }
 .tb-actions { display: flex; align-items: center; gap: 4px; height: 100%; }
@@ -199,7 +199,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
     width: 360px; padding: 28px 30px 24px; display: flex; flex-direction: column;
     background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg);
 }
-.login-logo { width: 44px; height: 44px; image-rendering: pixelated; border-radius: var(--r); }
+.login-logo { width: 44px; height: 44px; border-radius: var(--r); }
 .login-card h1 { margin: 16px 0 0; font: 600 22px var(--font); letter-spacing: -.01em; }
 .login-sub { margin: 4px 0 22px; color: var(--muted); font-size: 13px; }
 .login-card label:not(.check) { font: 600 12px var(--font); color: var(--muted); margin: 0 0 6px; }

@@ -89,7 +89,7 @@ html[data-ui="neon"] #titlebar {
     box-shadow: 0 1px 0 rgba(255, 43, 214, .12), 0 6px 20px rgba(0, 0, 0, .5);
     padding-left: 14px;
 }
-html[data-ui="neon"] .tb-brand img { image-rendering: pixelated; border-radius: 0; filter: drop-shadow(0 0 4px rgba(0, 234, 255, .6)); }
+html[data-ui="neon"] .tb-brand img { border-radius: 0; filter: drop-shadow(0 0 4px rgba(0, 234, 255, .6)); }
 html[data-ui="neon"] .tb-brand span:first-of-type {
     font: 600 13px var(--font-hud); letter-spacing: .12em; color: var(--text);
     text-shadow: -1px 0 rgba(255, 43, 214, .75), 1px 0 rgba(0, 234, 255, .75);

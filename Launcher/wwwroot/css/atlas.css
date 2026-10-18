@@ -68,7 +68,7 @@ html[data-ui="atlas"] #titlebar {
     border-bottom: 1px solid rgba(70, 45, 20, .3);
     box-shadow: 0 1px 0 rgba(255, 255, 255, .45) inset;
 }
-html[data-ui="atlas"] .tb-brand img { image-rendering: pixelated; filter: sepia(.35); }
+html[data-ui="atlas"] .tb-brand img { filter: sepia(.35); }
 html[data-ui="atlas"] .tb-brand span:first-of-type { font: italic 700 16px var(--font-serif); color: var(--ink); letter-spacing: 0; }
 html[data-ui="atlas"] .tb-tag { font: 600 9.5px var(--font-mono); color: var(--accent); background: transparent; border: 1px solid rgba(168, 55, 45, .5); border-radius: 2px; transform: rotate(-4deg); }
 html[data-ui="atlas"] .tb-btn svg { stroke: var(--muted); }
