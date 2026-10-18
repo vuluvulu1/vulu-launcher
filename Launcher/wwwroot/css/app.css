@@ -708,7 +708,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .pack-desc-text { margin: 0; font-size: 12.5px; color: #cfc6bb; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .pack-tile .pack-tags { gap: 4px; }
 .pack-tile .tag { background: var(--surface); font-size: 11.5px; }
-.pack-foot { margin-top: auto; padding-top: 4px; display: flex; gap: 6px; }
+.pack-foot { margin-top: auto; padding-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; }
 .pack-foot .btn-primary, .pack-foot .btn:first-child { flex: 1; }
 
 .packs-empty { grid-column: 1 / -1; max-width: 520px; margin: 30px auto; padding: 28px; text-align: center; border: 1px dashed var(--line-strong); border-radius: var(--r-lg); }
