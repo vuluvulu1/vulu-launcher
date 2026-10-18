@@ -29,10 +29,24 @@ namespace VuluLauncher
             _bridge.On("social.save", async args => await SaveShotAsync(RequireShotId(args.Str("id")), args.Str("author")));
             _bridge.On("social.localImage", async args => await LocalShotAsync(args.Str("id"), args.Str("name")));
             _bridge.On("social.share", async args => await ShareShotAsync(args));
+            _bridge.On("social.shot", async args => await SingleShotAsync(RequireShotId(args.Str("id"))));
+            _bridge.On("social.comments", async args => { RequireLogin(); return await _api.GetAsync<JsonElement>($"/shots/{RequireShotId(args.Str("id"))}/comments"); });
+            _bridge.On("social.comment", async args =>
+            {
+                RequireLogin();
+                string text = args.Str("text").Trim();
+                if (text.Length is 0 or > 300) throw new InvalidOperationException("Yorum 1-300 karakter olmalı.");
+                return await _api.PostAsync<JsonElement>($"/shots/{RequireShotId(args.Str("id"))}/comments", new { text });
+            });
+            _bridge.On("social.deleteComment", async args =>
+            {
+                RequireLogin();
+                return await _api.DeleteAsync<JsonElement>($"/shots/{RequireShotId(args.Str("id"))}/comments/{RequireShotId(args.Str("commentId"))}");
+            });
         }
 
         private static string RequireShotId(string id) =>
-            ShotId.IsMatch(id ?? "") ? id : throw new InvalidOperationException("Ekran görüntüsü bulunamadı.");
+            ShotId.IsMatch(id ?? "") ? id! : throw new InvalidOperationException("Ekran görüntüsü bulunamadı.");
 
         private static string FileUrl(string path) => new Uri(path).AbsoluteUri;
 
@@ -60,6 +74,61 @@ namespace VuluLauncher
                 return new Dictionary<string, object?>(dict.Select(kv => new KeyValuePair<string, object?>(kv.Key, kv.Value))) { ["thumbUrl"] = thumb };
             }));
             return new { shots, more = feed.GetProperty("more").GetBoolean() };
+        }
+
+        /// <summary>Tek bir paylaşım (bildirimden açılınca), önizlemesiyle.</summary>
+        private async Task<object?> SingleShotAsync(string id)
+        {
+            RequireLogin();
+            var shot = await _api.GetAsync<JsonElement>($"/shots/{id}");
+            string? thumb = null;
+            try { thumb = FileUrl(await CachedShotAsync(id, "thumb")); } catch { }
+            var dict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(shot.GetRawText())!;
+            return new Dictionary<string, object?>(dict.Select(kv => new KeyValuePair<string, object?>(kv.Key, kv.Value))) { ["thumbUrl"] = thumb };
+        }
+
+        // ── Beğeni ve yorum bildirimleri ──────────────────────────────────
+        private readonly object _shotEventsGate = new();
+        private bool _shotEventsPolling;
+        private DateTime? _shotEventsSince;
+
+        /// <summary>Girişten sonra 20 sn'de bir: ekran görüntülerime gelen beğeni ve yorumlar.</summary>
+        private void StartShotEventPolling()
+        {
+            lock (_shotEventsGate)
+            {
+                if (_shotEventsPolling) return;
+                _shotEventsPolling = true;
+            }
+            _ = Task.Run(async () =>
+            {
+                string? user = null;
+                while (true)
+                {
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(_login.Token))
+                        {
+                            if (user != _login.Username) { user = _login.Username; _shotEventsSince = null; }   // hesap değişti
+                            string query = _shotEventsSince is { } since ? $"?since={Uri.EscapeDataString(since.ToString("o"))}" : "";
+                            var result = await _api.GetAsync<JsonElement>("/shots/events" + query);
+                            if (result.TryGetProperty("now", out var now) && now.TryGetDateTime(out var at)) _shotEventsSince = at.ToUniversalTime();
+                            foreach (var e in result.GetProperty("events").EnumerateArray())
+                            {
+                                string from = e.GetProperty("from").GetString()!, kind = e.GetProperty("kind").GetString()!;
+                                string text = e.TryGetProperty("text", out var t) ? t.GetString() ?? "" : "";
+                                string shotId = e.GetProperty("shotId").GetString()!;
+                                _bridge.Emit("shotEvent", new { from, kind, text, shotId });
+                                if (AppSettings.Current.SocialNotifications && !TrayNotifier.IsActive(_window.WindowHandle))
+                                    _tray.Show(kind == "like" ? $"{from} ekran görüntünü beğendi" : $"{from} yorum yaptı",
+                                        kind == "like" ? "Sosyal'de görmek için tıkla." : text, "shot:" + shotId);
+                            }
+                        }
+                    }
+                    catch (Exception) { /* bağlantı yoksa bir sonraki turda */ }
+                    await Task.Delay(TimeSpan.FromSeconds(20));
+                }
+            });
         }
 
         /// <summary>Resmi bir kez indirir (aynı anda istenirse tek indirme), sonra diskten verir. Paylaşımlar değişmez.</summary>
@@ -98,7 +167,7 @@ namespace VuluLauncher
             string source = await CachedShotAsync(id, "image");
             string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "vulu Launcher");
             Directory.CreateDirectory(dir);
-            string safeAuthor = Regex.IsMatch(author ?? "", "^[A-Za-z0-9_]{3,16}$") ? author : "vulu";
+            string safeAuthor = Regex.IsMatch(author ?? "", "^[A-Za-z0-9_]{3,16}$") ? author! : "vulu";
             byte[] head = new byte[4];
             await using (var f = File.OpenRead(source)) _ = await f.ReadAsync(head);
             string ext = head[0] == 0xFF && head[1] == 0xD8 ? ".jpg" : ".webp";

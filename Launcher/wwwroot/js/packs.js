@@ -84,6 +84,7 @@ function packTile(pack, result) {
                     'Geri bildirim',
                     pack.openFeedback > 0 && el('span', { class: 'count' }, pack.openFeedback)),
                 el('button', { class: 'btn btn-sm', title: 'Bir arkadaşına mesajla gönder', onclick: () => shareCardWith(packInvite(pack)) }, 'Gönder'),
+                (pack.changelog || []).length > 0 && el('button', { class: 'btn btn-sm', title: 'Her sürümde neyin değiştiği', onclick: () => showChangelog(pack) }, 'Değişiklikler'),
                 result.isAdmin && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deletePack(pack) }, 'Sil'))));
 }
 
@@ -99,12 +100,22 @@ async function installPack(pack) {
 }
 
 async function updatePack(pack) {
-    const accepted = await confirmDialog({
-        title: `${pack.name} güncellensin mi?`,
-        message: `Paketin yeni sürümü (rev ${pack.revision}) kurulacak.\n\nPaketteki config dosyaları seninkilerin üzerine yazılır. `
-            + 'Kendi eklediğin modlar ve dünyaların yerinde kalır.',
-        okText: 'Güncelle', cancelText: 'Vazgeç',
-    });
+    // Bildirimden ya da Oyna sayfasından gelindiyse değişiklik listesi için paketin tamamı alınır
+    if (!pack.changelog) {
+        try { pack = (await bridge.invoke('packs.list')).packs.find(p => p.id === pack.id) || pack; } catch { }
+    }
+    const since = pack.installed ? pack.installed.revision : 0;
+    const changes = (pack.changelog || []).filter(c => c.revision > since);
+    const accepted = await openModal(close => [
+        el('div', { class: 'modal-head' }, `${pack.name} güncellensin mi?`),
+        el('div', { class: 'modal-body' },
+            el('p', {}, since ? `rev ${since} → rev ${pack.revision}` : `rev ${pack.revision}`),
+            changes.length ? el('div', { class: 'changelog' }, changes.map(changeEntry)) : null,
+            el('p', { class: 'hint' }, 'Paketteki config dosyaları seninkilerin üzerine yazılır. Kendi eklediğin modlar ve dünyaların yerinde kalır; dünyalar güncellemeden önce yedeklenir.')),
+        el('div', { class: 'modal-foot' },
+            el('button', { class: 'btn', onclick: () => close(false) }, 'Vazgeç'),
+            el('button', { class: 'btn btn-primary', onclick: () => close(true) }, 'Güncelle')),
+    ], { wide: changes.length > 0 }).then(v => v === true);
     if (!accepted) return;
     try {
         const result = await withActivity(() => bridge.invoke('packs.update', { id: pack.id }));
@@ -114,6 +125,33 @@ async function updatePack(pack) {
     } catch (err) {
         await alertDialog({ title: 'Güncellenemedi', message: err.message });
     }
+}
+
+/** Bir revizyondaki değişiklikler: not, eklenen/kaldırılan/güncellenen içerikler. */
+function changeEntry(c) {
+    const at = parseDate(c.at);
+    const list = (items, cls, sign) => items.length > 0 && el('ul', { class: 'change-list ' + cls },
+        items.slice(0, 40).map(i => el('li', {}, el('span', { class: 'change-sign', 'aria-hidden': 'true' }, sign), i)),
+        items.length > 40 && el('li', { class: 'muted' }, `…ve ${items.length - 40} tane daha`));
+    const empty = !c.note && !c.added.length && !c.removed.length && !c.updated.length && !c.filesChanged;
+    return el('section', { class: 'change' },
+        el('div', { class: 'change-head' },
+            el('b', {}, `rev ${c.revision}`),
+            el('span', { class: 'muted' }, [at && formatDate(at), c.by].filter(Boolean).join(' · '))),
+        c.note && el('p', { class: 'change-note' }, c.note),
+        list(c.added, 'added', '+'),
+        list(c.updated.map(u => `${u.title}  ${u.from} → ${u.to}`), 'updated', '↑'),
+        list(c.removed, 'removed', '−'),
+        c.filesChanged && el('p', { class: 'change-files' }, 'Config ve paket dosyaları da güncellendi.'),
+        empty && el('p', { class: 'muted' }, c.revision === 1 ? 'İlk sürüm.' : 'İçerik değişmedi.'));
+}
+
+async function showChangelog(pack) {
+    await openModal(close => [
+        el('div', { class: 'modal-head' }, `${pack.name} · Değişiklikler`),
+        el('div', { class: 'modal-body changelog-body' }, el('div', { class: 'changelog' }, pack.changelog.map(changeEntry))),
+        el('div', { class: 'modal-foot' }, el('button', { class: 'btn btn-primary', onclick: () => close() }, 'Kapat')),
+    ], { wide: true });
 }
 
 async function openInstalledPack(instanceId) {
@@ -169,6 +207,10 @@ async function openShareDialog(instance) {
             placeholder: 'Paket hakkında kısa bir açıklama: ne içeriyor, nasıl oynanıyor…',
         });
         description.value = info.description;
+        const changeNote = el('textarea', {
+            class: 'textarea', rows: 3, maxLength: 1000, spellcheck: false,
+            placeholder: 'Bu güncellemede ne değişti? (isteğe bağlı) Mod değişiklikleri zaten otomatik listelenir.',
+        });
 
         const coverBox = el('button', { type: 'button', class: 'share-cover', title: 'Kapak resmi seç' },
             el('span', {}, info.existing && info.existing.hasCover ? 'Mevcut kapak kalacak · değiştirmek için tıkla' : 'Kapak resmi seç'));
@@ -218,6 +260,7 @@ async function openShareDialog(instance) {
                     instanceId: instance.id,
                     name: name.value,
                     description: description.value,
+                    changeNote: changeNote.value,
                     includes: checks.filter(c => c.box.checked).map(c => c.box.value),
                     ramGb,
                     coverPath,
@@ -238,6 +281,7 @@ async function openShareDialog(instance) {
                     coverBox,
                     el('label', {}, 'Paket adı'), name,
                     el('label', {}, 'Açıklama'), description,
+                    info.existing && el('label', {}, 'Güncelleme notu'), info.existing && changeNote,
                     el('label', {}, 'Önerilen RAM'),
                     el('div', { class: 'segmented share-ram' }, ramButtons),
                     el('p', { class: 'hint' }, 'Paketi kuranların oyunu bu RAM ile açılır; istedikleri zaman değiştirebilirler.')),

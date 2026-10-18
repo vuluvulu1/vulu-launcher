@@ -59,7 +59,7 @@ namespace VuluShared
         public static void RemoveUninstallEntry() =>
             Registry.CurrentUser.DeleteSubKeyTree(UninstallKey, throwOnMissingSubKey: false);
 
-        public static void CreateShortcut(string shortcutPath, string target, string description)
+        public static void CreateShortcut(string shortcutPath, string target, string description, string? arguments = null, string? iconPath = null)
         {
             var link = (IShellLinkW)new ShellLink();
             try
@@ -67,7 +67,8 @@ namespace VuluShared
                 link.SetPath(target);
                 link.SetWorkingDirectory(Path.GetDirectoryName(target)!);
                 link.SetDescription(description);
-                link.SetIconLocation(target, 0);
+                if (!string.IsNullOrEmpty(arguments)) link.SetArguments(arguments);
+                link.SetIconLocation(iconPath ?? target, 0);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(shortcutPath)!);
                 ((IPersistFile)link).Save(shortcutPath, true);
@@ -125,7 +126,7 @@ namespace VuluShared
             void GetWorkingDirectory();
             void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string dir);
             void GetArguments();
-            void SetArguments();
+            void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string arguments);
             void GetHotkey();
             void SetHotkey();
             void GetShowCmd();

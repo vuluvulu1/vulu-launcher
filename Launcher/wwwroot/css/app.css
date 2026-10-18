@@ -1193,3 +1193,72 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 #friends-search { width: 200px; }
 .social-switch button { white-space: nowrap; }
 #page-shots .page-head, #page-friends .page-head { flex-wrap: wrap; }
+
+/* ── Paket değişiklikleri ───────────────────────────────────────────── */
+.changelog { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+.changelog-body { max-height: min(60vh, 520px); overflow-y: auto; }
+.change { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.change-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+.change-head .muted { font-size: 12px; }
+.change-note { margin: 4px 0 6px; white-space: pre-wrap; line-height: 1.45; }
+.change-list { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; }
+.change-list li { display: flex; gap: 8px; }
+.change-sign { width: 12px; flex: none; text-align: center; font-weight: 600; }
+.change-list.added .change-sign { color: #6fd18c; }
+.change-list.updated .change-sign { color: var(--accent-hi); }
+.change-list.removed .change-sign { color: #e57373; }
+.change-files { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+.change .muted { color: var(--muted); }
+
+/* ── Duyuru şeridi ──────────────────────────────────────────────────── */
+.announcement { position: relative; z-index: 2; display: flex; align-items: flex-start; gap: 12px; max-width: 720px; margin-bottom: 14px; padding: 12px 14px; border: 1px solid var(--line-strong); border-left: 3px solid var(--accent); border-radius: 0 var(--r) var(--r) 0; background: color-mix(in srgb, var(--panel) 88%, transparent); backdrop-filter: blur(6px); }
+.announcement-icon { flex: none; color: var(--accent-hi); margin-top: 1px; }
+.announcement-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.announcement-body { flex: 1; min-width: 0; }
+.announcement-text { margin: 0; white-space: pre-wrap; word-break: break-word; line-height: 1.45; }
+.announcement-meta { margin-top: 4px; font-size: 11.5px; color: var(--muted); }
+.announcement-close { flex: none; padding: 0 4px; border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; }
+.announcement-close:hover { color: var(--text); }
+
+/* ── Admin: duyuru ve alan ──────────────────────────────────────────── */
+.admin-form { display: flex; flex-direction: column; gap: 10px; max-width: 620px; }
+.admin-form .row { display: flex; gap: 8px; align-items: center; }
+.admin-current { margin-top: 18px; max-width: 620px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.storage-total { max-width: 620px; }
+.storage-bar { display: flex; height: 14px; margin: 10px 0 6px; overflow: hidden; border-radius: 7px; background: var(--raised); }
+.storage-bar span { display: block; height: 100%; }
+.storage-legend { display: flex; flex-direction: column; gap: 6px; max-width: 620px; margin-top: 14px; }
+.storage-legend div { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.storage-legend i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.storage-legend b { margin-left: auto; font-weight: 500; font-variant-numeric: tabular-nums; }
+.storage-warn { color: var(--warn); }
+.storage-full { color: #e57373; }
+
+/* ── Ekran görüntüsü yorumları ──────────────────────────────────────── */
+.shot-counts { display: flex; gap: 6px; flex: none; }
+.shot-comment-count { display: inline-flex; align-items: center; gap: 2px; height: 26px; padding: 0 9px; border: 1px solid var(--line); border-radius: 13px; background: var(--raised); color: var(--muted); font: 600 12px var(--font); cursor: pointer; font-variant-numeric: tabular-nums; }
+.shot-comment-count:hover { color: var(--text); }
+.shot-comments { padding: 10px 18px 14px; border-top: 1px solid var(--line); background: var(--bg); }
+.shot-comment-list { max-height: 170px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.shot-comment { display: flex; align-items: flex-start; gap: 10px; }
+.shot-comment-body { flex: 1; min-width: 0; font-size: 13px; }
+.shot-comment-body p { margin: 1px 0 0; white-space: pre-wrap; word-break: break-word; }
+.shot-comment-body .muted { color: var(--muted); font-size: 11.5px; }
+.shot-comment-author { padding: 0; border: 0; background: none; color: var(--text); font: 600 13px var(--font); cursor: pointer; }
+.shot-comment-author:hover { color: var(--accent-hi); }
+.shot-comment-del { font-size: 11px; opacity: 0; }
+.shot-comment:hover .shot-comment-del { opacity: 1; }
+.shot-comment-form { display: flex; gap: 8px; }
+.shot-comment-form input { flex: 1; }
+
+/* ── Profil: oynama ─────────────────────────────────────────────────── */
+.playtime-total { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+.playtime-total b { font-size: 20px; color: var(--text); font-weight: 600; margin-right: 4px; }
+.playtime-top { display: flex; flex-direction: column; gap: 8px; }
+.playtime-row { display: grid; grid-template-columns: minmax(0, 180px) 1fr 80px; align-items: center; gap: 12px; font-size: 13px; }
+.playtime-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.playtime-bar { height: 6px; border-radius: 3px; background: var(--raised); overflow: hidden; }
+.playtime-bar i { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+.playtime-time { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.shot-view { overflow: hidden; }
+.shot-view.shared .shot-full { max-height: min(44vh, 420px); }

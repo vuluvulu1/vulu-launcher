@@ -34,6 +34,10 @@ namespace VuluLauncher
         public bool DmNotificationPreview { get; set; } = true;
         /// <summary>Kurulu bir vulu pack güncellenince launcher öndeyken değilse bildirim gösterilir.</summary>
         public bool PackUpdateNotifications { get; set; } = true;
+        /// <summary>Ekran görüntüm beğenilince ya da yorum gelince bildirim.</summary>
+        public bool SocialNotifications { get; set; } = true;
+        /// <summary>Toplam oynama süresi ve en çok oynanan paketler profilde görünsün mü.</summary>
+        public bool ShowPlaytimeOnProfile { get; set; } = true;
 
         // ── Ses ve görünüm ────────────────────────────────────────────────
         public bool MusicEnabled { get; set; } = true;

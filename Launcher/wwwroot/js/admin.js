@@ -23,10 +23,14 @@ function renderAdminTabs() {
     $('admin-body').replaceChildren(
         el('div', { class: 'tabs admin-tabs' },
             tab('users', 'Kullanıcılar'),
-            tab('registrations', 'Kayıt istekleri', pendingRegistrations.length)),
+            tab('registrations', 'Kayıt istekleri', pendingRegistrations.length),
+            tab('announcement', 'Duyuru'),
+            tab('storage', 'Alan')),
         content);
 
     if (adminTab === 'registrations') renderRegistrationsTab(content);
+    else if (adminTab === 'announcement') renderAnnouncementTab(content);
+    else if (adminTab === 'storage') renderStorageTab(content);
     else renderUsersTab(content);
 }
 

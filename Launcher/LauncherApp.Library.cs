@@ -19,6 +19,8 @@ namespace VuluLauncher
         private DateTime _playMark;
         private Timer? _playTimer;
 
+        private readonly object _actionGate = new();
+        private StartupAction? _pendingAction;
         private bool _packChecking;
         private readonly HashSet<string> _packUpdatesNotified = new();
 
@@ -30,6 +32,128 @@ namespace VuluLauncher
             _bridge.On("screenshots.copy", args => Task.FromResult<object?>(CopyScreenshot(args.Str("id"), args.Str("name"))));
             _bridge.On("screenshots.delete", args => Task.FromResult<object?>(DeleteScreenshot(args.Str("id"), args.Str("name"))));
             _bridge.On("packs.updates", async _ => await PackUpdatesAsync());
+            _bridge.On("app.takeAction", _ =>
+            {
+                StartupAction? a;
+                lock (_actionGate) { a = _pendingAction; _pendingAction = null; }
+                return Task.FromResult<object?>(a == null ? null : new { kind = a.Kind, id = a.Id });
+            });
+            _bridge.On("shortcuts.icon", async args => await ShortcutIconSourceAsync(args.Str("id")));
+            _bridge.On("shortcuts.create", args => Task.FromResult<object?>(CreateDesktopShortcut(args)));
+            _bridge.On("announcement.get", async _ => { RequireLogin(); return await _api.GetAsync<JsonElement>("/announcements"); });
+            _bridge.On("announcement.post", async args =>
+            {
+                RequireAdmin();
+                return await _api.PostAsync<JsonElement>("/announcements", new { text = args.Str("text"), hours = args.Int("hours") });
+            });
+            _bridge.On("announcement.delete", async args =>
+            {
+                RequireAdmin();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(args.Str("id"), "^[0-9a-f]{24}$")) throw new InvalidOperationException("Duyuru bulunamadı.");
+                return await _api.DeleteAsync<JsonElement>($"/announcements/{args.Str("id")}");
+            });
+            _bridge.On("admin.storage", async _ => { RequireAdmin(); return await _api.GetAsync<JsonElement>("/admin/storage"); });
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // MASAÜSTÜ KISAYOLLARI
+        // ════════════════════════════════════════════════════════════════
+        private static readonly string ShortcutIcons = Path.Combine(AppPaths.AppData, "shortcut-icons");
+
+        public void SetStartupAction(StartupAction? action)
+        {
+            lock (_actionGate) _pendingAction = action;
+        }
+
+        /// <summary>Başka bir kopyadan (kısayoldan) gelen istek: pencere öne gelir, istek arayüze iletilir.</summary>
+        public void OnRemoteCommand(string message)
+        {
+            TrayNotifier.BringToFront(_window.WindowHandle);
+            var action = StartupAction.FromMessage(message);
+            if (action == null) return;
+            lock (_actionGate) _pendingAction = action;
+            _bridge.Emit("startupAction");
+        }
+
+        /// <summary>Kısayol simgesi için paketin logosu (yoksa Modrinth simgesi) data adresi olarak; yoksa null.</summary>
+        private async Task<object?> ShortcutIconSourceAsync(string id)
+        {
+            RequireLogin();
+            _ = ResolveTarget(id);
+            string? file = LogoFile(id);
+            if (file != null && new FileInfo(file).Length < 4 * 1024 * 1024)
+            {
+                string ext = Path.GetExtension(file).ToLowerInvariant();
+                string mime = ext switch { ".png" => "image/png", ".webp" => "image/webp", ".gif" => "image/gif", _ => "image/jpeg" };
+                return new { dataUrl = $"data:{mime};base64,{Convert.ToBase64String(await File.ReadAllBytesAsync(file))}" };
+            }
+            string? iconUrl = id.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.TryLoad(id[InstancePrefix.Length..])?.IconUrl : null;
+            if (iconUrl != null && iconUrl.StartsWith("https://cdn.modrinth.com/", StringComparison.Ordinal))
+            {
+                try
+                {
+                    using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+                    var bytes = await http.GetByteArrayAsync(iconUrl);
+                    if (bytes.Length < 4 * 1024 * 1024)
+                        return new { dataUrl = $"data:image/png;base64,{Convert.ToBase64String(bytes)}" };
+                }
+                catch { }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Masaüstüne kısayol: paket ("play") ya da sunucu ("join"). Simge arayüzün hazırladığı 256 px PNG'den ICO'ya
+        /// çevrilir; yoksa launcher'ın simgesi kullanılır.
+        /// </summary>
+        private object CreateDesktopShortcut(JsonElement args)
+        {
+            RequireLogin();
+            string kind = args.Str("kind"), id = args.Str("id");
+            if (StartupAction.FromMessage($"{kind}\t{id}") == null) throw new InvalidOperationException("Kısayol oluşturulamadı.");
+            if (kind == "play") _ = ResolveTarget(id);
+
+            string name = new string(args.Str("name").Where(c => !Path.GetInvalidFileNameChars().Contains(c)).ToArray()).Trim().TrimEnd('.');
+            if (name.Length == 0) name = "vulu";
+            if (name.Length > 60) name = name[..60];
+
+            string target = Environment.ProcessPath ?? Path.Combine(AppPaths.Base, VuluShared.Releases.LauncherExeName);
+            string? icon = null;
+            var png = System.Text.RegularExpressions.Regex.Match(args.Str("iconDataUrl"), "^data:image/png;base64,([A-Za-z0-9+/]+={0,2})$");
+            if (png.Success)
+            {
+                byte[] bytes = Convert.FromBase64String(png.Groups[1].Value);
+                if (bytes.Length < 1024 * 1024)
+                {
+                    Directory.CreateDirectory(ShortcutIcons);
+                    icon = Path.Combine(ShortcutIcons, $"{kind}-{string.Concat(id.Where(char.IsLetterOrDigit))}.ico");
+                    File.WriteAllBytes(icon, PngToIco(bytes));
+                }
+            }
+
+            string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            string path = Path.Combine(desktop, name + ".lnk");
+            string argument = kind == "play" ? $"--play \"{id}\"" : $"--join {id}";
+            VuluShared.InstallInfo.CreateShortcut(path, target,
+                kind == "play" ? $"{name} · vulu Launcher ile oyna" : $"{name} sunucusuna vulu Launcher ile bağlan", argument, icon);
+            Log($"Masaüstüne kısayol eklendi: {name}", "ok");
+            return new { path };
+        }
+
+        /// <summary>Tek PNG içeren ICO (Windows Vista ve sonrası PNG simgeleri doğrudan okur).</summary>
+        private static byte[] PngToIco(byte[] png)
+        {
+            int w = png.Length > 24 ? (png[16] << 24 | png[17] << 16 | png[18] << 8 | png[19]) : 256;
+            int h = png.Length > 24 ? (png[20] << 24 | png[21] << 16 | png[22] << 8 | png[23]) : 256;
+            using var ms = new MemoryStream();
+            using var bw = new BinaryWriter(ms);
+            bw.Write((short)0); bw.Write((short)1); bw.Write((short)1);
+            bw.Write((byte)(w >= 256 ? 0 : w)); bw.Write((byte)(h >= 256 ? 0 : h));
+            bw.Write((byte)0); bw.Write((byte)0);
+            bw.Write((short)1); bw.Write((short)32);
+            bw.Write(png.Length); bw.Write(22);
+            bw.Write(png);
+            return ms.ToArray();
         }
 
         // ════════════════════════════════════════════════════════════════
@@ -62,12 +186,55 @@ namespace VuluLauncher
         private void StopPlayTime()
         {
             FlushPlayTime();
+            bool wasPlaying;
             lock (_playGate)
             {
+                wasPlaying = _playId != null;
                 _playTimer?.Dispose();
                 _playTimer = null;
                 _playId = null;
             }
+            if (wasPlaying) _ = SyncPlaytimeAsync();
+        }
+
+        /// <summary>
+        /// Profildeki oynama istatistiği: toplam süre ve en çok oynanan 3 paket (adlarıyla) vulu-api'ye gönderilir.
+        /// Ayarlarda kapatıldıysa sunucudaki kayıt silinir. Hata olursa sessizce bir sonraki fırsata kalır.
+        /// </summary>
+        private async Task SyncPlaytimeAsync()
+        {
+            if (string.IsNullOrEmpty(_login.Token)) return;
+            try
+            {
+                if (!AppSettings.Current.ShowPlaytimeOnProfile)
+                {
+                    await _api.DeleteAsync<JsonElement>("/users/me/playtime");
+                    return;
+                }
+                var named = PlayTimeStore.All()
+                    .Select(kv => (Name: PlayTimeName(kv.Key), kv.Value.Seconds))
+                    .Where(x => x.Name != null && x.Seconds > 0)
+                    .GroupBy(x => x.Name!)
+                    .Select(g => (Name: g.Key, Seconds: g.Sum(x => x.Seconds)))
+                    .OrderByDescending(x => x.Seconds)
+                    .ToList();
+                long total = named.Sum(x => x.Seconds);
+                if (total < 60) return;   // henüz göstermeye değecek süre yok
+                await _api.PutAsync<JsonElement>("/users/me/playtime", new
+                {
+                    totalSeconds = total,
+                    top = named.Take(3).Select(x => new { name = x.Name, seconds = x.Seconds }),
+                });
+            }
+            catch (Exception) { /* sunucuya ulaşılamazsa bir sonraki oyunda */ }
+        }
+
+        /// <summary>Oynama kaydının adı: sunucu paketi ya da instance'ın şu anki adı (silinmişse null).</summary>
+        private static string? PlayTimeName(string id)
+        {
+            if (id.StartsWith(PackPrefix, StringComparison.Ordinal)) return PackCatalog.Find(id[PackPrefix.Length..])?.Name;
+            if (id.StartsWith(InstancePrefix, StringComparison.Ordinal)) return InstanceStore.TryLoad(id[InstancePrefix.Length..])?.Name;
+            return null;
         }
 
         private static object PlayTimeOf(string id)

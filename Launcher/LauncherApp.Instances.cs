@@ -568,8 +568,10 @@ namespace VuluLauncher
             if (settings.JavaMode == "custom" && !File.Exists(settings.CustomJavaPath.Trim().Trim('"')))
                 throw new InvalidOperationException("Seçilen Java dosyası bulunamadı. Otomatik moda dönün ya da geçerli bir java.exe seçin.");
 
+            bool playtimeChanged = settings.ShowPlaytimeOnProfile != AppSettings.Current.ShowPlaytimeOnProfile;
             AppSettings.Save(settings);
             _discord.SetEnabled(settings.DiscordPresence);
+            if (playtimeChanged) _ = SyncPlaytimeAsync();
             SignalPresence();   // "görünmez" seçilince arkadaş listesinden hemen düşülür
             return new { settings = AppSettings.Current };
         }

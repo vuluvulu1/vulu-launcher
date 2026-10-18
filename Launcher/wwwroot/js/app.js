@@ -376,6 +376,7 @@ async function enterLauncher(session) {
     state.packUpdates = {};
     await reloadInstances(store.get('lastPack', ''));
     refreshPackUpdates();
+    refreshAnnouncement();
 
     if (!useSplash) {
         showView('view-main');
@@ -388,6 +389,7 @@ async function enterLauncher(session) {
         await openCurtainsTo('view-main');
     }
 
+    await runStartupAction();   // masaüstü kısayolundan açıldıysa
     await offerLauncherUpdate();
 }
 
@@ -540,6 +542,7 @@ function renderPackActions(instance) {
         item('Dünyalar ve yedekler', () => openWorldsDialog(instance)),
         item('Ekran görüntüleri', () => openScreenshots(instance)),
         item('Klasörü aç', () => bridge.invoke('files.open', { target: 'instance', id: instance.id })),
+        item('Masaüstüne kısayol', () => createShortcut('play', instance.id, instance.name, instance.id)),
         isCustom && item('Çoğalt', () => duplicateInstance(instance)),
         isCustom && instance.loader !== 'vanilla' && item('.mrpack olarak dışa aktar', () => exportMrpack(instance)),
         isCustom && state.isAdmin && item(instance.sharedPackId ? 'Paylaşımı güncelle' : "vulu Packs'te paylaş", () => openShareDialog(instance), 'accent'),

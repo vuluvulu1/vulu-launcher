@@ -54,6 +54,8 @@ const bridge = (() => {
 const mockBackend = (() => {
     const mockFlags = {};
     let mockBanner = null;
+    let mockAnnouncement = { id: 'a1', text: 'Bu akşam 21:00\'de AGLR SMP\'de etkinlik var, herkesi bekliyoruz!', author: 'vulu', createdAt: new Date(Date.now() - 2 * 3600000).toISOString(), expiresAt: null };
+    const mockComments = {};
     const feedImg = (c, t) => 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270"><rect width="480" height="270" fill="${c}"/><rect y="180" width="480" height="90" fill="#222" opacity=".45"/><text x="20" y="50" font-size="28" fill="#fff" font-family="sans-serif">${t}</text></svg>`);
     let mockFeed = [
         ['Steve_TR', 'Sonunda üssün çatısı bitti 🏠', 'AGLR SMP', 4, true, '#4f6b3d'],
@@ -157,6 +159,11 @@ const mockBackend = (() => {
         { id: 'p2', name: 'Hafif Survival', description: 'Performans modları ve birkaç küçük eklenti. Düşük bilgisayarlar için.', author: 'vulu', mcVersion: '1.21.1', loader: 'fabric', loaderVersion: '0.16.14', revision: 2, updatedAt: daysAgoIso(9), modCount: 24, recommendedRamGb: 6, sizeMb: 61.7, includes: ['config'], coverUrl: 'assets/launchervanillabg.jpg', installed: { instanceId: 'inst:fabric-121', revision: 1 } },
         { id: 'p3', name: 'Skyblock', description: '', author: 'vulu', mcVersion: '1.20.1', loader: 'forge', loaderVersion: '47.4.10', revision: 1, updatedAt: daysAgoIso(30), modCount: 68, sizeMb: 140.2, includes: ['config', 'kubejs'], coverUrl: null, installed: null },
     ];
+    packs[1].changelog = [
+        { revision: 2, at: daysAgoIso(9), by: 'vulu', note: 'Sodium güncellendi, Iris eklendi. Shader açmak isteyen Ayarlar > Shader’dan seçebilir.', added: ['Iris Shaders'], removed: ['OptiFabric'], updated: [{ title: 'Sodium', from: '0.5.8', to: '0.6.1' }], filesChanged: true },
+        { revision: 1, at: daysAgoIso(20), by: 'vulu', note: '', added: [], removed: [], updated: [], filesChanged: false },
+    ];
+    packs[0].changelog = [{ revision: 3, at: daysAgoIso(2), by: 'vulu', note: 'Görev kitabına 2. bölüm eklendi.', added: ['Create: Steam ’n’ Rails'], removed: [], updated: [], filesChanged: true }];
 
     const members = [
         { username: 'vulu', bio: 'Launcher\'ı yapan kişi. Genelde Create paketlerinde takılırım.', isAdmin: true, avatarVersion: 0, createdAt: daysAgoIso(140), lastSeenAt: daysAgoIso(0), packCount: 3 },
@@ -231,11 +238,26 @@ const mockBackend = (() => {
 
         'profile.list': async () => { await wait(250); return members; },
         'profile.me': async () => members[0],
+        'announcement.get': async () => ({ announcement: mockAnnouncement }),
+        'announcement.post': async args => { mockAnnouncement = { id: 'a' + Date.now(), text: args.text, author: 'vulu', createdAt: new Date().toISOString(), expiresAt: args.hours ? new Date(Date.now() + args.hours * 3600000).toISOString() : null }; return { announcement: mockAnnouncement }; },
+        'announcement.delete': async () => { mockAnnouncement = null; return { success: true }; },
+        'admin.storage': async () => { await wait(300); return { limitBytes: 512 * 1048576, usedBytes: 381 * 1048576, parts: [
+            { key: 'packs', label: 'Paket dosyaları', bytes: 262 * 1048576 }, { key: 'shots', label: 'Ekran görüntüleri', bytes: 71 * 1048576 },
+            { key: 'images', label: 'Avatar, banner ve skinler', bytes: 9 * 1048576 }, { key: 'messages', label: 'Mesajlar', bytes: 2 * 1048576 }] }; },
+        'app.takeAction': async () => null,
+        'shortcuts.icon': async () => null,
+        'shortcuts.create': async () => ({ path: 'C:\\Users\\vulu\\Desktop\\x.lnk' }),
+        'social.shot': async args => mockFeed.find(s => s.id === args.id),
+        'social.comments': async args => { await wait(200); return [...(mockComments[args.id] = mockComments[args.id] || [
+            { id: 'c1', author: 'halil', text: 'Çok güzel olmuş!', createdAt: new Date(Date.now() - 3600000).toISOString(), canDelete: false }])]; },
+        'social.comment': async args => { const c = { id: 'c' + Date.now(), author: 'vulu', text: args.text, createdAt: new Date().toISOString(), canDelete: true }; (mockComments[args.id] = mockComments[args.id] || []).push(c); return { ...c, commentCount: mockComments[args.id].length }; },
+        'social.deleteComment': async args => { mockComments[args.id] = (mockComments[args.id] || []).filter(c => c.id !== args.commentId); return { success: true }; },
         'profile.get': async args => {
             await wait(250);
             const user = members.find(m => m.username === args.username);
             if (!user) throw new Error('Kullanıcı bulunamadı.');
-            return { ...user, packs: user.username === 'vulu' ? packs.map(p => ({ id: p.id, name: p.name, revision: p.revision, mcVersion: p.mcVersion, loader: p.loader })) : [] };
+            return { ...user, playtime: user.username === 'halil' ? { totalSeconds: 3600 * 47 + 1200, top: [{ name: 'AGLR SMP', seconds: 3600 * 31 }, { name: 'Create Macera', seconds: 3600 * 12 }, { name: 'Vanilla', seconds: 3600 * 4 + 1200 }] } : null,
+                packs: user.username === 'vulu' ? packs.map(p => ({ id: p.id, name: p.name, revision: p.revision, mcVersion: p.mcVersion, loader: p.loader })) : [] };
         },
         'profile.saveBio': async args => { await wait(300); members[0].bio = args.bio.trim(); return members[0]; },
         'profile.pickAvatar': async () => null,

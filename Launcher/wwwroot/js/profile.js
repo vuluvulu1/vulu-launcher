@@ -96,6 +96,7 @@ function renderProfile(user) {
             el('h2', {}, 'Hakkında'),
             el('p', { class: 'profile-bio' + (user.bio ? '' : ' empty') }, user.bio || 'Henüz bir şey yazmamış.')),
         skinSection(user, own),
+        playtimeSection(user, own),
     ].filter(Boolean);
 
     if (user.packs && user.packs.length) {
@@ -116,6 +117,27 @@ function renderProfile(user) {
 
     $('profile-view').replaceChildren(el('div', { class: 'profile-card' }, sections));
     markActiveMember();
+}
+
+/** Toplam oynama süresi ve en çok oynanan paketler (launcher gönderir; kullanıcı kapatabilir). */
+function playtimeSection(user, own) {
+    const p = user.playtime;
+    if (!p || !p.totalSeconds) {
+        return own && el('section', { class: 'profile-section' },
+            el('h2', {}, 'Oynama'),
+            el('p', { class: 'profile-bio empty' }, state.settings.showPlaytimeOnProfile === false
+                ? 'Oynama süren profilinde gizli (Ayarlar).'
+                : 'Biraz oynadıktan sonra toplam süren burada görünür.'));
+    }
+    const max = Math.max(...p.top.map(t => t.seconds), 1);
+    return el('section', { class: 'profile-section' },
+        el('h2', {}, 'Oynama'),
+        el('div', { class: 'playtime-total' }, el('b', {}, formatPlayTime(p.totalSeconds)), ' toplam'),
+        p.top.length > 0 && el('div', { class: 'playtime-top' }, p.top.map(t =>
+            el('div', { class: 'playtime-row' },
+                el('span', { class: 'playtime-name' }, t.name),
+                el('span', { class: 'playtime-bar' }, el('i', { style: `width:${Math.max(4, Math.round(t.seconds / max * 100))}%` })),
+                el('span', { class: 'playtime-time' }, formatPlayTime(t.seconds))))));
 }
 
 function bioEditor(user) {

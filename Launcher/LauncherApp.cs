@@ -173,6 +173,8 @@ namespace VuluLauncher
             StartPresence();
             _ = SetUpMessagesAsync(_login.Username, password);
             StartPackUpdateChecks();
+            StartShotEventPolling();
+            _ = Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(_ => SyncPlaytimeAsync());
 
             return new
             {

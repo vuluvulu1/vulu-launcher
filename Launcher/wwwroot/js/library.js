@@ -126,12 +126,75 @@ async function openScreenshots(instance, { pick = false } = {}) {
     }, { wide: true }).then(v => (typeof v === 'string' ? v : null));
 }
 
+// ── Masaüstü kısayolları ──────────────────────────────────────────────
+/** Paketin logosundan 256 px PNG simge; logo yoksa null (kısayol launcher simgesini kullanır). */
+async function shortcutIcon(instanceId) {
+    if (!instanceId) return null;
+    let source;
+    try { source = await bridge.invoke('shortcuts.icon', { id: instanceId }); } catch { return null; }
+    if (!source) return null;
+    try {
+        const img = await loadImage(source.dataUrl);
+        const N = 256, c = el('canvas', { width: N, height: N }), g = c.getContext('2d');
+        const ratio = img.naturalWidth / img.naturalHeight;
+        g.beginPath(); g.roundRect(0, 0, N, N, 44); g.clip();
+        if (ratio > 0.8 && ratio < 1.25) {
+            // Kareye yakın logo: simgenin tamamını kaplar
+            const s = Math.max(N / img.naturalWidth, N / img.naturalHeight);
+            g.drawImage(img, (N - img.naturalWidth * s) / 2, (N - img.naturalHeight * s) / 2, img.naturalWidth * s, img.naturalHeight * s);
+        } else {
+            // Geniş/uzun logo: koyu bir kutunun ortasına sığdırılır
+            g.fillStyle = '#121010'; g.fillRect(0, 0, N, N);
+            const pad = 22, s = Math.min((N - pad * 2) / img.naturalWidth, (N - pad * 2) / img.naturalHeight);
+            g.drawImage(img, (N - img.naturalWidth * s) / 2, (N - img.naturalHeight * s) / 2, img.naturalWidth * s, img.naturalHeight * s);
+        }
+        return c.toDataURL('image/png');
+    } catch { return null; }
+}
+
+async function createShortcut(kind, id, name, iconInstanceId) {
+    try {
+        const iconDataUrl = await shortcutIcon(iconInstanceId);
+        await bridge.invoke('shortcuts.create', { kind, id, name, iconDataUrl: iconDataUrl || '' });
+        await alertDialog({
+            title: 'Kısayol eklendi',
+            message: kind === 'play'
+                ? `Masaüstündeki "${name}" kısayolu launcher'ı açıp ${name} paketini doğrudan başlatır.`
+                : `Masaüstündeki "${name}" kısayolu launcher'ı açıp doğrudan ${name} sunucusuna bağlanır.`,
+        });
+    } catch (err) { await alertDialog({ title: 'Kısayol oluşturulamadı', message: err.message }); }
+}
+
+/** Kısayoldan (ya da açıkken başka bir kısayoldan) gelen istek: paketi oyna / sunucuya bağlan. */
+async function runStartupAction() {
+    if (!state.username) return;   // giriş yapılınca enterLauncher yeniden çağırır
+    let action;
+    try { action = await bridge.invoke('app.takeAction'); } catch { return; }
+    if (!action) return;
+    if (state.gameRunning) { appendLog({ text: 'Oyun zaten açık.', level: 'warn' }); return; }
+    if (action.kind === 'play') {
+        await reloadInstances(action.id);
+        const instance = state.instances.find(i => i.id === action.id);
+        if (!instance) { await alertDialog({ title: 'Kısayol', message: 'Bu kısayolun paketi artık yok. Kısayolu silebilirsin.' }); return; }
+        showPage('home');
+        play();
+    } else if (action.kind === 'join') {
+        let servers = [];
+        try { servers = await bridge.invoke('community.servers'); } catch { }
+        const server = servers.find(s => s.id === action.id);
+        if (!server) { await alertDialog({ title: 'Kısayol', message: 'Bu kısayolun sunucusu artık vulu listesinde yok.' }); return; }
+        joinServer(server);
+    }
+}
+
 // ── Bildirime tıklama ─────────────────────────────────────────────────
 async function onNotificationClicked({ tag }) {
     if (!tag || !state.username) return;
     if (tag.startsWith('dm:')) {
         showPage('messages');
         openMessagesPage(tag.slice(3));
+    } else if (tag.startsWith('shot:')) {
+        openSharedShot(tag.slice(5));
     } else if (tag.startsWith('pack:')) {
         const instance = state.instances.find(i => i.id === tag.slice(5));
         if (!instance) return;
@@ -145,4 +208,6 @@ async function onNotificationClicked({ tag }) {
 function setupLibrary() {
     bridge.on('packUpdates', onPackUpdates);
     bridge.on('notificationClicked', onNotificationClicked);
+    bridge.on('startupAction', runStartupAction);
+    bridge.on('shotEvent', e => appendLog({ text: e.kind === 'like' ? `♥ ${e.from} ekran görüntünü beğendi.` : `💬 ${e.from}: ${e.text}`, level: 'accent' }));
 }

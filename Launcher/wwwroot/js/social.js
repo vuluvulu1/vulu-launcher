@@ -59,7 +59,10 @@ function shotTile(shot, index) {
             el('button', { class: 'shot-author', onclick: () => openProfile(shot.author) },
                 avatarEl({ username: shot.author, avatarVersion: memberAvatarVersion(shot.author) }, 'avatar-sm'),
                 el('span', {}, shot.author)),
-            likeButton(shot)),
+            el('div', { class: 'shot-counts' },
+                el('button', { class: 'shot-comment-count', title: 'Yorumlar', onclick: () => viewSharedShot(index) },
+                    el('span', { 'aria-hidden': 'true' }, '💬'), ' ', String(shot.commentCount || 0)),
+                likeButton(shot))),
         shot.caption && el('p', { class: 'shot-text' }, shot.caption),
         el('div', { class: 'shot-meta' }, [shot.packName, relativeDate(new Date(shot.createdAt))].filter(Boolean).join(' · ')));
 }
@@ -89,6 +92,7 @@ async function viewSharedShot(index) {
         const img = el('img', { class: 'shot-full', alt: '' });
         const info = el('div', { class: 'modal-foot shot-foot' });
         const loading = el('span', { class: 'hint shot-loading' }, 'Yükleniyor…');
+        const comments = el('div', { class: 'shot-comments' });
         let token = 0;
 
         const show = async i => {
@@ -98,6 +102,7 @@ async function viewSharedShot(index) {
             img.src = shot.thumbUrl || '';
             loading.hidden = false;
             renderInfo();
+            loadComments(shot, mine);
             try {
                 const { url } = await bridge.invoke('social.image', { id: shot.id });
                 if (mine === token) img.src = url;
@@ -121,7 +126,58 @@ async function viewSharedShot(index) {
             ].filter(Boolean));
         }
 
+        async function loadComments(shot, mine) {
+            comments.replaceChildren(el('p', { class: 'hint' }, 'Yorumlar yükleniyor…'));
+            let list = [];
+            try { list = await bridge.invoke('social.comments', { id: shot.id }); }
+            catch (err) { if (mine === token) comments.replaceChildren(el('p', { class: 'form-error' }, err.message)); return; }
+            if (mine !== token) return;
+            renderComments(shot, list);
+        }
+
+        function renderComments(shot, list) {
+            const input = el('input', { type: 'text', maxLength: 300, placeholder: 'Yorum yaz…', spellcheck: true });
+            const send = el('button', { class: 'btn btn-sm btn-primary', type: 'submit' }, 'Gönder');
+            const form = el('form', { class: 'shot-comment-form', onsubmit: async e => {
+                e.preventDefault();
+                const text = input.value.trim();
+                if (!text) return;
+                send.disabled = true;
+                try {
+                    const c = await bridge.invoke('social.comment', { id: shot.id, text });
+                    shot.commentCount = c.commentCount;
+                    list.push(c);
+                    renderComments(shot, list);
+                    updateTileCounts(shot);
+                    comments.querySelector('input').focus();
+                } catch (err) { await alertDialog({ title: 'Yorum gönderilemedi', message: err.message }); send.disabled = false; }
+            } }, input, send);
+            comments.replaceChildren(
+                el('div', { class: 'shot-comment-list' }, list.length ? list.map(c => {
+                    const at = parseDate(c.createdAt);
+                    return el('div', { class: 'shot-comment' },
+                        avatarEl({ username: c.author, avatarVersion: memberAvatarVersion(c.author) }, 'avatar-sm'),
+                        el('div', { class: 'shot-comment-body' },
+                            el('div', {}, el('button', { class: 'shot-comment-author', onclick: () => { close(); openProfile(c.author); } }, c.author),
+                                el('span', { class: 'muted' }, at ? ' · ' + relativeDate(at) : '')),
+                            el('p', {}, c.text)),
+                        c.canDelete && el('button', { class: 'link-btn shot-comment-del', title: 'Yorumu sil', onclick: async () => {
+                            try {
+                                await bridge.invoke('social.deleteComment', { id: shot.id, commentId: c.id });
+                                list.splice(list.indexOf(c), 1);
+                                shot.commentCount = list.length;
+                                renderComments(shot, list);
+                                updateTileCounts(shot);
+                            } catch (err) { await alertDialog({ title: 'Silinemedi', message: err.message }); }
+                        } }, 'sil'));
+                }) : [el('p', { class: 'hint' }, 'Henüz yorum yok. İlk yorumu sen yaz.')]),
+                form);
+            const listEl = comments.querySelector('.shot-comment-list');
+            listEl.scrollTop = listEl.scrollHeight;
+        }
+
         onKey = e => {
+            if (e.target.closest && e.target.closest('input, textarea')) return;   // yorum yazarken ok tuşları metinde kalsın
             if (e.key === 'ArrowLeft') show(index - 1);
             else if (e.key === 'ArrowRight') show(index + 1);
         };
@@ -129,16 +185,35 @@ async function viewSharedShot(index) {
         const many = social.shots.length > 1;
         show(index);
         return [
-            el('div', { class: 'shot-view' },
+            el('div', { class: 'shot-view shared' },
                 el('button', { class: 'shot-nav prev', title: 'Önceki (←)', onclick: () => show(index - 1), disabled: !many }, '‹'),
                 img, loading,
                 el('button', { class: 'shot-nav next', title: 'Sonraki (→)', onclick: () => show(index + 1), disabled: !many }, '›')),
             info,
+            comments,
         ];
     }, { wide: true }).then(async result => {
         document.removeEventListener('keydown', onKey);   // Esc ya da arka plan tıklamasıyla kapansa da
         if (result && result.remove != null) await deleteSharedShot(social.shots[result.remove]);
     });
+}
+
+function updateTileCounts(shot) {
+    const count = document.querySelector(`.shot-tile[data-id="${shot.id}"] .shot-comment-count`);
+    if (count) count.replaceChildren(el('span', { 'aria-hidden': 'true' }, '💬'), ' ', String(shot.commentCount || 0));
+}
+
+/** Bildirimden: o ekran görüntüsü açılır (akışta yoksa başa eklenir). */
+async function openSharedShot(id) {
+    showPage('shots');
+    let shot;
+    try { shot = await bridge.invoke('social.shot', { id }); }
+    catch (err) { await alertDialog({ title: 'Ekran görüntüsü', message: err.message }); return; }
+    // Akış yüklenirken gelen liste bunu ezmesin diye yükleme bitene kadar beklenir
+    for (let i = 0; i < 40 && social.loading; i++) await wait(100);
+    let index = social.shots.findIndex(s => s.id === id);
+    if (index < 0) { social.shots.unshift(shot); renderShots(); index = 0; }
+    viewSharedShot(index);
 }
 
 async function deleteSharedShot(shot) {

@@ -60,6 +60,7 @@ namespace VuluLauncher
                 id = string.IsNullOrEmpty(pack.Id) ? null : pack.Id,
                 name = pack.Name,
                 description = pack.Description,
+                changeNote = pack.ChangeNote,
                 mcVersion = pack.McVersion,
                 loader = pack.Loader,
                 loaderVersion = pack.LoaderVersion,
@@ -105,6 +106,30 @@ namespace VuluLauncher
         public string? CoverExt { get; set; }
         public bool HasLogo { get; set; }
         public string? LogoExt { get; set; }
+        /// <summary>Revizyon başına değişiklikler (sunucu hesaplar); eskiden yeniye.</summary>
+        public List<PackChange> Changelog { get; set; } = new();
+        /// <summary>Yayınlarken gönderilen güncelleme notu; sunucudan gelmez.</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string ChangeNote { get; set; } = "";
+    }
+
+    public sealed class PackChange
+    {
+        public int Revision { get; set; }
+        public DateTime At { get; set; }
+        public string? By { get; set; }
+        public string Note { get; set; } = "";
+        public List<string> Added { get; set; } = new();
+        public List<string> Removed { get; set; } = new();
+        public List<PackModChange> Updated { get; set; } = new();
+        public bool FilesChanged { get; set; }
+    }
+
+    public sealed class PackModChange
+    {
+        public string Title { get; set; } = "";
+        public string From { get; set; } = "";
+        public string To { get; set; } = "";
     }
 
     /// <summary>Modrinth'ten indirilecek bir içerik; sürümü yayınlandığı anda sabitlenir.</summary>

@@ -84,6 +84,13 @@ namespace VuluLauncher
                         includes = p.Includes,
                         coverUrl = PackStore.CoverUrl(p),
                         openFeedback = feedback?.GetValueOrDefault(p.Id) ?? 0,
+                        changelog = p.Changelog.OrderByDescending(c => c.Revision).Select(c => new
+                        {
+                            revision = c.Revision, at = c.At.ToString("o"), by = c.By, note = c.Note,
+                            added = c.Added, removed = c.Removed,
+                            updated = c.Updated.Select(u => new { title = u.Title, from = u.From, to = u.To }),
+                            filesChanged = c.FilesChanged,
+                        }),
                         installed = meta == null ? null : new { instanceId = InstancePrefix + meta.Folder, revision = meta.SharedPackRevision }
                     };
                 })
@@ -429,6 +436,8 @@ namespace VuluLauncher
             if (name.Length is 0 or > 40) throw new InvalidOperationException("Paket adı 1-40 karakter olmalı.");
             string description = args.Str("description").Trim();
             if (description.Length > 600) throw new InvalidOperationException("Açıklama en fazla 600 karakter olabilir.");
+            string changeNote = args.Str("changeNote").Trim();
+            if (changeNote.Length > 1000) throw new InvalidOperationException("Güncelleme notu en fazla 1000 karakter olabilir.");
 
             var includes = args.StrList("includes")
                 .Where(p => !NeverShared.Contains(p) && Downloader.ResolveInside(dir, p) != null)
@@ -457,6 +466,7 @@ namespace VuluLauncher
 
                 pack.Name = name;
                 pack.Description = description;
+                pack.ChangeNote = changeNote;
                 pack.Author = _login.Username;
                 pack.McVersion = meta.McVersion;
                 pack.Loader = meta.Loader;

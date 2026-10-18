@@ -16,10 +16,27 @@ namespace VuluLauncher
         [STAThread]
         private static void Main(string[] args)
         {
+            // Masaüstü kısayolu: "--play <paket>" / "--join <sunucu>"
+            var action = StartupAction.Parse(args);
+
+            // Launcher zaten açıksa yeni kopya açılmaz; istek açık olana gider ve o öne gelir
+            using var single = new SingleInstance();
+            if (!single.TryAcquire())
+            {
+                SingleInstance.Forward(action);
+                return;
+            }
+
 #if !DEBUG
             // Discord tarzı açılış: önce Updater sürümü denetler, sonra launcher'ı "--from-updater" ile açar.
-            // Updater yoksa ya da açılamazsa launcher normal şekilde devam eder.
-            if (!args.Contains("--from-updater") && StartUpdater()) return;
+            // Updater yoksa ya da açılamazsa launcher normal şekilde devam eder. Kısayoldan açılışta beklemeden
+            // doğrudan açılır (güncelleme varsa launcher içinde sorulur).
+            if (action == null && !args.Contains("--from-updater"))
+            {
+                single.Release();   // Updater'ın açacağı launcher kilidi alabilsin
+                if (StartUpdater()) return;
+                if (!single.TryAcquire()) { SingleInstance.Forward(null); return; }
+            }
 #endif
 
             if (!WebView2Installed())
@@ -64,6 +81,8 @@ namespace VuluLauncher
             var bridge = new Bridge(window);
             var app = new LauncherApp(bridge, window);
             app.RegisterCommands();
+            app.SetStartupAction(action);
+            single.Listen(app.OnRemoteCommand);
 
             window.RegisterWebMessageReceivedHandler((_, message) => bridge.HandleMessage(message));
             window.Load(Path.Combine(AppContext.BaseDirectory, "wwwroot", "index.html"));

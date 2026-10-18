@@ -112,6 +112,7 @@ function serverCard(s) {
         el('div', { class: 'server-foot' },
             join,
             el('button', { class: 'btn btn-sm', title: 'Bir arkadaşını mesajla davet et', onclick: () => shareCardWith(serverInvite(s)) }, 'Davet et'),
+            el('button', { class: 'btn btn-sm', title: 'Masaüstüne tek tıkla bağlanma kısayolu koy', onclick: () => createShortcut('join', s.id, s.name, s.instanceId) }, 'Kısayol'),
             state.isAdmin && el('button', { class: 'btn btn-sm', onclick: () => openServerDialog(s) }, 'Düzenle'),
             state.isAdmin && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deleteServer(s) }, 'Sil')));
 }
