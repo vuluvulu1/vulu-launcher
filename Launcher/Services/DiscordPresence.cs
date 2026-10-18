@@ -16,7 +16,8 @@ namespace VuluLauncher
         /// <summary>Discord Developer Portal'daki "vulu Launcher" uygulamasının kimliği (gizli değildir).</summary>
         public const string ApplicationId = "1560770125177684048";
 
-        private const string LogoUrl = "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/Launcher/wwwroot/assets/logo.png";
+        private const string LogoUrl = "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/docs/logo-512.png";
+        private const string DownloadUrl = "https://github.com/vuluvulu1/vulu-launcher/releases/latest";
         private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(20);
 
         private readonly object _gate = new();
@@ -50,7 +51,7 @@ namespace VuluLauncher
             lock (_gate)
             {
                 _playing = false;
-                activity = _browsing ?? Browsing("Launcher'da", null);
+                activity = _browsing ?? Browsing("Menüde", null);
             }
             Set(activity);
         }
@@ -62,13 +63,16 @@ namespace VuluLauncher
         {
             var (details, state) = page switch
             {
-                "home" => ("Launcher'da", instanceName == null ? null : $"Seçili: {instanceName} · {Describe(mcVersion, loader)}"),
-                "packs" => ("Keşfet'te geziniyor", "vulu Packs'e bakıyor"),
-                "modrinth" => ("Keşfet'te geziniyor", "Modrinth'te içerik arıyor"),
-                "settings" => ("Ayarlarda", (string?)null),
+                "home" => ("Ana menüde", instanceName == null ? null : Summary(instanceName, mcVersion, loader)),
+                "packs" => ("Keşfet'te", "vulu Packs'e göz atıyor"),
+                "modrinth" => ("Keşfet'te", "Modrinth'te mod arıyor"),
+                "servers" => ("Sunuculara bakıyor", (string?)null),
+                "shots" => ("Sosyal'de", "Ekran görüntülerine bakıyor"),
+                "messages" or "friends" => ("Sosyal'de", null),
+                "settings" => ("Ayarlarda", null),
                 "profile" => ("Profillere bakıyor", null),
                 "admin" => ("Yönetim panelinde", null),
-                _ => ("Launcher'da", null),
+                _ => ("Menüde", null),
             };
             var activity = Browsing(details, state);
             bool show;
@@ -87,31 +91,47 @@ namespace VuluLauncher
                 ["details"] = Trim(details),
                 ["timestamps"] = new JsonObject { ["start"] = _sessionStart },   // launcher ne zamandır açık
                 ["assets"] = Assets(null),
+                ["buttons"] = Buttons(),
             };
             if (state != null) activity["state"] = Trim(state);
             return activity;
         }
 
+        /// <summary>Durumun altındaki düğme (başkaları görür; Discord kendi durumunda göstermez).</summary>
+        private static JsonArray Buttons() => new() { new JsonObject { ["label"] = "vulu Launcher'ı indir", ["url"] = DownloadUrl } };
+
+        /// <summary>"Vanilla · 1.20.1" ya da "AGLR SMP · NeoForge 26.3" (adı tekrar etmeden).</summary>
+        private static string Summary(string name, string? mcVersion, string? loader) =>
+            string.IsNullOrEmpty(loader) || loader == "vanilla"
+                ? (string.IsNullOrEmpty(mcVersion) ? name : $"{name} · {mcVersion}")
+                : $"{name} · {Describe(mcVersion, loader)}";
+
+        private static string LoaderName(string? loader) => loader switch
+        {
+            "fabric" => "Fabric", "forge" => "Forge", "neoforge" => "NeoForge", "quilt" => "Quilt", _ => "Vanilla",
+        };
+
+        /// <summary>"NeoForge 26.3"; modsuz oyunda "Minecraft 1.20.1".</summary>
         private static string Describe(string? mcVersion, string? loader)
         {
-            string loaderName = loader switch
-            {
-                "fabric" => "Fabric", "forge" => "Forge", "neoforge" => "NeoForge", "quilt" => "Quilt", _ => "Vanilla",
-            };
-            return string.IsNullOrEmpty(mcVersion) ? loaderName : $"{mcVersion} {loaderName}";
+            string loaderName = string.IsNullOrEmpty(loader) || loader == "vanilla" ? "Minecraft" : LoaderName(loader);
+            return string.IsNullOrEmpty(mcVersion) ? loaderName : $"{loaderName} {mcVersion}";
         }
 
         /// <summary>
         /// Oyun açık: instance adı, sürüm ve süre. vulu Packs'ten kurulan paketlerde büyük resim paketin logosu (yoksa kapağı) olur,
         /// köşede vulu logosu kalır.
         /// </summary>
-        public void ShowPlaying(string instanceName, string mcVersion, string loader, string? packImageUrl = null)
+        /// <param name="serverName">vulu listesindeki sunucunun adı; listede olmayan sunucunun adresi gösterilmez.</param>
+        public void ShowPlaying(string instanceName, string mcVersion, string loader, string? packImageUrl = null, string? serverName = null, bool onServer = false)
         {
             lock (_gate) _playing = true;
+            string where = serverName != null ? $"{serverName} sunucusunda" : onServer ? "Bir sunucuda" : "";
             Set(new JsonObject
             {
-                ["details"] = Trim($"{instanceName} oynuyor"),
-                ["state"] = Trim($"Minecraft {Describe(mcVersion, loader)}"),
+                ["details"] = Trim(instanceName),
+                ["state"] = Trim(where.Length > 0 ? $"{where} · {Describe(mcVersion, loader)}" : Describe(mcVersion, loader)),
+                ["buttons"] = Buttons(),
                 ["timestamps"] = new JsonObject { ["start"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds() },
                 ["assets"] = packImageUrl == null ? Assets($"Minecraft {mcVersion}") : new JsonObject
                 {

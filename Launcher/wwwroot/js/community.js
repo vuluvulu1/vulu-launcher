@@ -8,14 +8,33 @@ function presenceOf(username) {
     return community.presence.find(p => p.username === username) || null;
 }
 
-/** "AGLR SMP oynuyor", "Launcher'da" gibi kısa durum metni (sunucudaysa sunucunun adı da). */
-function presenceText(p) {
+/** Oyundaysa "AGLR SMP · sunucuda · 1 sa 12 dk" parçaları; değilse yalnızca "Çevrimiçi". */
+function presenceParts(p) {
     if (!p) return null;
-    if (p.state === 'playing') {
-        const server = p.server && community.servers.find(s => s.address === p.server);
-        return `${p.instance || 'Minecraft'} oynuyor` + (server ? ` · ${server.name}` : p.server ? ' · bir sunucuda' : '');
-    }
-    return p.state === 'launcher' ? "Launcher'da" : 'Çevrimiçi';
+    if (p.state !== 'playing') return { game: null, rest: 'Çevrimiçi' };
+    const game = p.instance || 'Minecraft';
+    const server = p.server && community.servers.find(s => s.address === p.server);
+    const where = server && server.name !== game ? server.name : p.server ? 'sunucuda' : '';
+    const since = parseDate(p.since);
+    const minutes = since ? Math.floor((Date.now() - since) / 60000) : 0;
+    const played = minutes < 1 ? '' : minutes < 60 ? `${minutes} dk` : `${Math.floor(minutes / 60)} sa ${minutes % 60} dk`;
+    return { game, rest: [where, played].filter(Boolean).join(' · ') };
+}
+
+/** Düz metin hâli (ipuçları için). */
+function presenceText(p) {
+    const parts = presenceParts(p);
+    return parts ? [parts.game, parts.rest].filter(Boolean).join(' · ') : null;
+}
+
+/** Durum satırı: oyunun adı yeşil, gerisi sade. */
+function presenceEl(p) {
+    const parts = presenceParts(p);
+    if (!parts) return null;
+    return el('span', { class: 'presence-line', title: presenceText(p) },
+        parts.game && el('span', { class: 'presence-game' }, parts.game),
+        parts.game && parts.rest && ' · ',
+        parts.rest);
 }
 
 async function refreshPresence() {
@@ -190,7 +209,7 @@ function renderFriends() {
                     el('span', { class: 'presence-dot', 'data-state': p.state })),
                 el('span', { class: 'member-text' },
                     el('span', { class: 'member-name' }, p.username),
-                    el('span', { class: 'member-sub' }, presenceText(p)))))
+                    el('span', { class: 'member-sub' }, presenceEl(p)))))
         : [el('p', { class: 'hint' }, 'Şu an çevrimiçi kimse yok.')]));
 }
 

@@ -446,3 +446,4 @@ html[data-ui="atlas"] .reg-empty b { font-style: italic; }
 html[data-ui="atlas"] .tp-card { background: var(--paper-noise), var(--surface); box-shadow: var(--paper-shadow); }
 html[data-ui="atlas"] .tp-wrap h1 { font: italic 700 32px var(--font-serif); color: var(--ink); }
 html[data-ui="atlas"] .tp-name { font: 700 18px var(--font-serif); }
+html[data-ui="atlas"] .presence-game { color: #2f7a4a; }

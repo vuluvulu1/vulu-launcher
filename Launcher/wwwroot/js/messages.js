@@ -34,7 +34,7 @@ function renderConversations() {
             el('span', { class: 'presence-avatar' }, avatarEl(member, 'avatar-md'), p && el('span', { class: 'presence-dot', 'data-state': p.state })),
             el('span', { class: 'member-text' },
                 el('span', { class: 'member-name' }, c.username),
-                el('span', { class: 'member-sub' }, p ? presenceText(p) : relativeDate(new Date(c.lastAt)))),
+                el('span', { class: 'member-sub' }, p ? presenceEl(p) : relativeDate(new Date(c.lastAt)))),
             c.unread > 0 && el('span', { class: 'tab-badge' }, String(c.unread)));
     }) : [el('p', { class: 'hint' }, 'Henüz mesaj yok. "Yeni mesaj" ile birine yaz.')]));
 }

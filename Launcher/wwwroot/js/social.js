@@ -261,7 +261,7 @@ function renderFriendsPage() {
                 el('span', { class: 'presence-avatar' }, avatarEl(user, 'avatar-md'), p && el('span', { class: 'presence-dot', 'data-state': p.state })),
                 el('span', { class: 'member-text' },
                     el('span', { class: 'member-name' }, user.username, user.isAdmin && adminMark()),
-                    el('span', { class: 'member-sub' + (p ? ' online' : '') }, presenceText(p) || lastSeenText(user)))),
+                    el('span', { class: 'member-sub' }, presenceEl(p) || lastSeenText(user)))),
             el('button', { class: 'btn btn-sm', onclick: () => { showPage('messages'); openMessagesPage(user.username); } }, 'Mesaj'));
     }) : [el('p', { class: 'hint' }, profile.members.length ? 'Kimse bulunamadı.' : 'Yükleniyor…')]));
 }

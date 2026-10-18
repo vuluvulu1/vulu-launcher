@@ -1073,7 +1073,7 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .presence-avatar { position: relative; flex: none; display: inline-flex; }
 .presence-dot { position: absolute; right: -1px; bottom: -1px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--panel); background: #4caf6a; }
 .presence-dot[data-state="launcher"], .presence-dot[data-state="online"] { background: #e3b04f; }
-.member-sub.online { color: #6fd18c; }
+.presence-game { color: #6fd18c; font-weight: 500; }
 .form-sub { display: flex; flex-direction: column; gap: 6px; }
 .form-sub[hidden] { display: none; }
 

@@ -93,6 +93,20 @@ namespace VuluLauncher
         /// Sunucu listesi ve her sunucunun bu bilgisayarda hangi instance'la açılacağı:
         /// bağlı vulu paketi kuruluysa o instance, kurulu değilse paketin kurulması gerekir; paket yoksa Vanilla.
         /// </summary>
+        /// <summary>Katılınan adres vulu sunucu listesindeyse adı (Discord'da adres yerine gösterilir); bulunamazsa null.</summary>
+        private async Task<string?> ServerNameAsync(string? address)
+        {
+            if (string.IsNullOrEmpty(address)) return null;
+            try
+            {
+                var lookup = _api.GetAsync<List<JsonElement>>("/servers");
+                if (await Task.WhenAny(lookup, Task.Delay(TimeSpan.FromSeconds(4))) != lookup) return null;
+                return (await lookup).FirstOrDefault(s => string.Equals(s.GetProperty("address").GetString(), address, StringComparison.OrdinalIgnoreCase)) is { ValueKind: JsonValueKind.Object } match
+                    ? match.GetProperty("name").GetString() : null;
+            }
+            catch { return null; }
+        }
+
         private async Task<object?> ListServersAsync()
         {
             RequireLogin();

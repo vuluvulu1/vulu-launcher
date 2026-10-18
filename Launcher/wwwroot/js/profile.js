@@ -263,8 +263,8 @@ function renderMembers() {
                 el('span', { class: 'member-name' }, user.username,
                     user.isAdmin && adminMark(),
                     user.username === state.username && el('span', { class: 'member-you' }, 'sen')),
-                el('span', { class: 'member-sub' + (presenceOf(user.username) ? ' online' : '') },
-                    presenceText(presenceOf(user.username)) || user.bio || lastSeenText(user)))))
+                el('span', { class: 'member-sub' },
+                    presenceEl(presenceOf(user.username)) || user.bio || lastSeenText(user)))))
         : [el('p', { class: 'hint' }, 'Kimse bulunamadı.')]));
     markActiveMember();
 }

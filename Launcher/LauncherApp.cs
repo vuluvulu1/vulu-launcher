@@ -344,7 +344,7 @@ namespace VuluLauncher
                 if (!_game.IsRunning) StopPlayTime();   // oyun hemen kapandıysa kapanış olayı sayaçtan önce gelmiş olabilir
                 string? packId = instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(instanceId[InstancePrefix.Length..])?.SharedPackId : null;
                 PresencePlaying(target, packId, join);
-                _discord.ShowPlaying(target.Name, target.McVersion, target.Loader, await PackImageUrlAsync(instanceId));
+                _discord.ShowPlaying(target.Name, target.McVersion, target.Loader, await PackImageUrlAsync(instanceId), await ServerNameAsync(join), join != null);
 
                 // Ayarlardaki "oyun açılınca" davranışı
                 switch (AppSettings.Current.OnGameStart)
