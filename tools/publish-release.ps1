@@ -1,20 +1,22 @@
 ﻿<#
 .SYNOPSIS
-    vulu Launcher'ın yeni sürümünü derler, paketler ve (istenirse) GitHub Releases'a yükler.
+    vulu Launcher'ın yeni sürümünü derler, paketler ve (istenirse) vulu sunucusuna yükler.
 
 .DESCRIPTION
     1. Launcher ve Updater'ı aynı klasöre self-contained (win-x64) olarak yayınlar.
     2. Her dosyanın SHA-256'sını içeren install.json'u klasöre yazar.
     3. Klasörü zip'ler ve zip'i anlatan release.json'u üretir.
     4. Kurulum programını (vulu-launcher-setup.exe, tek dosya) derler.
-    5. -Publish verilirse üçünü "gh release create" ile GitHub'a yükler.
-       -Local verilirse GitHub'a dokunmaz; üçünü artifacts\release\latest'e koyar. tools\local-test.ps1
+    5. -Publish verilirse dördünü vulu sunucusuna (VDS) yükler: https://vuluvulu.com.tr/releases/ altında yayına
+       girerler. -AlsoGitHub ile ayrıca GitHub Releases'a da yüklenir; bu yalnızca 0.13.0 ve öncesi kurulumların
+       (hâlâ GitHub'a bakan) yeni adrese geçtiği sürüm içindir.
+       -Local verilirse sunucuya dokunmaz; üçünü artifacts\release\latest'e koyar. tools\local-test.ps1
        bu klasörü yerel sunucudan yayınlar ve bu bilgisayardaki kurulum/güncelleme onu kullanır.
 
-    Kurulum programı paketi içermez; çalışınca en son release'i GitHub'dan indirir. Bu yüzden
+    Kurulum programı paketi içermez; çalışınca en son sürümü sunucudan indirir. Bu yüzden
     eski bir release'teki setup.exe de her zaman en yeni sürümü kurar.
 
-    Kullanıcıların Updater'ı her açılışta en son release'i okur; release.json'daki sürüm
+    Kullanıcıların Updater'ı her açılışta sunucudaki release.json'u okur; release.json'daki sürüm
     kuruludan büyükse zip'i indirir, doğrular ve yalnızca değişen dosyaları değiştirir.
 
 .EXAMPLE
@@ -31,14 +33,17 @@ param(
     [string]$Notes = "",
     [string]$NotesFile = "",
     [switch]$Publish,
+    [switch]$AlsoGitHub,
     [switch]$Local
 )
 
 if ($Publish -and $Local) { throw "-Publish ve -Local birlikte kullanılamaz." }
+if ($AlsoGitHub -and -not $Publish) { throw "-AlsoGitHub yalnızca -Publish ile kullanılır." }
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
+$Server = "root@185.157.46.169"
 $Repository = "vuluvulu1/vulu-launcher"
 
 if ($Version -notmatch '^\d+\.\d+(\.\d+)?$') { throw "Sürüm 0.8 ya da 0.8.1 biçiminde olmalı: $Version" }
@@ -134,7 +139,7 @@ $notesPath = Join-Path $outDir "notes.md"
 $ghArgs = @("release", "create", "v$Version", $zipPath, $releaseJson, $signaturePath, $setupPath, "--repo", $Repository, "--title", "vulu Launcher v$Version", "--notes-file", $notesPath)
 
 if ($Local) {
-    # Yerel "en son sürüm": GitHub'daki latest release'in yerini tutar
+    # Yerel "en son sürüm": sunucudaki sürümün yerini tutar
     $latestDir = Join-Path $root "artifacts\release\latest"
     if (Test-Path $latestDir) { Remove-Item $latestDir -Recurse -Force }
     New-Item -ItemType Directory -Force $latestDir | Out-Null
@@ -147,16 +152,26 @@ if ($Local) {
 
 if (-not $Publish) {
     Write-Host ""
-    Write-Host "GitHub'a yüklemek için -Publish ile tekrar çalıştır ya da şunu kullan:"
-    Write-Host "  gh $($ghArgs -join ' ')"
+    Write-Host "Sunucuya yüklemek için -Publish ile tekrar çalıştır."
     return
 }
 
-if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { throw "GitHub CLI (gh) bulunamadı: https://cli.github.com" }
-
-$answer = Read-Host "v$Version GitHub'a yayınlansın mı? Tüm kullanıcılar bir sonraki açılışta güncellenir. (e/h)"
+$answer = Read-Host "v$Version yayınlansın mı? Tüm kullanıcılar bir sonraki açılışta güncellenir. (e/h)"
 if ($answer -notin @("e", "E", "evet")) { Write-Host "İptal edildi."; return }
 
+# Dört dosya tek tar'la gider; sunucudaki vulu-release-publish onları yeni klasöre açar, eksik dosya
+# olmadığını kontrol eder ve "current" bağlantısını tek hamlede çevirir. Böylece kimse yarım yüklenmiş bir sürüm görmez.
+Write-Host "==> Sunucuya yükleniyor ($Server)"
+$upload = @($assetName, "release.json", "release.json.sig", "vulu-launcher-setup.exe")
+# Windows PowerShell iki program arasındaki boruda ikili veriyi bozar; boruyu cmd kurar
+cmd /c "tar -czf - -C `"$outDir`" $($upload -join ' ') | ssh $Server /usr/local/bin/vulu-release-publish $Version"
+if ($LASTEXITCODE -ne 0) { throw "Sunucuya yüklenemedi." }
+Write-Host "Yayınlandı: https://vuluvulu.com.tr/releases/release.json" -ForegroundColor Green
+
+if (-not $AlsoGitHub) { return }
+
+if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { throw "GitHub CLI (gh) bulunamadı: https://cli.github.com" }
+
 gh @ghArgs
-if ($LASTEXITCODE -ne 0) { throw "Release oluşturulamadı." }
-Write-Host "Yayınlandı: https://github.com/$Repository/releases/tag/v$Version" -ForegroundColor Green
+if ($LASTEXITCODE -ne 0) { throw "GitHub release oluşturulamadı." }
+Write-Host "GitHub'a da yüklendi: https://github.com/$Repository/releases/tag/v$Version" -ForegroundColor Green

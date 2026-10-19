@@ -58,7 +58,7 @@ try
             }
 
         // Updater ve kurulum programının kullandığı yolun aynısı: indirir, imzayı doğrular, ayrıştırır.
-        // Adres verilmezse GitHub'daki en son release denetlenir.
+        // Adres verilmezse sunucudaki en son sürüm denetlenir.
         case "check":
             {
                 if (args.Length == 2) Environment.SetEnvironmentVariable("VULU_UPDATE_FEED", args[1]);

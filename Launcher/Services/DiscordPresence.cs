@@ -16,8 +16,8 @@ namespace VuluLauncher
         /// <summary>Discord Developer Portal'daki "vulu Launcher" uygulamasının kimliği (gizli değildir).</summary>
         public const string ApplicationId = "1560770125177684048";
 
-        private const string LogoUrl = "https://raw.githubusercontent.com/vuluvulu1/vulu-launcher/main/docs/logo-512.png";
-        private const string DownloadUrl = "https://github.com/vuluvulu1/vulu-launcher/releases/latest";
+        private const string LogoUrl = "https://vuluvulu.com.tr/img/logo-512.png";
+        private const string DownloadUrl = "https://vuluvulu.com.tr";
         private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(20);
 
         private readonly object _gate = new();

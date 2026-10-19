@@ -10,7 +10,7 @@ using VuluShared;
 namespace Installer
 {
     /// <summary>
-    /// vulu Launcher kurulum programı. En son sürümü GitHub Releases'tan indirip kurar, kısayolları ve
+    /// vulu Launcher kurulum programı. En son sürümü vulu sunucusundan indirip kurar, kısayolları ve
     /// "Program ekle/kaldır" kaydını oluşturur. Yönetici izni gerekmez.
     ///
     /// Argümanlar (otomasyon/test için):
@@ -168,11 +168,11 @@ namespace Installer
             }
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                Send(new { type = "release-error", message = "GitHub'da henüz yayınlanmış bir vulu Launcher sürümü yok." });
+                Send(new { type = "release-error", message = "Sunucuda henüz yayınlanmış bir vulu Launcher sürümü yok." });
             }
             catch (HttpRequestException ex) when (ex.StatusCode is System.Net.HttpStatusCode.Forbidden or System.Net.HttpStatusCode.TooManyRequests)
             {
-                Send(new { type = "release-error", message = "GitHub şu an çok fazla istek aldı. Birkaç dakika sonra tekrar dene." });
+                Send(new { type = "release-error", message = "Sunucu şu an çok fazla istek aldı. Birkaç dakika sonra tekrar dene." });
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
             {

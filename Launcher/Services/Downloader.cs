@@ -12,7 +12,7 @@ namespace VuluLauncher
             var client = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
             // Modrinth, kimliği belli bir User-Agent ister
             client.DefaultRequestHeaders.UserAgent.ParseAdd(
-                $"vulu-launcher/{LauncherUpdateService.LocalVersion} (+https://github.com/vuluvulu1/vulu-launcher)");
+                $"vulu-launcher/{LauncherUpdateService.LocalVersion} (+https://vuluvulu.com.tr)");
             return client;
         }
 

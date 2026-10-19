@@ -6,18 +6,17 @@ using System.Text.Json.Serialization;
 namespace VuluShared
 {
     /// <summary>
-    /// Launcher ve Updater'ın ortak kullandığı sürüm bilgisi. Sürümler GitHub Releases'ta yayınlanır;
-    /// her release'te tüm launcher klasörünün zip'i, onu anlatan release.json ve release.json'un imzası bulunur.
+    /// Launcher ve Updater'ın ortak kullandığı sürüm bilgisi. En son sürüm vulu sunucusunda <see cref="FeedUrl"/>
+    /// klasöründe durur: tüm launcher klasörünün zip'i, onu anlatan release.json ve release.json'un imzası.
     ///
     /// release.json zip'in ve içindeki her dosyanın SHA-256'sını taşır; imzası doğrulanınca bütün paket doğrulanmış
-    /// olur. İmzalayan özel anahtar yalnızca release çıkaran bilgisayardadır (tools/ReleaseSigner), bu yüzden GitHub
-    /// hesabına erişen biri tek başına kullanıcılara sahte güncelleme kuramaz.
+    /// olur. İmzalayan özel anahtar yalnızca release çıkaran bilgisayardadır (tools/ReleaseSigner), bu yüzden sunucuya
+    /// erişen biri tek başına kullanıcılara sahte güncelleme kuramaz.
     /// </summary>
     public static class Releases
     {
-        public const string Repository = "vuluvulu1/vulu-launcher";
-        public const string ManifestAssetName = "release.json";
-        public const string SignatureAssetName = "release.json.sig";
+        /// <summary>En son sürümün release.json'u; imza (.sig) ve zip aynı klasördedir.</summary>
+        public const string FeedUrl = "https://vuluvulu.com.tr/releases/release.json";
 
         /// <summary>Release imzasını doğrulayan ECDSA P-256 açık anahtarı (SubjectPublicKeyInfo, base64).</summary>
         public const string ReleasePublicKey = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3TeeU2nXv6fbTkri3BObKy19SbNBbWMMqC+D7e4JSDC8jiGZU62lz7Nvk1tZcKSQAh3Bx08rEv7wBW4XbTrxzQ==";
@@ -37,48 +36,26 @@ namespace VuluShared
         public static HttpClient CreateHttpClient(TimeSpan timeout)
         {
             var http = new HttpClient { Timeout = timeout };
-            // GitHub API User-Agent başlığı olmadan isteği reddeder
             http.DefaultRequestHeaders.UserAgent.ParseAdd("vulu-launcher");
             return http;
         }
 
         /// <summary>
-        /// En son yayınlanan release'in manifest'ini ve zip adresini getirir.
-        /// Ulaşılamazsa ya da release eksikse hata fırlatır.
+        /// En son yayınlanan sürümün imzası doğrulanmış manifest'ini ve zip adresini getirir.
+        /// Ulaşılamazsa ya da imza geçersizse hata fırlatır.
         /// </summary>
         public static async Task<LatestRelease> GetLatestAsync(HttpClient http, CancellationToken token = default)
         {
-            // Test için: GitHub yerine bir release.json adresi (ör. yerel sunucu). İmza ve zip aynı klasörde aranır;
-            // yerel sürümler de imzalı olmak zorundadır.
+            // Test için başka bir release.json adresi verilebilir (ör. yerel sunucu); yerel sürümler de imzalı olmak zorundadır.
             string? feed = Environment.GetEnvironmentVariable("VULU_UPDATE_FEED");
-            if (!string.IsNullOrWhiteSpace(feed))
-            {
-                var test = await DownloadVerifiedManifestAsync(http, feed, feed + ".sig", token);
-                return new LatestRelease(test, new Uri(new Uri(feed), test.Asset).ToString());
-            }
+            if (string.IsNullOrWhiteSpace(feed)) feed = FeedUrl;
 
-            var release = await http.GetFromJsonAsync<GitHubRelease>(
-                $"https://api.github.com/repos/{Repository}/releases/latest", Json, token)
-                ?? throw new InvalidDataException("GitHub boş cevap döndürdü.");
+            var manifest = await DownloadVerifiedManifestAsync(http, feed, feed + ".sig", token);
 
-            var manifestAsset = release.Assets.FirstOrDefault(a => a.Name == ManifestAssetName)
-                ?? throw new InvalidDataException($"{release.TagName} sürümünde {ManifestAssetName} yok.");
+            if (string.IsNullOrWhiteSpace(manifest.Version) || string.IsNullOrWhiteSpace(manifest.Sha256) || string.IsNullOrWhiteSpace(manifest.Asset))
+                throw new InvalidDataException("release.json eksik bilgi içeriyor.");
 
-            var signatureAsset = release.Assets.FirstOrDefault(a => a.Name == SignatureAssetName)
-                ?? throw new ReleaseSignatureException($"{release.TagName} sürümü imzasız; güvenlik için kurulmadı.");
-
-            var manifest = await DownloadVerifiedManifestAsync(http, manifestAsset.DownloadUrl, signatureAsset.DownloadUrl, token);
-
-            var zipAsset = release.Assets.FirstOrDefault(a => a.Name == manifest.Asset)
-                ?? throw new InvalidDataException($"{manifest.Asset} release'te bulunamadı.");
-
-            if (string.IsNullOrWhiteSpace(manifest.Version) || string.IsNullOrWhiteSpace(manifest.Sha256))
-                throw new InvalidDataException($"{ManifestAssetName} eksik bilgi içeriyor.");
-
-            // Notlar release.json'da yoksa GitHub'daki release açıklaması kullanılır
-            if (string.IsNullOrWhiteSpace(manifest.Notes)) manifest.Notes = release.Body ?? "";
-
-            return new LatestRelease(manifest, zipAsset.DownloadUrl);
+            return new LatestRelease(manifest, new Uri(new Uri(feed), manifest.Asset).ToString());
         }
 
         /// <summary>release.json'u ham bayt olarak indirir, imzasını doğrular ve ancak ondan sonra ayrıştırır.</summary>
@@ -96,7 +73,7 @@ namespace VuluShared
                 throw new ReleaseSignatureException("Güncellemenin imzası geçersiz; dosyalar değiştirilmiş olabilir. Güvenlik için kurulmadı.");
 
             return JsonSerializer.Deserialize<ReleaseManifest>(data, Json)
-                ?? throw new InvalidDataException($"{ManifestAssetName} okunamadı.");
+                ?? throw new InvalidDataException("release.json okunamadı.");
         }
 
         /// <summary>Verinin, gömülü açık anahtara karşılık gelen özel anahtarla imzalandığını doğrular.</summary>
@@ -159,7 +136,7 @@ namespace VuluShared
     /// <summary>Release imzası eksik ya da geçersiz: güncelleme kurulmaz.</summary>
     public sealed class ReleaseSignatureException(string message) : Exception(message);
 
-    /// <summary>release.json (GitHub'da) ve install.json (kurulu klasörde) aynı biçimdedir.</summary>
+    /// <summary>release.json (sunucuda) ve install.json (kurulu klasörde) aynı biçimdedir.</summary>
     public sealed class ReleaseManifest
     {
         [JsonPropertyName("version")] public string Version { get; set; } = "";
@@ -176,18 +153,5 @@ namespace VuluShared
         [JsonPropertyName("path")] public string Path { get; set; } = "";
         [JsonPropertyName("sha256")] public string Sha256 { get; set; } = "";
         [JsonPropertyName("size")] public long Size { get; set; }
-    }
-
-    internal sealed class GitHubRelease
-    {
-        [JsonPropertyName("tag_name")] public string TagName { get; set; } = "";
-        [JsonPropertyName("body")] public string? Body { get; set; }
-        [JsonPropertyName("assets")] public List<GitHubAsset> Assets { get; set; } = new();
-    }
-
-    internal sealed class GitHubAsset
-    {
-        [JsonPropertyName("name")] public string Name { get; set; } = "";
-        [JsonPropertyName("browser_download_url")] public string DownloadUrl { get; set; } = "";
     }
 }

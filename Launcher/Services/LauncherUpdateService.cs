@@ -11,7 +11,7 @@ namespace VuluLauncher
     }
 
     /// <summary>
-    /// GitHub Releases üzerinden launcher sürüm kontrolünü yapar. İndirme ve kurulum Updater.exe'nin işidir.
+    /// vulu sunucusundaki release.json üzerinden launcher sürüm kontrolünü yapar. İndirme ve kurulum Updater.exe'nin işidir.
     /// </summary>
     public class LauncherUpdateService
     {
@@ -24,7 +24,7 @@ namespace VuluLauncher
 
         /// <summary>
         /// Güncelleme gerekip gerekmediğini kontrol eder.
-        /// GitHub'a ulaşılamazsa CheckFailed döner ("güncel" sayılmaz).
+        /// Sunucuya ulaşılamazsa CheckFailed döner ("güncel" sayılmaz).
         /// </summary>
         public async Task<(UpdateCheckStatus Status, ReleaseManifest? Latest)> CheckForUpdateAsync()
         {

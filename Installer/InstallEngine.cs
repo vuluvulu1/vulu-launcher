@@ -16,7 +16,7 @@ namespace Installer
     internal sealed record InstallOptions(string Directory, bool DesktopShortcut, bool StartMenuShortcut);
 
     /// <summary>
-    /// En son sürümü GitHub Releases'tan indirir, doğrular ve kurar. Dosyalar önce geçici klasörde hazırlanır,
+    /// En son sürümü vulu sunucusundan indirir, doğrular ve kurar. Dosyalar önce geçici klasörde hazırlanır,
     /// her biri release.json'daki hash ile karşılaştırılır; ancak hepsi sağlamsa kurulum klasörüne konur.
     /// Klasörde önceden kalan oyun dosyalarına (instances, java, minecraft_core) dokunulmaz.
     /// </summary>

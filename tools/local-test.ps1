@@ -1,10 +1,10 @@
 ﻿<#
 .SYNOPSIS
-    GitHub'a sürüm yüklemeden kurulumu ve güncellemeyi bu bilgisayarda dener.
+    Sunucuya sürüm yüklemeden kurulumu ve güncellemeyi bu bilgisayarda dener.
 
 .DESCRIPTION
     Test modunu açar ve artifacts\release'i http://localhost:5318 üzerinden yayınlar. Test modu açıkken
-    bu bilgisayardaki kurulum programı, Updater ve launcher'ın güncelleme denetimi GitHub yerine
+    bu bilgisayardaki kurulum programı, Updater ve launcher'ın güncelleme denetimi vulu sunucusu yerine
     artifacts\release\latest'teki sürümü (publish-release.ps1 -Local) kullanır.
 
     Sunucu Ctrl+C ile kapanır; test modu açık kalır (sunucu kapalıyken launcher mevcut sürümle açılır).
@@ -29,8 +29,8 @@ $feed = "http://localhost:$Port/latest/release.json"
 
 if ($Off) {
     [Environment]::SetEnvironmentVariable("VULU_UPDATE_FEED", $null, "User")
-    Write-Host "Test modu kapatıldı. Kurulum ve güncellemeler yeniden GitHub'dan yapılır." -ForegroundColor Green
-    Write-Host "Not: Açık pencereler eski ayarı görür; yeni açılan programlar GitHub'ı kullanır."
+    Write-Host "Test modu kapatıldı. Kurulum ve güncellemeler yeniden vulu sunucusundan yapılır." -ForegroundColor Green
+    Write-Host "Not: Açık pencereler eski ayarı görür; yeni açılan programlar vulu sunucusunu kullanır."
     return
 }
 
