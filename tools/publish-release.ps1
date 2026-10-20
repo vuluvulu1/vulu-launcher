@@ -27,6 +27,9 @@
 
 .EXAMPLE
     .\tools\publish-release.ps1 -Version 0.8.2 -Notes "Yerel deneme" -Local
+
+.EXAMPLE
+    .\tools\publish-release.ps1 -Version 0.14.0 -NotesFile notlar.md -Publish -Yes
 #>
 param(
     [Parameter(Mandatory = $true)][string]$Version,
@@ -34,6 +37,7 @@ param(
     [string]$NotesFile = "",
     [switch]$Publish,
     [switch]$AlsoGitHub,
+    [switch]$Yes,
     [switch]$Local
 )
 
@@ -156,8 +160,11 @@ if (-not $Publish) {
     return
 }
 
-$answer = Read-Host "v$Version yayınlansın mı? Tüm kullanıcılar bir sonraki açılışta güncellenir. (e/h)"
-if ($answer -notin @("e", "E", "evet")) { Write-Host "İptal edildi."; return }
+# -Yes: onay sorulmaz (soru sorulamayan ortamlarda, ör. otomatik yayında)
+if (-not $Yes) {
+    $answer = Read-Host "v$Version yayınlansın mı? Tüm kullanıcılar bir sonraki açılışta güncellenir. (e/h)"
+    if ($answer -notin @("e", "E", "evet")) { Write-Host "İptal edildi."; return }
+}
 
 # Dört dosya tek tar'la gider; sunucudaki vulu-release-publish onları yeni klasöre açar, eksik dosya
 # olmadığını kontrol eder ve "current" bağlantısını tek hamlede çevirir. Böylece kimse yarım yüklenmiş bir sürüm görmez.
