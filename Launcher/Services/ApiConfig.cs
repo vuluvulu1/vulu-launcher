@@ -10,6 +10,6 @@ namespace VuluLauncher
             // Yalnızca geliştirme derlemesinde: testler yerel bir vulu-api'ye yönlendirilebilir. Yayın derlemesinde adres sabittir.
             Environment.GetEnvironmentVariable("VULU_API_URL") ??
 #endif
-            "https://vulu-api.onrender.com";
+            "https://vuluvulu.com.tr/api";
     }
 }
