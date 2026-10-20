@@ -2,6 +2,9 @@
 const $ = id => document.getElementById(id);
 
 /** el('div', { class: 'x', onclick: fn }, 'metin', cocukEleman, ...) */
+/** Masaüstüne özgü işlemler (klasör açma, masaüstü kısayolu) Android'de gösterilmez. */
+const isDesktopApp = () => bridge.platform !== 'android';
+
 function el(tag, props, ...children) {
     const node = document.createElement(tag);
     for (const [key, value] of Object.entries(props || {})) {

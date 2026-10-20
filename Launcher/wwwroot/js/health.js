@@ -73,7 +73,7 @@ function showCrashDialog(crash) {
                 el('div', { class: 'health-list' }, items)),
             el('div', { class: 'modal-foot' },
                 crash.report && el('button', { class: 'btn', onclick: () => bridge.invoke('crash.openReport', { instanceId: crash.instanceId, file: crash.report }).catch(err => appendLog({ text: err.message, level: 'error' })) }, 'Çökme raporunu aç'),
-                el('button', { class: 'btn', onclick: () => bridge.invoke('files.open', { target: 'instance', id: crash.instanceId }) }, 'Klasörü aç'),
+                isDesktopApp() && el('button', { class: 'btn', onclick: () => bridge.invoke('files.open', { target: 'instance', id: crash.instanceId }) }, 'Klasörü aç'),
                 el('span', { class: 'spacer' }),
                 el('button', { class: 'btn', onclick: () => close() }, 'Kapat'),
                 replay),

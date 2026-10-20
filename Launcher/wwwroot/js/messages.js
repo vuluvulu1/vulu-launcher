@@ -15,7 +15,8 @@ async function openMessagesPage(user) {
     // Avatarlar üye listesinden gelir; liste henüz yüklenmediyse yüklenince yeniden çizilir
     if (!profile.members.length) ensureMembers().then(() => { if (state.page === 'messages') renderConversations(); });
     if (user) openConversation(user);
-    else if (!dm.active && dm.conversations.length) openConversation(dm.conversations[0].username);
+    // Telefonda önce konuşma listesi görünür; masaüstünde son konuşma hemen açılır
+    else if (!dm.active && dm.conversations.length && !isMobile()) openConversation(dm.conversations[0].username);
     else renderChat();
 }
 
@@ -75,8 +76,17 @@ async function loadOlder() {
     dm.loadingMore = false;
 }
 
+/** Telefonda sohbetten konuşma listesine dönüş. */
+function closeConversation() {
+    dm.active = null;
+    dm.peer = null;
+    renderConversations();
+    renderChat();
+}
+
 function renderChat(loading) {
     const chat = $('dm-chat');
+    $('page-messages').classList.toggle('dm-open', !!dm.active);
     if (!dm.active) {
         chat.replaceChildren(el('div', { class: 'dm-empty' },
             el('p', {}, 'Bir yazışma seç ya da yeni bir mesaj başlat.'),
@@ -119,6 +129,7 @@ function renderChatHeader() {
     if (!head) return;
     const peer = dm.peer || {};
     head.replaceChildren(...[
+        el('button', { class: 'dm-back', title: 'Konuşmalar', 'aria-label': 'Konuşmalara dön', onclick: closeConversation }, '‹'),
         el('div', { class: 'dm-head-main' },
             el('button', { class: 'dm-peer', onclick: () => openProfile(dm.active) }, dm.active),
             el('span', { class: 'dm-lock', title: 'Uçtan uca şifreli' }, peer.verified ? '🔒 Doğrulandı' : '🔒 Uçtan uca şifreli')),

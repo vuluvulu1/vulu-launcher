@@ -1,0 +1,405 @@
+/*
+ * vulu Launcher — telefon yerleşimi
+ *
+ * 900 px'ten dar ekranlarda (Android uygulaması dikey açılır) geçerlidir; masaüstü yerleşimine dokunmaz.
+ * Aynı HTML ve JS, farklı iskelet:
+ *   - başlık çubuğu ince bir uygulama çubuğu olur (logo + profil), sayfa sekmeleri ekranın altına taşınır,
+ *   - her şey tek sütun; yan paneller (filtreler, arkadaşlar, topluluk) içeriğin altına ya da üstüne iner,
+ *   - Oyna'da instance'lar üstte kaydırılan bir şerit, OYNA ve RAM/sürüm altta tek kart,
+ *   - mesajlarda önce konuşma listesi, dokununca sohbet (‹ ile geri),
+ *   - pencereler alttan açılan tam genişlik paneller olur.
+ * Temaların (Neon, Atlas) masaüstündeki özel yerleşimleri dosyanın sonunda telefona uyarlanır.
+ */
+
+/* Sohbetten listeye dönüş ve filtre aç/kapa düğmeleri yalnızca telefonda */
+.dm-back, .mr-filter-toggle { display: none; }
+
+/* Dokunmatik ekranda üzerine gelince beliren düğmeler hep görünür */
+@media (hover: none) {
+    .fb-actions, .dm-del, .shot-comment-del, .profile-banner-actions { opacity: 1 !important; }
+    .pack-tile:hover, .tp-card:hover { transform: none; }
+}
+
+@media (max-width: 900px) {
+    :root, html[data-ui] {
+        --titlebar-h: 52px;
+        --tabbar-h: 62px;
+        --gutter: 14px;
+    }
+
+    html, body { font-size: 14.5px; }
+    /* Dokunulan öğede tarayıcının mavi parlaması olmasın */
+    * { -webkit-tap-highlight-color: transparent; }
+
+    /* Dokunma alanları büyür */
+    .btn { height: 40px; padding: 0 16px; font-size: 13.5px; }
+    .btn-sm { height: 34px; padding: 0 13px; font-size: 13px; }
+    .link-btn { padding: 8px 10px; font-size: 13px; }
+    .icon-btn { width: 36px; height: 36px; }
+    .icon-close { width: 40px; height: 40px; font-size: 15px; }
+    input[type=text], input[type=password], input[type=url], input[type=number], select, .textarea { padding: 11px 12px; font-size: 15px; }
+    .check input { width: 20px; height: 20px; }
+    .switch { width: 46px; height: 28px; }
+    .switch span::after { width: 22px; height: 22px; }
+    .switch input:checked + span::after { transform: translateX(18px); }
+    input[type=range]::-webkit-slider-thumb { width: 20px; height: 20px; }
+    .chip { padding: 6px 12px; font-size: 13px; }
+    .segmented button { height: 34px; }
+
+    /* ── Uygulama çubuğu ───────────────────────────────────────────── */
+    #titlebar { padding: 0 8px 0 var(--gutter); }
+    .tb-brand span:first-of-type { font-size: 16px; }
+    .tb-brand img { width: 24px; height: 24px; }
+    #user-name { display: none; }
+    .user-chip { height: 38px; padding: 0 4px; }
+    .user-chip .avatar { width: 30px; height: 30px; font-size: 13px; }
+    .tb-sep, #btn-min, #btn-close { display: none; }
+
+    /* ── Alt sekme çubuğu ──────────────────────────────────────────── */
+    .tb-tabs {
+        position: fixed; left: 0; right: 0; top: auto; bottom: 0; transform: none; z-index: 55;
+        height: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); padding: 0 4px env(safe-area-inset-bottom);
+        display: flex; flex-direction: row; align-items: stretch; justify-content: space-around; gap: 0;
+        background: var(--panel); border-top: 1px solid var(--line);
+    }
+    .tb-tabs button {
+        flex: 1 1 0; min-width: 0; height: auto; padding: 8px 2px 6px; margin: 0;
+        flex-direction: column; justify-content: center; gap: 4px;
+        border: 0; border-radius: 0; background: transparent; color: var(--muted);
+        font: 500 11px/1.1 var(--font); letter-spacing: 0; text-align: center; white-space: nowrap;
+    }
+    .tb-tabs button svg { width: 22px; height: 22px; }
+    .tb-tabs button:hover { background: transparent; }
+    .tb-tabs button.active { background: transparent; color: var(--text); }
+    .tb-tabs button.active::after {
+        content: ""; position: absolute; top: 0; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent);
+    }
+    .tb-tabs button[data-page="admin"] { margin-top: 0; }
+    .tab-badge { position: absolute; top: 5px; left: calc(50% + 6px); margin: 0; }
+
+    /* ── Görünümler ────────────────────────────────────────────────── */
+    .view { inset: var(--titlebar-h) 0 0 0; }
+    #view-main {
+        inset: var(--titlebar-h) 0 calc(var(--tabbar-h) + env(safe-area-inset-bottom)) 0;
+        display: flex; flex-direction: column; grid-template-columns: none;
+    }
+    #view-main > .page { flex: 1; min-height: 0; }
+
+    /* ── Giriş ve kayıt ────────────────────────────────────────────── */
+    #view-login { inset: 0; overflow-y: auto; place-items: start center; padding: calc(var(--titlebar-h) + 28px) var(--gutter) 40px; }
+    .login-card { width: 100%; max-width: 420px; padding: 26px 20px 22px; }
+    .login-card .btn-primary { height: 48px; font-size: 15px; }
+    .login-card input[type=text], .login-card input[type=password] { margin-bottom: 16px; }
+    .login-version { position: static; display: block; margin-top: 18px; text-align: center; }
+
+    /* ── İlk açılış: tema seçimi ───────────────────────────────────── */
+    #view-theme { place-items: start center; padding: 22px var(--gutter) 32px; }
+    .tp-wrap h1 { font-size: 24px; }
+    .tp-sub { margin-bottom: 18px; font-size: 14px; }
+    .tp-cards { grid-template-columns: 1fr; gap: 12px; }
+    .tp-card { display: grid; grid-template-columns: 42% 1fr; grid-template-rows: auto 1fr; column-gap: 14px; padding: 10px; }
+    .tp-preview { grid-row: 1 / 3; align-self: center; }
+    .tp-name { margin-top: 2px; }
+    .tp-done { width: 100%; height: 50px; margin-top: 20px; font-size: 15px; }
+
+    /* ── Açılış ────────────────────────────────────────────────────── */
+    .stage-name { width: min(84vw, 420px); }
+
+    /* ── Oyna: instance şeridi ─────────────────────────────────────── */
+    /* Şerit, arkasındaki sabit sahne resminin önünde */
+    .rail { position: relative; z-index: 2; flex: none; flex-direction: column; border-right: 0; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 90%, transparent); }
+    /* Şerit yalnızca Oyna sayfasında */
+    #view-main:not(:has(#page-home:not([hidden]))) > .rail { display: none; }
+    .rail-scroll {
+        display: flex; align-items: center; gap: 8px; overflow-x: auto; overflow-y: hidden;
+        padding: 10px var(--gutter); scrollbar-width: none;
+    }
+    .rail-scroll::-webkit-scrollbar { display: none; }
+    .pack-list { flex-direction: row; gap: 8px; margin: 0; }
+    #pack-list { padding: 0; }
+    #pack-list:not(:empty) + .rail-head { margin: 0; padding: 0 0 0 10px; border-top: 0; border-left: 1px solid var(--line); }
+    .rail h2.rail-head { flex: none; flex-direction: column; align-items: flex-start; gap: 6px; padding: 0 0 0 10px; }
+    .rail h2.rail-head > span { white-space: nowrap; }
+    .mini-btn { padding: 6px 10px; font-size: 12px; }
+    .pack-empty { flex: none; width: 220px; padding: 0 4px; white-space: normal; font-size: 12.5px; }
+    .pack-card { flex: none; width: 170px; height: 58px; border-color: var(--line); background: var(--surface); }
+    .pack-card .thumb { top: 9px; left: 9px; width: 38px; height: 38px; }
+    .pack-card .info { inset: 0 0 0 56px; }
+    .pack-card.selected { border-color: var(--accent); }
+    .pack-card.selected::before { display: none; }
+    .pack-card:has(.card-icon) .info { padding-right: 10px; }
+    .pack-card .card-icon { display: none; }
+    /* Müzik çalar telefonda gizli; Ayarlar'daki "müzik" seçeneği yine çalışır */
+    .music { display: none; }
+
+    /* ── Oyna: sahne ───────────────────────────────────────────────── */
+    .stage { display: flex; flex-direction: column; gap: 12px; padding: 14px var(--gutter) 12px; overflow-y: auto; }
+    .stage-bg { position: fixed; inset: var(--titlebar-h) 0 calc(var(--tabbar-h) + env(safe-area-inset-bottom)) 0; }
+    .stage-bg::after {
+        background: linear-gradient(180deg, rgba(13, 11, 10, .25) 0%, rgba(13, 11, 10, .6) 35%, rgba(13, 11, 10, .97) 70%);
+    }
+    .stage-bg.side { background-size: cover; background-position: center top; }
+    .announcement { max-width: none; margin: 0; }
+    .stage-body { flex: 1 0 auto; padding: 0; align-items: flex-end; min-height: 150px; }
+    .stage-hero { gap: 10px; }
+    .pack-logo { max-width: 100%; max-height: 84px; }
+    .pack-title { font-size: 34px; }
+    .pack-desc { font-size: 14px; }
+    .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: 6px; }
+    .stat { min-width: 0; padding: 8px 12px; }
+    .pack-actions { width: 100%; }
+    .pack-actions .btn { flex: 1 1 auto; }
+    .more-wrap { flex: 0 0 auto; }
+    .more-menu { min-width: 220px; }
+    .more-item { height: 44px; font-size: 14px; }
+
+    /* Başlatma kartı: üstte sürüm + RAM, ortada durum, altta tam genişlik OYNA */
+    .dock {
+        flex: none; margin: 0; padding: 12px; gap: 10px;
+        display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "ver ram" "status status" "play play";
+    }
+    .dock-ver { grid-area: ver; width: auto; padding: 0 2px; }
+    .dock .version-select { padding: 8px 10px; font-size: 14px; }
+    .ram-wrap { grid-area: ram; align-self: end; }
+    .ram-btn { height: 44px; }
+    .ram-pop { right: 0; bottom: calc(100% + 8px); width: 220px; }
+    .ram-options button { height: 44px; }
+    .dock-status { grid-area: status; padding: 0 2px; border-left: 0; gap: 6px; }
+    .btn-play { grid-area: play; width: 100%; height: 54px; font-size: 16px; }
+    .console { flex: none; height: 120px; }
+    .console.expanded { height: 52vh; }
+    .console-head { height: 40px; }
+
+    /* ── İşlem göstergesi ve indirme paneli: sekme çubuğunun hemen üstünde ── */
+    .activity, .dl, .dl.at-top { position: fixed; left: 10px; right: 10px; top: auto; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 10px); width: auto; max-width: none; }
+    .dl-details { max-height: 30vh; }
+
+    /* ── Sayfalar ──────────────────────────────────────────────────── */
+    .page-scroll { padding: 18px var(--gutter) 28px; }
+    .page-head { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 16px; }
+    .page-head h1 { font-size: 24px; }
+    .page-head-actions { flex-wrap: wrap; }
+    .page-head-actions .btn { flex: 1 1 auto; }
+    /* Kaynak seçiciler tam genişlik, sığmazsa yana kayar */
+    .segmented { display: flex; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+    .segmented::-webkit-scrollbar { display: none; }
+    .segmented button { flex: 1 0 auto; }
+    .discover-switch button, .social-switch button { height: 36px; padding: 0 12px; }
+    .segmented button.rec::after { display: none; }
+
+    /* vulu Packs */
+    .packs-grid { grid-template-columns: 1fr; gap: 12px; }
+    .pack-tile.skeleton { height: 260px; }
+    .pack-foot .btn { height: 42px; }
+
+    /* Modrinth: filtreler aramanın üstünde, sonuçlar tek sütun */
+    .mr-layout { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .mr-side { order: -1; position: static; max-height: none; padding: 12px; gap: 12px; }
+    .mr-filter-toggle { display: inline-flex; }
+    .mr-filter-toggle::after { content: "▾"; margin-left: 2px; transition: transform .15s; }
+    .mr-side.open .mr-filter-toggle::after { transform: rotate(180deg); }
+    .mr-side:not(.open) > :not(#mr-target-wrap):not(.mr-filter-toggle) { display: none; }
+    .mr-search { height: 46px; }
+    .mr-hit { grid-template-columns: 44px minmax(0, 1fr); gap: 12px; padding: 12px; }
+    .mr-icon { width: 44px; height: 44px; }
+    .mr-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+    .mr-actions .btn { flex: 1 1 auto; min-width: 0; }
+    .mr-author { display: block; margin: 2px 0 0; }
+    .content-row { grid-template-columns: minmax(0, 1fr) auto; }
+
+    /* Sunucular */
+    .servers-layout { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    .servers-grid { grid-template-columns: 1fr; }
+    .server-foot .btn { flex: 1 1 auto; }
+
+    /* Yan listeler (arkadaşlar, topluluk) içeriğin altında, tam genişlik */
+    .members { position: static; max-height: none; }
+    .members-list { max-height: 60vh; }
+    .member { padding: 10px 8px; }
+
+    /* Sosyal */
+    .shots-grid, .friends-grid { grid-template-columns: 1fr; gap: 12px; }
+    #friends-search { width: 100%; }
+    .shot-like, .shot-comment-count { height: 34px; padding: 0 12px; font-size: 13px; }
+    .shot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    /* Mesajlar: liste ya da sohbet, ikisi birden değil */
+    #page-messages:not([hidden]) { padding: 14px var(--gutter) 10px; }
+    .dm-page-head { margin-bottom: 12px; }
+    .dm-layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    #page-messages.dm-open .dm-side { display: none; }
+    #page-messages:not(.dm-open) .dm-chat { display: none; }
+    #page-messages.dm-open .dm-page-head { display: none; }
+    .dm-back {
+        display: grid; place-items: center; width: 38px; height: 38px; margin: -4px 0 -4px -8px; flex: none;
+        border: 0; border-radius: var(--r); background: transparent; color: var(--text); font: 400 30px/1 var(--font);
+    }
+    .dm-head { padding: 10px 12px; gap: 8px; }
+    .dm-head-main { flex-direction: column; align-items: flex-start; gap: 0; }
+    .dm-msg { max-width: 86%; }
+    .dm-bubble { font-size: 15px; }
+    .dm-compose { padding: 8px; gap: 8px; }
+    .dm-compose textarea { min-height: 44px; }
+    .dm-card { min-width: 0; }
+    .dm-attach { width: 44px; height: 44px; }
+
+    /* Profil */
+    .profile-layout { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    .profile-banner.has-image { min-height: 80px; }
+    .profile-banner-actions { opacity: 1; }
+    .profile-head { flex-wrap: wrap; gap: 12px; padding: 0 16px 16px; margin-top: -30px; }
+    .avatar-xl { width: 72px; height: 72px; font-size: 28px; }
+    .profile-head-actions { width: 100%; flex-wrap: wrap; }
+    .profile-head-actions .btn { flex: 1 1 auto; }
+    .profile-section { padding: 14px 16px; }
+    .profile-foot { flex-wrap: wrap; padding: 12px 16px; }
+    .profile-foot .btn { flex: 1 1 auto; }
+    .password-form { grid-template-columns: 1fr; }
+    .profile-packs { grid-template-columns: 1fr; }
+    .playtime-row { grid-template-columns: minmax(0, 1fr) 70px; }
+    .playtime-bar { grid-column: 1 / -1; grid-row: 2; }
+
+    /* Ayarlar: açıklama üstte, denetim altta */
+    .set-row { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px; }
+    .set-row:has(> .set-control > .switch) { flex-direction: row; align-items: center; }
+    .set-control { max-width: none; justify-content: flex-start; }
+    .set-control > input[type=text], .set-inline input[type=text], .set-inline input[type=range] { width: 100%; }
+    .set-inline { flex-wrap: wrap; width: 100%; }
+    .set-stack { align-items: stretch; width: 100%; }
+    .swatches { flex-wrap: wrap; gap: 12px; }
+    .swatch { width: 32px; height: 32px; }
+
+    /* Admin */
+    .admin-page { max-width: none; }
+    .tabs { overflow-x: auto; scrollbar-width: none; padding: 0; }
+    .tabs button { flex: none; padding: 12px; }
+    .user-row { grid-template-columns: minmax(0, 1fr); }
+    .inst-card { grid-template-columns: 1fr; }
+    .admin-form .row { flex-wrap: wrap; }
+
+    /* ── Pencereler: alttan açılan tam genişlik panel ──────────────── */
+    .modal-backdrop { inset: 0; z-index: 60; place-items: end stretch; }
+    .modal, .modal-wide {
+        width: 100%; max-width: none; height: auto; max-height: calc(100% - 24px);
+        border-radius: 14px 14px 0 0; border-bottom: 0;
+        padding-bottom: env(safe-area-inset-bottom);
+        animation: sheet-in .2s ease-out both;
+    }
+    @keyframes sheet-in { from { transform: translateY(30px); opacity: 0; } }
+    .modal:has(.fb-body) { height: calc(100% - 24px); }
+    .modal-head { height: 54px; padding: 0 12px 0 16px; font-size: 15.5px; }
+    .modal-body { padding: 14px 16px; }
+    .modal-foot { flex-wrap: wrap; padding: 10px 12px; }
+    .modal-foot .btn { flex: 1 1 auto; min-width: 0; }
+    .modal-foot .spacer { display: none; }
+    .row { flex-wrap: wrap; gap: 10px; }
+
+    .share-body { grid-template-columns: 1fr; }
+    .look-slot { grid-template-columns: 1fr; }
+    .skin-row { flex-direction: column; align-items: center; }
+    .skin-controls { width: 100%; }
+    .skin-buttons { flex-wrap: wrap; }
+    .skin-buttons .btn { flex: 1 1 auto; }
+    .shot-full { max-height: 50vh; }
+    .shot-nav { width: 36px; height: 48px; }
+    .target-new-box { flex-direction: column; align-items: stretch; }
+    .world-backups { padding-left: 12px; }
+    .fb-list { margin-right: 0; padding-right: 0; }
+}
+
+/* ── Neon: sol dikey gezinme ve yatay loadout telefonda alt çubuk + tek sütun ── */
+@media (max-width: 900px) {
+    html[data-ui="neon"] .tb-tabs {
+        position: fixed; left: 0; right: 0; top: auto; bottom: 0; width: auto;
+        flex-direction: row; align-items: stretch; padding: 0 4px env(safe-area-inset-bottom);
+        background: #07070f; border-right: 0; border-top: 1px solid rgba(0, 234, 255, .22);
+        box-shadow: 0 -6px 20px rgba(0, 0, 0, .5);
+    }
+    html[data-ui="neon"] .tb-tabs button { height: auto; font-size: 10px; }
+    html[data-ui="neon"] .tb-tabs button.active { background: linear-gradient(0deg, rgba(0, 234, 255, .12), transparent); }
+    html[data-ui="neon"] .tb-tabs button.active::before { display: none; }
+    html[data-ui="neon"] .tb-tabs button.active::after { left: 20%; right: 20%; border-radius: 0; box-shadow: var(--glow-cyan); }
+    html[data-ui="neon"] .tb-tabs button[data-page="admin"].active::after { background: var(--pink); box-shadow: var(--glow-pink); }
+    html[data-ui="neon"] .tab-badge { top: 5px; right: auto; left: calc(50% + 6px); }
+
+    html[data-ui="neon"] #view-main { inset: var(--titlebar-h) 0 calc(var(--tabbar-h) + env(safe-area-inset-bottom)) 0; display: flex; }
+    html[data-ui="neon"] .rail { height: auto; flex-direction: column; align-items: stretch; }
+    html[data-ui="neon"] .rail-scroll { padding: 10px var(--gutter); }
+    html[data-ui="neon"] .rail h2.rail-head { height: auto; padding: 0 0 0 10px; }
+    html[data-ui="neon"] .pack-card { width: 170px; height: 58px; }
+    html[data-ui="neon"] .music { display: none; }
+
+    html[data-ui="neon"] .stage { display: flex; padding: 14px var(--gutter) 12px; gap: 12px; }
+    html[data-ui="neon"] .stage-body { padding: 0; }
+    html[data-ui="neon"] .pack-title { font-size: 34px; }
+    html[data-ui="neon"] .stat { min-width: 0; }
+    html[data-ui="neon"] .dock {
+        display: grid; flex-direction: row; align-self: auto; padding: 14px; gap: 10px;
+        grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "ver ram" "status status" "play play";
+    }
+    html[data-ui="neon"] .dock::before { top: 6px; }
+    html[data-ui="neon"] .ram-wrap { width: auto; }
+    html[data-ui="neon"] .ram-btn { width: auto; padding: 0 14px; }
+    html[data-ui="neon"] .ram-pop { left: auto; right: 0; width: 220px; }
+    html[data-ui="neon"] .dock-status { padding: 10px 2px 0; }
+    html[data-ui="neon"] .btn-play { height: 58px; font-size: 17px; }
+    html[data-ui="neon"] .console { height: 120px; }
+    html[data-ui="neon"] .console.expanded { height: 52vh; }
+    html[data-ui="neon"] .dl.at-top { top: auto; right: 10px; }
+
+    html[data-ui="neon"] .page-scroll { padding: 18px var(--gutter) 28px; }
+    html[data-ui="neon"] .page-head h1 { font-size: 22px; }
+    html[data-ui="neon"] .packs-grid { grid-template-columns: 1fr; }
+    /* Kesik köşeler alttan açılan panelde yalnızca üstte */
+    html[data-ui="neon"] .modal { clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%); border-radius: 0; }
+}
+
+/* ── Atlas: klasör sekmeleri ve fotoğraflı sayfa telefonda ──────────── */
+@media (max-width: 900px) {
+    html[data-ui="atlas"] .tb-tabs {
+        position: fixed; left: 0; right: 0; top: auto; bottom: 0; height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+        margin: 0; align-self: auto; align-items: stretch; gap: 0; padding: 0 4px env(safe-area-inset-bottom);
+        background: var(--paper-noise), linear-gradient(180deg, #e3d5b8, #dccbaa); border-top: 1px solid rgba(70, 45, 20, .3);
+    }
+    html[data-ui="atlas"] .tb-tabs button {
+        height: auto; padding: 8px 2px 6px; border: 0; border-radius: 0; background: transparent; color: #5c4b36;
+        font: 500 12px/1.1 var(--font-serif);
+    }
+    html[data-ui="atlas"] .tb-tabs button svg { width: 21px; height: 21px; }
+    html[data-ui="atlas"] .tb-tabs button:hover { background: transparent; }
+    html[data-ui="atlas"] .tb-tabs button.active { height: auto; background: rgba(250, 246, 236, .55); box-shadow: none; color: var(--ink); }
+
+    html[data-ui="atlas"] #view-main { display: flex; grid-template-columns: none; }
+    html[data-ui="atlas"] .rail { box-shadow: none; border-right: 0; border-bottom: 1px solid rgba(70, 45, 20, .25); background: var(--paper-noise), linear-gradient(180deg, #e9dec7, #e4d6bb); }
+    html[data-ui="atlas"] .rail-scroll { padding: 10px var(--gutter); }
+    html[data-ui="atlas"] #pack-list::before { display: none; }
+    /* İçindekiler satırları şeritte küçük kâğıt etiketler olur */
+    html[data-ui="atlas"] .pack-card { width: auto; min-width: 130px; max-width: 200px; height: 46px; padding: 0 12px; border: 1px solid rgba(70, 45, 20, .2); border-radius: 3px; background: var(--surface); box-shadow: 0 1px 2px rgba(70, 45, 20, .1); }
+    html[data-ui="atlas"] .pack-card .info { position: static; height: 100%; padding: 0; flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; }
+    html[data-ui="atlas"] .pack-card .info::after { display: none; }
+    html[data-ui="atlas"] .pack-card .name { max-width: 100%; font-size: 15px; }
+    html[data-ui="atlas"] .pack-card.selected { border-color: var(--accent); background: #fffcf5; }
+    html[data-ui="atlas"] .pack-card.selected::before { display: none; }
+    html[data-ui="atlas"] .rail h2 { padding: 0 0 0 10px; }
+
+    html[data-ui="atlas"] .stage { padding: 16px var(--gutter) 12px; }
+    /* Fotoğraf sayfanın üstünde, tam genişliğe yakın ve hafif eğik */
+    html[data-ui="atlas"] .stage-bg {
+        position: relative; inset: auto; flex: none; order: -1; width: calc(100% - 24px); margin: 18px auto 30px; aspect-ratio: 16 / 9;
+        transform: rotate(1.2deg);
+    }
+    html[data-ui="atlas"] .stage-body { flex: none; min-height: 0; align-items: flex-start; }
+    html[data-ui="atlas"] .stage-hero { max-width: 100%; }
+    html[data-ui="atlas"] .pack-title { font-size: 34px; }
+    html[data-ui="atlas"] .stats { width: 100%; display: flex; }
+    html[data-ui="atlas"] .stat { padding: 7px 0; }
+    /* Mühür sağda kalır, sürüm ve RAM solunda */
+    html[data-ui="atlas"] .dock {
+        min-height: 0; padding: 12px; grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-areas: "ver ram play" "status status play";
+    }
+    html[data-ui="atlas"] .btn-play { width: 84px; height: 84px; align-self: center; }
+    html[data-ui="atlas"] .page-scroll { padding: 18px var(--gutter) 28px; }
+    html[data-ui="atlas"] .page-head h1 { font-size: 28px; }
+    html[data-ui="atlas"] .pack-tile:nth-child(n) { transform: none; }
+}

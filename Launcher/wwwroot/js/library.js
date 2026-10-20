@@ -120,7 +120,7 @@ async function openScreenshots(instance, { pick = false } = {}) {
             el('div', { class: 'modal-body shot-body' }, grid),
             el('div', { class: 'modal-foot' },
                 summary,
-                el('button', { class: 'btn', onclick: () => bridge.invoke('files.open', { target: 'screenshots', id: instance.id }).catch(() => {}) }, 'Klasörü aç'),
+                isDesktopApp() && el('button', { class: 'btn', onclick: () => bridge.invoke('files.open', { target: 'screenshots', id: instance.id }).catch(() => {}) }, 'Klasörü aç'),
                 el('button', { class: 'btn btn-primary', onclick: () => close() }, pick ? 'Vazgeç' : 'Kapat')),
         ];
     }, { wide: true }).then(v => (typeof v === 'string' ? v : null));

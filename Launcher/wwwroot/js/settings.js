@@ -172,7 +172,7 @@ async function openSettingsPage() {
                 onclick: async () => { await bridge.invoke('auth.forgetPassword'); flashSaved('Silindi ✓'); openSettingsPage(); },
             }, 'Sil')),
         settingRow('Oyun klasörü', info.gameFolder,
-            el('div', { class: 'set-inline' },
+            isDesktopApp() && el('div', { class: 'set-inline' },
                 el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'base' }) }, 'Aç'),
                 el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'instances' }) }, 'Instance\'lar'))),
         settingRow('Sürüm', null, el('span', { class: 'set-value' }, 'vulu Launcher v' + info.version)));

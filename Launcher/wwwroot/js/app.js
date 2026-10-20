@@ -25,6 +25,10 @@ const store = {
     set(key, value) { try { localStorage.setItem(key, value); } catch { /* yok say */ } },
 };
 
+/** Telefon yerleşimi (css/mobile.css ile aynı sınır): alt sekme çubuğu, tek sütun, liste → ayrıntı gezinmesi. */
+const MOBILE_QUERY = matchMedia('(max-width: 900px)');
+const isMobile = () => MOBILE_QUERY.matches;
+
 function showView(id) {
     // Açılış ekranını yalnızca beginSplash/hideSplash yönetir; sönerken burada kesilmesin
     for (const view of document.querySelectorAll('.view'))
@@ -118,12 +122,15 @@ function setupTitlebar() {
     $('btn-min').addEventListener('click', () => bridge.send('window.minimize'));
     $('btn-close').addEventListener('click', () => bridge.send('window.close'));
 
-    // Android geri tuşu: açık pencere ya da menü varsa onu kapatır (Esc gibi), yoksa uygulama arka plana gider
+    // Android geri tuşu: açık pencere ya da menü varsa onu kapatır (Esc gibi); açık sohbetten listeye, diğer
+    // sayfalardan Oyna'ya döner; Oyna'daysa uygulama arka plana gider
     bridge.on('backPressed', () => {
         const open = $('modal-root').lastElementChild
             || POPOVERS.some(([popoverId]) => !$(popoverId).hidden)
             || ($('pack-menu') && !$('pack-menu').hidden);
         if (open) document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        else if (isMobile() && state.page === 'messages' && dm.active) closeConversation();
+        else if (!$('view-main').hidden && state.page !== 'home') showPage('home');
         else bridge.send('window.minimize');
     });
 
@@ -550,8 +557,8 @@ function renderPackActions(instance) {
         item('Görünüm', () => openAppearanceDialog(instance)),
         item('Dünyalar ve yedekler', () => openWorldsDialog(instance)),
         item('Ekran görüntüleri', () => openScreenshots(instance)),
-        item('Klasörü aç', () => bridge.invoke('files.open', { target: 'instance', id: instance.id })),
-        item('Masaüstüne kısayol', () => createShortcut('play', instance.id, instance.name, instance.id)),
+        isDesktopApp() && item('Klasörü aç', () => bridge.invoke('files.open', { target: 'instance', id: instance.id })),
+        isDesktopApp() && item('Masaüstüne kısayol', () => createShortcut('play', instance.id, instance.name, instance.id)),
         isCustom && item('Çoğalt', () => duplicateInstance(instance)),
         isCustom && instance.loader !== 'vanilla' && item('.mrpack olarak dışa aktar', () => exportMrpack(instance)),
         isCustom && state.isAdmin && item(instance.sharedPackId ? 'Paylaşımı güncelle' : "vulu Packs'te paylaş", () => openShareDialog(instance), 'accent'),
@@ -958,6 +965,10 @@ window.addEventListener('DOMContentLoaded', () => {
     setupMessagesPage();
     setupLibrary();
     setupSocial();
+    $('mr-filter-toggle').addEventListener('click', () => {
+        const open = $('mr-filter-toggle').closest('.mr-side').classList.toggle('open');
+        $('mr-filter-toggle').setAttribute('aria-expanded', String(open));
+    });
     for (const button of document.querySelectorAll('.discover-switch button'))
         button.addEventListener('click', () => showPage(button.dataset.source));
     setupRegisterForm();

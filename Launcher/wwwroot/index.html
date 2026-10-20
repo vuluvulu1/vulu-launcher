@@ -2,15 +2,17 @@
 <html lang="tr">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>vulu Launcher</title>
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="css/neon.css">
     <link rel="stylesheet" href="css/atlas.css">
+    <link rel="stylesheet" href="css/mobile.css">
     <!-- Tema, ilk çizimden önce seçilir ki açılış animasyonu da doğru temada başlasın -->
     <!--
-        Arayüz en az ~860×560 alana göre tasarlandı. Daha küçük ekranlarda (telefon) her şey orantılı küçültülür ki
-        sayfalar ve düğmeler ekrana sığsın. Klavye açılınca yükseklik azalır; o durumda ölçek değişmez.
+        Masaüstü yerleşimi en az ~860×560 alana göre tasarlandı; alçak pencerelerde her şey orantılı küçültülür.
+        900 px'ten dar ekranlarda (telefon) küçültme yapılmaz, css/mobile.css'teki telefon yerleşimi kullanılır.
+        Klavye açılınca yükseklik azalır; o durumda ölçek değişmez.
     -->
     <script>
         (() => {
@@ -19,7 +21,7 @@
             function fit() {
                 if (innerWidth === lastWidth && innerHeight < lastHeight) return;
                 lastWidth = innerWidth; lastHeight = innerHeight;
-                const scale = Math.min(1, innerWidth / minWidth, innerHeight / minHeight);
+                const scale = innerWidth <= 900 ? 1 : Math.min(1, innerWidth / minWidth, innerHeight / minHeight);
                 root.style.zoom = scale < 1 ? String(scale) : '';
                 root.style.width = scale < 1 ? innerWidth / scale + 'px' : '';
                 root.style.height = scale < 1 ? innerHeight / scale + 'px' : '';
@@ -309,6 +311,8 @@
                         <span>Kurulacak instance</span>
                         <select id="mr-target"></select>
                     </label>
+                    <!-- Telefonda filtreler bu düğmeyle açılır; masaüstünde hep açık -->
+                    <button id="mr-filter-toggle" type="button" class="btn btn-sm mr-filter-toggle" aria-expanded="false">Sıralama ve filtreler</button>
                     <label class="mr-field">
                         <span>Sırala</span>
                         <select id="mr-sort"></select>
