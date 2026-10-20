@@ -8,6 +8,26 @@
     <link rel="stylesheet" href="css/neon.css">
     <link rel="stylesheet" href="css/atlas.css">
     <!-- Tema, ilk çizimden önce seçilir ki açılış animasyonu da doğru temada başlasın -->
+    <!--
+        Arayüz en az ~860×560 alana göre tasarlandı. Daha küçük ekranlarda (telefon) her şey orantılı küçültülür ki
+        sayfalar ve düğmeler ekrana sığsın. Klavye açılınca yükseklik azalır; o durumda ölçek değişmez.
+    -->
+    <script>
+        (() => {
+            const minWidth = 860, minHeight = 560, root = document.documentElement;
+            let lastWidth = 0, lastHeight = 0;
+            function fit() {
+                if (innerWidth === lastWidth && innerHeight < lastHeight) return;
+                lastWidth = innerWidth; lastHeight = innerHeight;
+                const scale = Math.min(1, innerWidth / minWidth, innerHeight / minHeight);
+                root.style.zoom = scale < 1 ? String(scale) : '';
+                root.style.width = scale < 1 ? innerWidth / scale + 'px' : '';
+                root.style.height = scale < 1 ? innerHeight / scale + 'px' : '';
+            }
+            fit();
+            addEventListener('resize', fit);
+        })();
+    </script>
     <script>try { const t = localStorage.getItem('uiTheme'); document.documentElement.dataset.ui = t === 'neon' || t === 'atlas' ? t : 'classic'; } catch { }</script>
 </head>
 <body>

@@ -2,6 +2,7 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using AndroidX.Core.View;
 
 namespace VuluLauncher
 {
@@ -23,6 +24,7 @@ namespace VuluLauncher
         protected override void OnCreate(Bundle? savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+            HideSystemBars();
 
             // Android 13+: bildirimler için izin istenir (reddedilirse launcher bildirimsiz çalışır)
             if (OperatingSystem.IsAndroidVersionAtLeast(33) &&
@@ -34,6 +36,21 @@ namespace VuluLauncher
         {
             base.OnResume();
             IsResumed = true;
+        }
+
+        public override void OnWindowFocusChanged(bool hasFocus)
+        {
+            base.OnWindowFocusChanged(hasFocus);
+            if (hasFocus) HideSystemBars();   // bildirim paneli ya da başka bir uygulamadan dönünce
+        }
+
+        /// <summary>Tam ekran: durum ve gezinme çubukları gizlenir, kenardan kaydırınca bir süre görünür.</summary>
+        private void HideSystemBars()
+        {
+            if (Window == null) return;
+            var controller = WindowCompat.GetInsetsController(Window, Window.DecorView);
+            controller.Hide(WindowInsetsCompat.Type.SystemBars());
+            controller.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
         }
 
         protected override void OnPause()
