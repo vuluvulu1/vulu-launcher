@@ -21,11 +21,18 @@
     <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
+    <!-- APK telefona elle de kurulur: Debug'da da .NET derlemeleri APK'nın içinde olmalı (Fast Deployment yok) -->
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
 
     <Authors>vuluvulu1</Authors>
     <Company>vuluvulu1</Company>
     <Product>vulu Launcher</Product>
     <Copyright>Copyright (c) 2026 vuluvulu1. Licensed under AGPL-3.0.</Copyright>
+  </PropertyGroup>
+
+  <!-- Deneme APK'sı yalnızca telefonlar için (arm64); emülatör kullanılmıyor -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
