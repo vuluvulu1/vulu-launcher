@@ -13,7 +13,10 @@ namespace VuluLauncher
         public MainPage()
         {
             Current = this;
-            BackgroundColor = Color.FromArgb("#141412");
+            BackgroundColor = Color.FromArgb("#121010");
+            // Android 15+ uygulamayı ekranın kenarlarına kadar çizer; arayüz durum çubuğunun, gezinme çubuğunun ve
+            // klavyenin altında kalmasın (klavye açılınca sayfa kısalır, yazı kutusu görünür kalır)
+            SafeAreaEdges = SafeAreaEdges.All;
 
             _webView = new HybridWebView { HybridRoot = "wwwroot", DefaultFile = "index.html" };
             _host = new AndroidHost(_webView);

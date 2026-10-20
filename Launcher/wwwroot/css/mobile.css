@@ -22,7 +22,8 @@
 
 @media (max-width: 900px) {
     :root, html[data-ui] {
-        --titlebar-h: 52px;
+        /* Kenardan kenara çizimde durum çubuğunun payı (uygulama bunu kendisi bırakıyorsa 0) */
+        --titlebar-h: calc(52px + env(safe-area-inset-top, 0px));
         --tabbar-h: 62px;
         --gutter: 14px;
     }
@@ -47,7 +48,7 @@
     .segmented button { height: 34px; }
 
     /* ── Uygulama çubuğu ───────────────────────────────────────────── */
-    #titlebar { padding: 0 8px 0 var(--gutter); }
+    #titlebar { padding: env(safe-area-inset-top, 0px) 8px 0 var(--gutter); }
     .tb-brand span:first-of-type { font-size: 16px; }
     .tb-brand img { width: 24px; height: 24px; }
     #user-name { display: none; }
@@ -121,7 +122,8 @@
     .rail h2.rail-head { flex: none; flex-direction: column; align-items: flex-start; gap: 6px; padding: 0 0 0 10px; }
     .rail h2.rail-head > span { white-space: nowrap; }
     .mini-btn { padding: 6px 10px; font-size: 12px; }
-    .pack-empty { flex: none; width: 220px; padding: 0 4px; white-space: normal; font-size: 12.5px; }
+    /* Boş instance listesinin uzun açıklaması şeride sığmaz; "+ Yeni" düğmesi yeter */
+    .rail .pack-empty { display: none; }
     .pack-card { flex: none; width: 170px; height: 58px; border-color: var(--line); background: var(--surface); }
     .pack-card .thumb { top: 9px; left: 9px; width: 38px; height: 38px; }
     .pack-card .info { inset: 0 0 0 56px; }
