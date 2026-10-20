@@ -271,11 +271,21 @@ namespace VuluLauncher
 
         private ForgeInstallOptions InstallOptions(string javaPath, bool skipIfInstalled = true) => new()
         {
-            JavaPath = javaPath,
+            // Forge/NeoForge kurulumu "processor" programlarını Java ile pencere gizlemeden çalıştırır;
+            // java.exe her seferinde boş bir konsol penceresi açardı. javaw.exe aynı Java'dır ama pencere açmaz.
+            JavaPath = WindowlessJava(javaPath),
             SkipIfAlreadyInstalled = skipIfInstalled,
             FileProgress = FileProgress(),
             InstallerOutput = new ThrottledProgress<string>(line => _log(line, "replace"), 100)
         };
+
+        /// <summary>java.exe'nin yanında javaw.exe varsa onu döner (konsol penceresi açmayan sürüm); yoksa verileni.</summary>
+        private static string WindowlessJava(string javaPath)
+        {
+            if (!string.Equals(Path.GetFileName(javaPath), "java.exe", StringComparison.OrdinalIgnoreCase)) return javaPath;
+            string javaw = Path.Combine(Path.GetDirectoryName(javaPath)!, "javaw.exe");
+            return File.Exists(javaw) ? javaw : javaPath;
+        }
 
         private IProgress<InstallerProgressChangedEventArgs> FileProgress()
         {
