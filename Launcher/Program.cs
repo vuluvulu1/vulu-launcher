@@ -78,8 +78,10 @@ namespace VuluLauncher
                 VuluShared.WindowIcon.Apply(window.WindowHandle, Path.Combine(AppContext.BaseDirectory, "logo.ico"));
             };
 
-            var bridge = new Bridge(window);
-            var app = new LauncherApp(bridge, window);
+            using var host = new WindowsHost(window);
+            var bridge = new Bridge(host.SendToUi);
+            var app = new LauncherApp(bridge, host);
+            host.NotificationClicked += app.OnNotificationClicked;
             app.RegisterCommands();
             app.SetStartupAction(action);
             single.Listen(app.OnRemoteCommand);

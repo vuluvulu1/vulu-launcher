@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
-using Photino.NET;
 
 namespace VuluLauncher
 {
@@ -14,7 +13,7 @@ namespace VuluLauncher
     {
         private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
-        private readonly PhotinoWindow _window;
+        private readonly Action<string> _send;
         private readonly Dictionary<string, Func<JsonElement, Task<object?>>> _asyncHandlers = new();
         private readonly Dictionary<string, Action<JsonElement>> _inlineHandlers = new();
 
@@ -22,9 +21,9 @@ namespace VuluLauncher
         private readonly ConcurrentQueue<LogLine> _logQueue = new();
         private readonly System.Threading.Timer _logTimer;
 
-        public Bridge(PhotinoWindow window)
+        public Bridge(Action<string> send)
         {
-            _window = window;
+            _send = send;
             _logTimer = new System.Threading.Timer(_ => FlushLogs(), null, 80, 80);
         }
 
@@ -108,7 +107,7 @@ namespace VuluLauncher
         {
             try
             {
-                _window.SendWebMessage(JsonSerializer.Serialize(payload, Json));
+                _send(JsonSerializer.Serialize(payload, Json));
             }
             catch
             {

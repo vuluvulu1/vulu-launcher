@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    vulu Launcher'ın Android sürümü: aynı arayüz (Launcher/wwwroot) MAUI HybridWebView içinde, aynı komutlar ve
+    servisler (Core). Faz 1: oyun başlatma yok; giriş, sosyal, mesajlar, paketler, sunucular ve Modrinth çalışır.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <AssemblyName>vuluLauncher.Android</AssemblyName>
+    <RootNamespace>VuluLauncher</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <ApplicationTitle>vulu Launcher</ApplicationTitle>
+    <ApplicationId>com.vuluvulu.launcher</ApplicationId>
+    <!-- Yayınlarken -p:Version ile ezilir; ApplicationVersion her APK'da artmalı -->
+    <Version>0.9.0</Version>
+    <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
+
+    <Authors>vuluvulu1</Authors>
+    <Company>vuluvulu1</Company>
+    <Product>vulu Launcher</Product>
+    <Copyright>Copyright (c) 2026 vuluvulu1. Licensed under AGPL-3.0.</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Vulu.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Windows sürümüyle aynı arayüz dosyaları; HybridWebView bunları Resources/Raw/wwwroot'tan yükler -->
+    <MauiAsset Include="..\Launcher\wwwroot\**" LogicalName="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#141412" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#141412" BaseSize="128,128" />
+  </ItemGroup>
+
+</Project>

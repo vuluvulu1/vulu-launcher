@@ -49,10 +49,9 @@ namespace VuluLauncher
         private async Task<object?> PickSkinAsync(string model)
         {
             RequireLogin();
-            var files = _window.ShowOpenFile("Skin seçin (64×64 PNG)", null, false, new[] { ("PNG", new[] { "png" }) });
-            if (files is not { Length: > 0 }) return null;
+            string? path = await _host.PickFileAsync("Skin seçin (64×64 PNG)", "PNG", new[] { "png" });
+            if (path == null) return null;
 
-            string path = files[0];
             if (!string.Equals(Path.GetExtension(path), ".png", StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Skin bir PNG dosyası olmalı.");
             if (new FileInfo(path).Length > 64 * 1024)
@@ -65,11 +64,9 @@ namespace VuluLauncher
         private async Task<object?> PickAvatarAsync()
         {
             RequireLogin();
-            var files = _window.ShowOpenFile("Profil resmi seçin", null, false,
-                new[] { ("Resimler", new[] { "png", "jpg", "jpeg", "webp", "gif" }) });
-            if (files is not { Length: > 0 }) return null;
+            string? path = await _host.PickFileAsync("Profil resmi seçin", "Resimler", new[] { "png", "jpg", "jpeg", "webp", "gif" });
+            if (path == null) return null;
 
-            string path = files[0];
             if (!AvatarTypes.TryGetValue(Path.GetExtension(path), out var contentType))
                 throw new InvalidOperationException("Desteklenen biçimler: PNG, JPG, WEBP, GIF.");
             if (new FileInfo(path).Length > 1024 * 1024)
@@ -87,11 +84,9 @@ namespace VuluLauncher
         private async Task<object?> PickBannerAsync()
         {
             RequireLogin();
-            var files = _window.ShowOpenFile("Banner resmi seçin", null, false,
-                new[] { ("Resimler", new[] { "png", "jpg", "jpeg", "webp", "gif" }) });
-            if (files is not { Length: > 0 }) return null;
+            string? path = await _host.PickFileAsync("Banner resmi seçin", "Resimler", new[] { "png", "jpg", "jpeg", "webp", "gif" });
+            if (path == null) return null;
 
-            string path = files[0];
             if (!AvatarTypes.TryGetValue(Path.GetExtension(path), out var contentType))
                 throw new InvalidOperationException("Desteklenen biçimler: PNG, JPG, WEBP, GIF.");
             long size = new FileInfo(path).Length;

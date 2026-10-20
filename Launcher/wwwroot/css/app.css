@@ -106,6 +106,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .tb-close:hover { background: #b33a2b; }
 .tb-close:hover svg { stroke: #fff; }
 .tb-sep { width: 1px; height: 18px; margin: 0 4px; background: var(--line-strong); }
+/* Android'de pencere yok: küçült/kapat düğmeleri gizlenir */
+[data-platform="android"] .tb-sep, [data-platform="android"] #btn-min, [data-platform="android"] #btn-close { display: none; }
 
 /* Sayfa sekmeleri: başlık çubuğunun ortasında */
 .tb-tabs { position: absolute; left: 50%; top: 0; bottom: 0; transform: translateX(-50%); display: flex; align-items: center; gap: 2px; }

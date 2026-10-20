@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -6,16 +5,20 @@ namespace VuluLauncher
 {
     /// <summary>
     /// "Beni hatırla" bilgisini kullanıcının AppData klasöründe saklar.
-    /// Şifre Windows DPAPI ile şifrelenir; yalnızca aynı Windows kullanıcısı çözebilir.
+    /// Şifre platformun kendi koruması ile şifrelenir (Windows'ta DPAPI, Android'de Keystore); yalnızca aynı
+    /// kullanıcı/cihaz çözebilir.
     /// </summary>
-    public static class CredentialManager
+    internal static class CredentialManager
     {
         private sealed record Saved(string Username, string Password);
 
+        /// <summary>Platform başlarken ayarlar.</summary>
+        public static Func<byte[], byte[]> Protect = _ => throw new InvalidOperationException("Şifre koruması ayarlanmadı.");
+        public static Func<byte[], byte[]> Unprotect = _ => throw new InvalidOperationException("Şifre koruması ayarlanmadı.");
+
         public static void Save(string username, string password)
         {
-            byte[] encrypted = ProtectedData.Protect(
-                Encoding.UTF8.GetBytes(password), null, DataProtectionScope.CurrentUser);
+            byte[] encrypted = Protect(Encoding.UTF8.GetBytes(password));
 
             Directory.CreateDirectory(AppPaths.AppData);
             File.WriteAllText(AppPaths.Credentials,
@@ -32,8 +35,7 @@ namespace VuluLauncher
                 if (saved == null) return ("", "");
                 if (string.IsNullOrEmpty(saved.Password)) return (saved.Username, "");
 
-                byte[] decrypted = ProtectedData.Unprotect(
-                    Convert.FromBase64String(saved.Password), null, DataProtectionScope.CurrentUser);
+                byte[] decrypted = Unprotect(Convert.FromBase64String(saved.Password));
                 return (saved.Username, Encoding.UTF8.GetString(decrypted));
             }
             catch

@@ -115,7 +115,7 @@ namespace VuluLauncher
             if (!ReportName.IsMatch(file)) throw new InvalidOperationException("Geçersiz rapor adı.");
             string path = Path.Combine(AppPaths.Instances, ResolveTarget(instanceId).Target.Folder, "crash-reports", file);
             if (!File.Exists(path)) throw new FileNotFoundException("Çökme raporu bulunamadı.");
-            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            _host.OpenFile(path);
             return new { opened = true };
         }
 

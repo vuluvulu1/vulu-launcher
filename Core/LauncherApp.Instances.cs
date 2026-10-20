@@ -33,14 +33,14 @@ namespace VuluLauncher
                 await ModrinthInstallModpackAsync(args.Str("projectId"), args.Str("versionId")));
             _bridge.On("modrinth.openPage", args => Task.FromResult<object?>(OpenModrinthPage(args.Str("type"), args.Str("slug"))));
 
-            _bridge.On("instances.pickBackground", args => Task.FromResult<object?>(PickBackground(args.Str("id"))));
+            _bridge.On("instances.pickBackground", async args => await PickBackgroundAsync(args.Str("id")));
             _bridge.On("instances.clearBackground", args => Task.FromResult<object?>(ClearBackground(args.Str("id"))));
-            _bridge.On("instances.pickLogo", args => Task.FromResult<object?>(PickLogo(args.Str("id"))));
+            _bridge.On("instances.pickLogo", async args => await PickLogoAsync(args.Str("id")));
             _bridge.On("instances.clearLogo", args => Task.FromResult<object?>(ClearLogo(args.Str("id"))));
 
             _bridge.On("settings.get", _ => Task.FromResult<object?>(GetSettings()));
             _bridge.On("settings.save", args => Task.FromResult<object?>(SaveSettings(args)));
-            _bridge.On("settings.pickJava", _ => Task.FromResult<object?>(PickJava()));
+            _bridge.On("settings.pickJava", async _ => await PickJavaAsync());
             _bridge.On("settings.removeJava", _ => Task.FromResult<object?>(RemoveDownloadedJava()));
             _bridge.On("files.open", args => Task.FromResult<object?>(OpenFolder(args.Str("target"), args.Str("id"))));
 
@@ -454,7 +454,7 @@ namespace VuluLauncher
                 !System.Text.RegularExpressions.Regex.IsMatch(slug, @"^[A-Za-z0-9_\-!@$()`.+,""]{1,64}$"))
                 throw new InvalidOperationException("Geçersiz proje.");
 
-            Process.Start(new ProcessStartInfo($"https://modrinth.com/{type}/{Uri.EscapeDataString(slug)}") { UseShellExecute = true });
+            _host.OpenUrl($"https://modrinth.com/{type}/{Uri.EscapeDataString(slug)}");
             return new { opened = true };
         }
 
@@ -482,7 +482,7 @@ namespace VuluLauncher
         private static string? ImageUrl(string folder, string id)
         {
             string? file = ImageFile(folder, id);
-            return file == null ? null : $"{new Uri(file).AbsoluteUri}?v={File.GetLastWriteTimeUtc(file).Ticks}";
+            return file == null ? null : $"{LocalFiles.Url(file)}?v={File.GetLastWriteTimeUtc(file).Ticks}";
         }
 
         private static void DeleteImageFiles(string folder, string id)
@@ -500,15 +500,13 @@ namespace VuluLauncher
         private static string? LogoUrl(string id) => ImageUrl(AppPaths.Logos, id);
         private static void DeleteLogoFiles(string id) => DeleteImageFiles(AppPaths.Logos, id);
 
-        private object PickImage(string folder, string id, string title, string[] extensions, long maxBytes)
+        private async Task<object?> PickImageAsync(string folder, string id, string title, string[] extensions, long maxBytes)
         {
             _ = ResolveTarget(id); // kimlik geçerli ve kullanıcıya açık mı
 
-            var files = _window.ShowOpenFile(title, null, false,
-                new[] { ("Resimler", extensions.Select(e => e.TrimStart('.')).ToArray()) });
-            if (files is not { Length: > 0 }) return new { changed = false };
+            string? source = await _host.PickFileAsync(title, "Resimler", extensions.Select(e => e.TrimStart('.')).ToArray());
+            if (source == null) return new { changed = false };
 
-            string source = files[0];
             string extension = Path.GetExtension(source).ToLowerInvariant();
             if (!extensions.Contains(extension))
                 throw new InvalidOperationException("Desteklenen biçimler: " +
@@ -522,11 +520,11 @@ namespace VuluLauncher
             return new { changed = true };
         }
 
-        private object PickBackground(string id) =>
-            PickImage(AppPaths.Backgrounds, id, "Arka plan resmi seçin", ImageExtensions, 25L * 1024 * 1024);
+        private Task<object?> PickBackgroundAsync(string id) =>
+            PickImageAsync(AppPaths.Backgrounds, id, "Arka plan resmi seçin", ImageExtensions, 25L * 1024 * 1024);
 
-        private object PickLogo(string id) =>
-            PickImage(AppPaths.Logos, id, "Logo resmi seçin (saydam PNG önerilir)", LogoExtensions, 4L * 1024 * 1024);
+        private Task<object?> PickLogoAsync(string id) =>
+            PickImageAsync(AppPaths.Logos, id, "Logo resmi seçin (saydam PNG önerilir)", LogoExtensions, 4L * 1024 * 1024);
 
         private object ClearBackground(string id)
         {
@@ -570,17 +568,15 @@ namespace VuluLauncher
 
             bool playtimeChanged = settings.ShowPlaytimeOnProfile != AppSettings.Current.ShowPlaytimeOnProfile;
             AppSettings.Save(settings);
-            _discord.SetEnabled(settings.DiscordPresence);
+            _discord.SetEnabled(_host.IsDesktop && settings.DiscordPresence);
             if (playtimeChanged) _ = SyncPlaytimeAsync();
             SignalPresence();   // "görünmez" seçilince arkadaş listesinden hemen düşülür
             return new { settings = AppSettings.Current };
         }
 
-        private object PickJava()
+        private async Task<object?> PickJavaAsync()
         {
-            var files = _window.ShowOpenFile("java.exe seçin", null, false,
-                new[] { ("Java", new[] { "exe" }) });
-            return new { path = files is { Length: > 0 } ? files[0] : null };
+            return new { path = await _host.PickFileAsync("java.exe seçin", "Java", new[] { "exe" }) };
         }
 
         private object RemoveDownloadedJava()
@@ -610,7 +606,7 @@ namespace VuluLauncher
             };
 
             Directory.CreateDirectory(path);
-            Process.Start(new ProcessStartInfo("explorer.exe") { ArgumentList = { path } });
+            _host.ShowInFolder(path, selectFile: false);
             return new { opened = true };
         }
 

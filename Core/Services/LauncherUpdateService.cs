@@ -17,7 +17,7 @@ namespace VuluLauncher
     {
         /// <summary>Derlemedeki sürüm (csproj'daki Version); yayın scripti her release'te ayarlar.</summary>
         public static readonly string LocalVersion = Releases.Clean(
-            typeof(LauncherUpdateService).Assembly
+            (Assembly.GetEntryAssembly() ?? typeof(LauncherUpdateService).Assembly)
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
 
         private static readonly HttpClient _http = Releases.CreateHttpClient(TimeSpan.FromSeconds(20));

@@ -1,8 +1,4 @@
-using System.Diagnostics;
-using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Text.Json;
-using Photino.NET;
 
 namespace VuluLauncher
 {
@@ -13,7 +9,7 @@ namespace VuluLauncher
     internal sealed partial class LauncherApp
     {
         private readonly Bridge _bridge;
-        private readonly PhotinoWindow _window;
+        private readonly IPlatformHost _host;
 
         private LoginService _login = new();
         private readonly ApiClient _api;
@@ -22,26 +18,21 @@ namespace VuluLauncher
         private readonly ModrinthService _modrinth;
         private readonly GameLauncher _game;
         private readonly DiscordPresence _discord = new();
-        private readonly TrayNotifier _tray = new(Path.Combine(AppContext.BaseDirectory, "logo.ico"));
 
         private VuluShared.ReleaseManifest? _latestLauncher;
 
-        // Pencere sürükleme: başlangıçtaki pencere ve imleç konumu
-        private Point _dragWindowStart;
-        private POINT _dragCursorStart;
-
-        public LauncherApp(Bridge bridge, PhotinoWindow window)
+        public LauncherApp(Bridge bridge, IPlatformHost host)
         {
             _bridge = bridge;
-            _window = window;
+            _host = host;
+            CredentialManager.Protect = host.Protect;
+            CredentialManager.Unprotect = host.Unprotect;
+            LocalFiles.Url = host.FileUrl;
             _api = new ApiClient(() => _login.Token);
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
             _game = new GameLauncher(Log, _java);
             _game.Exited += () => { StopPlayTime(); _bridge.Emit("gameExited"); _discord.ShowIdle(); PresenceIdle(); _ = ReportCrashIfAnyAsync(); };
-            // Bildirime tıklanınca launcher öne gelir ve ilgili sayfa açılır
-            _tray.Clicked += tag => { TrayNotifier.BringToFront(_window.WindowHandle); if (tag != null) _bridge.Emit("notificationClicked", new { tag }); };
-            _tray.IconClicked += () => TrayNotifier.BringToFront(_window.WindowHandle);
             // Arayüz hangi sayfada olunduğunu (ve Oyna'da seçili instance'ı) bildirir
             _bridge.On("discord.page", args =>
             {
@@ -51,27 +42,17 @@ namespace VuluLauncher
                 return Task.FromResult<object?>(null);
             });
             _discord.ShowIdle();
-            _discord.SetEnabled(AppSettings.Current.DiscordPresence);
+            _discord.SetEnabled(_host.IsDesktop && AppSettings.Current.DiscordPresence);
             DownloadJob.Emit = snapshot => _bridge.Emit("download", snapshot);
         }
 
         public void RegisterCommands()
         {
             // ── Pencere ───────────────────────────────────────────────────
-            _bridge.OnInline("window.dragStart", _ =>
-            {
-                _dragWindowStart = _window.Location;
-                GetCursorPos(out _dragCursorStart);
-            });
-            _bridge.OnInline("window.dragMove", _ =>
-            {
-                if (!GetCursorPos(out var cursor)) return;
-                _window.Location = new Point(
-                    _dragWindowStart.X + cursor.X - _dragCursorStart.X,
-                    _dragWindowStart.Y + cursor.Y - _dragCursorStart.Y);
-            });
-            _bridge.OnInline("window.minimize", _ => _window.SetMinimized(true));
-            _bridge.OnInline("window.close", _ => _window.Close());
+            _bridge.OnInline("window.dragStart", _ => _host.BeginWindowDrag());
+            _bridge.OnInline("window.dragMove", _ => _host.MoveWindowDrag());
+            _bridge.OnInline("window.minimize", _ => _host.Minimize());
+            _bridge.OnInline("window.close", _ => _host.Close());
 
             // ── Uygulama ──────────────────────────────────────────────────
             _bridge.On("app.init", _ => Task.FromResult<object?>(Init()));
@@ -106,8 +87,20 @@ namespace VuluLauncher
         public void Shutdown()
         {
             StopPlayTime();
-            _tray.Dispose();
             _bridge.Shutdown();
+        }
+
+        /// <summary>Bildirime tıklanınca launcher öne gelir ve ilgili sayfa açılır.</summary>
+        public void OnNotificationClicked(string? tag)
+        {
+            _host.BringToFront();
+            if (tag != null) _bridge.Emit("notificationClicked", new { tag });
+        }
+
+        /// <summary>Bildirimler yalnızca launcher kullanıcının önünde değilken gösterilir.</summary>
+        private void NotifyIfAway(string title, string body, string tag)
+        {
+            if (!_host.IsForeground) _host.Notify(title, body, tag);
         }
 
         private void Log(string text, string level) =>
@@ -122,6 +115,9 @@ namespace VuluLauncher
             return new
             {
                 version = LauncherUpdateService.LocalVersion,
+                platform = _host.Platform,
+                canLaunchGame = _host.CanLaunchGame,
+                isDesktop = _host.IsDesktop,
                 apiBaseUrl = ApiConfig.BaseUrl,
                 savedUsername = username,
                 // Kayıtlı şifre arayüze gönderilmez; arayüz sadece var olduğunu bilir
@@ -196,6 +192,9 @@ namespace VuluLauncher
         // ════════════════════════════════════════════════════════════════
         private async Task<object?> CheckLauncherVersionAsync()
         {
+            // Android sürümü kendini güncellemez (yeni APK ayrıca kurulur)
+            if (!_host.CanSelfUpdate) return new { status = "upToDate" };
+
             var (status, latest) = await _launcherUpdates.CheckForUpdateAsync();
 
             if (status == UpdateCheckStatus.CheckFailed)
@@ -240,16 +239,7 @@ namespace VuluLauncher
             if (_latestLauncher == null)
                 throw new InvalidOperationException("Bekleyen launcher güncellemesi yok.");
 
-            string updaterPath = Path.Combine(AppPaths.Base, VuluShared.Releases.UpdaterExeName);
-            if (!File.Exists(updaterPath))
-                throw new FileNotFoundException("Updater.exe bulunamadı.");
-
-            var startInfo = new ProcessStartInfo(updaterPath) { UseShellExecute = false, WorkingDirectory = AppPaths.Base };
-            startInfo.ArgumentList.Add("--wait-pid");
-            startInfo.ArgumentList.Add(Environment.ProcessId.ToString());
-
-            Process.Start(startInfo);
-            _window.Close();
+            _host.StartLauncherUpdate();
             return new { started = true };
         }
 
@@ -317,6 +307,8 @@ namespace VuluLauncher
         private async Task<object?> PlayAsync(string instanceId, int ramGb, string mcVersion, bool ignoreMissing = false, string? join = null)
         {
             RequireLogin();
+            if (!_host.CanLaunchGame)
+                return new { started = false, error = "Bu cihazda oyun başlatma henüz desteklenmiyor." };
 
             try
             {
@@ -352,10 +344,10 @@ namespace VuluLauncher
                 switch (AppSettings.Current.OnGameStart)
                 {
                     case "minimize":
-                        _window.SetMinimized(true);
+                        _host.Minimize();
                         break;
                     case "close":
-                        _ = Task.Delay(1500).ContinueWith(_ => _window.Close());
+                        _ = Task.Delay(1500).ContinueWith(_ => _host.Close());
                         break;
                 }
 
@@ -409,10 +401,5 @@ namespace VuluLauncher
             if (!_login.IsAdmin)
                 throw new InvalidOperationException("Bu işlem için admin yetkisi gerekli.");
         }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT { public int X; public int Y; }
-
-        [DllImport("user32.dll")] private static extern bool GetCursorPos(out POINT point);
     }
 }

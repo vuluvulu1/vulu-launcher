@@ -3,7 +3,25 @@
 //   bridge.send(cmd, args)    → cevap beklemeyen komut (pencere işlemleri)
 //   bridge.on(event, handler) → C#'ın gönderdiği olayları dinler
 const bridge = (() => {
-    const isNative = !!(window.external && typeof window.external.sendMessage === 'function');
+    // Mesajlar Windows'ta Photino (window.external), Android'de MAUI HybridWebView üzerinden gider
+    const transport = (() => {
+        if (window.external && typeof window.external.sendMessage === 'function')
+            return {
+                platform: 'windows',
+                post: raw => window.external.sendMessage(raw),
+                listen: handler => window.external.receiveMessage(handler)
+            };
+        if (window.HybridWebView && typeof window.HybridWebView.SendRawMessage === 'function')
+            return {
+                platform: 'android',
+                post: raw => window.HybridWebView.SendRawMessage(raw),
+                listen: handler => window.addEventListener('HybridWebViewMessageReceived', e => handler(e.detail.message))
+            };
+        return null;
+    })();
+    const isNative = !!transport;
+    const platform = transport ? transport.platform : 'browser';
+    document.documentElement.dataset.platform = platform;
     const pending = new Map();
     const listeners = new Map();
     let nextId = 1;
@@ -21,7 +39,7 @@ const bridge = (() => {
     }
 
     if (isNative) {
-        window.external.receiveMessage(raw => {
+        transport.listen(raw => {
             try { dispatch(JSON.parse(raw)); }
             catch (err) { console.error('Geçersiz mesaj', err); }
         });
@@ -32,13 +50,13 @@ const bridge = (() => {
         return new Promise((resolve, reject) => {
             const id = String(nextId++);
             pending.set(id, { resolve, reject });
-            window.external.sendMessage(JSON.stringify({ id, cmd, args: args || {} }));
+            transport.post(JSON.stringify({ id, cmd, args: args || {} }));
         });
     }
 
     function send(cmd, args) {
         if (!isNative) return;
-        window.external.sendMessage(JSON.stringify({ cmd, args: args || {} }));
+        transport.post(JSON.stringify({ cmd, args: args || {} }));
     }
 
     function on(event, handler) {
@@ -46,7 +64,7 @@ const bridge = (() => {
         listeners.get(event).push(handler);
     }
 
-    return { invoke, send, on, isNative, _dispatch: dispatch };
+    return { invoke, send, on, isNative, platform, _dispatch: dispatch };
 })();
 
 // Sayfa launcher dışında (normal tarayıcıda) açılırsa arayüz üzerinde çalışabilmek için

@@ -103,7 +103,7 @@ namespace VuluLauncher
             RequireLogin();
             string dir = Path.Combine(BackupsRoot, ResolveTarget(id).Target.Folder);
             Directory.CreateDirectory(dir);
-            Process.Start(new ProcessStartInfo("explorer.exe") { ArgumentList = { dir } });
+            _host.ShowInFolder(dir, selectFile: false);
             return new { opened = true };
         }
 
@@ -208,7 +208,7 @@ namespace VuluLauncher
                 dependencies = new Dictionary<string, string> { ["minecraft"] = meta.McVersion, [loaderKey] = meta.LoaderVersion ?? "" },
             };
 
-            string downloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            string downloads = _host.DownloadsDirectory;
             Directory.CreateDirectory(downloads);
             string safeName = string.Concat(meta.Name.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c)).Trim();
             string target = Path.Combine(downloads, $"{safeName}.mrpack");
@@ -234,7 +234,7 @@ namespace VuluLauncher
             });
 
             Log($"{meta.Name} dışa aktarıldı: {Path.GetFileName(target)} ({files.Count} Modrinth bağlantısı, {count} dosya).", "ok");
-            Process.Start(new ProcessStartInfo("explorer.exe") { ArgumentList = { "/select,", target } });
+            _host.ShowInFolder(target, selectFile: true);
             return new { path = target, links = files.Count, files = count };
         }
     }

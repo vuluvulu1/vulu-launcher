@@ -48,7 +48,7 @@ namespace VuluLauncher
         private static string RequireShotId(string id) =>
             ShotId.IsMatch(id ?? "") ? id! : throw new InvalidOperationException("Ekran görüntüsü bulunamadı.");
 
-        private static string FileUrl(string path) => new Uri(path).AbsoluteUri;
+        private static string FileUrl(string path) => LocalFiles.Url(path);
 
         // ── Akış ──────────────────────────────────────────────────────────
         private async Task<object?> ShotFeedAsync(string before, string author)
@@ -119,8 +119,8 @@ namespace VuluLauncher
                                 string text = e.TryGetProperty("text", out var t) ? t.GetString() ?? "" : "";
                                 string shotId = e.GetProperty("shotId").GetString()!;
                                 _bridge.Emit("shotEvent", new { from, kind, text, shotId });
-                                if (AppSettings.Current.SocialNotifications && !TrayNotifier.IsActive(_window.WindowHandle))
-                                    _tray.Show(kind == "like" ? $"{from} ekran görüntünü beğendi" : $"{from} yorum yaptı",
+                                if (AppSettings.Current.SocialNotifications)
+                                    NotifyIfAway(kind == "like" ? $"{from} ekran görüntünü beğendi" : $"{from} yorum yaptı",
                                         kind == "like" ? "Sosyal'de görmek için tıkla." : text, "shot:" + shotId);
                             }
                         }
@@ -165,7 +165,7 @@ namespace VuluLauncher
         {
             RequireLogin();
             string source = await CachedShotAsync(id, "image");
-            string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "vulu Launcher");
+            string dir = Path.Combine(_host.PicturesDirectory, "vulu Launcher");
             Directory.CreateDirectory(dir);
             string safeAuthor = Regex.IsMatch(author ?? "", "^[A-Za-z0-9_]{3,16}$") ? author! : "vulu";
             byte[] head = new byte[4];
@@ -173,7 +173,7 @@ namespace VuluLauncher
             string ext = head[0] == 0xFF && head[1] == 0xD8 ? ".jpg" : ".webp";
             string target = Path.Combine(dir, $"{safeAuthor}-{id[^8..]}{ext}");
             File.Copy(source, target, overwrite: true);
-            Process.Start(new ProcessStartInfo("explorer.exe") { ArgumentList = { "/select,", target } });
+            _host.ShowInFolder(target, selectFile: true);
             return new { path = target };
         }
 

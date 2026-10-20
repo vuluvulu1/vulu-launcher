@@ -322,7 +322,7 @@ namespace VuluLauncher
         private void NotifyMessages(List<object> views)
         {
             var settings = AppSettings.Current;
-            if (!settings.DmNotifications || views.Count == 0 || TrayNotifier.IsActive(_window.WindowHandle)) return;
+            if (!settings.DmNotifications || views.Count == 0 || _host.IsForeground) return;
             var incoming = views.Select(v => JsonSerializer.SerializeToElement(v, DmJson)).Where(v => !v.GetProperty("mine").GetBoolean());
             foreach (var group in incoming.GroupBy(v => v.GetProperty("peer").GetString()!).Take(3))
             {
@@ -341,7 +341,7 @@ namespace VuluLauncher
                         : "Yeni şifreli mesaj";
                     if (count > 1) body = $"({count} yeni) " + body;
                 }
-                _tray.Show(group.Key, body, "dm:" + group.Key);
+                _host.Notify(group.Key, body, "dm:" + group.Key);
             }
         }
 

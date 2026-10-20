@@ -36,7 +36,7 @@ namespace VuluLauncher
             _bridge.On("packs.install", async args => await InstallPackAsync(args.Str("id")));
             _bridge.On("packs.update", async args => await UpdatePackAsync(args.Str("id")));
             _bridge.On("packs.shareInfo", async args => await ShareInfoAsync(args.Str("instanceId")));
-            _bridge.On("packs.pickCover", _ => Task.FromResult<object?>(PickCover()));
+            _bridge.On("packs.pickCover", async _ => await PickCoverAsync());
             _bridge.On("packs.publish", async args => await PublishPackAsync(args));
             _bridge.On("packs.delete", async args => await DeletePackAsync(args.Str("id")));
             RegisterFeedbackCommands();
@@ -404,15 +404,14 @@ namespace VuluLauncher
             _ => null
         };
 
-        private object PickCover()
+        private async Task<object?> PickCoverAsync()
         {
             RequireAdmin();
-            var files = _window.ShowOpenFile("Kapak resmi seçin", null, false,
-                new[] { ("Resimler", new[] { "png", "jpg", "jpeg", "webp" }) });
-            if (files is not { Length: > 0 }) return new { path = (string?)null, url = (string?)null };
+            string? file = await _host.PickFileAsync("Kapak resmi seçin", "Resimler", new[] { "png", "jpg", "jpeg", "webp" });
+            if (file == null) return new { path = (string?)null, url = (string?)null };
 
-            string path = ValidateCover(files[0]);
-            return new { path, url = new Uri(path).AbsoluteUri };
+            string path = ValidateCover(file);
+            return new { path, url = LocalFiles.Url(path) };
         }
 
         private static string ValidateCover(string path)

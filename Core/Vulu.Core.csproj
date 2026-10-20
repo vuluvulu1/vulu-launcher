@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Launcher'ın platformdan bağımsız kısmı: arayüz komutları (LauncherApp), köprü ve servisler.
+    Windows (Launcher) ve Android (Android) projeleri bunu kullanır; işletim sistemine bağlı işler IPlatformHost'tadır.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Vulu.Core</AssemblyName>
+    <RootNamespace>VuluLauncher</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>0.9.0</Version>
+    <Authors>vuluvulu1</Authors>
+    <Company>vuluvulu1</Company>
+    <Product>vulu Launcher</Product>
+    <Copyright>Copyright (c) 2026 vuluvulu1. Licensed under AGPL-3.0.</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="vulu Launcher" />
+    <InternalsVisibleTo Include="vuluLauncher.Android" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Updater ile ortak: release bilgisi ve sürüm karşılaştırma -->
+    <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CmlLib.Core" Version="4.0.6" />
+    <PackageReference Include="CmlLib.Core.Installer.Forge" Version="2.0.0" />
+  </ItemGroup>
+
+</Project>

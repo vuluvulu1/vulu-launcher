@@ -118,6 +118,15 @@ function setupTitlebar() {
     $('btn-min').addEventListener('click', () => bridge.send('window.minimize'));
     $('btn-close').addEventListener('click', () => bridge.send('window.close'));
 
+    // Android geri tuşu: açık pencere ya da menü varsa onu kapatır (Esc gibi), yoksa uygulama arka plana gider
+    bridge.on('backPressed', () => {
+        const open = $('modal-root').lastElementChild
+            || POPOVERS.some(([popoverId]) => !$(popoverId).hidden)
+            || ($('pack-menu') && !$('pack-menu').hidden);
+        if (open) document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        else bridge.send('window.minimize');
+    });
+
     $('btn-user').addEventListener('click', () => openProfile(state.username));
 }
 

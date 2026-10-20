@@ -464,6 +464,8 @@
     <div id="modal-root"></div>
     <audio id="music" src="assets/menu.mp3" loop preload="auto"></audio>
 
+    <!-- Android'de MAUI HybridWebView'ın mesaj betiği (uygulama kendisi sunar); Windows'ta yoktur, atlanır -->
+    <script src="_framework/hybridwebview.js" onerror="this.remove()"></script>
     <script src="js/bridge.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/admin.js"></script>
