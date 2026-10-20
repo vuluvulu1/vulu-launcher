@@ -27,6 +27,12 @@ Hesaplar davetle açılır: giriş ekranından ya da [siteden](https://vuluvulu.
 
 Windows ilk seferde SmartScreen uyarısı verebilir: *Ek bilgi → Yine de çalıştır*.
 
+### Android (önizleme)
+
+**[APK'yı indir](https://vuluvulu.com.tr/releases/android/vulu-launcher.apk)** · Android 8 ve üstü. Aynı hesap, sosyal akış, mesajlar, paketler ve sunucular, telefon ekranına göre tasarlanmış haliyle. Oyunu henüz telefonda açmıyor. Yeni sürüm çıkınca uygulama haber verir.
+
+Geliştirme: Android uygulaması (`Android/`, .NET MAUI) Windows sürümüyle aynı arayüzü (`Launcher/wwwroot`) ve aynı komutları (`Core/`) kullanır. `tools/android-build.ps1` derler, `tools/publish-android.ps1` yayınlar.
+
 ## Neler var
 
 - Vanilla ve kendi instance'ların (Fabric, Quilt, Forge, NeoForge); Java kendiliğinden indirilir
