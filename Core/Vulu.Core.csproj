@@ -15,6 +15,7 @@
     <Company>vuluvulu1</Company>
     <Product>vulu Launcher</Product>
     <Copyright>Copyright (c) 2026 vuluvulu1. Licensed under AGPL-3.0.</Copyright>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
