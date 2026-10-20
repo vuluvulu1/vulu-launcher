@@ -192,8 +192,8 @@ namespace VuluLauncher
         // ════════════════════════════════════════════════════════════════
         private async Task<object?> CheckLauncherVersionAsync()
         {
-            // Android sürümü kendini güncellemez (yeni APK ayrıca kurulur)
-            if (!_host.CanSelfUpdate) return new { status = "upToDate" };
+            // Android sürümü kendini güncellemez: yeni APK sitede yayınlandıysa indirmesi önerilir
+            if (!_host.CanSelfUpdate) return await CheckAndroidUpdateAsync();
 
             var (status, latest) = await _launcherUpdates.CheckForUpdateAsync();
 
@@ -233,9 +233,36 @@ namespace VuluLauncher
             return new { status = "available", version, notes = latest.Notes, sizeMb, diskOk, neededMb, freeMb };
         }
 
+        private async Task<object?> CheckAndroidUpdateAsync()
+        {
+            AndroidUpdateFeed.Manifest? latest;
+            try { latest = await AndroidUpdateFeed.CheckAsync(); }
+            catch
+            {
+                Log("Launcher sürümü kontrol edilemedi (sunucuya ulaşılamadı).", "muted");
+                return new { status = "failed" };
+            }
+            if (latest == null) return new { status = "upToDate" };
+
+            _androidUpdateAvailable = true;
+            string version = VuluShared.Releases.Clean(latest.Version);
+            Log($"Yeni launcher sürümü mevcut: v{version}", "warn");
+            double? sizeMb = latest.Size > 0 ? Math.Round(latest.Size / 1024.0 / 1024.0, 1) : null;
+            return new { status = "available", version, notes = latest.Notes, sizeMb, diskOk = true, neededMb = 0, freeMb = 0, external = true };
+        }
+
+        private bool _androidUpdateAvailable;
+
         /// <summary>Updater'ı açar ve launcher'ı kapatır; Updater kapanmayı bekleyip kurar ve launcher'ı yeniden açar.</summary>
         private object StartLauncherUpdate()
         {
+            if (!_host.CanSelfUpdate)
+            {
+                if (!_androidUpdateAvailable) throw new InvalidOperationException("Bekleyen launcher güncellemesi yok.");
+                _host.OpenUrl(AndroidUpdateFeed.ApkUrl);   // APK tarayıcıda iner, Android kurar
+                return new { started = true };
+            }
+
             if (_latestLauncher == null)
                 throw new InvalidOperationException("Bekleyen launcher güncellemesi yok.");
 

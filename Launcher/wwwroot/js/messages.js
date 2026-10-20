@@ -135,7 +135,7 @@ function renderChatHeader() {
             el('span', { class: 'dm-lock', title: 'Uçtan uca şifreli' }, peer.verified ? '🔒 Doğrulandı' : '🔒 Uçtan uca şifreli')),
         el('button', { class: 'btn btn-sm', onclick: () => showSafetyCode(dm.active) }, 'Güvenlik kodu'),
         peer.keyChanged && el('div', { class: 'dm-warning' },
-            `${dm.active} kişisinin şifreleme anahtarı değişmiş. Yeni bir bilgisayara geçmiş ya da şifresi sıfırlanmış olabilir; ama araya biri girmiş de olabilir. Önemli bir şey yazmadan önce güvenlik kodunu birlikte karşılaştırın.`,
+            `${dm.active} kişisinin şifreleme anahtarı değişmiş. Yeni bir cihaza geçmiş ya da şifresi sıfırlanmış olabilir; ama araya biri girmiş de olabilir. Önemli bir şey yazmadan önce güvenlik kodunu birlikte karşılaştırın.`,
             el('button', { class: 'link-btn', onclick: () => showSafetyCode(dm.active) }, 'Güvenlik kodunu göster')),
     ].filter(Boolean));   // replaceChildren false'u metin olarak ekler
 }

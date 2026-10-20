@@ -68,7 +68,8 @@ namespace VuluLauncher
             var pending = PendingIntent.GetActivity(context, id, intent, PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent);
 
             var notification = new NotificationCompat.Builder(context, NotificationChannel)
-                .SetSmallIcon(Resource.Mipmap.appicon)
+                // Durum çubuğu ikonu tek renk olmalı; renkli uygulama ikonu beyaz kare görünür
+                .SetSmallIcon(Android.Resource.Drawable.SymActionChat)
                 .SetContentTitle(title)
                 .SetContentText(body)
                 .SetStyle(new NotificationCompat.BigTextStyle().BigText(body))

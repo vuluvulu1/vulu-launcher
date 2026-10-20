@@ -432,12 +432,14 @@ html[data-ui="neon"] .btn-play {
     clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
     overflow: hidden;
 }
+/* Parıltı transform ile kayar (left animasyonu her karede yerleşimi yeniden hesaplatırdı) */
 html[data-ui="neon"] .btn-play::after {
-    content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 30%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent); transform: skewX(-20deg);
+    content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 30%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent);
+    transform: translateX(-140%) skewX(-20deg); will-change: transform;
     animation: neon-sweep 2.8s ease-in-out infinite;
 }
-@keyframes neon-sweep { 0%, 55% { left: -40%; } 100% { left: 130%; } }
+@keyframes neon-sweep { 0%, 55% { transform: translateX(-140%) skewX(-20deg); } 100% { transform: translateX(440%) skewX(-20deg); } }
 html[data-ui="neon"] .btn-play:hover:not(:disabled) { background: #8ff8ff; box-shadow: 0 0 34px rgba(0, 234, 255, .8), inset 0 0 0 2px #fff; }
 html[data-ui="neon"] .btn-play svg { width: 15px; height: 15px; }
 html[data-ui="neon"] .btn-play:disabled {

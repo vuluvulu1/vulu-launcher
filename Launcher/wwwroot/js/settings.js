@@ -111,14 +111,14 @@ async function openSettingsPage() {
     // ── Launcher davranışı ────────────────────────────────────────────
     const behaviour = el('section', { class: 'set-section' },
         el('h2', {}, 'Launcher'),
-        settingRow('Oyun açılınca', '"Kapat" seçilirse oyun çıktısı konsolda görünmez ve oynama süresi sayılmaz.',
+        isDesktopApp() && settingRow('Oyun açılınca', '"Kapat" seçilirse oyun çıktısı konsolda görünmez ve oynama süresi sayılmaz.',
             segmentedControl([['keep', 'Açık kalsın'], ['minimize', 'Küçült'], ['close', 'Kapat']], s.onGameStart,
                 value => changeSetting({ onGameStart: value }))),
         settingRow('Açılış animasyonunu atla', null, toggleControl(s.skipSplash, value => changeSetting({ skipSplash: value }))),
         settingRow('Arkadaşların ne görsün', 'Sunucular ve profil sayfasındaki arkadaş listesinde.',
             segmentedControl([['full', 'Ne oynadığım'], ['online', 'Sadece çevrimiçi'], ['hidden', 'Görünmez']], s.presenceMode || 'full',
                 value => changeSetting({ presenceMode: value }))),
-        settingRow('Mesaj bildirimleri', 'Launcher arkadayken ya da oyundayken yeni mesaj gelince Windows bildirimi.',
+        settingRow('Mesaj bildirimleri', 'Launcher arkadayken ya da oyundayken yeni mesaj gelince ' + (isDesktopApp() ? 'Windows bildirimi.' : 'telefon bildirimi.'),
             toggleControl(s.dmNotifications !== false, value => changeSetting({ dmNotifications: value }))),
         settingRow('Bildirimde mesajı göster', 'Kapalıysa bildirimde yalnızca kimden geldiği yazar; mesajın kendisi görünmez.',
             toggleControl(s.dmNotificationPreview !== false, value => changeSetting({ dmNotificationPreview: value }))),
@@ -128,7 +128,7 @@ async function openSettingsPage() {
             toggleControl(s.showPlaytimeOnProfile !== false, value => changeSetting({ showPlaytimeOnProfile: value }))),
         settingRow('Paket güncelleme bildirimi', 'Kurduğun bir vulu pack güncellenince haber verir.',
             toggleControl(s.packUpdateNotifications !== false, value => changeSetting({ packUpdateNotifications: value }))),
-        settingRow("Discord'da durum göster", 'Discord açıksa arkadaşların ne oynadığını görür: "vulu Launcher · AGLR SMP oynuyor".',
+        isDesktopApp() && settingRow("Discord'da durum göster", 'Discord açıksa arkadaşların ne oynadığını görür: "vulu Launcher · AGLR SMP oynuyor".',
             toggleControl(s.discordPresence !== false, value => changeSetting({ discordPresence: value }))),
         settingRow('Konsolu büyük aç', null, toggleControl(s.consoleExpanded, value => changeSetting({ consoleExpanded: value }))));
 
@@ -147,7 +147,7 @@ async function openSettingsPage() {
     const theme = ['neon', 'atlas'].includes(document.documentElement.dataset.ui) ? document.documentElement.dataset.ui : 'classic';
     const look = el('section', { class: 'set-section' },
         el('h2', {}, 'Ses ve görünüm'),
-        settingRow('Tema', 'Neon: siberpunk, koyu ve parlak. Atlas: kâşif defteri, açık renkli. Bu bilgisayar için hatırlanır.',
+        settingRow('Tema', 'Neon: siberpunk, koyu ve parlak. Atlas: kâşif defteri, açık renkli. ' + (isDesktopApp() ? 'Bu bilgisayar' : 'Bu cihaz') + ' için hatırlanır.',
             segmentedControl([['classic', 'Klasik'], ['neon', 'Neon'], ['atlas', 'Atlas']], theme, async value => {
                 // Vurgu rengi satırı yalnızca klasik temada var; sayfa, tema değiştiği anda yenilenir
                 await setUiTheme(value, () => openSettingsPage());
@@ -166,7 +166,7 @@ async function openSettingsPage() {
         el('h2', {}, 'Hesap ve dosyalar'),
         settingRow('Hesap', `${state.username} olarak giriş yapıldı.`,
             el('button', { class: 'btn btn-sm', onclick: logout }, 'Çıkış yap')),
-        settingRow('Kayıtlı şifre', info.hasSavedPassword ? `${info.savedUsername} için şifre bu bilgisayarda kayıtlı.` : 'Kayıtlı şifre yok.',
+        settingRow('Kayıtlı şifre', info.hasSavedPassword ? `${info.savedUsername} için şifre ${isDesktopApp() ? 'bu bilgisayarda' : 'bu cihazda'} kayıtlı.` : 'Kayıtlı şifre yok.',
             el('button', {
                 class: 'btn btn-sm', disabled: !info.hasSavedPassword,
                 onclick: async () => { await bridge.invoke('auth.forgetPassword'); flashSaved('Silindi ✓'); openSettingsPage(); },
@@ -177,7 +177,8 @@ async function openSettingsPage() {
                 el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'instances' }) }, 'Instance\'lar'))),
         settingRow('Sürüm', null, el('span', { class: 'set-value' }, 'vulu Launcher v' + info.version)));
 
-    body.replaceChildren(game, behaviour, look, account);
+    // Oyun ayarları (Java, RAM, pencere) telefonda oyun açılana kadar gösterilmez
+    body.replaceChildren(...[state.canLaunchGame && game, behaviour, look, account].filter(Boolean));
 }
 
 // Tema geçiş efektleri: ekranı kapatan katmanın süresi ve temanın değiştiği an (ms)
@@ -203,6 +204,7 @@ async function setUiTheme(theme, onSwap) {
 
     const fx = THEME_FX[theme];
     if (root.dataset.ui === theme || !fx || themeFxRunning) { apply(); return; }
+    if (isMobile()) { await liteThemeFx(theme, apply); return; }
 
     themeFxRunning = true;
     const layer = el('div', { id: 'theme-fx', class: fx.className, 'aria-hidden': 'true' });
@@ -215,6 +217,39 @@ async function setUiTheme(theme, onSwap) {
     } finally {
         layer.remove();
         if (fx.rootClass) root.classList.remove(fx.rootClass);
+        themeFxRunning = false;
+    }
+}
+
+// Telefon için hafif geçişler: tam ekran filter/clip-path/blend efektleri telefonda kare kaçırır. Bunun yerine
+// sabit desenli bir katman yalnızca opaklık ve konumla (GPU'da) gelir; tema, katman ekranı tamamen kapatmışken
+// değişir ve yeni tema çizilene kadar beklenir, sonra katman çekilir. Donma olursa kapalı perdenin arkasında olur.
+const LITE_FX = {
+    neon: {
+        in: [{ opacity: 0, transform: 'translateX(-8%)' }, { opacity: 1, transform: 'translateX(3%)', offset: .6 }, { opacity: 1, transform: 'none' }],
+        out: [{ opacity: 1, transform: 'none' }, { opacity: 1, transform: 'translateX(-3%)', offset: .35 }, { opacity: 0, transform: 'translateX(6%)' }],
+    },
+    classic: {
+        in: [{ opacity: 0, transform: 'scale(1.12)' }, { opacity: 1, transform: 'none' }],
+        out: [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.94)' }],
+    },
+    atlas: {
+        in: [{ transform: 'translateX(100%)' }, { transform: 'none' }],
+        out: [{ transform: 'none' }, { transform: 'translateX(-102%)' }],
+    },
+};
+
+async function liteThemeFx(theme, apply) {
+    themeFxRunning = true;
+    const layer = el('div', { id: 'theme-fx', class: 'lite lite-' + theme, 'aria-hidden': 'true' });
+    document.body.append(layer);
+    try {
+        await layer.animate(LITE_FX[theme].in, { duration: 300, easing: 'cubic-bezier(.3, 0, .2, 1)', fill: 'forwards' }).finished;
+        apply();
+        await nextPaint();
+        await layer.animate(LITE_FX[theme].out, { duration: 340, easing: 'cubic-bezier(.6, 0, .4, 1)', fill: 'forwards' }).finished;
+    } finally {
+        layer.remove();
         themeFxRunning = false;
     }
 }

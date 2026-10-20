@@ -405,3 +405,48 @@
     html[data-ui="atlas"] .page-head h1 { font-size: 28px; }
     html[data-ui="atlas"] .pack-tile:nth-child(n) { transform: none; }
 }
+
+/* ── Telefonda akıcılık ─────────────────────────────────────────────────
+   Telefon GPU'su tam ekran filter, blend, backdrop-filter ve her karede yeniden boyanan gradyanlarda kare kaçırır.
+   Animasyonlar yalnızca transform ve opaklıkla yapılır; süs efektleri sadeleşir. */
+@media (max-width: 900px) {
+    /* Tema geçişi (settings.js liteThemeFx): sabit desenli tek katman, GPU'da kayar/solar */
+    #theme-fx.lite { will-change: transform, opacity; backface-visibility: hidden; }
+    #theme-fx.lite-neon {
+        background:
+            repeating-linear-gradient(180deg, rgba(0, 234, 255, .09) 0 2px, transparent 2px 7px),
+            radial-gradient(ellipse 70% 50% at 50% 50%, rgba(255, 43, 214, .28), transparent 70%),
+            #04040a;
+        box-shadow: inset 3px 0 0 #00eaff, inset -3px 0 0 #ff2bd6;
+    }
+    #theme-fx.lite-classic { background: radial-gradient(circle at 50% 48%, rgba(243, 214, 164, .2), rgba(194, 126, 62, .08) 30%, transparent 55%), #070504; }
+    #theme-fx.lite-atlas {
+        background:
+            linear-gradient(90deg, rgba(70, 45, 20, .35), rgba(70, 45, 20, 0) 36px),
+            repeating-linear-gradient(0deg, rgba(46, 107, 102, .1) 0 1px, transparent 1px 48px),
+            radial-gradient(ellipse at 50% 45%, #f3ebda, #e3d4b5 95%);
+    }
+
+    /* Bulanık zeminler yerine yarı saydam düz renk */
+    .announcement { backdrop-filter: none; background: color-mix(in srgb, var(--panel) 94%, transparent); }
+    .profile-banner-actions .btn { backdrop-filter: none; background: rgba(0, 0, 0, .7); }
+
+    /* Açılış: harfler çizilirken her karede yeniden hesaplanan gölge filtreleri kapalı; hareket eden katmanlar GPU'da */
+    .stage-name { filter: none; }
+    html[data-ui="neon"] .stage-name path { filter: none; stroke-width: 2.6px; }
+    .stage-title, .valance, .curtain { will-change: transform, opacity; }
+
+    /* Neon: bütün ekranın üstündeki tarama çizgisi katmanı ve 3B ızgara kaydırırken her şeyi yeniden birleştirtir */
+    html[data-ui="neon"] body::after { display: none; }
+    html[data-ui="neon"] .stage-bg::before { display: none; }
+    html[data-ui="neon"] .btn-play { box-shadow: 0 0 14px rgba(0, 234, 255, .45), inset 0 0 0 2px rgba(255, 255, 255, .35); }
+
+    /* Sabit sahne resmi kendi katmanında: sayfa kayarken yeniden boyanmaz */
+    .stage-bg { will-change: transform; transform: translateZ(0); }
+    html[data-ui="atlas"] .stage-bg { will-change: auto; transform: rotate(1.2deg); }
+}
+
+/* Sistem "animasyonları azalt" diyorsa tema geçişi ve süslü döngüler kısalır (açılış perdeleri hariç, bkz. app.css) */
+@media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+    html[data-ui="neon"] .btn-play::after, .dl.running .dl-bar i::after { animation: none; display: none; }
+}

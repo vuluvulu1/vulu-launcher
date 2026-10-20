@@ -201,6 +201,7 @@ async function showLogin({ auto = false } = {}) {
     applySettings(init.settings);
     $('app-version').textContent = 'v' + init.version;
     state.apiBase = init.apiBaseUrl || '';
+    state.canLaunchGame = init.canLaunchGame !== false;   // Android'de oyun henüz açılmıyor
     $('btn-user').hidden = true;
     $('page-tabs').hidden = true;
     $('tab-admin').hidden = true;
@@ -425,9 +426,13 @@ async function offerLauncherUpdate() {
 
     const size = check.sizeMb ? ` (${check.sizeMb} MB)` : '';
     const notes = check.notes && check.notes.trim() ? `\n\nYenilikler:\n${check.notes.trim()}` : '';
+    // Android: yeni APK tarayıcıda iner, kurulumu Android yapar
+    const how = check.external
+        ? 'İndirilsin mi? Dosya inince açıp "Güncelle"ye dokun.'
+        : 'Şimdi güncellensin mi? Launcher kapanıp güncellendikten sonra yeniden açılır.';
     const accepted = await confirmDialog({
         title: 'Launcher güncellemesi',
-        message: `Launcher v${check.version} sürümüne güncellenebilir${size}.${notes}\n\nŞimdi güncellensin mi? Launcher kapanıp güncellendikten sonra yeniden açılır.`,
+        message: `Launcher v${check.version} sürümüne güncellenebilir${size}.${notes}\n\n${how}`,
     });
     if (!accepted) { appendLog({ text: 'Launcher güncellemesi ertelendi.', level: 'muted' }); return; }
 
@@ -744,6 +749,7 @@ function updatePlayButton() {
     if (launching) { button.disabled = true; label.textContent = 'Başlatılıyor…'; }
     else if (state.busy > 0) { button.disabled = true; label.textContent = 'İşlem sürüyor…'; }
     else if (state.gameRunning) { button.disabled = true; label.textContent = 'Oyun çalışıyor'; }
+    else if (!state.canLaunchGame) { button.disabled = true; label.textContent = 'Telefonda oyun yakında'; }
     else { button.disabled = !state.selected; label.textContent = 'OYNA'; }
     refreshStatus();
 }
@@ -768,6 +774,8 @@ function refreshStatus() {
         if (pct === null) mode = 'indeterminate';
     } else if (state.gameRunning) {
         text = 'Oyun çalışıyor'; pct = 100; mode = 'running';
+    } else if (!state.canLaunchGame) {
+        text = 'Oyun şimdilik yalnızca bilgisayarda açılıyor';
     } else if (!state.selected) {
         text = 'Başlamak için bir paket seç';
     } else if (!state.details) {

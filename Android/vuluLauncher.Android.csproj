@@ -16,10 +16,11 @@
 
     <ApplicationTitle>vulu Launcher</ApplicationTitle>
     <ApplicationId>com.vuluvulu.launcher</ApplicationId>
-    <!-- Yayınlarken -p:Version ile ezilir; ApplicationVersion her APK'da artmalı -->
-    <Version>0.9.0</Version>
+    <!-- Android sürümleri kendi numarasıyla ilerler; tools/android-build.ps1 -Version ile ikisini birlikte ezer.
+         ApplicationVersion her APK'da artmalı (Android daha küçük numaralı APK'yı güncelleme olarak kabul etmez). -->
+    <Version>0.1.0</Version>
     <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationVersion>100</ApplicationVersion>
     <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
     <!-- APK telefona elle de kurulur: Debug'da da .NET derlemeleri APK'nın içinde olmalı (Fast Deployment yok) -->
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
@@ -35,9 +36,13 @@
     <RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
+  <!-- Yayın APK'sı: telefonlar (arm64). Kırpma kapalı: köprü ve servisler System.Text.Json'u yansımayla kullanır,
+       kırpılırsa çalışma anında bozulurdu. İmza anahtarı android-build.ps1'den gelir (repoda değil). -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <AndroidPackageFormat>apk</AndroidPackageFormat>
-    <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
+    <AndroidLinkMode>None</AndroidLinkMode>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
   <ItemGroup>
