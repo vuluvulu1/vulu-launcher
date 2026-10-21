@@ -423,12 +423,18 @@
     .fx-black { background: #000; }
     /* Kayan dilim: masaüstündeki pembe/camgöbeği tarama şeritleri */
     #theme-fx.lite .fx-slice {
-        left: -60px; right: -60px; opacity: 0;
+        top: 0; left: -60px; right: -60px; opacity: 0;
         background: repeating-linear-gradient(180deg,
             rgba(255, 43, 214, .6) 0 3px, transparent 3px 9px, rgba(0, 234, 255, .55) 9px 11px, transparent 11px 26px);
     }
     .fx-noise { background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .07) 0 1px, transparent 1px 3px); }
-    #theme-fx.lite .fx-iris { left: 50%; top: 50%; border-radius: 50%; transform-origin: 50% 50%; }
+    /* Klasik: tam boyda çizilip küçültülen altın halka; dışı kenarlardan kararan hare ve tam karanlıkla örtülür */
+    #theme-fx.lite .fx-ring {
+        left: 50%; top: 50%; border-radius: 50%; transform-origin: 50% 50%;
+        border: 2px solid rgba(243, 214, 164, .95);
+        box-shadow: 0 0 0 2px #c27e3e, 0 0 26px 10px rgba(8, 6, 4, .9), inset 0 0 18px rgba(194, 126, 62, .35);
+    }
+    .fx-vignette { background: radial-gradient(circle at 50% 50%, transparent 0 22%, rgba(8, 6, 4, .75) 48%, #000 72%); }
     /* Atlas: kâğıt sayfa ve kıvrılan kenarı (masaüstüyle aynı desen) */
     #theme-fx.lite .fx-page {
         inset: 0;
@@ -441,6 +447,10 @@
         top: 0; bottom: 0; left: 0; width: 90px;
         background: linear-gradient(90deg, rgba(255, 252, 240, .9), rgba(220, 200, 165, .6) 60%, rgba(70, 45, 20, .25));
     }
+
+    /* Atlas'ın kâğıt dokusu bir SVG gürültü filtresi; onlarca öğede ayrı ayrı çizilir ve telefonda tema değişimini,
+       kaydırmayı yavaşlatır. Telefonda düz kâğıt rengi kalır. */
+    html[data-ui="atlas"] { --paper-noise: none; }
 
     /* Bulanık zeminler yerine yarı saydam düz renk */
     .announcement { backdrop-filter: none; background: color-mix(in srgb, var(--panel) 94%, transparent); }
