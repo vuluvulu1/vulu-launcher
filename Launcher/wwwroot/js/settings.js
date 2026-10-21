@@ -221,34 +221,114 @@ async function setUiTheme(theme, onSwap) {
     }
 }
 
-// Telefon için hafif geçişler: tam ekran filter/clip-path/blend efektleri telefonda kare kaçırır. Bunun yerine
-// sabit desenli bir katman yalnızca opaklık ve konumla (GPU'da) gelir; tema, katman ekranı tamamen kapatmışken
-// değişir ve yeni tema çizilene kadar beklenir, sonra katman çekilir. Donma olursa kapalı perdenin arkasında olur.
+// ── Telefon için tema geçişleri ───────────────────────────────────────
+// Masaüstündeki efektlerin aynısı, aynı zamanlamayla; ama yalnızca transform ve opaklıkla (GPU'da) oynar. Masaüstü
+// sürümü filter, clip-path, blend ve her karede yeniden boyanan gradyan kullanır; telefonda bunlar kare kaçırır.
+// Her efekt iki yarıya bölünür: ilk yarı ekranı kapatır, tema kapalı ekranın arkasında değişir ve yeni tema çizilene
+// kadar beklenir, ikinci yarı açar. Böylece temanın yeniden hesaplandığı duraklama görünmez.
+
+/** Sert geçişli kareler: [[ofset, değer], ...]; her değer bir sonraki ofsete kadar sabit kalır (CSS steps(1) gibi). */
+function holdFrames(prop, points) {
+    return points.flatMap(([offset, value], i) => {
+        const next = points[i + 1];
+        return next ? [{ offset, [prop]: value }, { offset: next[0], [prop]: value }] : [{ offset, [prop]: value }];
+    });
+}
+
+/** Bir öğe: sınıfı ve isteğe bağlı satır içi stil. */
+const fxPart = (cls, style = '') => el('i', { class: cls, style });
+
 const LITE_FX = {
+    // Klasik → Neon: sinyal bozulması. Renk parlamaları ve karartma, kayan şeritler, parazit; ekran sarsılır.
     neon: {
-        in: [{ opacity: 0, transform: 'translateX(-8%)' }, { opacity: 1, transform: 'translateX(3%)', offset: .6 }, { opacity: 1, transform: 'none' }],
-        out: [{ opacity: 1, transform: 'none' }, { opacity: 1, transform: 'translateX(-3%)', offset: .35 }, { opacity: 0, transform: 'translateX(6%)' }],
+        duration: 760, swapAt: 340,
+        build(layer) {
+            const parts = [];
+            const add = (node, frames) => { layer.append(node); parts.push([node, frames]); };
+            add(fxPart('fx-fill fx-cyan'), holdFrames('opacity', [[0, 0], [.2, .08], [.36, 0], [.56, .16], [.66, 0], [1, 0]]));
+            add(fxPart('fx-fill fx-pink'), holdFrames('opacity', [[0, 0], [.36, .22], [.44, 0], [1, 0]]));
+            add(fxPart('fx-fill fx-dark'), holdFrames('opacity', [[0, 0], [.44, 1], [.56, 0], [1, 0]]));
+            // Masaüstündeki kayan dilimler: her adımda ekranın bir bandı yana kaymış şeritlerle görünür
+            const steps = [
+                [0, .1, 10, 8, -24], [.1, .2, 42, 14, 32], [.2, .3, 70, 18, -14], [.3, .4, 4, 34, 20], [.4, .48, 24, 46, -44],
+                [.48, .58, 0, 100, 0, .5], [.58, .68, 56, 24, 26], [.68, .78, 14, 10, -10], [.78, .88, 82, 12, 12],
+            ];
+            for (const [from, to, top, height, shift, alpha = 1] of steps)
+                add(fxPart('fx-slice', `top:${top}%;height:${height}%;transform:translateX(${shift}px)`),
+                    holdFrames('opacity', from === 0 ? [[0, alpha], [to, 0], [1, 0]] : [[0, 0], [from, alpha], [to, 0], [1, 0]]));
+            add(fxPart('fx-fill fx-noise'), holdFrames('opacity', [[0, .9], [.1, .3], [.3, .9], [.44, 1], [.5, .3], [.7, 0], [1, 0]]));
+            // Ekran sarsıntısı: masaüstünde filtreli; burada yalnızca kaydırma. body'nin kutusu ekranın kendisi olduğu
+            // için içindeki sabit konumlu öğeler yerinden oynamaz.
+            parts.push([document.body, holdFrames('transform', [
+                [0, 'none'], [.08, 'translate(-8px, 0) skewX(-3deg)'], [.16, 'translate(10px, 1px)'], [.24, 'translate(-4px, -2px) skewX(6deg)'],
+                [.32, 'translate(14px, 0)'], [.4, 'translate(-12px, 2px) skewX(-8deg)'], [.48, 'none'], [.56, 'translate(6px, 0)'],
+                [.64, 'translate(-3px, 0) skewX(2deg)'], [.72, 'translate(2px, 0)'], [.8, 'none'], [1, 'none']])]);
+            return parts;
+        },
     },
+    // Neon → Klasik: altın kenarlı iris ortada kapanır, klasik temaya açılır. Halka ve karartma bir kez çizilir,
+    // yalnızca büyütülüp küçültülür (masaüstünde yarıçap her karede yeniden boyanır).
     classic: {
-        in: [{ opacity: 0, transform: 'scale(1.12)' }, { opacity: 1, transform: 'none' }],
-        out: [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.94)' }],
+        duration: 1100, swapAt: 550,
+        build(layer) {
+            const diagonal = Math.hypot(innerWidth, innerHeight);
+            const hole = 10;                                   // kapalıyken deliğin yarıçapı (px)
+            const open = (diagonal / 2 + 60) / hole;           // açıkken ölçek: delik ekranın köşelerini aşar
+            const size = Math.ceil(diagonal + 40);
+            const iris = fxPart('fx-iris', `width:${size}px;height:${size}px;margin:${-size / 2}px 0 0 ${-size / 2}px;` +
+                `background:radial-gradient(circle at 50% 50%, transparent ${hole}px, rgba(243, 214, 164, .95) ${hole + .3}px,` +
+                ` #c27e3e ${hole + .8}px, rgba(8, 6, 4, .96) ${hole + 2}px, #000 ${hole + 9}px)`);
+            layer.append(iris, fxPart('fx-fill fx-black'));
+            const ease = 'cubic-bezier(.65, 0, .35, 1)';
+            return [
+                [iris, [{ offset: 0, transform: `scale(${open})`, easing: ease }, { offset: .45, transform: 'scale(1)' },
+                    { offset: .55, transform: 'scale(1)', easing: ease }, { offset: 1, transform: `scale(${open})` }]],
+                // Ortadaki küçük delik de kapanır: tema değişirken ekran tamamen karanlık
+                [layer.lastChild, holdFrames('opacity', [[0, 0], [.44, 1], [.56, 0], [1, 0]])],
+            ];
+        },
     },
+    // → Atlas: bir kâğıt sayfa sağdan sola çevrilir; sayfa ekranı kapatınca tema değişir
     atlas: {
-        in: [{ transform: 'translateX(100%)' }, { transform: 'none' }],
-        out: [{ transform: 'none' }, { transform: 'translateX(-102%)' }],
+        duration: 1000, swapAt: 500,
+        build(layer) {
+            const page = fxPart('fx-page'), edge = fxPart('fx-page-edge');
+            layer.append(page, edge);
+            const ease = 'cubic-bezier(.55, 0, .35, 1)';
+            return [
+                [page, [{ offset: 0, transform: 'translateX(100%)', easing: ease }, { offset: .45, transform: 'none' },
+                    { offset: .55, transform: 'none', easing: ease }, { offset: 1, transform: 'translateX(-105%)' }]],
+                [edge, [{ offset: 0, transform: 'translateX(100vw)', easing: ease }, { offset: .45, transform: 'translateX(-90px)' },
+                    { offset: .55, transform: 'translateX(-90px)', opacity: 1, easing: ease }, { offset: 1, transform: 'translateX(-90px)', opacity: 0 }]],
+            ];
+        },
     },
 };
 
+/**
+ * Efektin [from, to] aralığını oynatır (ms); sonunda o anki görünümde kalır. Ekran kare üretmezse (uygulama arka
+ * plandaysa) animasyon zamanı ilerlemez; tema yine de değişsin diye süre dolunca beklemeden devam edilir.
+ */
+function playFxSlice(parts, duration, from, to) {
+    const done = Promise.all(parts.map(([node, frames]) => node.animate(frames, {
+        duration, delay: -from, endDelay: -(duration - to), fill: 'both', easing: 'linear',
+    }).finished.catch(() => { })));
+    return Promise.race([done, wait(to - from + 400)]);
+}
+
 async function liteThemeFx(theme, apply) {
     themeFxRunning = true;
+    const fx = LITE_FX[theme];
     const layer = el('div', { id: 'theme-fx', class: 'lite lite-' + theme, 'aria-hidden': 'true' });
     document.body.append(layer);
+    const parts = fx.build(layer);
     try {
-        await layer.animate(LITE_FX[theme].in, { duration: 300, easing: 'cubic-bezier(.3, 0, .2, 1)', fill: 'forwards' }).finished;
+        await playFxSlice(parts, fx.duration, 0, fx.swapAt);
         apply();
-        await nextPaint();
-        await layer.animate(LITE_FX[theme].out, { duration: 340, easing: 'cubic-bezier(.6, 0, .4, 1)', fill: 'forwards' }).finished;
+        await nextPaint();   // yeni tema, kapalı ekranın arkasında çizilsin
+        await playFxSlice(parts, fx.duration, fx.swapAt, fx.duration);
     } finally {
+        for (const [node] of parts) node.getAnimations().forEach(a => a.cancel());
         layer.remove();
         themeFxRunning = false;
     }

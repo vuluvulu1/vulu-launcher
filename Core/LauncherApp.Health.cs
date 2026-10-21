@@ -18,7 +18,7 @@ namespace VuluLauncher
             _bridge.On("crash.openReport", args => Task.FromResult<object?>(OpenCrashReport(args.Str("instanceId"), args.Str("file"))));
             _bridge.On("instances.setContentEnabled", args => Task.FromResult<object?>(SetContentEnabled(args.Str("id"), args.Str("file"), args.Bool("enabled"))));
             _bridge.On("instances.checkUpdates", async args => await CheckUpdatesAsync(args.Str("id")));
-            _bridge.On("mods.update", async args => await UpdateModAsync(args.Str("instanceId"), args.Str("projectId"), args.Str("versionId")));
+            _bridge.On("mods.update", async args => await UpdateModAsync(RequireGameDevice(args.Str("instanceId")), args.Str("projectId"), args.Str("versionId")));
         }
 
         // ── Çökme yardımcısı ──────────────────────────────────────────────

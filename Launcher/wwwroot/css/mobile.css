@@ -278,10 +278,12 @@
     .user-row { grid-template-columns: minmax(0, 1fr); }
     .inst-card { grid-template-columns: 1fr; }
     .admin-form .row { flex-wrap: wrap; }
+    .admin-toolbar, .toolbar-actions { flex-wrap: wrap; gap: 8px; }
 
     /* ── Pencereler: alttan açılan tam genişlik panel ──────────────── */
     .modal-backdrop { inset: 0; z-index: 60; place-items: end stretch; }
-    .modal, .modal-wide {
+    /* Masaüstünde genişliği sabit pencereler (:has ile) de tam genişlik */
+    .modal, .modal-wide, .modal:has(.look-body) {
         width: 100%; max-width: none; height: auto; max-height: calc(100% - 24px);
         border-radius: 14px 14px 0 0; border-bottom: 0;
         padding-bottom: env(safe-area-inset-bottom);
@@ -410,21 +412,34 @@
    Telefon GPU'su tam ekran filter, blend, backdrop-filter ve her karede yeniden boyanan gradyanlarda kare kaçırır.
    Animasyonlar yalnızca transform ve opaklıkla yapılır; süs efektleri sadeleşir. */
 @media (max-width: 900px) {
-    /* Tema geçişi (settings.js liteThemeFx): sabit desenli tek katman, GPU'da kayar/solar */
-    #theme-fx.lite { will-change: transform, opacity; backface-visibility: hidden; }
-    #theme-fx.lite-neon {
-        background:
-            repeating-linear-gradient(180deg, rgba(0, 234, 255, .09) 0 2px, transparent 2px 7px),
-            radial-gradient(ellipse 70% 50% at 50% 50%, rgba(255, 43, 214, .28), transparent 70%),
-            #04040a;
-        box-shadow: inset 3px 0 0 #00eaff, inset -3px 0 0 #ff2bd6;
+    /* Tema geçişi (settings.js liteThemeFx): masaüstündeki efektlerin parçaları ayrı katmanlarda durur ve yalnızca
+       opaklık/konum değiştirir; desenler bir kez çizilir */
+    #theme-fx.lite { overflow: hidden; pointer-events: all; }
+    #theme-fx.lite > i { position: absolute; display: block; will-change: transform, opacity; backface-visibility: hidden; }
+    #theme-fx.lite .fx-fill { inset: 0; opacity: 0; }
+    .fx-cyan { background: #00eaff; }
+    .fx-pink { background: #ff2bd6; }
+    .fx-dark { background: #04040a; }
+    .fx-black { background: #000; }
+    /* Kayan dilim: masaüstündeki pembe/camgöbeği tarama şeritleri */
+    #theme-fx.lite .fx-slice {
+        left: -60px; right: -60px; opacity: 0;
+        background: repeating-linear-gradient(180deg,
+            rgba(255, 43, 214, .6) 0 3px, transparent 3px 9px, rgba(0, 234, 255, .55) 9px 11px, transparent 11px 26px);
     }
-    #theme-fx.lite-classic { background: radial-gradient(circle at 50% 48%, rgba(243, 214, 164, .2), rgba(194, 126, 62, .08) 30%, transparent 55%), #070504; }
-    #theme-fx.lite-atlas {
+    .fx-noise { background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .07) 0 1px, transparent 1px 3px); }
+    #theme-fx.lite .fx-iris { left: 50%; top: 50%; border-radius: 50%; transform-origin: 50% 50%; }
+    /* Atlas: kâğıt sayfa ve kıvrılan kenarı (masaüstüyle aynı desen) */
+    #theme-fx.lite .fx-page {
+        inset: 0;
         background:
-            linear-gradient(90deg, rgba(70, 45, 20, .35), rgba(70, 45, 20, 0) 36px),
-            repeating-linear-gradient(0deg, rgba(46, 107, 102, .1) 0 1px, transparent 1px 48px),
+            linear-gradient(90deg, rgba(70, 45, 20, .35), rgba(70, 45, 20, 0) 60px),
             radial-gradient(ellipse at 50% 45%, #f3ebda, #e3d4b5 95%);
+        box-shadow: -40px 0 60px rgba(40, 25, 10, .35);
+    }
+    #theme-fx.lite .fx-page-edge {
+        top: 0; bottom: 0; left: 0; width: 90px;
+        background: linear-gradient(90deg, rgba(255, 252, 240, .9), rgba(220, 200, 165, .6) 60%, rgba(70, 45, 20, .25));
     }
 
     /* Bulanık zeminler yerine yarı saydam düz renk */

@@ -156,7 +156,8 @@ function openInstanceContent(instance) {
             const stable = updates ? Object.values(updates).filter(u => u.stable) : [];
             const toolbar = el('div', { class: 'admin-toolbar' },
                 el('span', {}, `${content.items.length} dosya · Minecraft ${content.mcVersion} · ${LOADER_NAMES[content.loader] || content.loader}`),
-                el('span', { class: 'toolbar-actions' },
+                // Telefonda mod indirilmez (oyun açılmıyor): içerik yalnızca görülür, açılıp kapatılabilir
+                canInstallGames() && el('span', { class: 'toolbar-actions' },
                     updates && stable.length > 0
                         ? el('button', { class: 'btn btn-sm btn-accent', onclick: () => update(stable) }, `Tümünü güncelle (${stable.length})`)
                         : el('button', { class: 'btn btn-sm', disabled: checking, onclick: checkUpdates },
