@@ -35,7 +35,7 @@ async function loadMyProfile() {
     try {
         profile.me = await bridge.invoke('profile.me');
         setAvatar($('user-avatar'), profile.me);
-    } catch { /* sunucu uyanıyorsa baş harf kalır */ }
+    } catch { /* sunucuya ulaşılamazsa baş harf kalır */ }
 }
 
 async function openProfile(username) {

@@ -76,7 +76,7 @@ namespace VuluLauncher
             RegisterLibraryCommands();
             RegisterSocialCommands();
 
-            // vulu-api ücretsiz planda boşta kalınca uyuyor; açılışta uyandırılır ki giriş yapılana kadar hazır olsun
+            // Açılışta sunucuya bir istek atılır; bağlantı (DNS, TLS) giriş yapılana kadar ısınmış olur
             _ = Task.Run(async () => { try { using var _ = await Downloader.Http.GetAsync(ApiConfig.BaseUrl + "/ping"); } catch { } });
             RegisterProfileCommands();
 
@@ -127,12 +127,12 @@ namespace VuluLauncher
             };
         }
 
-        /// <summary>Render'daki sunucu uykudaysa uyandırır; giriş ekranı açılır açılmaz çağrılır.</summary>
+        /// <summary>Sunucuya ulaşılabildiğini denetler; giriş ekranı açılır açılmaz çağrılır.</summary>
         private static async Task<object?> WakeServerAsync()
         {
             try
             {
-                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(90) };
+                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
                 using var response = await http.GetAsync($"{ApiConfig.BaseUrl}/ping");
                 return new { reachable = true };
             }

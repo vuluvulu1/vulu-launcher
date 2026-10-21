@@ -228,7 +228,7 @@ async function showLogin({ auto = false } = {}) {
     // Açılış animasyonu kapalıysa otomatik giriş giriş ekranında denenir
     if (canAutoLogin) { tryLogin(); return; }
 
-    // Sunucu uykudaysa kullanıcı yazarken uyansın
+    // Kullanıcı yazarken sunucuya ulaşılıp ulaşılamadığı denetlenir
     setLoginStatus('Sunucuya bağlanılıyor...');
     bridge.invoke('app.wake').then(result => {
         if ($('login-submit').disabled) return; // giriş denemesi sürüyor, mesajına dokunma
@@ -240,7 +240,7 @@ async function showLogin({ auto = false } = {}) {
 async function autoLoginBehindCurtain(savedUsername) {
     beginSplash(savedUsername);
 
-    // Yazı bittiği halde bağlantı sürüyorsa (sunucu uykudan uyanıyor olabilir) perdede belirtilir
+    // Yazı bittiği halde bağlantı sürüyorsa (bağlantı yavaş olabilir) perdede belirtilir
     const slowTimer = setTimeout(() => setSplashStatus('Sunucuya bağlanılıyor…'), CURTAIN_OPEN_AT - 600);
     const result = await requestLogin({ username: savedUsername, password: '', useSaved: true, remember: true });
     clearTimeout(slowTimer);
@@ -258,8 +258,8 @@ async function autoLoginBehindCurtain(savedUsername) {
     $('login-submit').focus();
 }
 
-/** Ücretsiz sunucu uykudaysa ilk istek uzun sürer; birkaç saniye geçince kullanıcıya nedeni söylenir. */
-const WAKING_TEXT = 'vulu sunucusu uyanıyor… Bir süre kullanılmadıysa bu bir dakika kadar sürebilir.';
+/** İstek birkaç saniyeyi geçerse kullanıcı beklediğini bilsin (yavaş mobil bağlantı vb.). */
+const WAKING_TEXT = 'Sunucuya bağlanılıyor… Bağlantı yavaşsa biraz sürebilir.';
 
 async function requestLogin(args) {
     const slow = setTimeout(() => {
