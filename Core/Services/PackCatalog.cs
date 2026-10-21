@@ -25,7 +25,14 @@ namespace VuluLauncher
 
     public static class PackCatalog
     {
-        public static readonly int[] RamOptionsGb = { 4, 8, 12, 16 };
+        /// <summary>Seçilebilir RAM miktarları (GB). Telefonda cihazın belleğine göre daha küçükleri kullanılır.</summary>
+        public static int[] RamOptionsGb { get; private set; } = { 4, 8, 12, 16 };
+
+        /// <summary>Platform başlarken (Android) seçenekleri cihaza göre ayarlar.</summary>
+        public static void UseRamOptions(int[] options) => RamOptionsGb = options;
+
+        /// <summary>Seçeneklerde olmayan bir değer (ör. paketin önerdiği 8 GB telefonda) en yakın küçük seçeneğe iner.</summary>
+        public static int FitRam(int gb) => RamOptionsGb.Contains(gb) ? gb : RamOptionsGb.Where(o => o <= gb).DefaultIfEmpty(RamOptionsGb[0]).Max();
 
         public static readonly string[] Loaders = { "vanilla", "fabric", "quilt", "forge", "neoforge" };
 

@@ -79,7 +79,8 @@ async function openSettingsPage() {
         settingRow('Varsayılan RAM', 'Bir paket için ayrıca seçim yapmadıysan kullanılır.',
             segmentedControl([[0, 'Önerilen'], ...info.ramOptionsGb.map(gb => [gb, gb + ' GB'])], s.defaultRamGb,
                 value => changeSetting({ defaultRamGb: value }))),
-        settingRow('Java', 'Otomatik modda oyunun istediği sürüm (8, 17, 21...) Eclipse Temurin olarak indirilir.',
+        // Java'yı, pencereyi ve tam ekranı telefonda oyun motoru (Amethyst) yönetir
+        isDesktopApp() && settingRow('Java', 'Otomatik modda oyunun istediği sürüm (8, 17, 21...) Eclipse Temurin olarak indirilir.',
             el('div', { class: 'set-stack' },
                 segmentedControl([['auto', 'Otomatik (Adoptium)'], ['custom', 'Elle seç']], s.javaMode, async value => {
                     javaCustom.hidden = value !== 'custom';
@@ -88,7 +89,7 @@ async function openSettingsPage() {
                     return changeSetting({ javaMode: value, customJavaPath: javaPath.value });
                 }),
                 javaCustom)),
-        settingRow('İndirilen Java sürümleri', javaInstalled,
+        isDesktopApp() && settingRow('İndirilen Java sürümleri', javaInstalled,
             el('button', {
                 class: 'btn btn-sm', disabled: info.installedJava.length === 0,
                 onclick: async () => {
@@ -104,9 +105,9 @@ async function openSettingsPage() {
                 },
             }, 'Sil')),
         settingRow('Ek JVM argümanları', 'İleri düzey. Boş bırakılırsa varsayılanlar kullanılır.', jvmArgs),
-        settingRow('Oyun penceresi', 'Boş bırakılırsa oyunun varsayılan boyutu kullanılır.',
+        isDesktopApp() && settingRow('Oyun penceresi', 'Boş bırakılırsa oyunun varsayılan boyutu kullanılır.',
             el('div', { class: 'set-inline narrow' }, width, el('span', {}, '×'), height)),
-        settingRow('Tam ekran başlat', null, toggleControl(s.fullscreen, value => changeSetting({ fullscreen: value }))));
+        isDesktopApp() && settingRow('Tam ekran başlat', null, toggleControl(s.fullscreen, value => changeSetting({ fullscreen: value }))));
 
     // ── Launcher davranışı ────────────────────────────────────────────
     const behaviour = el('section', { class: 'set-section' },

@@ -80,7 +80,28 @@ namespace VuluLauncher
 
         /// <summary>Bağlantı kotalı mı (mobil veri); büyük indirmeler önce sorulur.</summary>
         bool IsMeteredConnection { get; }
+
+        /// <summary>
+        /// Oyunu kendisi açan platformlarda (Android: gömülü Amethyst motoru) oyunu başlatan nesne. Windows'ta null:
+        /// oyun java.exe süreci olarak açılır.
+        /// </summary>
+        IGameRunner? GameRunner { get; }
     }
+
+    /// <summary>Kurulu bir sürümü başlatılacak her şeyiyle platformun oyun motoruna verir.</summary>
+    internal interface IGameRunner
+    {
+        /// <summary>Oyun dosyalarının (versions, libraries, assets) indirileceği klasör; motor onları burada arar.</summary>
+        string GameRoot { get; }
+
+        /// <summary>Instance klasörlerinin bulunması gereken klasör.</summary>
+        string InstancesRoot { get; }
+
+        Task LaunchAsync(GameRun run);
+    }
+
+    /// <param name="JavaArgs">Ek JVM argümanları (skinler için authlib-injector, kullanıcının argümanları)</param>
+    internal sealed record GameRun(string GameDir, string VersionId, string JavaArgs, int RamMb, string Username, string AccessToken, string Uuid);
 
     internal enum PackageInstallResult { Started, NeedsPermission }
 }

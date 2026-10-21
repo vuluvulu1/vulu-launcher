@@ -111,6 +111,7 @@ namespace VuluLauncher
         public Task<PackageInstallResult> InstallPackageAsync(string path) => throw new NotSupportedException();
         public void OpenInstallPermissionSettings() { }
         public bool IsMeteredConnection => false;
+        public IGameRunner? GameRunner => null;   // oyun java.exe süreci olarak açılır (GameLauncher)
 
         public void Dispose() => _tray.Dispose();
 

@@ -56,6 +56,17 @@
     <ProjectReference Include="..\Core\Vulu.Core.csproj" />
   </ItemGroup>
 
+  <!-- Oyun motoru (Amethyst çatalı, LGPL-3.0): tools/android-engine.ps1 derleyip artifacts\android-engine'e koyar.
+       Klasör yoksa uygulama oyunsuz derlenir (AmethystRunner.Available false). MAUI'nin getirdiği AndroidX/Kotlin
+       kütüphaneleri klasöre konmaz; motorun eksik tek AndroidX parçası (preference) NuGet'ten gelir. -->
+  <PropertyGroup>
+    <VuluEngineDir>$(MSBuildThisFileDirectory)..\artifacts\android-engine\</VuluEngineDir>
+  </PropertyGroup>
+  <ItemGroup Condition="Exists('$(VuluEngineDir)amethyst.aar')">
+    <AndroidLibrary Include="$(VuluEngineDir)*.aar;$(VuluEngineDir)*.jar" Bind="false" />
+    <PackageReference Include="Xamarin.AndroidX.Preference" Version="1.2.1.18" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
   </ItemGroup>

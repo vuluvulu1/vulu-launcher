@@ -29,12 +29,15 @@ namespace VuluLauncher
 
         private readonly Action<string, string> _log;
         private readonly JavaManager _java;
+        private readonly IGameRunner? _runner;
         private int _running;
 
-        public GameLauncher(Action<string, string> log, JavaManager java)
+        /// <param name="runner">Oyunu platformun motoru açıyorsa (Android) o; null ise oyun java.exe süreci olarak açılır.</param>
+        public GameLauncher(Action<string, string> log, JavaManager java, IGameRunner? runner = null)
         {
             _log = log;
             _java = java;
+            _runner = runner;
         }
 
         public bool IsRunning => _running == 1;
@@ -48,7 +51,7 @@ namespace VuluLauncher
         private const int OutputKeep = 600;
         private readonly Queue<string> _output = new();
 
-        public static string CorePath => Path.Combine(AppPaths.Base, "minecraft_core");
+        public static string CorePath => AppPaths.GameCore;
 
         public static MinecraftPath CreatePath(string gameDirectory) => new(gameDirectory)
         {
@@ -101,6 +104,12 @@ namespace VuluLauncher
                 Directory.CreateDirectory(instanceDir);
 
                 var launcher = CreateLauncher(CreatePath(instanceDir));
+
+                if (_runner != null)
+                {
+                    await LaunchWithRunnerAsync(launcher, target, instanceDir, username, ramGb, skins, job);
+                    return;
+                }
 
                 int javaMajor = await GetRequiredJavaAsync(launcher, target.McVersion);
                 string javaPath = await _java.EnsureAsync(javaMajor);
@@ -193,6 +202,49 @@ namespace VuluLauncher
         /// authlib-injector'ı Java ajanı olarak ekler: oyun skinleri ve oturum doğrulamayı vulu-api'den alır.
         /// JVM seçenekleri ana sınıftan önce gelmeli; komutun en başına eklenir (yolda boşluk olabileceği için tırnaklı).
         /// </summary>
+        /// <summary>
+        /// Android: oyun dosyaları ve mod yükleyici burada (CmlLib) kurulur, oyunu platformun motoru (Amethyst) açar.
+        /// Java'yı da motor kendisi seçer ve gerekirse indirir. Forge ve NeoForge kurulumu Java çalıştırdığı için henüz yok.
+        /// Oyun ayrı bir süreçte çalışır; kapanışı buradan izlenmez.
+        /// </summary>
+        private async Task LaunchWithRunnerAsync(MinecraftLauncher launcher, LaunchTarget target, string instanceDir,
+            string username, int ramGb, SkinSession? skins, DownloadJob job)
+        {
+            if (target.Loader is "forge" or "neoforge")
+                throw new InvalidOperationException("Forge ve NeoForge paketleri telefonda henüz açılamıyor; Vanilla, Fabric ve Quilt açılabilir.");
+            try
+            {
+                string versionName = await EnsureLoaderAsync(launcher, target, javaPath: "");
+                job.Phase = "Oyun dosyaları indiriliyor";
+                await launcher.InstallAsync(versionName, FileProgress(), ByteProgress(), CancellationToken.None);
+
+                var javaArgs = new List<string>();
+                if (skins != null)
+                {
+                    javaArgs.Add($"-javaagent:{skins.AgentJar}={skins.ApiRoot}");
+                    javaArgs.Add("-Dauthlibinjector.yggdrasil.prefetched=" +
+                        Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(skins.Metadata)));
+                }
+                if (!string.IsNullOrWhiteSpace(AppSettings.Current.JvmArgs)) javaArgs.Add(AppSettings.Current.JvmArgs.Trim());
+
+                // Skin sisteminde kimlik çevrimdışı kimliğin aynısıdır (MSession.CreateOfflineSession ile aynı UUID)
+                var session = skins == null ? MSession.CreateOfflineSession(username) : new MSession(username, skins.AccessToken, skins.ProfileId);
+                string uuid = Guid.TryParse(session.UUID, out var parsed) ? parsed.ToString("D") : session.UUID ?? "";
+
+                job.Phase = "Oyun açılıyor";
+                _log("Oyun açılıyor; ilk açılışta Java indirilebilir, biraz sürebilir.", "accent");
+                await _runner!.LaunchAsync(new GameRun(instanceDir, versionName, string.Join(' ', javaArgs), ramGb * 1024,
+                    username, session.AccessToken ?? "0", uuid));
+                _log("Oyun başlatıldı! İyi oyunlar.", "ok");
+                job.Complete("Oyun başlatıldı");
+            }
+            finally
+            {
+                // Oyun ayrı süreçte; launcher yeniden "oynanabilir" duruma döner
+                Interlocked.Exchange(ref _running, 0);
+            }
+        }
+
         private static void AddSkinAgent(ProcessStartInfo info, SkinSession skins)
         {
             string agent = $"-javaagent:{skins.AgentJar}={skins.ApiRoot}";

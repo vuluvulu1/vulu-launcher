@@ -31,7 +31,7 @@ namespace VuluLauncher
             _api = new ApiClient(() => _login.Token);
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
-            _game = new GameLauncher(Log, _java);
+            _game = new GameLauncher(Log, _java, host.GameRunner);
             _game.Exited += () => { StopPlayTime(); _bridge.Emit("gameExited"); _discord.ShowIdle(); PresenceIdle(); _ = ReportCrashIfAnyAsync(); };
             // Arayüz hangi sayfada olunduğunu (ve Oyna'da seçili instance'ı) bildirir
             _bridge.On("discord.page", args =>
@@ -388,7 +388,7 @@ namespace VuluLauncher
                 }
 
                 if (!PackCatalog.RamOptionsGb.Contains(ramGb))
-                    ramGb = AppSettings.Current.DefaultRamGb > 0 ? AppSettings.Current.DefaultRamGb : recommendedRamGb;
+                    ramGb = PackCatalog.FitRam(AppSettings.Current.DefaultRamGb > 0 ? AppSettings.Current.DefaultRamGb : recommendedRamGb);
 
                 var skins = await PrepareSkinsAsync();
                 if (string.IsNullOrWhiteSpace(join)) join = null;

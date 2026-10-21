@@ -26,7 +26,9 @@ namespace VuluLauncher
         }
 
         public string Platform => "android";
-        public bool CanLaunchGame => false;
+        // Oyun motoru (Amethyst) APK'ya eklendiyse oyun telefonda açılır
+        public bool CanLaunchGame => AmethystRunner.Available;
+        public IGameRunner? GameRunner => AmethystRunner.Available ? new AmethystRunner() : null;
         public bool CanSelfUpdate => false;
         public bool IsDesktop => false;
 

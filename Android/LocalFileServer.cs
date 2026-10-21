@@ -32,7 +32,8 @@ namespace VuluLauncher
 
         private static bool IsAllowed(string path)
         {
-            string[] roots = { FileSystem.AppDataDirectory, FileSystem.CacheDirectory };
+            // Instance'lar (ekran görüntüleri dahil) oyun motorunun klasöründe olabilir (AppPaths.Base)
+            string[] roots = { FileSystem.AppDataDirectory, FileSystem.CacheDirectory, AppPaths.Base };
             return roots.Any(root => path.StartsWith(Path.GetFullPath(root).TrimEnd('/') + "/", StringComparison.Ordinal));
         }
 

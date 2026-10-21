@@ -21,12 +21,20 @@ namespace VuluLauncher
         public static string Instances => Path.Combine(Base, "instances");
 
         /// <summary>
+        /// Instance'ların paylaştığı oyun dosyaları (assets, libraries, versions). Windows'ta minecraft_core; Android'de
+        /// oyunu açan Amethyst motorunun dosyaları aradığı .minecraft klasörü.
+        /// </summary>
+        public static string GameCore => _gameCore ?? Path.Combine(Base, "minecraft_core");
+        private static string? _gameCore;
+
+        /// <summary>
         /// Uygulama klasörü yazılamayan platformlar (Android) için: başka bir şey kullanılmadan, en başta çağrılır.
         /// </summary>
-        public static void Initialize(string appData, string gameBase)
+        public static void Initialize(string appData, string gameBase, string? gameCore = null)
         {
             AppData = appData;
             Base = gameBase;
+            _gameCore = gameCore;
         }
     }
 }

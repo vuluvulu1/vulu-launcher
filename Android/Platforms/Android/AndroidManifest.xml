@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-	<application android:allowBackup="false" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true" android:label="vulu Launcher"></application>
+	<!-- Oyun motoru (Amethyst) için: OpenJDK, ARM'da Android 11+ işaretçi etiketlemesiyle çöker; JRE yerel kütüphaneleri
+	     diskteki dosyalar olarak yükler (APK içinden değil). appCategory/isGame: Android oyun modu ve performans ayarları. -->
+	<application android:allowBackup="false" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true" android:label="vulu Launcher"
+		android:allowNativeHeapPointerTagging="false" android:extractNativeLibs="true" android:appCategory="game" android:isGame="true"></application>
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
