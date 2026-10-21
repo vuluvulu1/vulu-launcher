@@ -47,7 +47,7 @@ namespace VuluLauncher
                 .SetPositiveButton("Kopyala", (_, _) =>
                 {
                     var clipboard = (ClipboardManager?)activity.GetSystemService(Context.ClipboardService);
-                    clipboard?.SetPrimaryClip(ClipData.NewPlainText("vulu crash", text));
+                    if (clipboard != null) clipboard.PrimaryClip = ClipData.NewPlainText("vulu crash", text);
                 })!
                 .SetNegativeButton("Kapat", (_, _) => { })!
                 .Show();
