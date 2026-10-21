@@ -61,7 +61,8 @@ namespace VuluLauncher
             _bridge.On("auth.login", async args => await LoginAsync(args));
 
             _bridge.On("launcher.check", async _ => await CheckLauncherVersionAsync());
-            _bridge.On("launcher.update", _ => Task.FromResult<object?>(StartLauncherUpdate()));
+            _bridge.On("launcher.update", async _ => _host.CanSelfUpdate ? StartLauncherUpdate() : await InstallAndroidUpdateAsync());
+            _bridge.On("launcher.allowInstalls", _ => { _host.OpenInstallPermissionSettings(); return Task.FromResult<object?>(null); });
 
             _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion"), args.Bool("ignoreMissing"), args.Str("join")));
             _bridge.On("mods.installMissing", async args => await InstallMissingAsync(RequireGameDevice(args.Str("instanceId")), args.StrList("projectIds")));
@@ -261,25 +262,42 @@ namespace VuluLauncher
             }
             if (latest == null) return new { status = "upToDate" };
 
-            _androidUpdateAvailable = true;
+            _androidUpdate = latest;
             string version = VuluShared.Releases.Clean(latest.Version);
             Log($"Yeni launcher sürümü mevcut: v{version}", "warn");
             double? sizeMb = latest.Size > 0 ? Math.Round(latest.Size / 1024.0 / 1024.0, 1) : null;
-            return new { status = "available", version, notes = latest.Notes, sizeMb, diskOk = true, neededMb = 0, freeMb = 0, external = true };
+            // Arayüz Wi-Fi'de sormadan indirir, mobil veride önce sorar
+            return new { status = "available", version, notes = latest.Notes, sizeMb, diskOk = true, neededMb = 0, freeMb = 0,
+                external = true, metered = _host.IsMeteredConnection };
         }
 
-        private bool _androidUpdateAvailable;
+        private AndroidUpdateFeed.Manifest? _androidUpdate;
+
+        /// <summary>
+        /// Android: APK'yı indirir, doğrular ve sistemin yükleyicisine verir. Kurulum izni yoksa needsPermission döner;
+        /// arayüz izni istetir ve uygulamaya dönülünce yeniden dener (APK yeniden indirilmez).
+        /// </summary>
+        private async Task<object?> InstallAndroidUpdateAsync()
+        {
+            var update = _androidUpdate ?? throw new InvalidOperationException("Bekleyen launcher güncellemesi yok.");
+            string version = VuluShared.Releases.Clean(update.Version);
+            string apk = await AndroidUpdateFeed.DownloadAsync(update, percent => Log($"Güncelleme indiriliyor: v{version} · %{percent}", "replace"));
+            var result = await _host.InstallPackageAsync(apk);
+            if (result == PackageInstallResult.NeedsPermission) return new { started = false, needsPermission = true };
+            Log($"v{version} kuruluyor; kurulum bitince launcher kapanıp yeni sürüm açılır.", "ok");
+            return new { started = true, needsPermission = false };
+        }
+
+        /// <summary>Android yükleyicisi güncellemeyi kuramadıysa (iptal, yer yok, imza tutmuyor) bildirir.</summary>
+        public void OnAppUpdateFailed(string message)
+        {
+            Log("Güncelleme kurulamadı: " + message, "error");
+            _bridge.Emit("launcherUpdateFailed", new { message });
+        }
 
         /// <summary>Updater'ı açar ve launcher'ı kapatır; Updater kapanmayı bekleyip kurar ve launcher'ı yeniden açar.</summary>
         private object StartLauncherUpdate()
         {
-            if (!_host.CanSelfUpdate)
-            {
-                if (!_androidUpdateAvailable) throw new InvalidOperationException("Bekleyen launcher güncellemesi yok.");
-                _host.OpenUrl(AndroidUpdateFeed.ApkUrl);   // APK tarayıcıda iner, Android kurar
-                return new { started = true };
-            }
-
             if (_latestLauncher == null)
                 throw new InvalidOperationException("Bekleyen launcher güncellemesi yok.");
 

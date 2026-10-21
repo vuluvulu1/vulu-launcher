@@ -1,6 +1,7 @@
 using System.Text;
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.Security.Keystore;
 using AndroidX.Core.App;
 using Java.Security;
@@ -12,7 +13,7 @@ namespace VuluLauncher
     /// <summary>Android: HybridWebView, bildirimler, Keystore ve paylaşma menüsü.</summary>
     internal sealed class AndroidHost : IPlatformHost
     {
-        private const string NotificationChannel = "vulu";
+        internal const string NotificationChannel = "vulu";
         private const string KeyAlias = "vulu-credentials";
 
         private readonly HybridWebView _webView;
@@ -193,5 +194,57 @@ namespace VuluLauncher
 
         public void StartLauncherUpdate() =>
             throw new InvalidOperationException("Android sürümü yeni APK ile güncellenir.");
+
+        // ── Kendi kendini güncelleme ─────────────────────────────────────
+        public bool IsMeteredConnection
+        {
+            get
+            {
+                var manager = (Android.Net.ConnectivityManager?)Android.App.Application.Context.GetSystemService(Context.ConnectivityService);
+                return manager?.IsActiveNetworkMetered ?? false;
+            }
+        }
+
+        public void OpenInstallPermissionSettings() => MainThread.BeginInvokeOnMainThread(() =>
+        {
+            var context = Android.App.Application.Context;
+            var intent = new Intent(Android.Provider.Settings.ActionManageUnknownAppSources,
+                Android.Net.Uri.Parse("package:" + context.PackageName));
+            intent.AddFlags(ActivityFlags.NewTask);
+            context.StartActivity(intent);
+        });
+
+        /// <summary>
+        /// APK'yı PackageInstaller oturumuyla kurdurur. Android 12+ uygulama kendisini bir kez güncelledikten sonra
+        /// (yükleyicisi kendisi olunca) sonraki güncellemeler onay sormadan kurulabilir; ilk seferde Android onay ister.
+        /// Sonuç <see cref="AppUpdateReceiver"/>'a gelir.
+        /// </summary>
+        public Task<PackageInstallResult> InstallPackageAsync(string path) => Task.Run(() =>
+        {
+            var context = Android.App.Application.Context;
+            if (!context.PackageManager!.CanRequestPackageInstalls()) return PackageInstallResult.NeedsPermission;
+
+            var installer = context.PackageManager.PackageInstaller;
+            var options = new PackageInstaller.SessionParams(PackageInstallMode.FullInstall);
+            options.SetAppPackageName(context.PackageName);
+            if (OperatingSystem.IsAndroidVersionAtLeast(31))
+                options.SetRequireUserAction((int)PackageInstallUserAction.NotRequired);
+
+            int sessionId = installer.CreateSession(options);
+            using var session = installer.OpenSession(sessionId);
+            using (var input = File.OpenRead(path))
+            using (var output = session.OpenWrite("vulu-launcher.apk", 0, input.Length))
+            {
+                input.CopyTo(output);
+                session.Fsync(output);
+            }
+
+            // Yükleyici sonucu bu yayına ekler; Android 12+ bunun için değiştirilebilir (mutable) PendingIntent ister
+            var callback = new Intent(context, typeof(AppUpdateReceiver)).SetAction(AppUpdateReceiver.StatusAction);
+            var pending = PendingIntent.GetBroadcast(context, sessionId, callback,
+                PendingIntentFlags.UpdateCurrent | (OperatingSystem.IsAndroidVersionAtLeast(31) ? PendingIntentFlags.Mutable : 0));
+            session.Commit(pending!.IntentSender);
+            return PackageInstallResult.Started;
+        });
     }
 }

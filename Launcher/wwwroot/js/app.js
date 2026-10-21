@@ -122,6 +122,14 @@ function setupTitlebar() {
     $('btn-min').addEventListener('click', () => bridge.send('window.minimize'));
     $('btn-close').addEventListener('click', () => bridge.send('window.close'));
 
+    // Kurulum izni verilip uygulamaya dönülünce bekleyen güncelleme yeniden denenir (APK yeniden inmez)
+    bridge.on('appResumed', () => {
+        if (!androidUpdateRetry) return;
+        const check = androidUpdateRetry;
+        androidUpdateRetry = null;
+        installAndroidUpdate({ ...check, metered: false });
+    });
+
     // Android geri tuşu: açık pencere ya da menü varsa onu kapatır (Esc gibi); açık sohbetten listeye, diğer
     // sayfalardan Oyna'ya döner; Oyna'daysa uygulama arka plana gider
     bridge.on('backPressed', () => {
@@ -416,6 +424,7 @@ async function offerLauncherUpdate() {
     try { check = await bridge.invoke('launcher.check'); }
     catch { return; }
     if (check.status !== 'available') return;
+    if (check.external) { await installAndroidUpdate(check); return; }
 
     if (!check.diskOk) {
         await alertDialog({
@@ -439,6 +448,45 @@ async function offerLauncherUpdate() {
 
     try { await bridge.invoke('launcher.update'); }
     catch (err) { appendLog({ text: err.message, level: 'error' }); }
+}
+
+// ── Android: kendi kendini güncelleme ─────────────────────────────────
+let androidUpdateRetry = null;   // kurulum izni verilip uygulamaya dönülünce yeniden denenecek güncelleme
+
+/**
+ * Yeni APK Wi-Fi'de sormadan, mobil veride sorarak indirilir ve Android'in yükleyicisine verilir; kurulunca launcher
+ * kapanıp yeni sürüm açılır. İlk seferde Android "bilinmeyen uygulamaları yükle" iznini ve kurulum onayını ister.
+ */
+async function installAndroidUpdate(check) {
+    if (check.metered) {
+        const size = check.sizeMb ? ` (${check.sizeMb} MB)` : '';
+        const notes = check.notes && check.notes.trim() ? `
+
+Yenilikler:
+${check.notes.trim()}` : '';
+        const accepted = await confirmDialog({
+            title: 'Launcher güncellemesi',
+            message: `Launcher v${check.version} çıktı${size}. Mobil veridesin; şimdi indirilsin mi? Wi-Fi'deyken sormadan indirilir.${notes}`,
+            okText: 'İndir', cancelText: 'Sonra',
+        });
+        if (!accepted) { appendLog({ text: 'Launcher güncellemesi ertelendi.', level: 'muted' }); return; }
+    }
+
+    let result;
+    try { result = await withActivity(() => bridge.invoke('launcher.update')); }
+    catch (err) { appendLog({ text: 'Güncelleme indirilemedi: ' + err.message, level: 'error' }); return; }
+    if (!result || !result.needsPermission) return;
+
+    const accepted = await confirmDialog({
+        title: 'Güncelleme için izin gerekli',
+        message: `Launcher v${check.version} indirildi. Android, uygulamanın kendini güncelleyebilmesi için bir kez izin istiyor.
+
+Açılan ayarda "Bu kaynaktan izin ver"i açıp geri dön; kurulum kendiliğinden başlar.`,
+        okText: 'Ayarları aç', cancelText: 'Sonra',
+    });
+    if (!accepted) { appendLog({ text: 'Launcher güncellemesi ertelendi.', level: 'muted' }); return; }
+    androidUpdateRetry = check;
+    bridge.invoke('launcher.allowInstalls').catch(() => { });
 }
 
 // ── Paketler ve instance'lar ──────────────────────────────────────────

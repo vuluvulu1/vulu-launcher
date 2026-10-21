@@ -31,6 +31,12 @@ namespace VuluLauncher
             Content = _webView;
         }
 
+        /// <summary>Uygulamaya geri dönülünce (ör. kurulum izni verildikten sonra) arayüze haber verilir.</summary>
+        internal void Resumed() => _bridge.Emit("appResumed");
+
+        /// <summary>Android yükleyicisi güncellemeyi kuramadı.</summary>
+        internal void AppUpdateFailed(string message) => _app.OnAppUpdateFailed(message);
+
         /// <summary>Bildirime tıklanınca MainActivity çağırır.</summary>
         internal void NotificationClicked(string? tag) => _app.OnNotificationClicked(tag);
 

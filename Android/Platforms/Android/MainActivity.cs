@@ -44,6 +44,7 @@ namespace VuluLauncher
         {
             base.OnResume();
             IsResumed = true;
+            MainPage.Current?.Resumed();
         }
 
         protected override void OnPause()

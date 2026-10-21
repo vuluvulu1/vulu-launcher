@@ -68,5 +68,19 @@ namespace VuluLauncher
 
         /// <summary>Updater'ı açıp launcher'ı kapatır.</summary>
         void StartLauncherUpdate();
+
+        /// <summary>
+        /// İndirilmiş ve doğrulanmış uygulama paketini (Android'de APK) sistemin yükleyicisine verir. Kurulum izni
+        /// yoksa kurmadan <see cref="PackageInstallResult.NeedsPermission"/> döner.
+        /// </summary>
+        Task<PackageInstallResult> InstallPackageAsync(string path);
+
+        /// <summary>Uygulamaya paket kurma izninin verildiği sistem ayarını açar.</summary>
+        void OpenInstallPermissionSettings();
+
+        /// <summary>Bağlantı kotalı mı (mobil veri); büyük indirmeler önce sorulur.</summary>
+        bool IsMeteredConnection { get; }
     }
+
+    internal enum PackageInstallResult { Started, NeedsPermission }
 }

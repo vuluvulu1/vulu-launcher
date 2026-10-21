@@ -107,6 +107,11 @@ namespace VuluLauncher
             _window.Close();
         }
 
+        // Windows'u Updater günceller (StartLauncherUpdate); paket kurdurma yalnızca Android'de
+        public Task<PackageInstallResult> InstallPackageAsync(string path) => throw new NotSupportedException();
+        public void OpenInstallPermissionSettings() { }
+        public bool IsMeteredConnection => false;
+
         public void Dispose() => _tray.Dispose();
 
         [StructLayout(LayoutKind.Sequential)]
