@@ -64,7 +64,9 @@
     <!-- Windows sürümüyle aynı arayüz dosyaları; HybridWebView bunları Resources/Raw/wwwroot'tan yükler -->
     <MauiAsset Include="..\Launcher\wwwroot\**" LogicalName="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" />
 
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#141412" />
+    <!-- Uyarlanabilir ikon: siyah zemin + ortada VL. Android ikonu 108 birimlik tuvalin yalnızca ortasını kendi şekliyle
+         (daire, yuvarlatılmış kare…) gösterir; harfler en dar şekil olan dairede de kesilmesin diye küçültülür. -->
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.58" Color="#000000" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#141412" BaseSize="128,128" />
   </ItemGroup>
 
