@@ -15,8 +15,11 @@ namespace VuluLauncher
     /// </summary>
     public class LauncherUpdateService
     {
-        /// <summary>Derlemedeki sürüm (csproj'daki Version); yayın scripti her release'te ayarlar.</summary>
-        public static readonly string LocalVersion = Releases.Clean(
+        /// <summary>
+        /// Derlemedeki sürüm (csproj'daki Version); yayın scripti her release'te ayarlar. Android'de giriş derlemesi
+        /// yok (Vulu.Core'un sürümü okunurdu); uygulama açılışta kendi sürümünü buraya yazar.
+        /// </summary>
+        public static string LocalVersion { get; internal set; } = Releases.Clean(
             (Assembly.GetEntryAssembly() ?? typeof(LauncherUpdateService).Assembly)
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
 

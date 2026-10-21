@@ -22,7 +22,15 @@ namespace VuluLauncher
 
         protected override void OnCreate(Bundle? savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);
+            try { base.OnCreate(savedInstanceState); }
+            catch (Exception ex)
+            {
+                // Arayüz kurulamadı: uygulama sessizce kapanmasın, hata gösterilsin
+                CrashLog.Write(ex);
+                CrashLog.ShowPrevious(this);
+                return;
+            }
+            CrashLog.ShowPrevious(this);
 
             // Android 13+: bildirimler için izin istenir (reddedilirse launcher bildirimsiz çalışır)
             if (OperatingSystem.IsAndroidVersionAtLeast(33) &&

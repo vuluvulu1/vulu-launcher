@@ -18,9 +18,9 @@
     <ApplicationId>com.vuluvulu.launcher</ApplicationId>
     <!-- Android sürümleri kendi numarasıyla ilerler; tools/android-build.ps1 -Version ile ikisini birlikte ezer.
          ApplicationVersion her APK'da artmalı (Android daha küçük numaralı APK'yı güncelleme olarak kabul etmez). -->
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
-    <ApplicationVersion>100</ApplicationVersion>
+    <ApplicationVersion>101</ApplicationVersion>
     <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
     <!-- APK telefona elle de kurulur: Debug'da da .NET derlemeleri APK'nın içinde olmalı (Fast Deployment yok) -->
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
@@ -37,11 +37,18 @@
   </PropertyGroup>
 
   <!-- Yayın APK'sı: telefonlar (arm64). Kırpma kapalı: köprü ve servisler System.Text.Json'u yansımayla kullanır,
-       kırpılırsa çalışma anında bozulurdu. İmza anahtarı android-build.ps1'den gelir (repoda değil). -->
+       kırpılırsa çalışma anında bozulurdu. İmza anahtarı android-build.ps1'den gelir (repoda değil).
+       AOT ve marshal methods da kapalı: SDK Release'te ikisini varsayılan açar, ama AOT kırpılmamış derlemelerle
+       desteklenmiyor (XA1030) ve bu ayarlarla derlenen 0.1.0 APK'sı açılır açılmaz kapanıyordu. Böylece yayın APK'sı
+       telefonda denenen Debug APK'sıyla aynı şekilde çalışır (JIT), yalnızca hata ayıklayıcı olmadan. -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
     <AndroidLinkMode>None</AndroidLinkMode>
+    <PublishTrimmed>false</PublishTrimmed>
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <AndroidEnableMarshalMethods>false</AndroidEnableMarshalMethods>
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
