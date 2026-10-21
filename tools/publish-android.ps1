@@ -12,12 +12,19 @@
 
 .EXAMPLE
     .\tools\publish-android.ps1 -Version 0.1.0 -NotesFile notlar.md -Publish
+
+.EXAMPLE
+    # Önce derle, telefonda dene, sonra aynı dosyayı yayınla:
+    .\tools\android-build.ps1 -Configuration Release -Version 0.1.1
+    .\tools\publish-android.ps1 -Version 0.1.1 -NotesFile notlar.md -SkipBuild -Publish
 #>
 param(
     [Parameter(Mandatory = $true)][string]$Version,
     [string]$Notes = "",
     [string]$NotesFile = "",
-    [switch]$Publish
+    [switch]$Publish,
+    # Telefonda denenmiş APK'yı yeniden derlemeden yayınlar (artifacts\android\Release); sürümü tutmazsa durur
+    [switch]$SkipBuild
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,9 +34,17 @@ $utf8 = New-Object System.Text.UTF8Encoding $false
 
 if ($NotesFile) { $Notes = [IO.File]::ReadAllText((Resolve-Path $NotesFile)) }
 
-& (Join-Path $PSScriptRoot "android-build.ps1") -Configuration Release -Version $Version
+if (-not $SkipBuild) { & (Join-Path $PSScriptRoot "android-build.ps1") -Configuration Release -Version $Version }
 $signed = Join-Path $root "artifacts\android\Release\com.vuluvulu.launcher-Signed.apk"
 if (-not (Test-Path $signed)) { throw "İmzalı APK bulunamadı: $signed" }
+
+# Yüklenecek APK'nın sürümü ve imzası denetlenir: yanlış sürüm ya da imzasız APK yayına çıkmasın
+$buildTools = Get-ChildItem "D:\android-dev\android-sdk\build-tools" | Sort-Object Name | Select-Object -Last 1
+$env:JAVA_HOME = "D:\android-dev\jdk-21"
+$badging = & (Join-Path $buildTools.FullName "aapt2.exe") dump badging $signed 2>$null | Select-Object -First 1
+if ($badging -notmatch "versionName='$([regex]::Escape($Version))'") { throw "APK'nın sürümü $Version değil: $badging" }
+cmd /c "`"$(Join-Path $buildTools.FullName 'apksigner.bat')`" verify `"$signed`" >nul 2>&1"
+if ($LASTEXITCODE -ne 0) { throw "APK imzası doğrulanamadı: $signed" }
 
 $outDir = Join-Path $root "artifacts\android\publish\$Version"
 if (Test-Path $outDir) { Remove-Item $outDir -Recurse -Force }
