@@ -188,8 +188,13 @@ async function runStartupAction() {
 }
 
 // ── Bildirime tıklama ─────────────────────────────────────────────────
-async function onNotificationClicked({ tag }) {
-    if (!tag || !state.username) return;
+/** Bekleyen bildirim varsa ilgili sayfayı açar. Bildirime dokununca ve girişten sonra çağrılır. */
+async function onNotificationClicked() {
+    if (!state.username) return;   // giriş yapılınca enterLauncher yeniden çağırır
+    let pending;
+    try { pending = await bridge.invoke('app.takeNotification'); } catch { return; }
+    const tag = pending && pending.tag;
+    if (!tag) return;
     if (tag.startsWith('dm:')) {
         showPage('messages');
         openMessagesPage(tag.slice(3));
@@ -201,7 +206,7 @@ async function onNotificationClicked({ tag }) {
         selectInstance(instance);
         showPage('home');
         await refreshPackUpdates();
-        updateInstancePack(instance);
+        if (canInstallGames()) updateInstancePack(instance);   // telefonda paket güncellenmez, yalnızca gösterilir
     }
 }
 

@@ -407,6 +407,7 @@ async function enterLauncher(session) {
     }
 
     await runStartupAction();   // masaüstü kısayolundan açıldıysa
+    await onNotificationClicked();   // kapalıyken ya da giriş ekranındayken bildirime dokunulduysa
     await offerLauncherUpdate();
 }
 
@@ -579,9 +580,9 @@ function renderPackActions(instance) {
 
     const update = state.packUpdates && state.packUpdates[instance.id];
     $('pack-actions').replaceChildren(...[
-        update && el('button', { class: 'btn btn-sm btn-primary', title: `rev ${update.from} → rev ${update.to}`, onclick: () => updateInstancePack(instance) }, 'Paketi güncelle'),
+        update && canInstallGames() && el('button', { class: 'btn btn-sm btn-primary', title: `rev ${update.from} → rev ${update.to}`, onclick: () => updateInstancePack(instance) }, 'Paketi güncelle'),
         isCustom && el('button', { class: 'btn btn-sm', onclick: () => openInstanceContent(instance) }, 'İçerik'),
-        isCustom && el('button', { class: 'btn btn-sm', onclick: () => openModrinthFor(instance) }, 'Mod ekle'),
+        isCustom && canInstallGames() && el('button', { class: 'btn btn-sm', onclick: () => openModrinthFor(instance) }, 'Mod ekle'),
         el('div', { class: 'more-wrap' }, toggle, menu),
     ].filter(Boolean));
 }

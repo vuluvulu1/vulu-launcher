@@ -21,6 +21,7 @@ namespace VuluLauncher
 
         private readonly object _actionGate = new();
         private StartupAction? _pendingAction;
+        private string? _pendingNotification;
         private bool _packChecking;
         private readonly HashSet<string> _packUpdatesNotified = new();
 
@@ -32,6 +33,12 @@ namespace VuluLauncher
             _bridge.On("screenshots.copy", args => Task.FromResult<object?>(CopyScreenshot(args.Str("id"), args.Str("name"))));
             _bridge.On("screenshots.delete", args => Task.FromResult<object?>(DeleteScreenshot(args.Str("id"), args.Str("name"))));
             _bridge.On("packs.updates", async _ => await PackUpdatesAsync());
+            _bridge.On("app.takeNotification", _ =>
+            {
+                string? tag;
+                lock (_actionGate) { tag = _pendingNotification; _pendingNotification = null; }
+                return Task.FromResult<object?>(tag == null ? null : new { tag });
+            });
             _bridge.On("app.takeAction", _ =>
             {
                 StartupAction? a;

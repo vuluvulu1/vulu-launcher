@@ -64,7 +64,7 @@ namespace VuluLauncher
             _bridge.On("launcher.update", _ => Task.FromResult<object?>(StartLauncherUpdate()));
 
             _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion"), args.Bool("ignoreMissing"), args.Str("join")));
-            _bridge.On("mods.installMissing", async args => await InstallMissingAsync(args.Str("instanceId"), args.StrList("projectIds")));
+            _bridge.On("mods.installMissing", async args => await InstallMissingAsync(RequireGameDevice(args.Str("instanceId")), args.StrList("projectIds")));
             _bridge.On("game.versions", async _ => { RequireLogin(); return await LoaderCatalog.MinecraftVersionsAsync(); });
 
             RegisterInstanceCommands();
@@ -91,10 +91,16 @@ namespace VuluLauncher
         }
 
         /// <summary>Bildirime tıklanınca launcher öne gelir ve ilgili sayfa açılır.</summary>
+        /// <remarks>
+        /// Bildirim bekletilir ve arayüze yalnızca haber verilir; arayüz hazır olunca (giriş yapılmışsa hemen, değilse
+        /// girişten sonra) "app.takeNotification" ile alır. Uygulama kapalıyken dokunulan bildirim böylece kaybolmaz.
+        /// </remarks>
         public void OnNotificationClicked(string? tag)
         {
             _host.BringToFront();
-            if (tag != null) _bridge.Emit("notificationClicked", new { tag });
+            if (tag == null) return;
+            lock (_actionGate) _pendingNotification = tag;
+            _bridge.Emit("notificationClicked");
         }
 
         /// <summary>Bildirimler yalnızca launcher kullanıcının önünde değilken gösterilir.</summary>
@@ -179,6 +185,17 @@ namespace VuluLauncher
                 username = _login.Username,
                 isAdmin = _login.IsAdmin
             };
+        }
+
+        /// <summary>
+        /// Oyun dosyası indiren kurulumlar yalnızca oyunun açılabildiği cihazda yapılır (Android'de henüz değil):
+        /// telefona yüzlerce MB boşuna inmesin. Arayüz düğmeleri zaten gizler; bu ikinci kilit. Değeri aynen döner.
+        /// </summary>
+        private T RequireGameDevice<T>(T value)
+        {
+            if (!_host.CanLaunchGame)
+                throw new InvalidOperationException("Paketler ve modlar şimdilik yalnızca bilgisayarda kurulabiliyor.");
+            return value;
         }
 
         private void RequireLogin()

@@ -5,6 +5,13 @@ const $ = id => document.getElementById(id);
 /** Masaüstüne özgü işlemler (klasör açma, masaüstü kısayolu) Android'de gösterilmez. */
 const isDesktopApp = () => bridge.platform !== 'android';
 
+/** Oyun dosyası indiren kurulumlar yalnızca oyunun açılabildiği cihazda (Android'de henüz değil). */
+const canInstallGames = () => state.canLaunchGame !== false;
+
+/** Telefonda kurulum düğmelerinin yerine: neden kurulamadığını söyleyen pasif düğme. */
+const desktopOnlyButton = (label = 'Bilgisayarda kur', cls = 'btn btn-sm') =>
+    el('button', { class: cls + ' desktop-only', disabled: true, title: 'Oyun şimdilik yalnızca bilgisayarda açılıyor' }, label);
+
 function el(tag, props, ...children) {
     const node = document.createElement(tag);
     for (const [key, value] of Object.entries(props || {})) {

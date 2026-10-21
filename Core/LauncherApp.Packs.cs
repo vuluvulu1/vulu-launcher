@@ -33,8 +33,8 @@ namespace VuluLauncher
         private void RegisterPackCommands()
         {
             _bridge.On("packs.list", async _ => await ListPacksAsync());
-            _bridge.On("packs.install", async args => await InstallPackAsync(args.Str("id")));
-            _bridge.On("packs.update", async args => await UpdatePackAsync(args.Str("id")));
+            _bridge.On("packs.install", async args => await InstallPackAsync(RequireGameDevice(args.Str("id"))));
+            _bridge.On("packs.update", async args => await UpdatePackAsync(RequireGameDevice(args.Str("id"))));
             _bridge.On("packs.shareInfo", async args => await ShareInfoAsync(args.Str("instanceId")));
             _bridge.On("packs.pickCover", async _ => await PickCoverAsync());
             _bridge.On("packs.publish", async args => await PublishPackAsync(args));

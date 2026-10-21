@@ -96,8 +96,9 @@ function renderServers() {
 function serverCard(s) {
     const here = community.presence.filter(p => p.state === 'playing' && p.server === s.address);
     const pack = s.packId ? (state.packsCache || []).find(p => p.id === s.packId) : null;
-    const join = el('button', { class: 'btn btn-sm btn-primary', onclick: () => joinServer(s) },
-        s.instanceId ? 'Bağlan' : 'Paketi kur ve bağlan');
+    const join = canInstallGames()
+        ? el('button', { class: 'btn btn-sm btn-primary', onclick: () => joinServer(s) }, s.instanceId ? 'Bağlan' : 'Paketi kur ve bağlan')
+        : desktopOnlyButton('Bilgisayardan bağlan');
     return el('article', { class: 'server-card', 'data-id': s.id },
         el('div', { class: 'server-head' },
             el('div', {},

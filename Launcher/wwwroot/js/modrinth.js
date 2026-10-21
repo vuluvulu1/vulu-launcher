@@ -245,7 +245,7 @@ async function searchModrinth(append) {
         ? 'Sonuç bulunamadı. Filtreleri gevşetmeyi dene.'
         : !isPack && target
             ? `${count} · ${target.name} ile uyumlu olanlar (Minecraft ${target.mcVersion}${target.loader !== 'vanilla' && modrinth.type === 'mod' ? ', ' + LOADER_NAMES[target.loader] : ''})`
-            : !isPack
+            : !isPack && canInstallGames()
                 ? `${count} · "Kur"a basınca nereye kurulacağını seçersin`
                 : count;
 
@@ -402,9 +402,11 @@ function pickModrinthVersion(hit) {
 
 function renderModrinthHit(hit) {
     const isPack = hit.type === 'modpack';
-    const button = el('button', { class: 'btn btn-sm ' + (hit.installed ? '' : 'btn-primary') },
-        isPack ? 'Instance olarak kur' : hit.installed ? 'Güncelle' : 'Kur');
-    button.addEventListener('click', () => installModrinthHit(hit, button, ''));
+    const button = canInstallGames()
+        ? el('button', { class: 'btn btn-sm ' + (hit.installed ? '' : 'btn-primary') },
+            isPack ? 'Instance olarak kur' : hit.installed ? 'Güncelle' : 'Kur')
+        : desktopOnlyButton();
+    if (canInstallGames()) button.addEventListener('click', () => installModrinthHit(hit, button, ''));
 
     const tags = [
         ...hit.categories.map(name => el('span', { class: 'chip static' }, categoryLabel(name))),
@@ -424,7 +426,7 @@ function renderModrinthHit(hit) {
         el('div', { class: 'mr-actions' },
             button,
             el('div', {},
-                el('button', {
+                canInstallGames() && el('button', {
                     class: 'link-btn',
                     onclick: async () => {
                         const versionId = await pickModrinthVersion(hit);

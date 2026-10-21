@@ -53,7 +53,11 @@ function packTile(pack, result) {
     const updated = parseDate(pack.updatedAt);
 
     let primary;
-    if (!installed) primary = el('button', { class: 'btn btn-primary btn-sm', onclick: () => installPack(pack) }, 'Kur');
+    // Telefonda kurulmaz ve güncellenmez (oyun açılmıyor); kurulu olan yine açılabilir
+    if (!canInstallGames()) primary = installed
+        ? el('button', { class: 'btn btn-sm', onclick: () => openInstalledPack(installed.instanceId) }, 'Kurulu · Aç')
+        : desktopOnlyButton();
+    else if (!installed) primary = el('button', { class: 'btn btn-primary btn-sm', onclick: () => installPack(pack) }, 'Kur');
     else if (outdated) primary = el('button', { class: 'btn btn-primary btn-sm', onclick: () => updatePack(pack) }, 'Güncelle');
     else primary = el('button', { class: 'btn btn-sm', onclick: () => openInstalledPack(installed.instanceId) }, 'Kurulu · Aç');
 

@@ -28,9 +28,9 @@ namespace VuluLauncher
             _bridge.On("modrinth.filters", async args => await ModrinthFiltersAsync(args.Str("type", "mod")));
             _bridge.On("modrinth.versions", async args => await ModrinthVersionsAsync(args.Str("projectId"), args.Str("instanceId")));
             _bridge.On("modrinth.install", async args =>
-                await ModrinthInstallAsync(args.Str("instanceId"), args.Str("projectId"), args.Str("versionId")));
+                await ModrinthInstallAsync(RequireGameDevice(args.Str("instanceId")), args.Str("projectId"), args.Str("versionId")));
             _bridge.On("modrinth.installModpack", async args =>
-                await ModrinthInstallModpackAsync(args.Str("projectId"), args.Str("versionId")));
+                await ModrinthInstallModpackAsync(RequireGameDevice(args.Str("projectId")), args.Str("versionId")));
             _bridge.On("modrinth.openPage", args => Task.FromResult<object?>(OpenModrinthPage(args.Str("type"), args.Str("slug"))));
 
             _bridge.On("instances.pickBackground", async args => await PickBackgroundAsync(args.Str("id")));

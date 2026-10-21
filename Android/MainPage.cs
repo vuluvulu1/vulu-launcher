@@ -23,6 +23,7 @@ namespace VuluLauncher
             _bridge = new Bridge(_host.SendToUi);
             _app = new LauncherApp(_bridge, _host);
             _app.RegisterCommands();
+            if (MainActivity.TakePendingNotification() is { } tag) _app.OnNotificationClicked(tag);
 
             _webView.RawMessageReceived += (_, e) => { if (e.Message != null) _bridge.HandleMessage(e.Message); };
             LocalFileServer.Attach(_webView);

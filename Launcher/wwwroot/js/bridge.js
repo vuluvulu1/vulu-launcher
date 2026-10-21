@@ -263,6 +263,7 @@ const mockBackend = (() => {
             { key: 'packs', label: 'Paket dosyaları', bytes: 262 * 1048576 }, { key: 'shots', label: 'Ekran görüntüleri', bytes: 71 * 1048576 },
             { key: 'images', label: 'Avatar, banner ve skinler', bytes: 9 * 1048576 }, { key: 'messages', label: 'Mesajlar', bytes: 2 * 1048576 }] }; },
         'app.takeAction': async () => null,
+        'app.takeNotification': async () => null,
         'shortcuts.icon': async () => null,
         'shortcuts.create': async () => ({ path: 'C:\\Users\\vulu\\Desktop\\x.lnk' }),
         'social.shot': async args => mockFeed.find(s => s.id === args.id),

@@ -31,6 +31,8 @@ namespace VuluLauncher
                 return;
             }
             CrashLog.ShowPrevious(this);
+            // Uygulama kapalıyken bildirime dokunulduysa açılış intent'i bildirimi taşır
+            DeliverNotification(Intent);
 
             // Android 13+: bildirimler için izin istenir (reddedilirse launcher bildirimsiz çalışır)
             if (OperatingSystem.IsAndroidVersionAtLeast(33) &&
@@ -53,8 +55,25 @@ namespace VuluLauncher
         protected override void OnNewIntent(Intent? intent)
         {
             base.OnNewIntent(intent);
-            if (intent?.GetStringExtra(NotificationTagExtra) is { } tag)
-                MainPage.Current?.NotificationClicked(tag);
+            DeliverNotification(intent);
+        }
+
+        private static string? _pendingNotification;
+
+        /// <summary>Sayfa henüz kurulmadıysa bildirim bekletilir; MainPage kurulunca alır.</summary>
+        internal static string? TakePendingNotification()
+        {
+            string? tag = _pendingNotification;
+            _pendingNotification = null;
+            return tag;
+        }
+
+        private static void DeliverNotification(Intent? intent)
+        {
+            if (intent?.GetStringExtra(NotificationTagExtra) is not { } tag) return;
+            intent.RemoveExtra(NotificationTagExtra);   // ekran dönünce ya da yeniden oluşunca tekrar açılmasın
+            if (MainPage.Current is { } page) page.NotificationClicked(tag);
+            else _pendingNotification = tag;
         }
     }
 }
