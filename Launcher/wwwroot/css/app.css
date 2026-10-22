@@ -1323,3 +1323,11 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .fb-meta { margin: 4px 0 0; font: 11.5px var(--font-mono); color: var(--muted); }
 .fb-kind.bug { color: var(--error); }
 .fb-kind.idea { color: var(--ok); }
+
+/* ── Arkadaşlar ─────────────────────────────────────────────────────── */
+.friends-page { display: flex; flex-direction: column; gap: 22px; }
+.friends-section { display: flex; flex-direction: column; gap: 10px; }
+.friends-title { display: flex; align-items: center; gap: 8px; margin: 0; font: 600 13px var(--font); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.friends-count { padding: 0 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-hi); font-size: 11px; letter-spacing: 0; }
+.friend-actions { display: flex; gap: 6px; flex: none; }
+.friend-badge { background: var(--ok); }

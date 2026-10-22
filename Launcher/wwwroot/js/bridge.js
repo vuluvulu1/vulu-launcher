@@ -116,6 +116,8 @@ const mockBackend = (() => {
         { id: 'r1', username: 'Steve_TR', email: 'steve@ornek.com', createdAt: new Date(Date.now() - 50 * 60000).toISOString() },
         { id: 'r2', username: 'madencibaba', email: 'maden@ornek.com', createdAt: new Date(Date.now() - 26 * 3600000).toISOString() },
     ];
+    // Arkadaşlar: halil arkadaş, misafir istek göndermiş
+    const mockFriends = { friends: ['halil'], incoming: ['misafir'], outgoing: [] };
     // Roller (admin paneli ve paylaşma penceresi); hangi paket hangi rollere açık
     const mockPackRoles = { p1: ['r1'] };
     let mockRoles = [
@@ -342,6 +344,15 @@ const mockBackend = (() => {
         },
         'packs.setRoles': async args => { await wait(250); mockPackRoles[args.id] = args.roles; return { success: true }; },
         'feedback.list': async args => { await wait(300); return feedback.filter(f => f.pack === args.pack); },
+        'friends.list': async () => { await wait(150); return JSON.parse(JSON.stringify(mockFriends)); },
+        'friends.request': async args => {
+            await wait(200);
+            if (mockFriends.incoming.includes(args.username)) { mockFriends.incoming = mockFriends.incoming.filter(n => n !== args.username); mockFriends.friends.push(args.username); return { status: 'accepted' }; }
+            mockFriends.outgoing.push(args.username); return { status: 'pending' };
+        },
+        'friends.accept': async args => { await wait(200); mockFriends.incoming = mockFriends.incoming.filter(n => n !== args.username); mockFriends.friends.push(args.username); return { status: 'accepted' }; },
+        'friends.decline': async args => { await wait(200); mockFriends.incoming = mockFriends.incoming.filter(n => n !== args.username); mockFriends.outgoing = mockFriends.outgoing.filter(n => n !== args.username); return { success: true }; },
+        'friends.remove': async args => { await wait(200); mockFriends.friends = mockFriends.friends.filter(n => n !== args.username); return { success: true }; },
         'feedback.counts': async () => { const c = {}; for (const f of feedback) if (f.status === 'open') c[f.pack] = (c[f.pack] || 0) + 1; return c; },
         'feedback.post': async args => {
             await wait(250);

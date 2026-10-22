@@ -75,6 +75,7 @@ function renderProfile(user) {
             el('button', { class: 'btn btn-sm', onclick: changeAvatar }, 'Resmi değiştir'),
             user.avatarVersion > 0 && el('button', { class: 'btn btn-sm', onclick: removeAvatar }, 'Kaldır')),
         !own && el('div', { class: 'profile-head-actions' },
+            ...friendButtons(user.username),
             el('button', { class: 'btn btn-sm btn-primary', onclick: () => { showPage('messages'); openMessagesPage(user.username); } }, 'Mesaj gönder')));
 
     const banner = el('div', { class: 'profile-banner' + (user.bannerVersion ? ' has-image' : '') },

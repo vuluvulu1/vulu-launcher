@@ -198,6 +198,8 @@ async function onNotificationClicked() {
     if (tag.startsWith('dm:')) {
         showPage('messages');
         openMessagesPage(tag.slice(3));
+    } else if (tag.startsWith('friend:')) {
+        showPage('friends');
     } else if (tag.startsWith('shot:')) {
         openSharedShot(tag.slice(5));
     } else if (tag.startsWith('pack:')) {

@@ -215,6 +215,7 @@ async function showLogin({ auto = false } = {}) {
     state.canLaunchGame = init.canLaunchGame !== false;   // Android'de oyun henüz açılmıyor
     $('btn-user').hidden = true;
     $('btn-feedback').hidden = true;
+    stopFriendRequests();
     $('page-tabs').hidden = true;
     $('tab-admin').hidden = true;
     showLoginCard('login');
@@ -399,6 +400,7 @@ async function enterLauncher(session) {
     $('tab-admin').hidden = !session.isAdmin;
     $('btn-feedback').hidden = false;
     refreshFeedbackBadge();   // adminlere açık launcher bildirimleri
+    startFriendRequests();    // bekleyen arkadaşlık istekleri Sosyal sekmesinde rozet olur
     refreshRegistrations(); // bekleyen kayıt istekleri Admin sekmesinde rozet olarak görünür
     $('packs-grid').replaceChildren(); // başka hesaptan kalan liste görünmesin
 

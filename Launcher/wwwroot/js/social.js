@@ -319,28 +319,112 @@ async function prepareShot(dataUrl) {
 }
 
 // ── Arkadaşlar ────────────────────────────────────────────────────────
+// Arkadaşlar istekle eklenir; ne oynadıklarını yalnızca arkadaşlar görür. Gelen istekler Sosyal sekmesinde rozet olur.
+const friends = { friends: [], incoming: [], outgoing: [], loaded: false, timer: null };
+const FRIENDS_REFRESH_MS = 60000;
+
+/** 'friend' | 'incoming' | 'outgoing' | null */
+function friendState(username) {
+    if (friends.friends.includes(username)) return 'friend';
+    if (friends.incoming.includes(username)) return 'incoming';
+    if (friends.outgoing.includes(username)) return 'outgoing';
+    return null;
+}
+
+async function refreshFriends() {
+    try {
+        Object.assign(friends, await bridge.invoke('friends.list'), { loaded: true });
+    } catch { /* sunucuya ulaşılamazsa eski liste kalır */ }
+    const badge = $('friend-badge');
+    badge.textContent = friends.incoming.length || '';
+    badge.hidden = !friends.incoming.length;
+    if (state.page === 'friends') renderFriendsPage();
+}
+
+/** Girişten sonra istekler düzenli sorulur (yeni istek rozet ve bildirim olur). */
+function startFriendRequests() {
+    clearInterval(friends.timer);
+    refreshFriends();
+    friends.timer = setInterval(refreshFriends, FRIENDS_REFRESH_MS);
+}
+
+function stopFriendRequests() {
+    clearInterval(friends.timer);
+    Object.assign(friends, { friends: [], incoming: [], outgoing: [], loaded: false });
+    $('friend-badge').hidden = true;
+}
+
+/** İstek gönder / kabul et / reddet / geri al / çıkar; sonra liste yenilenir. */
+async function friendAction(action, username) {
+    if (action === 'remove') {
+        const ok = await confirmDialog({
+            title: 'Arkadaşlıktan çıkar', message: `${username} arkadaşlarından çıkarılsın mı? Birbirinizin ne oynadığını artık görmezsiniz.`,
+            okText: 'Çıkar', cancelText: 'Vazgeç', danger: true,
+        });
+        if (!ok) return;
+    }
+    try {
+        const result = await bridge.invoke('friends.' + action, { username });
+        if (action === 'request' && result && result.status === 'accepted') appendLog({ text: `${username} ile artık arkadaşsınız.`, level: 'ok' });
+    } catch (err) { await alertDialog({ title: 'Olmadı', message: err.message }); }
+    await refreshFriends();
+    refreshPresence();
+    if (state.page === 'profile' && typeof openProfile === 'function' && profile.viewing === username) openProfile(username);
+}
+
+/** Profilde ve listede gösterilen arkadaşlık düğmeleri. */
+function friendButtons(username, small = true) {
+    const cls = 'btn' + (small ? ' btn-sm' : '');
+    switch (friendState(username)) {
+        case 'friend': return [el('button', { class: cls, title: 'Arkadaşlıktan çıkar', onclick: () => friendAction('remove', username) }, '✓ Arkadaş')];
+        case 'incoming': return [
+            el('button', { class: cls + ' btn-primary', onclick: () => friendAction('accept', username) }, 'Kabul et'),
+            el('button', { class: cls, onclick: () => friendAction('decline', username) }, 'Reddet')];
+        case 'outgoing': return [el('button', { class: cls, title: 'İsteği geri al', onclick: () => friendAction('decline', username) }, 'İstek gönderildi')];
+        default: return [el('button', { class: cls, onclick: () => friendAction('request', username) }, '+ Arkadaş ekle')];
+    }
+}
+
 async function openFriendsPage() {
     renderFriendsPage();
-    await Promise.all([refreshPresence(), ensureMembers()]);
+    await Promise.all([refreshPresence(), ensureMembers(), refreshFriends()]);
     renderFriendsPage();
 }
 
 function renderFriendsPage() {
     const query = $('friends-search').value.trim().toLocaleLowerCase('tr');
-    const rank = u => { const p = presenceOf(u.username); return !p ? 2 : p.state === 'playing' ? 0 : 1; };
-    const list = profile.members
-        .filter(u => u.username !== state.username && (!query || u.username.toLocaleLowerCase('tr').includes(query)))
-        .sort((a, b) => rank(a) - rank(b) || a.username.localeCompare(b.username, 'tr'));
-    $('friends-all').replaceChildren(...(list.length ? list.map(user => {
-        const p = presenceOf(user.username);
+    const match = name => !query || name.toLocaleLowerCase('tr').includes(query);
+    const member = name => profile.members.find(m => m.username === name) || { username: name, avatarVersion: 0 };
+    const rank = name => { const p = presenceOf(name); return !p ? 2 : p.state === 'playing' ? 0 : 1; };
+    const byPresence = names => names.filter(match).sort((a, b) => rank(a) - rank(b) || a.localeCompare(b, 'tr'));
+
+    const card = (name, actions, sub) => {
+        const user = member(name), p = presenceOf(name);
         return el('div', { class: 'friend-card' },
-            el('button', { class: 'member', onclick: () => openProfile(user.username) },
+            el('button', { class: 'member', onclick: () => openProfile(name) },
                 el('span', { class: 'presence-avatar' }, avatarEl(user, 'avatar-md'), p && el('span', { class: 'presence-dot', 'data-state': p.state })),
                 el('span', { class: 'member-text' },
-                    el('span', { class: 'member-name' }, user.username, user.isAdmin && adminMark()),
-                    el('span', { class: 'member-sub' }, presenceEl(p) || lastSeenText(user)))),
-            el('button', { class: 'btn btn-sm', onclick: () => { showPage('messages'); openMessagesPage(user.username); } }, 'Mesaj'));
-    }) : [el('p', { class: 'hint' }, profile.members.length ? 'Kimse bulunamadı.' : 'Yükleniyor…')]));
+                    el('span', { class: 'member-name' }, name, user.isAdmin && adminMark()),
+                    el('span', { class: 'member-sub' }, sub || presenceEl(p) || lastSeenText(user)))),
+            el('div', { class: 'friend-actions' }, actions));
+    };
+    const section = (title, cards, empty) => (cards.length || empty) && el('section', { class: 'friends-section' },
+        el('h2', { class: 'friends-title' }, title, cards.length > 0 && el('span', { class: 'friends-count' }, cards.length)),
+        cards.length ? el('div', { class: 'friends-grid' }, cards) : el('p', { class: 'hint' }, empty));
+
+    const message = name => el('button', { class: 'btn btn-sm', onclick: () => { showPage('messages'); openMessagesPage(name); } }, 'Mesaj');
+    const known = new Set([...friends.friends, ...friends.incoming, ...friends.outgoing, state.username]);
+    // Arama yapılınca arkadaş olmayan üyeler de çıkar, "Arkadaş ekle" ile istek gönderilir
+    const others = query ? profile.members.map(m => m.username).filter(n => !known.has(n) && match(n)).sort((a, b) => a.localeCompare(b, 'tr')) : [];
+
+    const parts = [
+        section('İstekler', friends.incoming.filter(match).map(n => card(n, friendButtons(n), 'Seni arkadaş olarak eklemek istiyor'))),
+        section('Arkadaşların', byPresence(friends.friends).map(n => card(n, [message(n), ...friendButtons(n)])),
+            friends.loaded ? (query ? 'Bu adla bir arkadaşın yok.' : 'Henüz arkadaşın yok. Yukarıdan ara, ya da birinin profilinde "Arkadaş ekle"ye bas.') : 'Yükleniyor…'),
+        section('Gönderdiğin istekler', friends.outgoing.filter(match).map(n => card(n, friendButtons(n), 'Yanıt bekleniyor'))),
+        query && section('Topluluk', others.map(n => card(n, friendButtons(n))), 'Bu adla bir üye yok.'),
+    ].filter(Boolean);
+    $('friends-all').replaceChildren(...parts);
 }
 
 function setupSocial() {
