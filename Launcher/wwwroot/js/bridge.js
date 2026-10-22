@@ -116,7 +116,8 @@ const mockBackend = (() => {
         { id: 'r1', username: 'Steve_TR', email: 'steve@ornek.com', createdAt: new Date(Date.now() - 50 * 60000).toISOString() },
         { id: 'r2', username: 'madencibaba', email: 'maden@ornek.com', createdAt: new Date(Date.now() - 26 * 3600000).toISOString() },
     ];
-    // Roller (admin paneli ve paylaşma penceresi)
+    // Roller (admin paneli ve paylaşma penceresi); hangi paket hangi rollere açık
+    const mockPackRoles = { p1: ['r1'] };
     let mockRoles = [
         { id: 'r1', name: 'AGLR', color: '#c9a992', members: 1, packs: 1 },
         { id: 'r2', name: 'Moderatör', color: '#5fa8d3', members: 0, packs: 0 },
@@ -325,9 +326,11 @@ const mockBackend = (() => {
             const open = key => feedback.filter(f => f.pack === key && f.status === 'open').length;
             return {
                 configured: true, isAdmin: true, feedbackEnabled: true, generalFeedback: open('general'),
-                packs: packs.map(p => ({ ...p, openFeedback: open(p.id) })),
+                packs: packs.map(p => ({ ...p, openFeedback: open(p.id), roles: mockPackRoles[p.id] || [] })),
+                roles: mockRoles.map(r => ({ id: r.id, name: r.name, color: r.color })),
             };
         },
+        'packs.setRoles': async args => { await wait(250); mockPackRoles[args.id] = args.roles; return { success: true }; },
         'feedback.list': async args => { await wait(300); return feedback.filter(f => f.pack === args.pack); },
         'feedback.post': async args => {
             await wait(250);

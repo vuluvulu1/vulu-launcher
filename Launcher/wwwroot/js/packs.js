@@ -43,6 +43,13 @@ function renderPacks(result) {
     grid.replaceChildren(...result.packs.map(pack => packTile(pack, result)));
 }
 
+/** Admin için: paket rolle kısıtlıysa hangi rollere açık olduğu. */
+function accessTags(pack, roles) {
+    if (!roles || !(pack.roles || []).length) return [];
+    const names = roles.filter(r => pack.roles.includes(r.id)).map(r => r.name);
+    return [el('span', { class: 'tag tag-access', title: 'Yalnızca bu roldekiler ve adminler görür' }, '🔒 ' + (names.join(', ') || 'Kısıtlı'))];
+}
+
 function packTile(pack, result) {
     const cover = el('div', { class: 'pack-cover' + (pack.coverUrl ? '' : ' plain') });
     if (pack.coverUrl) cover.style.backgroundImage = `url("${pack.coverUrl}")`;
@@ -77,6 +84,7 @@ function packTile(pack, result) {
                 pack.modCount > 0 && el('span', { class: 'tag' }, pack.modCount + ' mod'),
                 ...contentTags(pack),
                 pack.recommendedRamGb > 0 && el('span', { class: 'tag', title: 'Önerilen RAM' }, pack.recommendedRamGb + ' GB RAM'),
+                ...accessTags(pack, result.roles),
                 el('span', { class: 'tag' }, formatSize(pack.sizeMb))),
             el('div', { class: 'pack-foot' },
                 primary,
@@ -89,7 +97,51 @@ function packTile(pack, result) {
                     pack.openFeedback > 0 && el('span', { class: 'count' }, pack.openFeedback)),
                 el('button', { class: 'btn btn-sm', title: 'Bir arkadaşına mesajla gönder', onclick: () => shareCardWith(packInvite(pack)) }, 'Gönder'),
                 (pack.changelog || []).length > 0 && el('button', { class: 'btn btn-sm', title: 'Her sürümde neyin değiştiği', onclick: () => showChangelog(pack) }, 'Değişiklikler'),
+                result.isAdmin && result.roles && el('button', { class: 'btn btn-sm', title: 'Kimler görebilir', onclick: () => editPackAccess(pack, result.roles) }, 'Erişim'),
                 result.isAdmin && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deletePack(pack) }, 'Sil'))));
+}
+
+/** Paketi kimlerin görebileceği (admin). Yeni revizyon açılmaz; kuranların paketi değişmez. */
+async function editPackAccess(pack, roles) {
+    const chosen = new Set(pack.roles || []);
+    const saved = await openModal(close => {
+        const everyone = el('button', { type: 'button', class: 'role-pick-all' }, 'Herkes');
+        const picks = roles.map(role => {
+            const pick = el('button', { type: 'button', class: 'role-pick', style: `--role:${roleColor(role.color)}`, 'data-id': role.id },
+                el('i', { 'aria-hidden': 'true' }), el('span', {}, role.name));
+            pick.addEventListener('click', () => { chosen.has(role.id) ? chosen.delete(role.id) : chosen.add(role.id); paint(); });
+            return pick;
+        });
+        const hint = el('p', { class: 'hint' });
+        const error = el('div', { class: 'form-error' });
+        everyone.addEventListener('click', () => { chosen.clear(); paint(); });
+        function paint() {
+            everyone.classList.toggle('active', chosen.size === 0);
+            picks.forEach(p => p.classList.toggle('active', chosen.has(p.dataset.id)));
+            const names = roles.filter(r => chosen.has(r.id)).map(r => r.name);
+            hint.textContent = names.length ? `Yalnızca ${names.join(', ')} rolündekiler ve adminler görür.` : 'Bütün vulu kullanıcıları görür.';
+        }
+        paint();
+        const save = el('button', { class: 'btn btn-primary' }, 'Kaydet');
+        save.addEventListener('click', async () => {
+            save.disabled = true;
+            try { await bridge.invoke('packs.setRoles', { id: pack.id, roles: [...chosen] }); close(true); }
+            catch (err) { error.textContent = err.message; save.disabled = false; }
+        });
+        return [
+            el('div', { class: 'modal-head' }, `${pack.name} · Kimler erişebilir`),
+            el('div', { class: 'modal-body' },
+                roles.length
+                    ? el('div', { class: 'role-picks' }, everyone, picks)
+                    : el('p', { class: 'hint' }, 'Henüz rol yok. Admin paneli → Roller sekmesinden oluşturabilirsin.'),
+                roles.length > 0 && hint,
+                error),
+            el('div', { class: 'modal-foot' },
+                el('button', { class: 'btn', onclick: () => close(false) }, 'Vazgeç'),
+                roles.length > 0 && save),
+        ];
+    });
+    if (saved) openPacksPage();
 }
 
 async function installPack(pack) {

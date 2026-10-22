@@ -39,6 +39,12 @@ namespace VuluLauncher
             _bridge.On("packs.pickCover", async _ => await PickCoverAsync());
             _bridge.On("packs.publish", async args => await PublishPackAsync(args));
             _bridge.On("packs.delete", async args => await DeletePackAsync(args.Str("id")));
+            _bridge.On("packs.setRoles", async args =>
+            {
+                RequireAdmin();   // asıl yetki denetimi sunucuda
+                await _api.PutAsync<JsonElement>($"/packs/{Uri.EscapeDataString(args.Str("id"))}/roles", new { roles = args.StrList("roles") });
+                return new { success = true };
+            });
             RegisterFeedbackCommands();
             RegisterRegistrationCommands();
         }
@@ -51,6 +57,12 @@ namespace VuluLauncher
             var countsTask = FeedbackCountsAsync();
             var packs = await packsTask;
             var feedback = await countsTask;
+            // Adminler paketin kimlere açık olduğunu görür ve değiştirebilir
+            List<RoleInfo>? roles = null;
+            if (_login.IsAdmin)
+            {
+                try { roles = await _api.GetAsync<List<RoleInfo>>("/admin/roles"); } catch (ApiException) { }
+            }
             var installed = InstanceStore.List()
                 .Where(m => m.SharedPackId != null)
                 .GroupBy(m => m.SharedPackId!)
@@ -91,10 +103,19 @@ namespace VuluLauncher
                             updated = c.Updated.Select(u => new { title = u.Title, from = u.From, to = u.To }),
                             filesChanged = c.FilesChanged,
                         }),
-                        installed = meta == null ? null : new { instanceId = InstancePrefix + meta.Folder, revision = meta.SharedPackRevision }
+                        installed = meta == null ? null : new { instanceId = InstancePrefix + meta.Folder, revision = meta.SharedPackRevision },
+                        roles = roles == null ? null : p.Roles,
                     };
-                })
+                }),
+                roles,
             };
+        }
+
+        private sealed class RoleInfo
+        {
+            public string Id { get; set; } = "";
+            public string Name { get; set; } = "";
+            public string Color { get; set; } = "";
         }
 
         /// <summary>Kapağı instance'ın arka planı yapar; alınamazsa sessizce geçilir.</summary>
