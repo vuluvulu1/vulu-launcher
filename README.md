@@ -7,12 +7,12 @@
 Minecraft'ı kurmayı, modlamayı ve oynamayı tek bir uygulamada toplayan bir launcher.
 
 <a href="https://github.com/vuluvulu1/vulu-launcher/releases/latest"><img src="https://img.shields.io/github/v/release/vuluvulu1/vulu-launcher?label=s%C3%BCr%C3%BCm&color=c9a992&labelColor=1a1410" alt="Sürüm"></a>
-<a href="https://github.com/vuluvulu1/vulu-launcher/releases"><img src="https://img.shields.io/github/downloads/vuluvulu1/vulu-launcher/total?label=indirme&color=9c704c&labelColor=1a1410" alt="İndirme"></a>
+<a href="https://vuluvulu.com.tr/launcher"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fvuluvulu.com.tr%2Fapi%2Fstats&query=%24.downloads.total&label=indirme&color=9c704c&labelColor=1a1410" alt="İndirme"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/lisans-AGPL--3.0-654127?labelColor=1a1410" alt="Lisans: AGPL-3.0"></a>
 <img src="https://img.shields.io/badge/.NET-10-c9a992?logo=dotnet&logoColor=white&labelColor=1a1410" alt=".NET 10">
 <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Android-654127?labelColor=1a1410" alt="Windows, Android">
 
-**[İndir (vulu-launcher-setup.exe)](https://vuluvulu.com.tr/releases/vulu-launcher-setup.exe)** · [vuluvulu.com.tr](https://vuluvulu.com.tr/launcher)
+**[İndir (vulu-launcher-setup.exe)](https://vuluvulu.com.tr/api/download/windows)** · [vuluvulu.com.tr](https://vuluvulu.com.tr/launcher)
 
 <br>
 
@@ -30,7 +30,7 @@ Windows ilk seferde SmartScreen uyarısı verebilir: *Ek bilgi → Yine de çal�
 
 ### Android
 
-**[APK'yı indir](https://vuluvulu.com.tr/releases/android/vulu-launcher.apk)** · Android 8 ve üstü. Aynı hesap, sosyal akış, mesajlar, paketler ve sunucular, telefon ekranına göre tasarlanmış haliyle. Minecraft da uygulamanın içinden açılır (oyun motoru: Amethyst); paketler ve modlar telefona kurulabilir. İlk açılışta oyun dosyaları ve Java bir kez iner (1.20.1 için yaklaşık 700 MB). Yeni sürüm çıkınca uygulama haber verir.
+**[APK'yı indir](https://vuluvulu.com.tr/api/download/android)** · Android 8 ve üstü. Aynı hesap, sosyal akış, mesajlar, paketler ve sunucular, telefon ekranına göre tasarlanmış haliyle. Minecraft da uygulamanın içinden açılır (oyun motoru: Amethyst); paketler ve modlar telefona kurulabilir. İlk açılışta oyun dosyaları ve Java bir kez iner (1.20.1 için yaklaşık 700 MB). Yeni sürüm çıkınca uygulama haber verir.
 
 Telefonda henüz olmayanlar: Forge ve NeoForge paketleri açılmıyor; sunucuya doğrudan katılma ve oynama süresi çalışmıyor.
 
