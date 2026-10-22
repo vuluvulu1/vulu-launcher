@@ -3,7 +3,12 @@
 	<!-- Oyun motoru (Amethyst) için: OpenJDK, ARM'da Android 11+ işaretçi etiketlemesiyle çöker; JRE yerel kütüphaneleri
 	     diskteki dosyalar olarak yükler (APK içinden değil). appCategory/isGame: Android oyun modu ve performans ayarları. -->
 	<application android:allowBackup="false" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true" android:label="vulu Launcher"
-		android:allowNativeHeapPointerTagging="false" android:extractNativeLibs="true" android:appCategory="game" android:isGame="true"></application>
+		android:allowNativeHeapPointerTagging="false" android:extractNativeLibs="true" android:appCategory="game" android:isGame="true">
+		<!-- Motorun ayrı süreçleri (asıl tanımları motorun AAR'ında). Burada da anılır ki .NET o süreçlere de kendi çalışma
+		     zamanını yükleyen sağlayıcıyı eklesin: yoksa uygulama sınıfı (MainApplication) orada açılırken çöker. -->
+		<activity android:name="net.kdt.pojavlaunch.MainActivity" android:process=":game" />
+		<activity android:name="net.kdt.pojavlaunch.JavaGUILauncherActivity" android:process=":gui_installer" />
+	</application>
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
