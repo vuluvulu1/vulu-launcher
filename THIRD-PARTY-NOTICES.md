@@ -8,6 +8,7 @@ vulu Launcher aşağıdaki bileşenleri içerir ya da kullanır. Bunlar kendi ya
 | Photino.NET | Apache 2.0 |
 | .NET MAUI ve .NET for Android (Microsoft; Android sürümü) | MIT |
 | CmlLib.Core ve CmlLib.Core.Installer.Forge | MIT |
+| authlib-injector (yushijinhun; pakete gömülmez, ilk ihtiyaçta resmî adresinden indirilir) | GNU AGPL 3.0 |
 | IBM Plex Sans ve IBM Plex Mono yazı tipleri | SIL Open Font License 1.1 ([metin](Launcher/wwwroot/fonts/OFL-IBMPlex.txt)) |
 | Great Vibes yazı tipi | SIL Open Font License 1.1 ([metin](Launcher/wwwroot/fonts/OFL-GreatVibes.txt)) |
 | Silkscreen yazı tipi | SIL Open Font License 1.1 ([metin](Launcher/wwwroot/fonts/OFL-Silkscreen.txt)) |
