@@ -31,13 +31,13 @@ namespace VuluLauncher
         /// <summary>0 = ayarlardaki varsayılan.</summary>
         public int RamGb { get; set; }
         public string? IconUrl { get; set; }
-        /// <summary>Modrinth modpack'inden kurulduysa projenin adı/kimliği.</summary>
+        /// <summary>Modpack'ten kurulduysa projenin kimliği: Modrinth'te proje kimliği, CurseForge'da "curseforge:&lt;id&gt;".</summary>
         public string? ModpackProjectId { get; set; }
         public string? ModpackVersion { get; set; }
         /// <summary>vulu Packs'ten kurulduysa (ya da oradan yayınlandıysa) paketin kimliği ve revizyonu.</summary>
         public string? SharedPackId { get; set; }
         public int SharedPackRevision { get; set; }
-        /// <summary>Paketin logosu bir kez indirildi mi (kullanıcı sonradan kaldırırsa geri getirilmez).</summary>
+        /// <summary>Paketin logosu (ya da modpack'in simgesi) bir kez indirildi mi (kullanıcı sonradan kaldırırsa geri getirilmez).</summary>
         public bool PackLogoSynced { get; set; }
         public string? Description { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

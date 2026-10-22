@@ -156,20 +156,53 @@ namespace VuluLauncher
             finally { if (File.Exists(temp)) File.Delete(temp); }
         }
 
+        // CurseForge ve Modrinth'in simge sunucuları; modpack simgesi yalnızca buradan indirilir
+        private static readonly string[] ModpackIconHosts = { "media.forgecdn.net", "cdn.modrinth.com" };
+
+        /// <summary>
+        /// CurseForge/Modrinth modpack'inin simgesini instance'ın logosu yapar (ana ekranda adın yerine görünür).
+        /// Bir kez yapılır: kullanıcı logoyu sonradan kaldırırsa geri gelmez.
+        /// </summary>
+        private async Task<bool> UseModpackIconAsLogoAsync(InstanceMeta meta)
+        {
+            if (meta.PackLogoSynced || meta.SharedPackId != null || meta.ModpackProjectId == null) return false;
+            string id = InstancePrefix + meta.Folder;
+            if (LogoFile(id) != null || !Uri.TryCreate(meta.IconUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps
+                || !ModpackIconHosts.Contains(uri.Host, StringComparer.OrdinalIgnoreCase)) return false;
+
+            string ext = Path.GetExtension(uri.AbsolutePath).ToLowerInvariant();
+            if (!ImageExtensions.Contains(ext)) ext = ".png";
+            string temp = Path.Combine(Path.GetTempPath(), $"vulu-logo-{Guid.NewGuid():N}{ext}");
+            try
+            {
+                Directory.CreateDirectory(AppPaths.Logos);
+                await Downloader.DownloadAsync(uri.AbsoluteUri, temp);
+                if (new FileInfo(temp).Length is 0 or > 4L * 1024 * 1024) return false;
+                File.Move(temp, Path.Combine(AppPaths.Logos, BackgroundKey(id) + ext), overwrite: true);
+                meta.PackLogoSynced = true;
+                InstanceStore.Save(meta);
+                return true;
+            }
+            catch { return false; /* logo olmadan da instance çalışır */ }
+            finally { if (File.Exists(temp)) File.Delete(temp); }
+        }
+
         /// <summary>
         /// Eski sürümlerdeki bir hata yüzünden paketten kurulan instance'lara logo inmiyordu. Girişten sonra bir kez,
-        /// logosu hiç inmemiş paket instance'larına paketin logosu indirilir; ana ekran yenilenir.
+        /// logosu hiç inmemiş paket instance'larına paketin logosu, CurseForge/Modrinth modpack'lerine projenin simgesi
+        /// indirilir; ana ekran yenilenir.
         /// </summary>
         private async Task RepairPackLogosAsync()
         {
             try
             {
-                var missing = InstanceStore.List().Where(m => m.SharedPackId != null && !m.PackLogoSynced && LogoFile(InstancePrefix + m.Folder) == null).ToList();
+                var missing = InstanceStore.List().Where(m => !m.PackLogoSynced && LogoFile(InstancePrefix + m.Folder) == null).ToList();
                 if (missing.Count == 0) return;
                 var store = Packs;
                 bool changed = false;
                 foreach (var meta in missing)
                 {
+                    if (meta.SharedPackId == null) { if (await UseModpackIconAsLogoAsync(meta)) changed = true; continue; }
                     var pack = await store.GetAsync(meta.SharedPackId!);
                     if (pack != null && await UsePackLogoAsync(store, pack, meta)) changed = true;
                 }

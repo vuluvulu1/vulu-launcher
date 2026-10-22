@@ -94,7 +94,7 @@ namespace VuluLauncher
                 kind = "custom",
                 name = m.Name,
                 description = !string.IsNullOrWhiteSpace(m.Description) ? m.Description
-                    : m.ModpackProjectId != null ? $"Modrinth modpack · {m.ModpackVersion}"
+                    : m.ModpackProjectId != null ? $"{(m.ModpackProjectId.StartsWith(CurseForgeService.Source + ":", StringComparison.Ordinal) ? "CurseForge" : "Modrinth")} modpack · {m.ModpackVersion}"
                     : "Kişisel instance",
                 sharedPackId = m.SharedPackId,
                 mcVersion = m.McVersion,
@@ -438,6 +438,7 @@ namespace VuluLauncher
             try
             {
                 var instance = await _modrinth.InstallModpackAsync(projectId, NullIfEmpty(versionId));
+                await UseModpackIconAsLogoAsync(instance);
                 return new { success = true, error = (string?)null, id = InstancePrefix + instance.Folder, name = instance.Name };
             }
             catch (Exception ex)

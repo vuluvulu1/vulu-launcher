@@ -319,7 +319,7 @@ async function prepareShot(dataUrl) {
 }
 
 // ── Arkadaşlar ────────────────────────────────────────────────────────
-// Arkadaşlar istekle eklenir; ne oynadıklarını yalnızca arkadaşlar görür. Gelen istekler Sosyal sekmesinde rozet olur.
+// Arkadaşlar istekle eklenir. Gelen istekler Sosyal sekmesinde rozet olur.
 const friends = { friends: [], incoming: [], outgoing: [], loaded: false, timer: null };
 const FRIENDS_REFRESH_MS = 60000;
 
@@ -358,7 +358,7 @@ function stopFriendRequests() {
 async function friendAction(action, username) {
     if (action === 'remove') {
         const ok = await confirmDialog({
-            title: 'Arkadaşlıktan çıkar', message: `${username} arkadaşlarından çıkarılsın mı? Birbirinizin ne oynadığını artık görmezsiniz.`,
+            title: 'Arkadaşlıktan çıkar', message: `${username} arkadaşlarından çıkarılsın mı?`,
             okText: 'Çıkar', cancelText: 'Vazgeç', danger: true,
         });
         if (!ok) return;
