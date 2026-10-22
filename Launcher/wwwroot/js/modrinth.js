@@ -483,21 +483,59 @@ function renderModrinthHit(hit) {
  * instance'ın klasörüne konur. CurseForge'un kuralı bu; launcher dosyayı kendisi indiremez.
  */
 async function showManualDownloads(manual, instanceId) {
-    const FOLDERS = { mods: 'mods', resourcepacks: 'resourcepacks', shaderpacks: 'shaderpacks' };
-    await openModal(close => [
-        el('div', { class: 'modal-head' }, manual.length === 1 ? `${manual[0].title} elle indirilmeli` : `${manual.length} dosya elle indirilmeli`),
-        el('div', { class: 'modal-body' },
-            el('p', {}, manual.length === 1
-                ? 'Bu modun yapımcısı, modun başka uygulamalardan indirilmesine izin vermiyor. CurseForge sayfasından indirip instance klasöründeki şu klasöre koyman yeterli:'
-                : 'Bu dosyaların yapımcıları başka uygulamalardan indirilmelerine izin vermiyor. Her birini CurseForge sayfasından indirip instance klasöründe belirtilen klasöre koy:'),
-            el('div', { class: 'manual-list' }, manual.map(m => el('div', { class: 'manual-row' },
+    const pending = new Set(manual.map(m => m.fileId));
+    return openModal(close => {
+        const rows = new Map();
+        const list = el('div', { class: 'manual-list' }, manual.map(m => {
+            const status = el('span', { class: 'manual-status' });
+            const row = el('div', { class: 'manual-row' },
                 el('div', { class: 'manual-text' },
                     el('b', {}, m.title),
-                    el('span', { class: 'hint' }, `${FOLDERS[m.folder] || m.folder}/ · ${m.fileName}`)),
-                el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('cf.openPage', { url: m.url }).catch(() => { }) }, 'CurseForge\'da aç ↗')))),
-            el('p', { class: 'hint' }, 'Dosyayı koyduktan sonra oyunu yeniden başlatman yeterli.')),
-        el('div', { class: 'modal-foot' },
-            instanceId && el('button', { class: 'btn', onclick: () => bridge.invoke('files.open', { target: 'instance', id: instanceId }).catch(() => { }) }, 'Instance klasörünü aç'),
-            el('button', { class: 'btn btn-primary', onclick: () => close() }, 'Tamam')),
-    ].filter(Boolean), { wide: manual.length > 1 });
+                    el('span', { class: 'hint' }, `${m.folder}/ · tam olarak bu dosya: ${m.fileName}`),
+                    status),
+                el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('cf.openPage', { url: m.url }).catch(() => { }) }, 'CurseForge\'da aç ↗'));
+            rows.set(m.fileId, { row, status });
+            return row;
+        }));
+        const note = el('p', { class: 'hint manual-note', hidden: true });
+        const check = el('button', { class: 'btn btn-primary', hidden: !instanceId }, 'İndirilenleri kontrol et');
+        const done = el('button', { class: 'btn', onclick: () => close(pending.size === 0) }, 'Kapat');
+        check.onclick = async () => {
+            check.disabled = true;
+            try {
+                const r = await bridge.invoke('cf.manualPlace', { instanceId });
+                for (const res of r.results) {
+                    const item = rows.get(res.fileId);
+                    if (!item) continue;
+                    item.row.classList.toggle('placed', res.status === 'placed');
+                    item.row.classList.toggle('problem', res.status === 'problem');
+                    item.status.textContent = res.status === 'placed' ? '✓ Yerine kondu'
+                        : res.status === 'problem' ? res.problem : 'İndirilenler\'de henüz yok';
+                    if (res.status === 'placed') pending.delete(res.fileId);
+                }
+                note.hidden = !!r.downloads;
+                note.textContent = 'İndirilenler klasörü bulunamadı; dosyaları instance klasöründe yazan klasöre kendin koy.';
+                if (pending.size === 0) { check.hidden = true; done.textContent = 'Tamam'; done.classList.add('btn-primary'); done.focus(); }
+            } catch (err) {
+                note.hidden = false;
+                note.textContent = err.message;
+            }
+            check.disabled = false;
+        };
+        return [
+            el('div', { class: 'modal-head' }, manual.length === 1 ? `${manual[0].title} elle indirilmeli` : `${manual.length} dosya elle indirilmeli`),
+            el('div', { class: 'modal-body' },
+                el('p', {}, manual.length === 1
+                    ? 'Bu modun yapımcısı, modun başka uygulamalardan indirilmesine izin vermiyor. CurseForge sayfasından yazan dosyayı indir; sayfadaki en yeni sürümü değil, tam olarak bu dosyayı.'
+                    : 'Bu dosyaların yapımcıları başka uygulamalardan indirilmelerine izin vermiyor. Her birini CurseForge sayfasından indir; sayfadaki en yeni sürümü değil, tam olarak yazan dosyayı.'),
+                list,
+                el('p', { class: 'hint' }, instanceId
+                    ? 'İndirdikten sonra "İndirilenleri kontrol et"e bas: launcher dosyaları İndirilenler klasöründe bulur, doğru dosya olduklarını kontrol eder ve yerlerine koyar.'
+                    : 'Dosyaları instance klasöründe yazan klasöre koy.'),
+                note),
+            el('div', { class: 'modal-foot' },
+                instanceId && el('button', { class: 'btn', onclick: () => bridge.invoke('files.open', { target: 'instance', id: instanceId }).catch(() => { }) }, 'Instance klasörünü aç'),
+                done, check),
+        ].filter(Boolean);
+    }, { wide: manual.length > 1 });
 }

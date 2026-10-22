@@ -27,6 +27,53 @@ function missingDepsDialog(missing, instance) {
     ], { wide: false });
 }
 
+/**
+ * Oyun açılmadan önce bulunan dosya sorunları: boş/bozuk jar'lar, aynı dosyanın kopyaları ve yerine konmamış elle
+ * indirilecekler. 'retry' (düzeltildi, yeniden dene), 'ignore' (yine de oyna) ya da undefined döner.
+ */
+function fileProblemsDialog(files, instance) {
+    const bad = [...files.broken.map(b => ({ file: b.file, text: b.reason })),
+        ...files.duplicates.map(d => ({ file: d.file, text: `${d.copyOf} dosyasının kopyası; aynı mod iki kez yüklenir.` }))];
+    const canFix = instance.kind === 'custom';
+    return openModal(close => {
+        const sections = [];
+        if (bad.length) {
+            const move = canFix && el('button', { class: 'btn btn-sm' }, 'Yedeğe taşı');
+            if (move) move.onclick = async () => {
+                move.disabled = true;
+                try {
+                    await bridge.invoke('mods.backupFiles', { instanceId: instance.id, files: bad.map(b => b.file) });
+                    move.textContent = '✓ mods-yedek klasörüne taşındı';
+                } catch (err) { move.disabled = false; move.textContent = err.message; }
+            };
+            sections.push(el('div', { class: 'health-section' },
+                el('div', { class: 'health-section-head' }, el('b', {}, 'Sorunlu dosyalar'), move),
+                el('div', { class: 'health-list' }, bad.map(b => el('div', { class: 'health-item' },
+                    el('span', { class: 'crash-mark', 'aria-hidden': 'true' }, '!'),
+                    el('div', { class: 'health-text' }, el('b', {}, b.file.replace(/^mods\//, '')), el('span', {}, b.text)))))));
+        }
+        if (files.manual.length) {
+            const open = el('button', { class: 'btn btn-sm' }, 'Elle indir…');
+            open.onclick = async () => { if (await showManualDownloads(files.manual, canFix ? instance.id : null)) open.textContent = '✓ Hepsi yerinde'; };
+            sections.push(el('div', { class: 'health-section' },
+                el('div', { class: 'health-section-head' }, el('b', {}, 'Elle indirilmesi gerekenler'), open),
+                el('div', { class: 'health-list' }, files.manual.map(m => el('div', { class: 'health-item' },
+                    m.iconUrl ? el('img', { class: 'health-icon', src: m.iconUrl, alt: '' }) : el('span', { class: 'health-icon' }),
+                    el('div', { class: 'health-text' }, el('b', {}, m.title), el('span', {}, m.fileName)))))));
+        }
+        return [
+            el('div', { class: 'modal-head' }, 'Mod dosyalarında sorun var'),
+            el('div', { class: 'modal-body health-body' },
+                el('p', { class: 'hint' }, 'Oyun bu dosyalarla büyük ihtimalle açılmaz. Sorunlu dosyalar silinmez, instance klasöründeki mods-yedek klasörüne taşınır.'),
+                ...sections),
+            el('div', { class: 'modal-foot' },
+                el('button', { class: 'btn', onclick: () => close(undefined) }, 'Vazgeç'),
+                el('button', { class: 'btn', onclick: () => close('ignore') }, 'Yine de oyna'),
+                el('button', { class: 'btn btn-primary', onclick: () => close('retry') }, 'Tekrar dene')),
+        ];
+    }, { wide: true });
+}
+
 // ── Çökme özeti ───────────────────────────────────────────────────────
 const CRASH_ACTIONS = {
     install: a => bridge.invoke('mods.installMissing', { instanceId: a.instanceId, projectIds: a.projectIds }),

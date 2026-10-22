@@ -27,6 +27,31 @@ namespace VuluLauncher
                 _host.OpenUrl(url);
                 return Task.FromResult<object?>(new { opened = true });
             });
+            _bridge.On("cf.manualPlace", async args => await PlaceManualAsync(args.Str("instanceId")));
+            _bridge.On("mods.backupFiles", async args =>
+            {
+                var instance = RequireCustomInstance(args.Str("instanceId"));
+                if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken dosyalar taşınamaz.");
+                var moved = await Task.Run(() => ManualFiles.MoveToBackup(InstanceStore.PathOf(instance.Folder), args.StrList("files")));
+                if (moved.Count > 0) Log($"{instance.Name}: {moved.Count} dosya {ManualFiles.BackupFolder} klasörüne taşındı.", "ok");
+                return new { moved };
+            });
+        }
+
+        /// <summary>Elle indirilen dosyaları İndirilenler klasöründe bulup doğrular ve instance'taki yerlerine koyar.</summary>
+        private async Task<object?> PlaceManualAsync(string instanceId)
+        {
+            var instance = RequireCustomInstance(instanceId);
+            string? downloads = ManualFiles.DownloadsFolder();
+            var results = await Task.Run(() => ManualFiles.Place(instance, downloads));
+            int placed = results.Count(r => r.Status == "placed");
+            if (placed > 0) Log($"{instance.Name}: elle indirilen {placed} dosya yerine kondu.", "ok");
+            return new
+            {
+                downloads,
+                results = results.Select(r => new { fileId = r.File.FileId, status = r.Status, problem = r.Problem }),
+                pending = ManualList(instance.PendingManual),
+            };
         }
 
         private static int RequireCfId(string value, string what) =>
@@ -134,7 +159,7 @@ namespace VuluLauncher
         }
 
         private static object ManualList(IEnumerable<ManualDownload> manual) =>
-            manual.Select(m => new { title = m.Title, url = m.Url, folder = m.Folder, fileName = m.FileName }).ToList();
+            manual.Select(m => new { title = m.Title, url = m.Url, folder = m.Folder, fileName = m.FileName, fileId = m.FileId, iconUrl = m.IconUrl }).ToList();
 
         private async Task<object?> CurseForgeInstallAsync(string instanceId, string projectId, string versionId)
         {

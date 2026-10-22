@@ -1273,4 +1273,16 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .manual-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
 .manual-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .manual-text .hint { font-family: var(--font-mono); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.manual-status { font-size: 12px; color: var(--muted); }
+.manual-status:empty { display: none; }
+.manual-row.placed { border-color: color-mix(in srgb, var(--ok) 45%, var(--line)); }
+.manual-row.placed .manual-status { color: var(--ok); }
+.manual-row.problem { border-color: color-mix(in srgb, var(--error) 45%, var(--line)); }
+.manual-row.problem .manual-status { color: var(--error); }
+.manual-note { color: var(--warn); }
+.health-section { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.health-section-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pack-manual { align-self: flex-start; padding: 5px 10px; border: 1px solid color-mix(in srgb, var(--warn) 45%, var(--line)); border-radius: var(--r); background: color-mix(in srgb, var(--warn) 10%, transparent); color: var(--warn); font: inherit; font-size: 12.5px; cursor: pointer; }
+.pack-manual:hover { background: color-mix(in srgb, var(--warn) 18%, transparent); }
+.pack-manual[hidden] { display: none; }
 .mr-title .badge { margin-left: 8px; }

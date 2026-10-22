@@ -71,6 +71,11 @@ const bridge = (() => {
 // sahte bir arka uç. Gerçek launcher'da hiç kullanılmaz.
 const mockBackend = (() => {
     const mockFlags = {};
+    // Elle indirilmesi gereken dosyalar (Fabric 1.21 instance'ı)
+    let mockManual = [
+        { title: 'Not Enough Animations', url: 'https://www.curseforge.com/minecraft/mc-mods/not-enough-animations/files/8925075', folder: 'mods', fileName: 'notenoughanimations-neoforge-1.12.6-mc1.21.1.jar', fileId: '8925075', iconUrl: null },
+        { title: 'Structory: Towers', url: 'https://www.curseforge.com/minecraft/mc-mods/structory-towers/files/7842394', folder: 'mods', fileName: 'Structory_Towers_26.1_v1.0.16.jar', fileId: '7842394', iconUrl: null },
+    ];
     let mockBanner = null;
     let mockAnnouncement = { id: 'a1', text: 'Bu akşam 21:00\'de AGLR SMP\'de etkinlik var, herkesi bekliyoruz!', author: 'vulu', createdAt: new Date(Date.now() - 2 * 3600000).toISOString(), expiresAt: null };
     const mockComments = {};
@@ -233,6 +238,16 @@ const mockBackend = (() => {
         'auth.forgetPassword': async () => ({ success: true }),
         'launcher.check': async () => { log('Launcher güncel.', 'muted'); return { status: 'upToDate' }; },
         'game.play': async args => {
+            // Dosya sorunları senaryosu (Fabric 1.21): kopya ve boş jar, elle indirilecek dosya
+            if (args.instanceId === 'inst:fabric-121' && !args.ignoreFiles && !mockFlags.filesShown) {
+                mockFlags.filesShown = true;
+                await wait(300);
+                return { started: false, error: null, files: {
+                    broken: [{ file: 'mods/notenoughanimations-1.12.6.jar', reason: 'Dosya boş: indirme yarım kalmış.' }],
+                    duplicates: [{ file: 'mods/tombstone-9.5.6 (1).jar', copyOf: 'tombstone-9.5.6.jar' }],
+                    manual: mockManual,
+                } };
+            }
             // Bir kez eksik bağımlılık senaryosu (Fabric 1.21)
             if (args.instanceId === 'inst:fabric-121' && !args.ignoreMissing && !mockFlags.depsShown) {
                 mockFlags.depsShown = true;
@@ -373,6 +388,7 @@ const mockBackend = (() => {
             await wait(350);
             const daysAgo = n => new Date(Date.now() - n * 86400000).toISOString();
             if (args.id === 'pack:vanilla') return { installed: true, modCount: 0, sizeMb: 612, updatedAt: daysAgo(0), playTime: { seconds: 45296, sessions: 31, lastPlayed: daysAgo(1) } };
+            if (args.id === 'inst:fabric-121') return { installed: true, modCount: 42, sizeMb: 380, updatedAt: daysAgo(2), playTime: { seconds: 3600, sessions: 2, lastPlayed: daysAgo(2) }, manual: mockManual };
             return { installed: false, modCount: 0, sizeMb: 0, updatedAt: null, playTime: { seconds: 0, sessions: 0, lastPlayed: null } };
         },
         'instances.options': async () => { await wait(300); return { minecraftVersions: ['1.21.11', '1.21.1', '1.20.1', '1.19.2', '1.16.5', '1.12.2'], loaders: ['vanilla', 'fabric', 'quilt', 'forge', 'neoforge'] }; },
@@ -469,6 +485,14 @@ const mockBackend = (() => {
             { id: '5650', name: 'jei-1.20.1-forge-15.19.5.99', number: 'jei-1.20.1-forge-15.19.5.99.jar', type: 'beta', published: new Date(Date.now() - 40 * 86400000).toISOString(), gameVersions: ['1.20.1'], loaders: ['forge'], manualOnly: false },
         ]; },
         'cf.openPage': async () => ({ opened: true }),
+        'cf.manualPlace': async () => {
+            await wait(500);
+            const results = mockManual.map((m, i) => i === 0 ? { fileId: m.fileId, status: 'placed' }
+                : { fileId: m.fileId, status: 'problem', problem: "İndirilenler'de Structory_Towers_26.2_v1.0.17.jar var ama beklenen Structory_Towers_26.1_v1.0.16.jar; başka bir sürüm indirilmiş." });
+            mockManual = mockManual.slice(1);
+            return { downloads: 'C:\\Users\\vulu\\Downloads', results, pending: mockManual };
+        },
+        'mods.backupFiles': async args => { await wait(300); return { moved: args.files }; },
         'cf.install': async () => {
             log('Just Enough Items indiriliyor...', 'accent'); await wait(800);
             return { success: true, installed: ['Just Enough Items'], manual: [{ title: 'Secret Mod', url: 'https://www.curseforge.com/minecraft/mc-mods/secret/files/21', folder: 'mods', fileName: 'secret-mod-1.2.jar' }] };

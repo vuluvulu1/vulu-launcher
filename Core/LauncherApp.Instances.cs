@@ -141,7 +141,8 @@ namespace VuluLauncher
                 modCount,
                 sizeMb = Math.Round(sizeBytes / 1024.0 / 1024.0, 1),
                 updatedAt = modsChanged?.ToString("o"),
-                playTime = PlayTimeOf(id)
+                playTime = PlayTimeOf(id),
+                manual = isServer ? null : ManualList(RequireCustomInstance(id).PendingManual),
             };
         }
 

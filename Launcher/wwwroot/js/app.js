@@ -767,6 +767,13 @@ function renderDetails() {
         setStat('stat-size', installed ? formatSize(details.sizeMb) : 'Kurulmadı');
         setStat('stat-updated', updated ? relativeDate(updated) : '—', updated ? formatDate(updated) : '');
     }
+
+    // CurseForge'un elle indirilmesini istediği, henüz yerine konmamış dosyalar
+    const manual = (details && details.manual) || [];
+    const reminder = $('pack-manual');
+    reminder.hidden = manual.length === 0;
+    reminder.textContent = manual.length === 1 ? `${manual[0].title} elle indirilmeli` : `${manual.length} dosya elle indirilmeli`;
+    reminder.onclick = async () => { await showManualDownloads(manual, instance.id); loadDetails(); };
 }
 
 function renderRamOptions() {
@@ -844,32 +851,43 @@ function refreshStatus() {
     bar.className = 'bar' + (mode ? ' ' + mode : '');
 }
 
-async function play({ ignoreMissing = false, join = '' } = {}) {
+async function play({ ignoreMissing = false, ignoreFiles = false, join = '' } = {}) {
     if (!state.selected || state.gameRunning || launching) return;
 
     const instance = state.selected;
     // Çökme penceresindeki "Tekrar oyna" aynı sunucuya yeniden bağlanabilsin
     state.lastLaunch = { instanceId: instance.id, join };
-    if (!ignoreMissing) clearConsole();
+    if (!ignoreMissing && !ignoreFiles) clearConsole();
     state.activityText = '';
     launching = true;
     updatePlayButton();
-    let missing = null;
+    let missing = null, files = null;
     try {
         const result = await bridge.invoke('game.play', {
             instanceId: instance.id,
             ramGb: state.ramGb,
             mcVersion: canPickVersion(instance) ? mcVersionOf(instance) : '',
             ignoreMissing,
+            ignoreFiles,
             join,
         });
         state.gameRunning = result.started;
         missing = result.missing || null;
+        files = result.files || null;
     } catch (err) {
         appendLog({ text: err.message, level: 'error' });
     }
     launching = false;
     updatePlayButton();
+
+    // Boş/bozuk ya da kopya jar'lar, yerine konmamış elle indirilecekler
+    if (files) {
+        const choice = await fileProblemsDialog(files, instance);
+        loadDetails();
+        if (choice === 'retry') return play({ ignoreMissing, join });
+        if (choice === 'ignore') return play({ ignoreMissing, ignoreFiles: true, join });
+        return;
+    }
 
     // Eksik bağımlılık: kullanıcıya sor, kurulursa yeniden dene
     if (missing && missing.length) {
@@ -881,9 +899,9 @@ async function play({ ignoreMissing = false, join = '' } = {}) {
                 }));
                 loadDetails();
             } catch (err) { appendLog({ text: err.message, level: 'error' }); return; }
-            return play({ ignoreMissing: missing.some(m => !m.projectId), join });
+            return play({ ignoreMissing: missing.some(m => !m.projectId), ignoreFiles, join });
         }
-        if (choice === 'ignore') return play({ ignoreMissing: true, join });
+        if (choice === 'ignore') return play({ ignoreMissing: true, ignoreFiles, join });
     }
 }
 

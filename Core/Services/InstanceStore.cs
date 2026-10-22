@@ -42,6 +42,8 @@ namespace VuluLauncher
         public string? Description { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public List<InstalledContent> Content { get; set; } = new();
+        /// <summary>CurseForge'un elle indirilmesini istediği, henüz yerine konmamış dosyalar.</summary>
+        public List<ManualDownload> PendingManual { get; set; } = new();
 
         /// <summary>Klasör adı; dosyaya yazılmaz, yüklenirken doldurulur.</summary>
         [System.Text.Json.Serialization.JsonIgnore]

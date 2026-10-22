@@ -66,7 +66,7 @@ namespace VuluLauncher
             _bridge.On("launcher.update", async _ => _host.CanSelfUpdate ? StartLauncherUpdate() : await InstallAndroidUpdateAsync());
             _bridge.On("launcher.allowInstalls", _ => { _host.OpenInstallPermissionSettings(); return Task.FromResult<object?>(null); });
 
-            _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion"), args.Bool("ignoreMissing"), args.Str("join")));
+            _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion"), args.Bool("ignoreMissing"), args.Str("join"), args.Bool("ignoreFiles")));
             _bridge.On("mods.installMissing", async args => await InstallMissingAsync(RequireGameDevice(args.Str("instanceId")), args.StrList("projectIds")));
             _bridge.On("game.versions", async _ => { RequireLogin(); return await LoaderCatalog.MinecraftVersionsAsync(); });
 
@@ -358,6 +358,25 @@ namespace VuluLauncher
             catch (Exception) { return null; }
         }
 
+        /// <summary>Boş/bozuk ve kopya jar'lar, yerine konmamış elle indirilecekler; oyun bunlarla genelde açılmaz.</summary>
+        private async Task<object?> FileProblemsAsync(string instanceId, LaunchTarget target)
+        {
+            try
+            {
+                var meta = instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(instanceId[InstancePrefix.Length..]) : null;
+                var problems = await Task.Run(() => ManualFiles.Check(Path.Combine(AppPaths.Instances, target.Folder), meta));
+                if (problems == null) return null;
+                Log($"Sorunlu dosyalar: {problems.Broken.Count} bozuk, {problems.Duplicates.Count} kopya, {problems.PendingManual.Count} elle indirilecek.", "warn");
+                return new
+                {
+                    broken = problems.Broken.Select(b => new { file = b.File, reason = b.Reason }),
+                    duplicates = problems.Duplicates.Select(d => new { file = d.File, copyOf = d.CopyOf }),
+                    manual = ManualList(problems.PendingManual),
+                };
+            }
+            catch (Exception) { return null; }
+        }
+
         private async Task<object?> InstallMissingAsync(string instanceId, List<string> projectIds)
         {
             var meta = RequireCustomInstance(instanceId);
@@ -369,7 +388,7 @@ namespace VuluLauncher
             return new { installed };
         }
 
-        private async Task<object?> PlayAsync(string instanceId, int ramGb, string mcVersion, bool ignoreMissing = false, string? join = null)
+        private async Task<object?> PlayAsync(string instanceId, int ramGb, string mcVersion, bool ignoreMissing = false, string? join = null, bool ignoreFiles = false)
         {
             RequireLogin();
             if (!_host.CanLaunchGame)
@@ -378,6 +397,8 @@ namespace VuluLauncher
             try
             {
                 var (target, recommendedRamGb) = ResolveTarget(instanceId);
+                if (!ignoreFiles && await FileProblemsAsync(instanceId, target) is { } files)
+                    return new { started = false, error = (string?)null, files };
                 if (!ignoreMissing && await MissingDependenciesAsync(instanceId, target) is { } missing)
                     return new { started = false, error = (string?)null, missing };
 

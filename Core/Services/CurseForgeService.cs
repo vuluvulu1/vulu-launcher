@@ -156,6 +156,12 @@ namespace VuluLauncher
                 job.Fail(ex.Message);
                 throw;
             }
+            // Elle indirilecekler yerine konana kadar instance'ta kalır; aynı projenin eski bekleyeni yenisiyle değişir
+            foreach (var m in manual)
+            {
+                instance.PendingManual.RemoveAll(p => p.ProjectId == m.ProjectId);
+                instance.PendingManual.Add(m);
+            }
             InstanceStore.Save(instance);
             job.Complete(installed.Count == 0 ? "Elle indirilmesi gerekiyor" : installed.Count == 1 ? $"{installed[0]} kuruldu" : $"{installed.Count} içerik kuruldu");
             return (installed, manual);
@@ -203,7 +209,7 @@ namespace VuluLauncher
             if (string.IsNullOrEmpty(file.DownloadUrl))
             {
                 // Yapımcı başka uygulamalardan indirmeye izin vermiyor: kullanıcı CurseForge'dan indirecek
-                manual.Add(new ManualDownload(mod.Name, $"{PageUrl(mod)}/files/{file.Id}", folder, file.FileName));
+                manual.Add(ManualDownload.Of(mod, file, folder));
                 _log($"{mod.Name}: yapımcısı başka uygulamalardan indirilmesine izin vermiyor; CurseForge sitesinden indirilmeli.", "warn");
             }
             else
@@ -222,6 +228,7 @@ namespace VuluLauncher
                     if (oldPath != null && File.Exists(oldPath + ".disabled")) File.Delete(oldPath + ".disabled");
                     instance.Content.Remove(previous);
                 }
+                instance.PendingManual.RemoveAll(p => p.ProjectId == id);
                 instance.Content.Add(new InstalledContent
                 {
                     Source = Source,
@@ -296,7 +303,7 @@ namespace VuluLauncher
                     string folder = ModrinthService.FolderFor(TypeOf(project?.ClassId ?? 6) ?? "mod") ?? "mods";
                     string relative = $"{folder}/{Path.GetFileName(file.FileName)}";
                     if (string.IsNullOrEmpty(file.DownloadUrl))
-                        manual.Add(new ManualDownload(project?.Name ?? file.DisplayName, project != null ? $"{PageUrl(project)}/files/{file.Id}" : "https://www.curseforge.com/minecraft", folder, file.FileName));
+                        manual.Add(ManualDownload.Of(project, file, folder));
                     else downloads.Add((file, project, relative));
                 }
 
@@ -319,6 +326,7 @@ namespace VuluLauncher
                         Title = d.Mod?.Name ?? d.File.DisplayName, VersionNumber = d.File.DisplayName,
                         Type = TypeOf(d.Mod?.ClassId ?? 6) ?? "mod", File = d.Relative, IconUrl = d.Mod?.Logo?.ThumbnailUrl,
                     });
+                instance.PendingManual = manual;
                 InstanceStore.Save(instance);
 
                 _log("Modpack ayarları açılıyor...", "replace");
@@ -360,8 +368,20 @@ namespace VuluLauncher
         private static readonly JsonSerializerOptions ManifestJson = new(JsonSerializerDefaults.Web);
     }
 
-    /// <summary>Elle indirilmesi gereken dosya: CurseForge sayfası ve instance'ta konacağı klasör.</summary>
-    internal sealed record ManualDownload(string Title, string Url, string Folder, string FileName);
+    /// <summary>
+    /// Elle indirilmesi gereken dosya: CurseForge sayfası, instance'ta konacağı klasör ve doğrulama için SHA-1'i ve boyutu.
+    /// Yerine konana kadar instance'ta saklanır (<see cref="InstanceMeta.PendingManual"/>).
+    /// </summary>
+    public sealed record ManualDownload(string Title, string Url, string Folder, string FileName,
+        string? Sha1 = null, long Length = 0, string? ProjectId = null, string? FileId = null, string Type = "mod", string? IconUrl = null)
+    {
+        internal static ManualDownload Of(CfMod? mod, CfFile file, string folder) => new(
+            mod?.Name ?? file.DisplayName,
+            mod != null ? $"{CurseForgeService.PageUrl(mod)}/files/{file.Id}" : "https://www.curseforge.com/minecraft",
+            folder, Path.GetFileName(file.FileName),
+            file.Hashes.FirstOrDefault(h => h.Algo == 1)?.Value?.ToLowerInvariant(), file.FileLength,
+            file.ModId.ToString(), file.Id.ToString(), CurseForgeService.TypeOf(mod?.ClassId ?? 6) ?? "mod", mod?.Logo?.ThumbnailUrl);
+    }
 
     // ── CurseForge API modelleri ──────────────────────────────────────────
     internal sealed class CfResponse<T>
