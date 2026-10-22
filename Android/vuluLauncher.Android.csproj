@@ -65,6 +65,8 @@
   <ItemGroup Condition="Exists('$(VuluEngineDir)amethyst.aar')">
     <AndroidLibrary Include="$(VuluEngineDir)*.aar;$(VuluEngineDir)*.jar" Bind="false" />
     <PackageReference Include="Xamarin.AndroidX.Preference" Version="1.2.1.18" />
+    <!-- Motorun asset'leri (LWJGL, caciocavallo, varsayılan kontroller…) AAR'dan ayrı gelir: .NET AAR içindeki .jar asset'leri atlıyor -->
+    <AndroidAsset Include="$(VuluEngineDir)assets\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

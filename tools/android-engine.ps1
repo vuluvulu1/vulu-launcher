@@ -47,6 +47,16 @@ $utf8 = New-Object System.Text.UTF8Encoding $false
 foreach ($aar in Get-ChildItem $out -Filter *.aar) {
     $zip = [System.IO.Compression.ZipFile]::Open($aar.FullName, 'Update')
     try {
+        # .NET, AAR'ın assets/ klasöründeki .jar dosyalarını (motorun LWJGL ve caciocavallo parçaları) APK'ya koymuyor;
+        # bütün assets/ bu yüzden AAR'dan çıkarılıp ayrı klasöre konur, csproj onları düz asset olarak ekler
+        if ($aar.Name -eq 'amethyst.aar') {
+            foreach ($entry in @($zip.Entries | Where-Object { $_.FullName -like 'assets/*' -and $_.Name })) {
+                $target = Join-Path $out ($entry.FullName -replace '/', '\')
+                New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
+                [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target, $true)
+                $entry.Delete()
+            }
+        }
         # MAUI Gson'u zaten getiriyor; AAR'ın kendi kopyası kalırsa aynı sınıflar iki kez girer (D8 durur)
         foreach ($entry in @($zip.Entries | Where-Object { $_.FullName -match '^libs/gson-[^/]+\.jar$' })) { $entry.Delete() }
         foreach ($entry in @($zip.Entries | Where-Object { $_.FullName -match '^res/values[^/]*/.+\.xml$' })) {
@@ -61,5 +71,5 @@ foreach ($aar in Get-ChildItem $out -Filter *.aar) {
     } finally { $zip.Dispose() }
 }
 
-$files = Get-ChildItem $out
+$files = Get-ChildItem $out -File -Recurse
 Write-Host ("Motor hazır: {0} dosya, {1:N0} MB ({2} MAUI'de olan atlandı) → {3}" -f $files.Count, (($files | Measure-Object Length -Sum).Sum / 1MB), $skipped.Count, $out) -ForegroundColor Green
