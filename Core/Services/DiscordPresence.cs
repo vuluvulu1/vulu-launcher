@@ -120,8 +120,8 @@ namespace VuluLauncher
         }
 
         /// <summary>
-        /// Oyun açık: instance adı, sürüm ve süre. vulu Packs'ten kurulan paketlerde büyük resim paketin logosu (yoksa kapağı) olur,
-        /// köşede vulu logosu kalır.
+        /// Oyun açık: instance adı, sürüm ve süre. vulu Packs paketlerinde büyük resim paketin logosu (yoksa kapağı),
+        /// CurseForge/Modrinth modpack'lerinde projenin simgesi olur; köşede vulu logosu kalır.
         /// </summary>
         /// <param name="serverName">vulu listesindeki sunucunun adı; listede olmayan sunucunun adresi gösterilmez.</param>
         public void ShowPlaying(string instanceName, string mcVersion, string loader, string? packImageUrl = null, string? serverName = null, bool onServer = false)

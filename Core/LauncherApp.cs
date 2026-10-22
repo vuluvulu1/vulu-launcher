@@ -315,8 +315,12 @@ namespace VuluLauncher
         private async Task<string?> PackImageUrlAsync(string instanceId)
         {
             if (!instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal)) return null;
-            string? packId = InstanceStore.Get(instanceId[InstancePrefix.Length..])?.SharedPackId;
-            if (packId == null) return null;
+            var instance = InstanceStore.Get(instanceId[InstancePrefix.Length..]);
+            string? packId = instance?.SharedPackId;
+            // CurseForge/Modrinth modpack'i: projenin simgesi (Discord yalnızca https adreslerini ve en fazla 256 karakteri gösterir)
+            if (packId == null)
+                return instance?.IconUrl is { Length: <= 256 } icon && Uri.TryCreate(icon, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps
+                    ? icon : null;
             try
             {
                 var lookup = Packs.GetAsync(packId);
