@@ -76,7 +76,7 @@ const mockBackend = (() => {
         { title: 'Not Enough Animations', url: 'https://www.curseforge.com/minecraft/mc-mods/not-enough-animations/files/8925075', folder: 'mods', fileName: 'notenoughanimations-neoforge-1.12.6-mc1.21.1.jar', fileId: '8925075', iconUrl: null },
         { title: 'Structory: Towers', url: 'https://www.curseforge.com/minecraft/mc-mods/structory-towers/files/7842394', folder: 'mods', fileName: 'Structory_Towers_26.1_v1.0.16.jar', fileId: '7842394', iconUrl: null },
     ];
-    let mockBanner = null;
+    let mockBanner = null, mockAvatar = null;
     let mockAnnouncement = { id: 'a1', text: 'Bu akşam 21:00\'de AGLR SMP\'de etkinlik var, herkesi bekliyoruz!', author: 'vulu', createdAt: new Date(Date.now() - 2 * 3600000).toISOString(), expiresAt: null };
     const mockComments = {};
     const feedImg = (c, t) => 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270"><rect width="480" height="270" fill="${c}"/><rect y="180" width="480" height="90" fill="#222" opacity=".45"/><text x="20" y="50" font-size="28" fill="#fff" font-family="sans-serif">${t}</text></svg>`);
@@ -300,12 +300,20 @@ const mockBackend = (() => {
                 packs: user.username === 'vulu' ? packs.map(p => ({ id: p.id, name: p.name, revision: p.revision, mcVersion: p.mcVersion, loader: p.loader })) : [] };
         },
         'profile.saveBio': async args => { await wait(300); members[0].bio = args.bio.trim(); return members[0]; },
-        'profile.pickAvatar': async () => null,
+        'profile.pickAvatar': async () => {
+            const c = document.createElement('canvas'); c.width = 1200; c.height = 900;
+            const g = c.getContext('2d'); g.fillStyle = '#3b5d7a'; g.fillRect(0, 0, 1200, 900);
+            g.fillStyle = '#f2c14e'; g.beginPath(); g.arc(700, 420, 260, 0, Math.PI * 2); g.fill();
+            g.fillStyle = '#1b1b1b'; g.beginPath(); g.arc(620, 360, 30, 0, Math.PI * 2); g.arc(780, 360, 30, 0, Math.PI * 2); g.fill();
+            return { dataUrl: c.toDataURL('image/png'), type: 'image/png', size: 300000 };
+        },
+        'profile.uploadAvatar': async args => { members[0].avatarVersion = Date.now(); mockAvatar = args.dataUrl; return members[0]; },
         'profile.removeAvatar': async () => { members[0].avatarVersion = 0; return members[0]; },
         'profile.pickBanner': async () => {
             const c = document.createElement('canvas'); c.width = 2400; c.height = 800;
             const g = c.getContext('2d'); const grad = g.createLinearGradient(0, 0, 2400, 800);
             grad.addColorStop(0, '#f7a35c'); grad.addColorStop(1, '#5a2a6b'); g.fillStyle = grad; g.fillRect(0, 0, 2400, 800);
+            g.fillStyle = 'rgba(255,255,255,.8)'; for (let i = 0; i < 12; i++) { g.beginPath(); g.arc(100 + i * 200, 400 + Math.sin(i) * 200, 50, 0, Math.PI * 2); g.fill(); }
             return { dataUrl: c.toDataURL('image/png'), type: 'image/png', size: 900000 };
         },
         'profile.uploadBanner': async args => { mockBanner = args.dataUrl; members[0].bannerVersion = Date.now(); return members[0]; },

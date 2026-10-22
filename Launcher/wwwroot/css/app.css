@@ -1304,3 +1304,14 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .role-preview { margin-top: 10px; }
 .admin-intro { margin: 0 0 10px; }
 .share-access { margin-top: 2px; }
+
+/* ── Resim kırpma ───────────────────────────────────────────────────── */
+.modal-wide:has(.crop-body) { height: auto; }
+.crop-body { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.crop-frame { position: relative; overflow: hidden; border-radius: var(--r); background: #000; cursor: grab; touch-action: none; user-select: none; }
+.crop-frame.dragging { cursor: grabbing; }
+.crop-img { position: absolute; top: 0; left: 0; max-width: none; transform-origin: 0 0; pointer-events: none; }
+.crop-mask { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .55); border-radius: inherit; }
+.crop-frame.round .crop-mask { border-radius: 50%; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .55), inset 0 0 0 2px rgba(255, 255, 255, .55); }
+.crop-tools { display: flex; align-items: center; gap: 10px; width: min(100%, 320px); }
+.crop-zoom { flex: 1; accent-color: var(--accent); }

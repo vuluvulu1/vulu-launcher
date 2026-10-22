@@ -29,6 +29,7 @@ namespace VuluLauncher
                 return await _api.PutAsync<JsonElement>("/users/me", new { bio = args.Str("bio") });
             });
             _bridge.On("profile.pickAvatar", async _ => await PickAvatarAsync());
+            _bridge.On("profile.uploadAvatar", async args => await UploadAvatarAsync(args.Str("dataUrl")));
             _bridge.On("profile.removeAvatar", async _ => { RequireLogin(); return await _api.DeleteAsync<JsonElement>("/users/me/avatar"); });
             _bridge.On("profile.pickBanner", async _ => await PickBannerAsync());
             _bridge.On("profile.uploadBanner", async args => await UploadBannerAsync(args.Str("dataUrl")));
@@ -61,6 +62,12 @@ namespace VuluLauncher
         }
 
         /// <summary>Resim seçtirir ve yükler. Vazgeçilirse null döner.</summary>
+        private const long AvatarUploadMaxBytes = 1024 * 1024;
+
+        /// <summary>
+        /// Profil resmi seçtirir ve arayüze data adresi olarak verir: arayüz kırptırıp küçültür, sonra
+        /// profile.uploadAvatar ile yükler (GIF'ler hareketli kalsın diye olduğu gibi gider). Vazgeçilirse null.
+        /// </summary>
         private async Task<object?> PickAvatarAsync()
         {
             RequireLogin();
@@ -69,10 +76,21 @@ namespace VuluLauncher
 
             if (!AvatarTypes.TryGetValue(Path.GetExtension(path), out var contentType))
                 throw new InvalidOperationException("Desteklenen biçimler: PNG, JPG, WEBP, GIF.");
-            if (new FileInfo(path).Length > 1024 * 1024)
-                throw new InvalidOperationException("Profil resmi 1 MB'tan büyük olamaz.");
+            long size = new FileInfo(path).Length;
+            if (size > BannerSourceMaxBytes) throw new InvalidOperationException("Resim çok büyük (en fazla 25 MB).");
+            if (contentType == "image/gif" && size > AvatarUploadMaxBytes)
+                throw new InvalidOperationException("Hareketli GIF profil resmi en fazla 1 MB olabilir.");
+            return new { dataUrl = $"data:{contentType};base64,{Convert.ToBase64String(await File.ReadAllBytesAsync(path))}", type = contentType, size };
+        }
 
-            return await _api.PutBytesAsync<JsonElement>("/users/me/avatar", await File.ReadAllBytesAsync(path), contentType);
+        private async Task<object?> UploadAvatarAsync(string dataUrl)
+        {
+            RequireLogin();
+            var match = System.Text.RegularExpressions.Regex.Match(dataUrl ?? "", "^data:(image/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/]+={0,2})$");
+            if (!match.Success) throw new InvalidOperationException("Profil resmi hazırlanamadı.");
+            byte[] bytes = Convert.FromBase64String(match.Groups[2].Value);
+            if (bytes.Length > AvatarUploadMaxBytes) throw new InvalidOperationException("Profil resmi 1 MB'tan büyük olamaz.");
+            return await _api.PutBytesAsync<JsonElement>("/users/me/avatar", bytes, match.Groups[1].Value);
         }
 
         private const long BannerSourceMaxBytes = 25 * 1024 * 1024, BannerUploadMaxBytes = 1536 * 1024;

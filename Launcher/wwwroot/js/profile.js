@@ -208,11 +208,20 @@ function passwordForm() {
             el('div', { class: 'profile-row' }, note, submit)));
 }
 
+const AVATAR_SIDE = 512, AVATAR_MAX_BYTES = 900 * 1024;
+
 async function changeAvatar() {
     try {
-        const updated = await bridge.invoke('profile.pickAvatar');
-        if (!updated) return; // vazgeçildi
-        afterMyProfileChange(updated);
+        const picked = await bridge.invoke('profile.pickAvatar');
+        if (!picked) return; // vazgeçildi
+        // GIF hareketli kalsın diye olduğu gibi; diğerleri kırpılıp küçültülür
+        let dataUrl = picked.dataUrl;
+        if (picked.type !== 'image/gif') {
+            const cropped = await cropDialog(picked.dataUrl, { aspect: 1, round: true, outWidth: AVATAR_SIDE, title: 'Profil resmini ayarla' });
+            if (!cropped) return;
+            dataUrl = encodeImage(cropped, AVATAR_SIDE, AVATAR_MAX_BYTES).dataUrl;
+        }
+        afterMyProfileChange(await bridge.invoke('profile.uploadAvatar', { dataUrl }));
     } catch (err) {
         await alertDialog({ title: 'Resim yüklenemedi', message: err.message });
     }
@@ -224,13 +233,96 @@ async function changeBanner() {
     try {
         const picked = await bridge.invoke('profile.pickBanner');
         if (!picked) return; // vazgeçildi
-        // GIF hareketli kalsın diye olduğu gibi; diğerleri küçültülüp WebP'ye çevrilir
-        const dataUrl = picked.type === 'image/gif' ? picked.dataUrl
-            : encodeImage(await loadImage(picked.dataUrl), BANNER_MAX_SIDE, BANNER_MAX_BYTES).dataUrl;
+        // GIF hareketli kalsın diye olduğu gibi; diğerleri profildeki 4:1 şeride göre kırpılıp küçültülür
+        let dataUrl = picked.dataUrl;
+        if (picked.type !== 'image/gif') {
+            const cropped = await cropDialog(picked.dataUrl, { aspect: 4, outWidth: BANNER_MAX_SIDE, title: 'Bannerı ayarla' });
+            if (!cropped) return;
+            dataUrl = encodeImage(cropped, BANNER_MAX_SIDE, BANNER_MAX_BYTES).dataUrl;
+        }
         afterMyProfileChange(await bridge.invoke('profile.uploadBanner', { dataUrl }));
     } catch (err) {
         await alertDialog({ title: 'Banner yüklenemedi', message: err.message });
     }
+}
+
+/**
+ * Resmi kırpma penceresi: sürükleyerek kaydırılır, tekerlek ya da kaydırıcıyla yakınlaştırılır. Çerçeve hep resmin
+ * içinde kalır. Kırpılan bölge outWidth genişliğinde bir <canvas> olarak döner; vazgeçilirse null.
+ * aspect: genişlik / yükseklik. round: profil resmi gibi yuvarlak önizleme (çıktı yine kare).
+ */
+async function cropDialog(src, { aspect, round = false, outWidth, title }) {
+    const img = await loadImage(src);
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    let result = null;
+
+    await openModal(close => {
+        // Çerçeve pencereye sığacak boyutta; yükseklik oranla belirlenir
+        const vw = Math.min(aspect >= 2 ? 640 : 360, window.innerWidth - 80);
+        const vh = Math.round(vw / aspect);
+        const minScale = Math.max(vw / iw, vh / ih);
+        let scale = minScale, x = (vw - iw * scale) / 2, y = (vh - ih * scale) / 2;
+
+        const picture = el('img', { src, alt: '', draggable: false, class: 'crop-img' });
+        const frame = el('div', { class: 'crop-frame' + (round ? ' round' : ''), style: `width:${vw}px;height:${vh}px` },
+            picture, el('div', { class: 'crop-mask', 'aria-hidden': 'true' }));
+        const zoom = el('input', { type: 'range', min: 1, max: 4, step: 0.01, value: 1, class: 'crop-zoom', 'aria-label': 'Yakınlaştır' });
+
+        const clamp = () => {
+            x = Math.min(0, Math.max(vw - iw * scale, x));
+            y = Math.min(0, Math.max(vh - ih * scale, y));
+        };
+        const paint = () => {
+            clamp();
+            picture.style.width = iw * scale + 'px';
+            picture.style.height = ih * scale + 'px';
+            picture.style.transform = `translate(${x}px, ${y}px)`;
+            zoom.value = scale / minScale;
+        };
+        // Verilen noktayı (çerçeveye göre) sabit tutarak yakınlaştırır
+        const zoomTo = (next, cx = vw / 2, cy = vh / 2) => {
+            next = Math.min(minScale * 4, Math.max(minScale, next));
+            x = cx - (cx - x) * next / scale;
+            y = cy - (cy - y) * next / scale;
+            scale = next;
+            paint();
+        };
+
+        let drag = null;
+        frame.addEventListener('pointerdown', e => { drag = { px: e.clientX, py: e.clientY, x, y }; frame.setPointerCapture(e.pointerId); frame.classList.add('dragging'); });
+        frame.addEventListener('pointermove', e => { if (!drag) return; x = drag.x + e.clientX - drag.px; y = drag.y + e.clientY - drag.py; paint(); });
+        const stop = () => { drag = null; frame.classList.remove('dragging'); };
+        frame.addEventListener('pointerup', stop);
+        frame.addEventListener('pointercancel', stop);
+        frame.addEventListener('wheel', e => {
+            e.preventDefault();
+            const r = frame.getBoundingClientRect();
+            zoomTo(scale * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX - r.left, e.clientY - r.top);
+        }, { passive: false });
+        zoom.addEventListener('input', () => zoomTo(minScale * Number(zoom.value)));
+        paint();
+
+        const save = el('button', { class: 'btn btn-primary' }, 'Kaydet');
+        save.addEventListener('click', () => {
+            const outHeight = Math.round(outWidth / aspect);
+            const canvas = el('canvas', { width: outWidth, height: outHeight });
+            canvas.getContext('2d').drawImage(img, -x / scale, -y / scale, vw / scale, vh / scale, 0, 0, outWidth, outHeight);
+            result = canvas;
+            close(true);
+        });
+
+        return [
+            el('div', { class: 'modal-head' }, title),
+            el('div', { class: 'modal-body crop-body' },
+                frame,
+                el('div', { class: 'crop-tools' }, el('span', { class: 'hint' }, '−'), zoom, el('span', { class: 'hint' }, '+')),
+                el('p', { class: 'hint' }, 'Resmi sürükleyerek kaydır; tekerlek ya da kaydırıcıyla yakınlaştır.')),
+            el('div', { class: 'modal-foot' },
+                el('button', { class: 'btn', onclick: () => close(false) }, 'Vazgeç'),
+                save),
+        ];
+    }, { wide: aspect >= 2 });
+    return result;
 }
 
 async function removeBanner() {

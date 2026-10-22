@@ -293,9 +293,11 @@ function loadImage(src) {
 
 /** Uzun kenarı en fazla `maxSide` olacak şekilde küçültüp WebP'ye çevirir; boyut sınırına sığana dek kaliteyi düşürür. */
 function encodeImage(img, maxSide, maxBytes) {
-    let scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+    // <img> ya da <canvas> (kırpılmış resim)
+    const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    let scale = Math.min(1, maxSide / Math.max(iw, ih));
     for (let attempt = 0; attempt < 8; attempt++) {
-        const w = Math.max(1, Math.round(img.naturalWidth * scale)), h = Math.max(1, Math.round(img.naturalHeight * scale));
+        const w = Math.max(1, Math.round(iw * scale)), h = Math.max(1, Math.round(ih * scale));
         const canvas = el('canvas', { width: w, height: h });
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         for (const quality of [0.85, 0.75, 0.65]) {
