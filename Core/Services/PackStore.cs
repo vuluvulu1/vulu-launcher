@@ -72,7 +72,8 @@ namespace VuluLauncher
                 coverExt = coverPath == null ? null : Path.GetExtension(coverPath).ToLowerInvariant(),
                 logoFileId = logo?.FileId,
                 logoExt = logo == null ? null : Path.GetExtension(logoPath!).ToLowerInvariant(),
-                clearLogo = logoPath == null && logoSupported
+                clearLogo = logoPath == null && logoSupported,
+                roles = pack.Roles,
             });
         }
 
@@ -108,6 +109,8 @@ namespace VuluLauncher
         public string? LogoExt { get; set; }
         /// <summary>Revizyon başına değişiklikler (sunucu hesaplar); eskiden yeniye.</summary>
         public List<PackChange> Changelog { get; set; } = new();
+        /// <summary>Paketi görebilen roller (boş: herkes). Sunucu yalnızca adminlere gönderir; null: bilinmiyor.</summary>
+        public List<string>? Roles { get; set; }
         /// <summary>Yayınlarken gönderilen güncelleme notu; sunucudan gelmez.</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public string ChangeNote { get; set; } = "";

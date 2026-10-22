@@ -1286,3 +1286,21 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .pack-manual:hover { background: color-mix(in srgb, var(--warn) 18%, transparent); }
 .pack-manual[hidden] { display: none; }
 .mr-title .badge { margin-left: 8px; }
+
+/* ── Roller ─────────────────────────────────────────────────────────── */
+.role-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.role-chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px 2px 7px; border: 1px solid color-mix(in srgb, var(--role) 45%, var(--line)); border-radius: 999px; background: color-mix(in srgb, var(--role) 12%, transparent); color: var(--text); font-size: 12px; line-height: 18px; }
+.role-chip i, .role-pick i { width: 9px; height: 9px; flex: none; border-radius: 50%; background: var(--role); }
+.role-picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.role-pick, .role-pick-all { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); font: inherit; font-size: 12.5px; cursor: pointer; }
+.role-pick input { margin: 0; }
+.role-pick:hover, .role-pick-all:hover { color: var(--text); }
+.role-pick.active, .role-pick:has(input:checked) { border-color: color-mix(in srgb, var(--role) 60%, var(--line)); background: color-mix(in srgb, var(--role) 16%, transparent); color: var(--text); }
+.role-pick-all.active { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); background: var(--accent-soft); color: var(--text); }
+.role-swatches { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.role-swatch { width: 24px; height: 24px; padding: 0; border: 2px solid transparent; border-radius: 50%; background: var(--role); cursor: pointer; }
+.role-swatch.active { border-color: var(--text); }
+.role-swatches input[type=color] { width: 32px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
+.role-preview { margin-top: 10px; }
+.admin-intro { margin: 0 0 10px; }
+.share-access { margin-top: 2px; }

@@ -102,6 +102,18 @@ function alertDialog({ title, message, okText = 'Tamam' }) {
 }
 
 /** Admin işareti: yazı yerine küçük bir kalkan; üzerine gelince "Admin" yazar. */
+/** Rol rozetleri (Discord'daki gibi renkli nokta + ad). roles: [{ name, color }] */
+function roleChips(roles) {
+    if (!roles || !roles.length) return null;
+    return el('div', { class: 'role-chips' }, roles.map(r =>
+        el('span', { class: 'role-chip', style: `--role:${roleColor(r.color)}` }, el('i', { 'aria-hidden': 'true' }), r.name)));
+}
+
+/** Sunucu rengi doğrular; yine de stile yalnızca #rrggbb girer. */
+function roleColor(color) {
+    return /^#[0-9a-f]{6}$/i.test(color || '') ? color : '#9c704c';
+}
+
 function adminMark() {
     const mark = fromMarkup('<span class="admin-mark" title="Admin" role="img" aria-label="Admin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3.2v5.6c0 5-3.4 8.9-8 10.2-4.6-1.3-8-5.2-8-10.2V5.7z"/><path class="tick" d="M8.5 12.2l2.4 2.4 4.6-4.8"/></svg></span>');
     return mark;

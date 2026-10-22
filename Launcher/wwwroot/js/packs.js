@@ -251,6 +251,27 @@ async function openShareDialog(instance) {
             'data-gb': gb,
         }, gb + ' GB'));
 
+        // Kimler erişebilir: rol seçilmezse herkes. Roller yüklenemediyse (eski sunucu) seçici gösterilmez, erişim değişmez.
+        const chosen = new Set((info.existing && info.existing.roles) || []);
+        const accessHint = el('p', { class: 'hint' });
+        const everyone = el('button', { type: 'button', class: 'role-pick-all' }, 'Herkes');
+        const rolePicks = (info.roles || []).map(role => {
+            const pick = el('button', { type: 'button', class: 'role-pick', style: `--role:${roleColor(role.color)}`, 'data-id': role.id },
+                el('i', { 'aria-hidden': 'true' }), el('span', {}, role.name));
+            pick.addEventListener('click', () => { chosen.has(role.id) ? chosen.delete(role.id) : chosen.add(role.id); paintAccess(); });
+            return pick;
+        });
+        everyone.addEventListener('click', () => { chosen.clear(); paintAccess(); });
+        function paintAccess() {
+            everyone.classList.toggle('active', chosen.size === 0);
+            rolePicks.forEach(p => p.classList.toggle('active', chosen.has(p.dataset.id)));
+            const names = (info.roles || []).filter(r => chosen.has(r.id)).map(r => r.name);
+            accessHint.textContent = names.length
+                ? `Yalnızca ${names.join(', ')} rolündekiler ve adminler görür.`
+                : 'Bütün vulu kullanıcıları görür.';
+        }
+        paintAccess();
+
         const error = el('div', { class: 'form-error' });
         const submit = el('button', { class: 'btn btn-primary', type: 'submit' },
             info.existing ? `Güncelle (rev ${info.existing.revision + 1})` : 'Yayınla');
@@ -269,6 +290,8 @@ async function openShareDialog(instance) {
                     ramGb,
                     coverPath,
                     update: !!info.existing,
+                    // Rol listesi gelmediyse gönderilmez: sunucuda paketin erişimi olduğu gibi kalır
+                    ...(info.roles ? { roles: [...chosen].filter(id => info.roles.some(r => r.id === id)) } : {}),
                 };
                 await withActivity(() => bridge.invoke('packs.publish', args));
                 close(true);
@@ -288,7 +311,10 @@ async function openShareDialog(instance) {
                     info.existing && el('label', {}, 'Güncelleme notu'), info.existing && changeNote,
                     el('label', {}, 'Önerilen RAM'),
                     el('div', { class: 'segmented share-ram' }, ramButtons),
-                    el('p', { class: 'hint' }, 'Paketi kuranların oyunu bu RAM ile açılır; istedikleri zaman değiştirebilirler.')),
+                    el('p', { class: 'hint' }, 'Paketi kuranların oyunu bu RAM ile açılır; istedikleri zaman değiştirebilirler.'),
+                    info.roles && el('label', {}, 'Kimler erişebilir'),
+                    info.roles && el('div', { class: 'role-picks share-access' }, everyone, rolePicks),
+                    info.roles && accessHint),
                 el('div', { class: 'share-right' },
                     el('div', { class: 'share-title' }, 'Pakete dahil edilecekler'),
                     el('p', { class: 'hint' }, 'Modrinth\'te bulunan modlar, kaynak paketleri ve shaderlar dosya yerine bağlantı olarak eklenir; '

@@ -378,6 +378,9 @@ namespace VuluLauncher
                 : new());
 
             SharedPack? existing = meta.SharedPackId == null ? null : await Packs.GetAsync(meta.SharedPackId);
+            // "Kimler erişebilir" için roller; rolleri bilmeyen eski sunucuda seçici gizlenir
+            JsonElement? roles = null;
+            try { roles = await _api.GetAsync<JsonElement>("/admin/roles"); } catch (ApiException) { }
 
             return new
             {
@@ -390,7 +393,8 @@ namespace VuluLauncher
                 ramOptionsGb = PackCatalog.RamOptionsGb,
                 entries,
                 hasLogo = LogoFile(InstancePrefix + meta.Folder) != null,
-                existing = existing == null ? null : new { id = existing.Id, revision = existing.Revision, hasCover = existing.HasCover }
+                existing = existing == null ? null : new { id = existing.Id, revision = existing.Revision, hasCover = existing.HasCover, roles = existing.Roles },
+                roles,
             };
         }
 
@@ -476,6 +480,9 @@ namespace VuluLauncher
                 pack.RecommendedRamGb = PackCatalog.RamOptionsGb.Contains(ramGb) ? ramGb : DefaultRamGb(meta);
                 pack.Mods = mods;
                 pack.Includes = includes;
+                // Roller seçilmediyse (eski sunucu, liste yüklenemedi) gönderilmez; sunucuda paketin rolleri değişmez
+                pack.Roles = args.TryGetProperty("roles", out var roles) && roles.ValueKind == JsonValueKind.Array
+                    ? args.StrList("roles").Distinct().ToList() : null;
 
                 Log($"{name} yükleniyor ({fileCount} dosya, {mods.Count} Modrinth içeriği)...", "replace");
                 // Instance'a logo atandıysa paketle paylaşılır; logo seçilmediyse paketin logosu da kalkar

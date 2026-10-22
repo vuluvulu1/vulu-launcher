@@ -116,9 +116,14 @@ const mockBackend = (() => {
         { id: 'r1', username: 'Steve_TR', email: 'steve@ornek.com', createdAt: new Date(Date.now() - 50 * 60000).toISOString() },
         { id: 'r2', username: 'madencibaba', email: 'maden@ornek.com', createdAt: new Date(Date.now() - 26 * 3600000).toISOString() },
     ];
+    // Roller (admin paneli ve paylaşma penceresi)
+    let mockRoles = [
+        { id: 'r1', name: 'AGLR', color: '#c9a992', members: 1, packs: 1 },
+        { id: 'r2', name: 'Moderatör', color: '#5fa8d3', members: 0, packs: 0 },
+    ];
     let users = [
-        { id: '1', username: 'vulu', email: 'vulu@ornek.com', isActive: true, isAdmin: true, lastSeenAt: new Date().toISOString() },
-        { id: '2', username: 'misafir', email: '', isActive: true, isAdmin: false, lastSeenAt: new Date(Date.now() - 3 * 86400000).toISOString() },
+        { id: '1', username: 'vulu', email: 'vulu@ornek.com', isActive: true, isAdmin: true, lastSeenAt: new Date().toISOString(), roles: [] },
+        { id: '2', username: 'misafir', email: '', isActive: true, isAdmin: false, lastSeenAt: new Date(Date.now() - 3 * 86400000).toISOString(), roles: ['r1'] },
         { id: '3', username: 'eskiuye', email: 'eski@ornek.com', isActive: false, isAdmin: false, lastSeenAt: null },
     ];
 
@@ -290,7 +295,7 @@ const mockBackend = (() => {
             await wait(250);
             const user = members.find(m => m.username === args.username);
             if (!user) throw new Error('Kullanıcı bulunamadı.');
-            return { ...user, playtime: user.username === 'halil' ? { totalSeconds: 3600 * 47 + 1200, top: [{ name: 'AGLR SMP', seconds: 3600 * 31 }, { name: 'Create Macera', seconds: 3600 * 12 }, { name: 'Vanilla', seconds: 3600 * 4 + 1200 }] } : null,
+            return { ...user, roles: user.username === 'halil' ? [{ id: 'r1', name: 'AGLR', color: '#c9a992' }, { id: 'r2', name: 'Moderatör', color: '#5fa8d3' }] : [], playtime: user.username === 'halil' ? { totalSeconds: 3600 * 47 + 1200, top: [{ name: 'AGLR SMP', seconds: 3600 * 31 }, { name: 'Create Macera', seconds: 3600 * 12 }, { name: 'Vanilla', seconds: 3600 * 4 + 1200 }] } : null,
                 packs: user.username === 'vulu' ? packs.map(p => ({ id: p.id, name: p.name, revision: p.revision, mcVersion: p.mcVersion, loader: p.loader })) : [] };
         },
         'profile.saveBio': async args => { await wait(300); members[0].bio = args.bio.trim(); return members[0]; },
@@ -358,6 +363,7 @@ const mockBackend = (() => {
             await wait(300);
             return {
                 name: 'Fabric 1.21', description: '', mcVersion: '1.21.1', loader: 'fabric', modrinthCount: 2, existing: null, recommendedRamGb: 8, ramOptionsGb: [4, 8, 12, 16],
+                roles: mockRoles.map(r => ({ ...r })),
                 entries: [
                     { path: 'config', isDir: true, files: 184, sizeMb: 2.4, checkedByDefault: true, note: null },
                     { path: 'kubejs', isDir: true, files: 37, sizeMb: 5.1, checkedByDefault: true, note: null },
@@ -567,12 +573,29 @@ const mockBackend = (() => {
         },
 
         'admin.users': async () => { await wait(250); return users.map(u => ({ ...u })); },
+        'admin.roles': async () => { await wait(200); return mockRoles.map(r => ({ ...r, members: users.filter(u => (u.roles || []).includes(r.id)).length })); },
+        'admin.saveRole': async args => {
+            await wait(200);
+            if (!args.name) throw new Error('Rol adı 1-24 karakter olmalı.');
+            if (mockRoles.some(r => r.id !== args.id && r.name.toLowerCase() === args.name.toLowerCase())) throw new Error('Bu adda bir rol zaten var.');
+            if (args.id) { mockRoles = mockRoles.map(r => r.id === args.id ? { ...r, name: args.name, color: args.color } : r); return mockRoles.find(r => r.id === args.id); }
+            const role = { id: 'r' + Date.now(), name: args.name, color: args.color, members: 0, packs: 0 };
+            mockRoles.push(role); return role;
+        },
+        'admin.deleteRole': async args => {
+            await wait(200);
+            const role = mockRoles.find(r => r.id === args.id);
+            if (role && role.packs) throw new Error(`Bu rol şu paketlerin erişimini belirliyor: AGLR SMP. Önce paketlerden kaldır.`);
+            mockRoles = mockRoles.filter(r => r.id !== args.id);
+            users = users.map(u => ({ ...u, roles: (u.roles || []).filter(id => id !== args.id) }));
+            return { success: true };
+        },
         'admin.saveUser': async args => {
             await wait(250);
             if (args.id) {
                 const self = users.find(u => u.id === args.id).username === 'vulu';
                 if (self && (!args.isAdmin || !args.isActive)) throw new Error('Kendi adminliğini kaldıramaz ya da kendi hesabını kapatamazsın.');
-                users = users.map(u => u.id === args.id ? { ...u, isAdmin: args.isAdmin, isActive: args.isActive } : u);
+                users = users.map(u => u.id === args.id ? { ...u, isAdmin: args.isAdmin, isActive: args.isActive, roles: args.roles || u.roles } : u);
                 return users.find(u => u.id === args.id);
             }
             if (users.some(u => u.username.toLowerCase() === args.username.toLowerCase())) throw new Error('Bu kullanıcı adı alınmış ya da bekleyen bir kayıt isteğinde.');
