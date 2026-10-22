@@ -5,8 +5,8 @@ using System.Text.RegularExpressions;
 namespace VuluLauncher
 {
     /// <summary>
-    /// Kayıt: giriş ekranından kullanıcı adı, e-posta ve şifreyle istek gönderilir; bir admin onaylayınca hesap
-    /// açılır. Admin bekleyen istekleri Admin sayfasında görür ve kabul eder ya da reddeder (yetkiyi sunucu denetler).
+    /// Kayıt: giriş ekranından kullanıcı adı, e-posta ve şifreyle istek gönderilir. Sunucu e-posta doğrulaması
+    /// kullanıyorsa (verifyEmail) kişi önce postadaki bağlantıyı açar; ardından bir admin onaylayınca hesap açılır. Admin bekleyen istekleri Admin sayfasında görür ve kabul eder ya da reddeder (yetkiyi sunucu denetler).
     /// </summary>
     internal sealed partial class LauncherApp
     {
@@ -25,9 +25,10 @@ namespace VuluLauncher
                 if (password.Length < 6)
                     throw new InvalidOperationException("Şifre en az 6 karakter olmalı.");
 
-                await _api.PostAsync<JsonElement>("/auth/register", new { username, email, password });
+                // Sunucunun cevabı (verifyEmail dahil) olduğu gibi arayüze gider
+                var result = await _api.PostAsync<JsonElement>("/auth/register", new { username, email, password });
                 Log($"{username} için kayıt isteği gönderildi.", "ok");
-                return new { success = true };
+                return result;
             });
 
             _bridge.On("admin.registrations", async _ =>

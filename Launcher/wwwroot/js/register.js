@@ -1,4 +1,5 @@
-// Kayıt: giriş ekranındaki "Kayıt ol" formu. İstek sunucuda bekler; bir admin onaylayınca hesap açılır.
+// Kayıt: giriş ekranındaki "Kayıt ol" formu. İstek sunucuda bekler; sunucu e-posta doğrulaması kullanıyorsa kişi
+// önce postadaki bağlantıyı açar, ardından bir admin onaylayınca hesap açılır.
 // Adminler bekleyen istekleri Admin sayfasının "Kayıt istekleri" sekmesinde görür; sayısı Admin sekmesinde rozet olur.
 
 /** Giriş kartı, kayıt formu ve "gönderildi" kartından birini gösterir. */
@@ -8,6 +9,19 @@ function showLoginCard(which) {
     $('register-done').hidden = which !== 'done';
     const focus = { login: 'login-username', register: 'register-username', done: 'register-back' }[which];
     if (focus) $(focus).focus();
+}
+
+/** "Gönderildi" kartının metni: e-posta doğrulaması varsa önce postayı açmasını söyler. */
+function showRegisterDone(name, mail, verifyEmail) {
+    const text = $('register-done-text');
+    const b = value => el('b', {}, value);
+    text.dataset.name = name;   // "Giriş ekranına dön" kullanıcı adını buradan doldurur
+    if (verifyEmail) {
+        text.replaceChildren(b(mail), ' adresine bir doğrulama bağlantısı gönderdik. Kaydını tamamlamak için bağlantıyı aç; ',
+            'birkaç dakika içinde gelmezse spam klasörüne de bak.');
+    } else {
+        text.replaceChildren(b(name), ' için isteğin bize ulaştı.');
+    }
 }
 
 function setRegisterStatus(text, isError = false) {
@@ -26,7 +40,7 @@ function setupRegisterForm() {
     $('show-register').addEventListener('click', () => { setRegisterStatus(''); showLoginCard('register'); });
     $('show-login').addEventListener('click', () => showLoginCard('login'));
     $('register-back').addEventListener('click', () => {
-        $('login-username').value = $('register-done-name').textContent;
+        $('login-username').value = $('register-done-text').dataset.name || '';
         $('login-password').value = '';
         state.useSavedPassword = false;
         setLoginStatus('');
@@ -46,8 +60,8 @@ function setupRegisterForm() {
         $('register-submit').disabled = true;
         setRegisterStatus('Gönderiliyor…');
         try {
-            await bridge.invoke('auth.register', { username: name, email: mail, password: password.value });
-            $('register-done-name').textContent = name;
+            const result = await bridge.invoke('auth.register', { username: name, email: mail, password: password.value });
+            showRegisterDone(name, mail, !!result?.verifyEmail);
             for (const input of [username, email, password, password2]) input.value = '';
             setRegisterStatus('');
             showLoginCard('done');
@@ -89,11 +103,17 @@ function renderRegistrationsTab(body) {
 
     const rows = items.map(item => {
         const created = parseDate(item.createdAt);
+        // Alanı olmayan (eski sunucu) istekler doğrulanmış sayılır
+        const verified = item.emailVerified !== false;
         const row = el('div', { class: 'user-row reg-row' },
             el('div', {},
                 el('div', { class: 'uname' }, item.username),
-                el('div', { class: 'meta' }, [item.email, created && 'İstek: ' + timeAgo(created)].filter(Boolean).join(' · '))),
-            el('button', { class: 'btn btn-sm btn-primary', onclick: () => decide(item, true, row) }, 'Kabul et'),
+                el('div', { class: 'meta' }, [item.email, !verified && 'e-posta doğrulanmadı', created && 'İstek: ' + timeAgo(created)].filter(Boolean).join(' · '))),
+            el('button', {
+                class: 'btn btn-sm btn-primary', disabled: !verified,
+                title: verified ? '' : 'Bu kişi e-posta adresini doğrulayınca kabul edebilirsin.',
+                onclick: () => decide(item, true, row),
+            }, 'Kabul et'),
             el('button', { class: 'btn btn-sm btn-danger', onclick: () => decide(item, false, row) }, 'Reddet'));
         return row;
     });
