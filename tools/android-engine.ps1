@@ -30,6 +30,8 @@ foreach ($line in Get-Content (Join-Path $export "deps.txt")) {
     if ($coordinate -match '^(androidx\.|org\.jetbrains\.kotlin|org\.jetbrains:annotations)') { $skipped += $coordinate; continue }
     # Alt projeler (androidnsbypass): yerel kütüphaneleri zaten amethyst.aar'ın içinde, Java tarafı kullanılmıyor
     if ($coordinate -like 'project *') { $skipped += $coordinate; continue }
+    # Zink (Mesa'nın Vulkan üstü OpenGL'i): vulu oyunu hep MobileGlues ile açar, Zink seçilemez
+    if ($coordinate -eq 'local:kopper-zink-release.aar') { $skipped += $coordinate; continue }
     Copy-Item (Join-Path $export "deps\$file") $out -Force
 }
 
@@ -44,19 +46,33 @@ $fixer = [System.Text.RegularExpressions.MatchEvaluator]{
     "<string$($m.Groups['attrs'].Value) formatted=`"false`">$($m.Groups['text'].Value)</string>"
 }
 $utf8 = New-Object System.Text.UTF8Encoding $false
+
+# APK yalnızca arm64 telefonlar için; oyun hep MobileGlues (OpenGL ES) ile açılır:
+# - LWJGL'in diğer işlemci mimarileri için yerel kütüphaneleri
+# - LWJGL 3.3.3'ün Vulkan parçaları (vulkan, vma, shaderc): onu kullanan sürümler (1.21.x'e kadar) Vulkan'a hiç dokunmuyor.
+#   3.4.1'inkiler kalır, yeni Minecraft sürümleri Vulkan'ı kullanabilir
+# - Amethyst'in kendi logosu
+# - Turnip (Adreno için Vulkan sürücüsü) ve Zink'in yardımcıları: yalnızca Zink çizicisinde kullanılıyorlar
+$unusedAsset = '^assets/(components/lwjgl-[^/]+-natives/(armeabi-v7a|x86|x86_64)/' +
+    '|components/lwjgl3/3\.3\.3/lwjgl-(vulkan|vma)\.jar$' +
+    '|components/lwjgl-3\.3\.3-natives/arm64-v8a/(libshaderc|liblwjgl_vma)\.so$' +
+    '|amethyst\.png$)'
+$unusedLib = '^jni/[^/]+/(libvulkan_freedreno|libVkLayer_khronos_timeline_semaphore|libglxshim)\.so$'
 foreach ($aar in Get-ChildItem $out -Filter *.aar) {
     $zip = [System.IO.Compression.ZipFile]::Open($aar.FullName, 'Update')
     try {
-        # .NET, AAR'ın assets/ klasöründeki .jar dosyalarını (motorun LWJGL ve caciocavallo parçaları) APK'ya koymuyor;
-        # bütün assets/ bu yüzden AAR'dan çıkarılıp ayrı klasöre konur, csproj onları düz asset olarak ekler
-        if ($aar.Name -eq 'amethyst.aar') {
-            foreach ($entry in @($zip.Entries | Where-Object { $_.FullName -like 'assets/*' -and $_.Name })) {
+        # .NET, AAR'ların assets/ klasöründeki .jar dosyalarını (motorun LWJGL ve caciocavallo parçaları) APK'ya koymuyor,
+        # arm64-v8a yolundaki .so'ları da lib/'e bir kez daha kopyalıyor; bütün assets/ bu yüzden AAR'lardan çıkarılıp ayrı
+        # klasöre konur, csproj onları düz asset olarak ekler. Kullanılmayanlar ($unusedAsset) hiç konmaz.
+        foreach ($entry in @($zip.Entries | Where-Object { $_.FullName -like 'assets/*' })) {
+            if ($entry.Name -and $entry.FullName -notmatch $unusedAsset) {
                 $target = Join-Path $out ($entry.FullName -replace '/', '\')
                 New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
                 [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target, $true)
-                $entry.Delete()
             }
+            $entry.Delete()
         }
+        foreach ($entry in @($zip.Entries | Where-Object { $_.FullName -match $unusedLib })) { $entry.Delete() }
         # MAUI Gson'u zaten getiriyor; AAR'ın kendi kopyası kalırsa aynı sınıflar iki kez girer (D8 durur)
         foreach ($entry in @($zip.Entries | Where-Object { $_.FullName -match '^libs/gson-[^/]+\.jar$' })) { $entry.Delete() }
         foreach ($entry in @($zip.Entries | Where-Object { $_.FullName -match '^res/values[^/]*/.+\.xml$' })) {
