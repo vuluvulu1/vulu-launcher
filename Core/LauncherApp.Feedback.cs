@@ -20,13 +20,20 @@ namespace VuluLauncher
             _bridge.On("feedback.post", async args =>
             {
                 RequireLogin();
+                string pack = PackKey(args);
+                string kind = args.Str("kind");
                 return await _api.PostAsync<JsonElement>("/feedback", new
                 {
-                    pack = PackKey(args),
-                    kind = args.Str("kind") == "request" ? "request" : "feedback",
-                    text = args.Str("text").Trim()
+                    pack,
+                    kind = kind is "request" or "bug" or "idea" ? kind : "feedback",
+                    text = args.Str("text").Trim(),
+                    // Launcher hakkındaki bildirimlerde sürüm ve sistem gider (yalnızca adminler görür)
+                    meta = pack == "launcher"
+                        ? new { version = LauncherUpdateService.LocalVersion, platform = $"{_host.Platform} · {System.Runtime.InteropServices.RuntimeInformation.OSDescription}" }
+                        : null,
                 });
             });
+            _bridge.On("feedback.counts", async _ => { RequireLogin(); return await FeedbackCountsAsync(); });
             _bridge.On("feedback.update", async args =>
             {
                 RequireLogin();

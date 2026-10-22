@@ -178,6 +178,8 @@ const mockBackend = (() => {
 
     const minutesAgoIso = n => new Date(Date.now() - n * 60000).toISOString();
     let feedback = [
+        { id: 'fl1', pack: 'launcher', kind: 'bug', text: 'Oyunu kapatınca Discord durumu bir süre "oynuyor" kalıyor.', author: 'halil', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: minutesAgoIso(40), mine: false, canDelete: true, meta: { version: '0.15.2', platform: 'windows · Microsoft Windows 10.0.26200' } },
+        { id: 'fl2', pack: 'launcher', kind: 'idea', text: 'Arkadaş listesinde kimin hangi pakette olduğunu görmek güzel olurdu.', author: 'misafir', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: daysAgoIso(1), mine: false, canDelete: true },
         { id: 'f1', pack: 'p1', kind: 'request', text: 'Create: Steam \'n\' Rails eklenebilir mi? Trenler olmadan uzun mesafeler çok sıkıcı oluyor.', author: 'KaiKaenn', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: minutesAgoIso(14), mine: false, canDelete: true },
         { id: 'f2', pack: 'p1', kind: 'feedback', text: 'Nether\'a girince oyun çöküyor, crash raporunda Oculus yazıyor.', author: 'ChillManHDM', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: minutesAgoIso(190), mine: false, canDelete: true },
         { id: 'f3', pack: 'p1', kind: 'request', text: 'JEI yerine EMI olsun', author: 'Enwlyd', authorAvatarVersion: 0, status: 'done', reply: 'rev 3\'te değiştirildi.', repliedBy: 'vulu', createdAt: daysAgoIso(4), mine: false, canDelete: true },
@@ -340,6 +342,7 @@ const mockBackend = (() => {
         },
         'packs.setRoles': async args => { await wait(250); mockPackRoles[args.id] = args.roles; return { success: true }; },
         'feedback.list': async args => { await wait(300); return feedback.filter(f => f.pack === args.pack); },
+        'feedback.counts': async () => { const c = {}; for (const f of feedback) if (f.status === 'open') c[f.pack] = (c[f.pack] || 0) + 1; return c; },
         'feedback.post': async args => {
             await wait(250);
             const item = { id: 'f' + Date.now(), pack: args.pack, kind: args.kind, text: args.text.trim(), author: 'vulu', authorAvatarVersion: 0, status: 'open', reply: '', repliedBy: '', createdAt: new Date().toISOString(), mine: true, canDelete: true };

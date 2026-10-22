@@ -145,6 +145,7 @@ function setupTitlebar() {
     });
 
     $('btn-user').addEventListener('click', () => openProfile(state.username));
+    $('btn-feedback').addEventListener('click', () => openFeedback('launcher', state.isAdmin));
 }
 
 // ── Açılır menüler (RAM seçimi) ───────────────────────────────────────
@@ -213,6 +214,7 @@ async function showLogin({ auto = false } = {}) {
     state.apiBase = init.apiBaseUrl || '';
     state.canLaunchGame = init.canLaunchGame !== false;   // Android'de oyun henüz açılmıyor
     $('btn-user').hidden = true;
+    $('btn-feedback').hidden = true;
     $('page-tabs').hidden = true;
     $('tab-admin').hidden = true;
     showLoginCard('login');
@@ -395,6 +397,8 @@ async function enterLauncher(session) {
     state.isAdmin = !!session.isAdmin;
     $('page-tabs').hidden = false;
     $('tab-admin').hidden = !session.isAdmin;
+    $('btn-feedback').hidden = false;
+    refreshFeedbackBadge();   // adminlere açık launcher bildirimleri
     refreshRegistrations(); // bekleyen kayıt istekleri Admin sekmesinde rozet olarak görünür
     $('packs-grid').replaceChildren(); // başka hesaptan kalan liste görünmesin
 

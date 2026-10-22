@@ -1,9 +1,15 @@
-// vulu Packs geri bildirimleri ve istekleri. Herkes yazar, kendi yazdığını siler; admin "yapıldı" olarak
-// işaretler ve kısa bir yanıt yazar. Paket verilmezse pakete bağlı olmayan genel istekler açılır.
+// Geri bildirimler. Herkes yazar, kendi yazdığını siler; admin "yapıldı" olarak işaretler ve kısa bir yanıt yazar.
+// Bir paket verilirse o paketin, null ise pakete bağlı olmayan paket isteklerinin, 'launcher' ise launcher'ın kendisi
+// hakkındaki hata bildirimleri ve önerilerin listesi açılır.
 const FEEDBACK_KINDS = {
     feedback: { label: 'Geri bildirim', placeholder: 'Pakette neyi beğendin, ne sorun çıkardı? Çöken mod, eksik görev, performans…' },
     request: { label: 'İstek', placeholder: 'Eklenmesini ya da değişmesini istediğin şey: bir mod, bir ayar, yeni bir paket…' },
 };
+const LAUNCHER_KINDS = {
+    bug: { label: 'Hata', placeholder: 'Ne oldu? Ne yaparken oldu, her seferinde oluyor mu? Ekranda bir hata yazdıysa onu da ekle.' },
+    idea: { label: 'Öneri', placeholder: 'Launcher\'da neyin olmasını ya da değişmesini istersin?' },
+};
+const ALL_KINDS = { ...FEEDBACK_KINDS, ...LAUNCHER_KINDS };
 
 function timeAgo(date) {
     const seconds = Math.max(0, (Date.now() - date) / 1000);
@@ -14,8 +20,10 @@ function timeAgo(date) {
 }
 
 async function openFeedback(pack, isAdmin) {
-    const packKey = pack ? pack.id : 'general';
-    let items = [], filter = 'open', kind = pack ? 'feedback' : 'request', loading = true, loadError = '';
+    const launcher = pack === 'launcher';
+    const packKey = launcher ? 'launcher' : pack ? pack.id : 'general';
+    const kindsOf = launcher ? LAUNCHER_KINDS : FEEDBACK_KINDS;
+    let items = [], filter = 'open', kind = launcher ? 'bug' : pack ? 'feedback' : 'request', loading = true, loadError = '';
 
     await openModal(close => {
         const list = el('div', { class: 'fb-list' });
@@ -27,10 +35,10 @@ async function openFeedback(pack, isAdmin) {
         const send = el('button', { class: 'btn btn-primary btn-sm', type: 'submit' }, 'Gönder');
 
         function renderKinds() {
-            kinds.replaceChildren(...Object.entries(FEEDBACK_KINDS).map(([key, info]) =>
+            kinds.replaceChildren(...Object.entries(kindsOf).map(([key, info]) =>
                 el('button', { type: 'button', class: key === kind ? 'active' : '', onclick: () => { kind = key; renderKinds(); text.focus(); } },
                     info.label)));
-            text.placeholder = FEEDBACK_KINDS[kind].placeholder;
+            text.placeholder = kindsOf[kind].placeholder;
         }
 
         function refreshComposer() {
@@ -55,7 +63,7 @@ async function openFeedback(pack, isAdmin) {
             const main = el('div', { class: 'fb-main' },
                 el('div', { class: 'fb-head' },
                     el('b', {}, item.author),
-                    el('span', { class: 'fb-kind ' + item.kind }, (FEEDBACK_KINDS[item.kind] || FEEDBACK_KINDS.feedback).label),
+                    el('span', { class: 'fb-kind ' + item.kind }, (ALL_KINDS[item.kind] || FEEDBACK_KINDS.feedback).label),
                     done && el('span', { class: 'fb-done' }, '✓ Yapıldı'),
                     el('span', { class: 'fb-time', title: created ? created.toLocaleString('tr-TR') : '' }, created ? timeAgo(created) : ''),
                     el('div', { class: 'fb-actions' },
@@ -64,6 +72,8 @@ async function openFeedback(pack, isAdmin) {
                         isAdmin && el('button', { class: 'link-btn', onclick: () => replyTo(item, main) }, item.reply ? 'Yanıtı düzenle' : 'Yanıtla'),
                         item.canDelete && el('button', { class: 'link-btn danger', onclick: () => remove(item) }, 'Sil'))),
                 el('p', { class: 'fb-text-body' }, item.text),
+                item.meta && (item.meta.version || item.meta.platform) && el('p', { class: 'fb-meta' },
+                    [item.meta.version && 'v' + item.meta.version, item.meta.platform].filter(Boolean).join(' · ')),
                 item.reply && el('div', { class: 'fb-reply' }, el('b', {}, item.repliedBy || 'admin'), item.reply));
             row.append(avatar, main);
             return row;
@@ -76,6 +86,7 @@ async function openFeedback(pack, isAdmin) {
             const shown = items.filter(i => filter === 'all' || i.status === filter);
             list.replaceChildren(...(shown.length ? shown.map(entry) : [el('p', { class: 'fb-empty' },
                 items.length ? 'Bu filtrede bir şey yok.'
+                    : launcher ? 'Henüz bildirim yok. Bir hata gördüysen ya da aklında bir fikir varsa yaz.'
                     : pack ? 'Henüz kimse yazmadı. İlk yazan sen ol.'
                         : 'Henüz istek yok. Eklenmesini istediğin bir paket ya da özellik varsa yaz.')]));
         }
@@ -149,13 +160,26 @@ async function openFeedback(pack, isAdmin) {
 
         return [
             el('div', { class: 'modal-head' },
-                el('span', { class: 'fb-title' }, pack ? pack.name : 'Paket istekleri',
-                    el('span', { class: 'fb-sub' }, pack ? 'Geri bildirim ve istekler' : 'Pakete bağlı olmayan istekler')),
+                el('span', { class: 'fb-title' }, launcher ? 'vulu Launcher' : pack ? pack.name : 'Paket istekleri',
+                    el('span', { class: 'fb-sub' }, launcher ? 'Hata bildir ya da öneri yaz' : pack ? 'Geri bildirim ve istekler' : 'Pakete bağlı olmayan istekler')),
                 el('button', { class: 'icon-close', type: 'button', 'aria-label': 'Kapat', onclick: () => close() }, '✕')),
             el('div', { class: 'modal-body fb-body' }, compose, el('div', { class: 'fb-list-head' }, filters), list),
         ];
     }, { wide: true });
 
-    // Kartlardaki açık sayıları yenilensin
+    // Kartlardaki ve üst çubuktaki açık sayıları yenilensin
     if (state.page === 'packs') openPacksPage();
+    refreshFeedbackBadge();
+}
+
+/** Üst çubuktaki geri bildirim düğmesi: adminlere açık launcher bildirimlerinin sayısı. */
+async function refreshFeedbackBadge() {
+    const badge = $('feedback-badge');
+    if (!badge) return;
+    let count = 0;
+    if (state.isAdmin) {
+        try { count = ((await bridge.invoke('feedback.counts')) || {}).launcher || 0; } catch { }
+    }
+    badge.textContent = count || '';
+    badge.hidden = !count;
 }

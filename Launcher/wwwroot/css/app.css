@@ -1315,3 +1315,11 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .crop-frame.round .crop-mask { border-radius: 50%; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .55), inset 0 0 0 2px rgba(255, 255, 255, .55); }
 .crop-tools { display: flex; align-items: center; gap: 10px; width: min(100%, 320px); }
 .crop-zoom { flex: 1; accent-color: var(--accent); }
+
+/* Üst çubuktaki geri bildirim düğmesi */
+.tb-feedback { position: relative; margin-right: 4px; }
+.tb-feedback svg { width: 16px; height: 16px; }
+.tb-feedback .tab-badge { position: absolute; top: 1px; right: 0; transform: scale(.85); }
+.fb-meta { margin: 4px 0 0; font: 11.5px var(--font-mono); color: var(--muted); }
+.fb-kind.bug { color: var(--error); }
+.fb-kind.idea { color: var(--ok); }
