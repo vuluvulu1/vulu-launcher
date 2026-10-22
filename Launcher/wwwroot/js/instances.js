@@ -139,7 +139,10 @@ function openInstanceContent(instance) {
 
         async function update(list) {
             for (const u of list) {
-                try { await withActivity(() => bridge.invoke('mods.update', { instanceId: instance.id, projectId: u.projectId, versionId: u.versionId })); }
+                try {
+                    const r = await withActivity(() => bridge.invoke('mods.update', { instanceId: instance.id, projectId: u.projectId, versionId: u.versionId, source: u.source || '' }));
+                    if (r.manual && r.manual.length) await showManualDownloads(r.manual, instance.id);
+                }
                 catch (err) { appendLog({ text: err.message, level: 'error' }); }
             }
             updates = null;
@@ -162,7 +165,7 @@ function openInstanceContent(instance) {
                         ? el('button', { class: 'btn btn-sm btn-accent', onclick: () => update(stable) }, `Tümünü güncelle (${stable.length})`)
                         : el('button', { class: 'btn btn-sm', disabled: checking, onclick: checkUpdates },
                             checking ? 'Denetleniyor…' : updates ? 'Güncel ✓' : 'Güncellemeleri denetle'),
-                    el('button', { class: 'btn btn-sm btn-primary', onclick: () => { close(); openModrinthFor(instance); } }, '+ Modrinth\'ten ekle')));
+                    el('button', { class: 'btn btn-sm btn-primary', onclick: () => { close(); openModrinthFor(instance); } }, '+ İçerik ekle')));
 
             const rows = content.items.map(item => {
                 const upd = updates && updates[item.file];

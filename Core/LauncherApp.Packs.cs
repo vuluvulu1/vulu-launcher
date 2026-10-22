@@ -247,7 +247,7 @@ namespace VuluLauncher
             }
 
             var missing = wanted.Values
-                .Where(m => !meta.Content.Any(c => c.FromPack && c.ProjectId == m.ProjectId))
+                .Where(m => !meta.Content.Any(c => c.FromPack && c.ProjectId == m.ProjectId && SameSource(c.Source, m.Source)))
                 .ToList();
 
             // Panelde her dosya ayrı görünür; paket dosyaları (config, görevler) en sonda iner
@@ -260,7 +260,8 @@ namespace VuluLauncher
             {
                 string path = Downloader.ResolveInside(dir, mod.File)
                     ?? throw new InvalidDataException($"Paket geçersiz bir dosya yolu içeriyor: {mod.File}");
-                if (!Uri.TryCreate(mod.Url, UriKind.Absolute, out var uri) || uri.Host != "cdn.modrinth.com")
+                if (!Uri.TryCreate(mod.Url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps
+                    || !(uri.Host == "cdn.modrinth.com" || CurseForgeService.IsCurseForgeCdn(mod.Url)))
                     throw new InvalidDataException($"Paket izin verilmeyen bir adresten indirme istiyor: {mod.Title}");
 
                 await items[mod].DownloadAsync(mod.Url, path, mod.Sha1, mod.Sha512, cancel);
@@ -271,7 +272,7 @@ namespace VuluLauncher
             foreach (var mod in missing)
             {
                 // Kullanıcı aynı modu kendisi kurduysa paketinki onun yerini alır
-                var own = meta.Content.FirstOrDefault(c => c.ProjectId == mod.ProjectId);
+                var own = meta.Content.FirstOrDefault(c => c.ProjectId == mod.ProjectId && SameSource(c.Source, mod.Source));
                 if (own != null)
                 {
                     if (!string.Equals(own.File, mod.File, StringComparison.OrdinalIgnoreCase)) DeleteContentFile(dir, own.File);
@@ -280,6 +281,7 @@ namespace VuluLauncher
 
                 meta.Content.Add(new InstalledContent
                 {
+                    Source = mod.Source == CurseForgeService.Source ? CurseForgeService.Source : null,
                     ProjectId = mod.ProjectId,
                     VersionId = mod.VersionId,
                     Title = mod.Title,
@@ -500,19 +502,57 @@ namespace VuluLauncher
         /// Instance'taki Modrinth içeriklerinin sabit indirme adreslerini toplar. Modrinth'te artık bulunmayan
         /// (silinmiş) sürümlerin dosyaları bağlantı yerine pakete gömülür.
         /// </summary>
+        /// <summary>İki kayıt aynı kaynaktan mı (CurseForge ya da Modrinth; boş = Modrinth).</summary>
+        private static bool SameSource(string? a, string? b) => (a == CurseForgeService.Source) == (b == CurseForgeService.Source);
+
         private async Task<(List<PackMod> Mods, List<string> FallbackFiles)> ResolvePackModsAsync(InstanceMeta meta, string dir)
         {
             var present = meta.Content
                 .Where(c => !string.IsNullOrEmpty(c.VersionId) && File.Exists(Path.Combine(dir, c.File)))
                 .ToList();
-            var versions = present.Count == 0
+            var fromCf = present.Where(c => c.Source == CurseForgeService.Source).ToList();
+            var fromMr = present.Except(fromCf).ToList();
+            var versions = fromMr.Count == 0
                 ? new List<MrVersion>()
-                : await _modrinth.VersionsByIdsAsync(present.Select(c => c.VersionId));
+                : await _modrinth.VersionsByIdsAsync(fromMr.Select(c => c.VersionId));
             var byId = versions.ToDictionary(v => v.Id);
 
             var mods = new List<PackMod>();
             var fallback = new List<string>();
-            foreach (var content in present)
+
+            // CurseForge dosyaları: yapımcı izin veriyorsa bağlantı olarak, vermiyorsa dosya pakete gömülür
+            var cfFiles = new Dictionary<int, CfFile>();
+            if (fromCf.Count > 0)
+            {
+                try
+                {
+                    var ids = fromCf.Select(c => int.TryParse(c.VersionId, out var i) ? i : 0).Where(i => i > 0);
+                    cfFiles = (await _curseforge.FilesByIdsAsync(ids)).ToDictionary(f => f.Id);
+                }
+                catch (Exception) { /* CurseForge'a ulaşılamazsa dosyalar pakete gömülür */ }
+            }
+            foreach (var content in fromCf)
+            {
+                if (!int.TryParse(content.VersionId, out var fileId) || !cfFiles.TryGetValue(fileId, out var cf)
+                    || string.IsNullOrEmpty(cf.DownloadUrl) || !CurseForgeService.IsCurseForgeCdn(cf.DownloadUrl))
+                { fallback.Add(content.File); continue; }
+                mods.Add(new PackMod
+                {
+                    Source = CurseForgeService.Source,
+                    ProjectId = content.ProjectId,
+                    VersionId = content.VersionId,
+                    Title = content.Title,
+                    VersionNumber = content.VersionNumber,
+                    Type = content.Type,
+                    File = content.File,
+                    IconUrl = content.IconUrl,
+                    Url = cf.DownloadUrl,
+                    Sha1 = cf.Hashes.FirstOrDefault(h => h.Algo == 1)?.Value,
+                    Size = cf.FileLength,
+                });
+            }
+
+            foreach (var content in fromMr)
             {
                 var file = byId.TryGetValue(content.VersionId, out var version)
                     ? version.Files.FirstOrDefault(f => string.Equals(f.Filename, Path.GetFileName(content.File), StringComparison.OrdinalIgnoreCase))

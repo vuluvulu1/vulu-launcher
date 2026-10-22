@@ -41,8 +41,10 @@ const DISCOVER_PAGES = ['packs', 'modrinth'];
 const SOCIAL_PAGES = ['shots', 'messages', 'friends'];
 
 function showPage(name) {
-    if (name === 'discover') name = store.get('discoverSource', 'packs') === 'modrinth' ? 'modrinth' : 'packs';
-    if (DISCOVER_PAGES.includes(name)) store.set('discoverSource', name);
+    // Keşfet: vulu Packs, CurseForge ya da Modrinth (son açılan hatırlanır). CurseForge ve Modrinth aynı sayfayı kullanır.
+    if (name === 'discover') name = store.get('discoverSource', 'packs');
+    if (name === 'curseforge' || name === 'modrinth') { setContentSource(name); store.set('discoverSource', name); name = 'modrinth'; }
+    else if (name === 'packs') store.set('discoverSource', 'packs');
     if (name === 'social') { name = store.get('socialSource', 'shots'); if (!SOCIAL_PAGES.includes(name)) name = 'shots'; }
     if (SOCIAL_PAGES.includes(name)) store.set('socialSource', name);
 
@@ -71,7 +73,7 @@ function showPage(name) {
 function reportPresence() {
     const selected = state.page === 'home' && state.selected;
     bridge.invoke('discord.page', {
-        page: state.page || 'home',
+        page: state.page === 'modrinth' && modrinth.source === 'curseforge' ? 'curseforge' : state.page || 'home',
         instance: selected ? selected.name : '',
         mcVersion: selected ? selected.mcVersion : '',
         loader: selected ? selected.loader : '',

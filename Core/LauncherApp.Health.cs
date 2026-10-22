@@ -18,7 +18,7 @@ namespace VuluLauncher
             _bridge.On("crash.openReport", args => Task.FromResult<object?>(OpenCrashReport(args.Str("instanceId"), args.Str("file"))));
             _bridge.On("instances.setContentEnabled", args => Task.FromResult<object?>(SetContentEnabled(args.Str("id"), args.Str("file"), args.Bool("enabled"))));
             _bridge.On("instances.checkUpdates", async args => await CheckUpdatesAsync(args.Str("id")));
-            _bridge.On("mods.update", async args => await UpdateModAsync(RequireGameDevice(args.Str("instanceId")), args.Str("projectId"), args.Str("versionId")));
+            _bridge.On("mods.update", async args => await UpdateModAsync(RequireGameDevice(args.Str("instanceId")), args.Str("projectId"), args.Str("versionId"), args.Str("source")));
         }
 
         // ── Çökme yardımcısı ──────────────────────────────────────────────
@@ -177,6 +177,7 @@ namespace VuluLauncher
             }
 
             var updates = new List<object>();
+            var found = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var x in files)
             {
                 string hash = hashes[x.Path];
@@ -197,19 +198,60 @@ namespace VuluLauncher
                     }
                     catch (Exception) { }
                 }
+                string file = $"{x.Folder}/{Path.GetFileName(x.Path)}";
+                found.Add(file);
                 updates.Add(new
                 {
-                    file = $"{x.Folder}/{Path.GetFileName(x.Path)}", projectId = cur.ProjectId, versionId = pick.Id,
-                    from = cur.VersionNumber, to = pick.VersionNumber, type = pick.VersionType, stable,
+                    file, projectId = cur.ProjectId, versionId = pick.Id,
+                    from = cur.VersionNumber, to = pick.VersionNumber, type = pick.VersionType, stable, source = "modrinth",
                 });
             }
+            updates.AddRange(await CurseForgeUpdatesAsync(meta, dir, found));
             return new { updates };
         }
 
-        private async Task<object?> UpdateModAsync(string instanceId, string projectId, string versionId)
+        /// <summary>
+        /// CurseForge'dan kurulan içeriklerin güncellemeleri: her proje için bu Minecraft sürümü ve yükleyiciyle uyumlu
+        /// en yeni dosya. Modrinth'in zaten bulduğu dosyalar atlanır. Kararlı sürüm yoksa beta/alpha ayrıca işaretlenir.
+        /// </summary>
+        private async Task<List<object>> CurseForgeUpdatesAsync(InstanceMeta meta, string dir, HashSet<string> alreadyFound)
+        {
+            var tracked = meta.Content
+                .Where(c => c.Source == CurseForgeService.Source && int.TryParse(c.ProjectId, out _) && int.TryParse(c.VersionId, out _))
+                .Where(c => !alreadyFound.Contains(c.File) && (File.Exists(Path.Combine(dir, c.File)) || File.Exists(Path.Combine(dir, c.File + DisabledSuffix))))
+                .ToList();
+            var result = new System.Collections.Concurrent.ConcurrentBag<object>();
+            await Parallel.ForEachAsync(tracked, new ParallelOptions { MaxDegreeOfParallelism = 6 }, async (c, _) =>
+            {
+                try
+                {
+                    var files = await _curseforge.CompatibleFilesAsync(int.Parse(c.ProjectId), meta.McVersion, meta.Loader, c.Type == "mod");
+                    var current = files.FirstOrDefault(f => f.Id.ToString() == c.VersionId);
+                    var newest = files.FirstOrDefault();
+                    if (newest == null || newest.Id.ToString() == c.VersionId || (current != null && newest.FileDate <= current.FileDate)) return;
+                    var release = files.FirstOrDefault(f => f.ReleaseType == 1 && (current == null || f.FileDate > current.FileDate) && f.Id.ToString() != c.VersionId);
+                    var pick = release ?? newest;
+                    result.Add(new
+                    {
+                        file = c.File, projectId = c.ProjectId, versionId = pick.Id.ToString(),
+                        from = c.VersionNumber, to = pick.DisplayName, type = CurseForgeService.ReleaseTypeName(pick.ReleaseType),
+                        stable = pick.ReleaseType == 1, source = CurseForgeService.Source,
+                    });
+                }
+                catch (Exception) { /* bu proje denetlenemedi; diğerleri gösterilir */ }
+            });
+            return result.ToList();
+        }
+
+        private async Task<object?> UpdateModAsync(string instanceId, string projectId, string versionId, string source = "")
         {
             var meta = RequireCustomInstance(instanceId);
             if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken mod güncellenemez.");
+            if (source == CurseForgeService.Source)
+            {
+                var (cfInstalled, manual) = await _curseforge.InstallAsync(meta, RequireCfId(projectId, "proje"), RequireCfId(versionId, "sürüm"));
+                return new { installed = cfInstalled, manual = ManualList(manual) };
+            }
             if (!Regex.IsMatch(projectId, "^[A-Za-z0-9]{6,16}$") || !Regex.IsMatch(versionId, "^[A-Za-z0-9]{6,16}$"))
                 throw new InvalidOperationException("Geçersiz sürüm.");
 

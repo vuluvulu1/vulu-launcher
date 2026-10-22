@@ -1,5 +1,6 @@
-// Keşfet → Modrinth: mod / modpack / kaynak paketi / shader arama, filtreleme, sıralama ve kurma.
-// Instance seçmeden de gezilebilir; "Kur"a basınca nereye kurulacağı sorulur (gerekirse yeni instance açılır).
+// Keşfet → CurseForge / Modrinth: mod / modpack / kaynak paketi / shader arama, filtreleme, sıralama ve kurma.
+// İki kaynak aynı ekranı kullanır; varsayılan CurseForge, Modrinth alternatif. Instance seçmeden de gezilebilir;
+// "Kur"a basınca nereye kurulacağı sorulur (gerekirse yeni instance açılır).
 const MR_TYPES = [
     { key: 'mod', label: 'Modlar' },
     { key: 'modpack', label: 'Modpackler' },
@@ -41,7 +42,14 @@ const MR_CATEGORY_NAMES = {
 
 const NEW_INSTANCE = '__new';
 
+// Kaynaklar: komut öneki ve ekrandaki adı
+const CONTENT_SOURCES = {
+    curseforge: { prefix: 'cf.', label: 'CurseForge' },
+    modrinth: { prefix: 'modrinth.', label: 'Modrinth' },
+};
+
 const modrinth = {
+    source: 'curseforge',    // showPage seçer; son kullanılan contentSource'ta hatırlanır
     type: 'mod',
     targetId: '',
     sort: '',
@@ -79,15 +87,33 @@ function customInstances() {
     return state.instances.filter(i => i.kind === 'custom');
 }
 
-function selectedCategories() {
-    return modrinth.categories[modrinth.type] || (modrinth.categories[modrinth.type] = new Set());
+/** Seçili kaynağın komutu, ör. contentCommand('search') → 'cf.search'. */
+function contentCommand(name) {
+    return CONTENT_SOURCES[modrinth.source].prefix + name;
 }
 
-/** Bir instance'ın "Mod ekle" düğmesinden gelindiğinde o instance hedef seçili açılır. */
+/** Filtreler ve seçili kategoriler kaynak ve tür başına ayrı tutulur. */
+function filterKey() {
+    return modrinth.source + ':' + modrinth.type;
+}
+
+function selectedCategories() {
+    const key = filterKey();
+    return modrinth.categories[key] || (modrinth.categories[key] = new Set());
+}
+
+/** Keşfet'te kaynağı değiştirir (CurseForge / Modrinth); seçim hatırlanır. */
+function setContentSource(source) {
+    if (!CONTENT_SOURCES[source]) return;
+    modrinth.source = source;
+    store.set('contentSource', source);
+}
+
+/** Bir instance'ın "Mod ekle" düğmesinden gelindiğinde o instance hedef seçili açılır (son kullanılan kaynakla). */
 function openModrinthFor(instance) {
     modrinth.targetId = instance.id;
     if (modrinth.type === 'modpack') modrinth.type = 'mod';
-    showPage('modrinth');
+    showPage(store.get('contentSource', 'curseforge') === 'modrinth' ? 'modrinth' : 'curseforge');
 }
 
 function setupModrinthPage() {
@@ -121,6 +147,11 @@ function setupModrinthPage() {
 
 async function openModrinthPage() {
     if (!modrinth.ready) setupModrinthPage();
+    for (const button of document.querySelectorAll('#page-modrinth .discover-switch button'))
+        button.classList.toggle('active', button.dataset.source === modrinth.source);
+    $('mr-query').placeholder = `${CONTENT_SOURCES[modrinth.source].label}'da ara…`;
+    const follows = $('mr-sort').querySelector('option[value="follows"]');
+    if (follows) follows.textContent = modrinth.source === 'curseforge' ? 'Beğeni sayısı' : MR_SORTS.follows;
 
     $('mr-types').replaceChildren(...MR_TYPES.map(type => el('button', {
         class: type.key === modrinth.type ? 'active' : '',
@@ -149,18 +180,19 @@ async function openModrinthPage() {
     renderModrinthFilters();
     searchModrinth(false);
 
-    // Filtre seçenekleri tür başına bir kez alınır
-    if (!modrinth.filterData[modrinth.type]) {
+    // Filtre seçenekleri kaynak ve tür başına bir kez alınır
+    const key = filterKey();
+    if (!modrinth.filterData[key]) {
         const type = modrinth.type;
         try {
-            modrinth.filterData[type] = await bridge.invoke('modrinth.filters', { type });
-            if (type === modrinth.type) renderModrinthFilters();
+            modrinth.filterData[key] = await bridge.invoke(contentCommand('filters'), { type });
+            if (key === filterKey()) renderModrinthFilters();
         } catch { /* filtreler olmadan da arama çalışır */ }
     }
 }
 
 function renderModrinthFilters() {
-    const data = modrinth.filterData[modrinth.type];
+    const data = modrinth.filterData[filterKey()];
     const selected = selectedCategories();
     const activeCount = selected.size + (modrinth.openSource ? 1 : 0);
 
@@ -195,7 +227,8 @@ function renderModrinthFilters() {
 
     panel.replaceChildren(...groups,
         el('div', { class: 'mr-filter-foot' },
-            el('label', { class: 'check' }, openSource, el('span', {}, 'Yalnızca açık kaynak')),
+            // CurseForge'da açık kaynak bilgisi yok
+            modrinth.source === 'modrinth' && el('label', { class: 'check' }, openSource, el('span', {}, 'Yalnızca açık kaynak')),
             el('button', {
                 class: 'link-btn', disabled: activeCount === 0,
                 onclick: () => { selected.clear(); modrinth.openSource = false; renderModrinthFilters(); searchModrinth(false); },
@@ -213,7 +246,7 @@ async function searchModrinth(append) {
 
     let result;
     try {
-        result = await bridge.invoke('modrinth.search', {
+        result = await bridge.invoke(contentCommand('search'), {
             query: $('mr-query').value.trim(),
             type: modrinth.type,
             instanceId: isPack ? '' : modrinth.targetId,
@@ -221,7 +254,7 @@ async function searchModrinth(append) {
             loader: freeBrowse && (isPack || modrinth.type === 'mod') ? modrinth.loader : '',
             sort: modrinth.sort,
             categories: [...selectedCategories()],
-            openSource: modrinth.openSource,
+            openSource: modrinth.source === 'modrinth' && modrinth.openSource,
             offset: modrinth.offset,
         });
     } catch (err) {
@@ -262,10 +295,11 @@ async function installModrinthHit(hit, button, versionId) {
     try {
         if (hit.type === 'modpack') {
             const result = await withActivity(() =>
-                bridge.invoke('modrinth.installModpack', { projectId: hit.id, versionId: versionId || '' }));
+                bridge.invoke(contentCommand('installModpack'), { projectId: hit.id, versionId: versionId || '' }));
             if (!result.success) throw new Error(result.error);
             await reloadInstances(result.id);
             showPage('home');
+            if (result.manual && result.manual.length) await showManualDownloads(result.manual, result.id);
             return;
         }
 
@@ -278,11 +312,12 @@ async function installModrinthHit(hit, button, versionId) {
         }
 
         const result = await withActivity(() =>
-            bridge.invoke('modrinth.install', { instanceId, projectId: hit.id, versionId: versionId || '' }));
+            bridge.invoke(contentCommand('install'), { instanceId, projectId: hit.id, versionId: versionId || '' }));
         if (!result.success) throw new Error(result.error);
 
         button.classList.remove('btn-primary');
-        button.textContent = 'Kuruldu ✓';
+        button.textContent = result.installed.length ? 'Kuruldu ✓' : original;
+        if (result.manual && result.manual.length) await showManualDownloads(result.manual, instanceId);
         // Hedef yeni seçildiyse sonuçlar artık o instance'a göre süzülür
         if (newTarget) { modrinth.targetId = instanceId; openModrinthPage(); }
         // Bağımlılık olarak başka şeyler de kurulduysa bildir
@@ -371,7 +406,7 @@ function pickModrinthVersion(hit) {
     return openModal(close => {
         const list = el('div', { class: 'admin-body' }, el('p', { class: 'admin-toolbar' }, 'Sürümler yükleniyor...'));
 
-        bridge.invoke('modrinth.versions', { projectId: hit.id, instanceId: hit.type === 'modpack' ? '' : modrinth.targetId })
+        bridge.invoke(contentCommand('versions'), { projectId: hit.id, instanceId: hit.type === 'modpack' ? '' : modrinth.targetId })
             .then(versions => {
                 if (versions.length === 0) {
                     list.replaceChildren(el('p', { class: 'pack-empty' }, 'Uyumlu sürüm bulunamadı.'));
@@ -380,7 +415,8 @@ function pickModrinthVersion(hit) {
                 list.replaceChildren(...versions.map(version => el('div', { class: 'user-row' },
                     el('div', {},
                         el('div', { class: 'uname' }, version.name || version.number,
-                            version.type !== 'release' && el('span', { class: 'badge' }, TYPE_NAMES[version.type] || version.type)),
+                            version.type !== 'release' && el('span', { class: 'badge' }, TYPE_NAMES[version.type] || version.type),
+                            version.manualOnly && el('span', { class: 'badge', title: 'Yapımcısı başka uygulamalardan indirilmesine izin vermiyor' }, 'Elle indirilir')),
                         el('div', { class: 'meta' }, [
                             version.number,
                             version.gameVersions.slice(-3).join(', '),
@@ -416,11 +452,12 @@ function renderModrinthHit(hit) {
     return el('div', { class: 'mr-hit' },
         hit.iconUrl ? el('img', { class: 'mr-icon', src: hit.iconUrl, alt: '', loading: 'lazy' }) : el('div', { class: 'mr-icon plain' }),
         el('div', { class: 'mr-text' },
-            el('div', { class: 'mr-title' }, hit.title, el('span', { class: 'mr-author' }, hit.author)),
+            el('div', { class: 'mr-title' }, hit.title, el('span', { class: 'mr-author' }, hit.author),
+                hit.manualOnly && el('span', { class: 'badge', title: 'Yapımcısı başka uygulamalardan indirilmesine izin vermiyor; CurseForge sitesinden indirilir' }, 'Elle indirilir')),
             el('div', { class: 'mr-desc' }, hit.description),
             el('div', { class: 'mr-meta' },
                 el('span', {}, `↓ ${formatCount(hit.downloads)}`),
-                el('span', {}, `♥ ${formatCount(hit.follows)}`),
+                hit.follows > 0 && el('span', {}, `${modrinth.source === 'curseforge' ? '👍' : '♥'} ${formatCount(hit.follows)}`),
                 hit.updated && el('span', {}, `Güncelleme: ${formatAgo(hit.updated)}`),
                 ...tags)),
         el('div', { class: 'mr-actions' },
@@ -434,7 +471,33 @@ function renderModrinthHit(hit) {
                     },
                 }, 'Sürüm seç'),
                 el('button', {
-                    class: 'link-btn', title: 'Modrinth sayfasını tarayıcıda aç',
-                    onclick: () => bridge.invoke('modrinth.openPage', { type: hit.type, slug: hit.slug }).catch(() => { }),
+                    class: 'link-btn', title: `${CONTENT_SOURCES[modrinth.source].label} sayfasını tarayıcıda aç`,
+                    onclick: () => (modrinth.source === 'curseforge'
+                        ? bridge.invoke('cf.openPage', { url: hit.pageUrl })
+                        : bridge.invoke('modrinth.openPage', { type: hit.type, slug: hit.slug })).catch(() => { }),
                 }, 'Sayfa ↗'))));
+}
+
+/**
+ * Yapımcısı başka uygulamalardan indirmeye izin vermeyen CurseForge dosyaları: CurseForge sayfasından indirilip
+ * instance'ın klasörüne konur. CurseForge'un kuralı bu; launcher dosyayı kendisi indiremez.
+ */
+async function showManualDownloads(manual, instanceId) {
+    const FOLDERS = { mods: 'mods', resourcepacks: 'resourcepacks', shaderpacks: 'shaderpacks' };
+    await openModal(close => [
+        el('div', { class: 'modal-head' }, manual.length === 1 ? `${manual[0].title} elle indirilmeli` : `${manual.length} dosya elle indirilmeli`),
+        el('div', { class: 'modal-body' },
+            el('p', {}, manual.length === 1
+                ? 'Bu modun yapımcısı, modun başka uygulamalardan indirilmesine izin vermiyor. CurseForge sayfasından indirip instance klasöründeki şu klasöre koyman yeterli:'
+                : 'Bu dosyaların yapımcıları başka uygulamalardan indirilmelerine izin vermiyor. Her birini CurseForge sayfasından indirip instance klasöründe belirtilen klasöre koy:'),
+            el('div', { class: 'manual-list' }, manual.map(m => el('div', { class: 'manual-row' },
+                el('div', { class: 'manual-text' },
+                    el('b', {}, m.title),
+                    el('span', { class: 'hint' }, `${FOLDERS[m.folder] || m.folder}/ · ${m.fileName}`)),
+                el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('cf.openPage', { url: m.url }).catch(() => { }) }, 'CurseForge\'da aç ↗')))),
+            el('p', { class: 'hint' }, 'Dosyayı koyduktan sonra oyunu yeniden başlatman yeterli.')),
+        el('div', { class: 'modal-foot' },
+            instanceId && el('button', { class: 'btn', onclick: () => bridge.invoke('files.open', { target: 'instance', id: instanceId }).catch(() => { }) }, 'Instance klasörünü aç'),
+            el('button', { class: 'btn btn-primary', onclick: () => close() }, 'Tamam')),
+    ].filter(Boolean), { wide: manual.length > 1 });
 }

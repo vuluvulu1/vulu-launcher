@@ -66,6 +66,7 @@ namespace VuluLauncher
                 "home" => ("Ana menüde", instanceName == null ? null : Summary(instanceName, mcVersion, loader)),
                 "packs" => ("Keşfet'te", "vulu Packs'e göz atıyor"),
                 "modrinth" => ("Keşfet'te", "Modrinth'te mod arıyor"),
+                "curseforge" => ("Keşfet'te", "CurseForge'da mod arıyor"),
                 "servers" => ("Sunuculara bakıyor", (string?)null),
                 "shots" => ("Sosyal'de", "Ekran görüntülerine bakıyor"),
                 "messages" or "friends" => ("Sosyal'de", null),

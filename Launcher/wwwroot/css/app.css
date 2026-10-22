@@ -1264,3 +1264,10 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .playtime-time { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
 .shot-view { overflow: hidden; }
 .shot-view.shared .shot-full { max-height: min(44vh, 420px); }
+
+/* ── CurseForge: elle indirilecek dosyalar ──────────────────────────── */
+.manual-list { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.manual-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.manual-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.manual-text .hint { font-family: var(--font-mono); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mr-title .badge { margin-left: 8px; }

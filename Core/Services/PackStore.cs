@@ -135,6 +135,8 @@ namespace VuluLauncher
     /// <summary>Modrinth'ten indirilecek bir içerik; sürümü yayınlandığı anda sabitlenir.</summary>
     public sealed class PackMod
     {
+        /// <summary>"curseforge" ya da "modrinth" (eski paketlerde boş: Modrinth).</summary>
+        public string? Source { get; set; }
         public string ProjectId { get; set; } = "";
         public string VersionId { get; set; } = "";
         public string Title { get; set; } = "";

@@ -16,6 +16,14 @@ namespace VuluLauncher
             return client;
         }
 
+        /// <summary>Yalnızca geliştirme derlemesinde, yerel bir test API'si seçilmişken: bu bilgisayardaki test sunucusu.</summary>
+        private static bool IsLocalTestServer(Uri uri) =>
+#if DEBUG
+            uri.IsLoopback && Environment.GetEnvironmentVariable("VULU_API_URL") != null;
+#else
+            false;
+#endif
+
         /// <summary>
         /// Dosyayı önce ".part" olarak indirir, verilen hash'leri doğrular, sonra hedefe taşır.
         /// Yalnızca https adresleri kabul edilir.
@@ -23,7 +31,7 @@ namespace VuluLauncher
         public static async Task DownloadAsync(string url, string path, IProgress<long>? bytesRead = null,
             string? sha1 = null, string? sha512 = null, CancellationToken cancellation = default, Action<long>? contentLength = null)
         {
-            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !(uri.Scheme == Uri.UriSchemeHttps || IsLocalTestServer(uri)))
                 throw new InvalidOperationException($"Geçersiz indirme adresi: {url}");
 
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);

@@ -6,6 +6,8 @@ namespace VuluLauncher
     /// <summary>Instance'a Modrinth'ten kurulmuş bir içerik (mod, kaynak paketi, shader).</summary>
     public sealed class InstalledContent
     {
+        /// <summary>Nereden kuruldu: "curseforge"; boşsa Modrinth (eski kayıtlar).</summary>
+        public string? Source { get; set; }
         public string ProjectId { get; set; } = "";
         public string VersionId { get; set; } = "";
         public string Title { get; set; } = "";

@@ -474,7 +474,7 @@ namespace VuluLauncher
             uri.Scheme == Uri.UriSchemeHttps &&
             AllowedPackHosts.Contains(uri.Host, StringComparer.OrdinalIgnoreCase);
 
-        private static void ExtractOverrides(ZipArchive zip, string prefix, string instanceDir)
+        internal static void ExtractOverrides(ZipArchive zip, string prefix, string instanceDir)
         {
             foreach (var entry in zip.Entries)
             {

@@ -16,6 +16,7 @@ namespace VuluLauncher
         private readonly LauncherUpdateService _launcherUpdates = new();
         private readonly JavaManager _java;
         private readonly ModrinthService _modrinth;
+        private readonly CurseForgeService _curseforge;
         private readonly GameLauncher _game;
         private readonly DiscordPresence _discord = new();
 
@@ -31,6 +32,7 @@ namespace VuluLauncher
             _api = new ApiClient(() => _login.Token);
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
+            _curseforge = new CurseForgeService(_api, Log);
             _game = new GameLauncher(Log, _java, host.GameRunner);
             _game.Exited += () => { StopPlayTime(); _bridge.Emit("gameExited"); _discord.ShowIdle(); PresenceIdle(); _ = ReportCrashIfAnyAsync(); };
             // Arayüz hangi sayfada olunduğunu (ve Oyna'da seçili instance'ı) bildirir
@@ -69,6 +71,7 @@ namespace VuluLauncher
             _bridge.On("game.versions", async _ => { RequireLogin(); return await LoaderCatalog.MinecraftVersionsAsync(); });
 
             RegisterInstanceCommands();
+            RegisterCurseForgeCommands();
             RegisterPackCommands();
             RegisterHealthCommands();
             RegisterCommunityCommands();

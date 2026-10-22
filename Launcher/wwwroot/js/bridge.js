@@ -456,6 +456,24 @@ const mockBackend = (() => {
             ];
         },
         'modrinth.openPage': async () => ({ opened: true }),
+        // CurseForge: aynı biçim; bir sonuç dağıtıma kapalı (elle indirilir)
+        'cf.search': async args => {
+            await wait(350);
+            const hits = sampleHits(args.type).map((h, i) => ({ ...h, id: String(238222 + i), follows: Math.round(h.follows / 10), pageUrl: 'https://www.curseforge.com/minecraft/mc-mods/' + h.slug, manualOnly: i === 2,
+                categories: ['Technology', 'Utility & QoL', 'Map and Information'].slice(0, 2) }));
+            return { total: 1240, offset: args.offset, hits };
+        },
+        'cf.filters': async args => { await wait(200); return { categories: [{ header: 'categories', names: ['Adventure and RPG', 'API and Library', 'Magic', 'Map and Information', 'Storage', 'Technology', 'Utility & QoL', 'World Gen'] }], sorts: ['relevance', 'downloads', 'follows', 'newest', 'updated'], minecraftVersions: ['1.21.1', '1.20.1', '1.19.2'], loaders: ['fabric', 'quilt', 'forge', 'neoforge'] }; },
+        'cf.versions': async () => { await wait(250); return [
+            { id: '5701', name: 'jei-1.20.1-forge-15.20.0.106', number: 'jei-1.20.1-forge-15.20.0.106.jar', type: 'release', published: new Date(Date.now() - 12 * 86400000).toISOString(), gameVersions: ['1.20.1'], loaders: ['forge'], manualOnly: false },
+            { id: '5650', name: 'jei-1.20.1-forge-15.19.5.99', number: 'jei-1.20.1-forge-15.19.5.99.jar', type: 'beta', published: new Date(Date.now() - 40 * 86400000).toISOString(), gameVersions: ['1.20.1'], loaders: ['forge'], manualOnly: false },
+        ]; },
+        'cf.openPage': async () => ({ opened: true }),
+        'cf.install': async () => {
+            log('Just Enough Items indiriliyor...', 'accent'); await wait(800);
+            return { success: true, installed: ['Just Enough Items'], manual: [{ title: 'Secret Mod', url: 'https://www.curseforge.com/minecraft/mc-mods/secret/files/21', folder: 'mods', fileName: 'secret-mod-1.2.jar' }] };
+        },
+        'cf.installModpack': async () => ({ success: false, error: 'Önizlemede modpack kurulmaz.' }),
         'instances.pickBackground': async args => {
             instances = instances.map(i => i.id === args.id ? { ...i, background: 'assets/launchervanillabg.jpg', backgroundStyle: 'cover', hasCustomBackground: true, thumbnail: i.kind === 'custom' ? 'assets/launchervanillabg.jpg' : i.thumbnail } : i);
             return { changed: true };
