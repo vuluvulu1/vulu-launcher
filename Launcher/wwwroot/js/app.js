@@ -619,6 +619,7 @@ function renderPackActions(instance) {
         item('Görünüm', () => openAppearanceDialog(instance)),
         item('Dünyalar ve yedekler', () => openWorldsDialog(instance)),
         item('Ekran görüntüleri', () => openScreenshots(instance)),
+        canInstallGames() && item('Dosyaları doğrula', () => verifyInstance(instance)),
         isDesktopApp() && item('Klasörü aç', () => bridge.invoke('files.open', { target: 'instance', id: instance.id })),
         isDesktopApp() && item('Masaüstüne kısayol', () => createShortcut('play', instance.id, instance.name, instance.id)),
         isCustom && item('Çoğalt', () => duplicateInstance(instance)),

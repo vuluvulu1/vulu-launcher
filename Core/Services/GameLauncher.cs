@@ -199,6 +199,27 @@ namespace VuluLauncher
         }
 
         /// <summary>
+        /// Oyunu açmadan oyun dosyalarını denetler: Java, mod yükleyici, Minecraft'ın kendisi, kütüphaneler ve
+        /// kaynaklar. Eksik ya da hash'i tutmayan dosya yeniden indirilir ("Dosyaları doğrula").
+        /// </summary>
+        public async Task VerifyGameAsync(LaunchTarget target)
+        {
+            if (IsRunning) throw new InvalidOperationException("Oyun açıkken dosyalar doğrulanamaz.");
+            string instanceDir = Path.Combine(AppPaths.Instances, target.Folder);
+            Directory.CreateDirectory(instanceDir);
+            var launcher = CreateLauncher(CreatePath(instanceDir));
+
+            // Android'de Java'yı oyun motoru seçer; Forge ve NeoForge orada henüz kurulamıyor
+            string javaPath = "";
+            if (_runner == null) javaPath = await _java.EnsureAsync(await GetRequiredJavaAsync(launcher, target.McVersion));
+            else if (target.Loader is "forge" or "neoforge")
+                throw new InvalidOperationException("Forge ve NeoForge paketlerinin oyun dosyaları telefonda denetlenemiyor.");
+
+            string versionName = await EnsureLoaderAsync(launcher, target, javaPath);
+            await launcher.InstallAsync(versionName, FileProgress(), ByteProgress(), CancellationToken.None);
+        }
+
+        /// <summary>
         /// authlib-injector'ı Java ajanı olarak ekler: oyun skinleri ve oturum doğrulamayı vulu-api'den alır.
         /// JVM seçenekleri ana sınıftan önce gelmeli; komutun en başına eklenir (yolda boşluk olabileceği için tırnaklı).
         /// </summary>

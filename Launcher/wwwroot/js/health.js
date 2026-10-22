@@ -76,6 +76,47 @@ function fileProblemsDialog(files, instance) {
     }, { wide: true });
 }
 
+/**
+ * "Dosyaları doğrula": içerikleri, mod dosyalarını ve oyun dosyalarını denetler, bozuk ya da eksik olanları onarır,
+ * sonra ne yapıldığını gösterir.
+ */
+async function verifyInstance(instance) {
+    if (state.busy > 0 || state.gameRunning || launching) { appendLog({ text: 'Şu an başka bir işlem sürüyor.', level: 'warn' }); return; }
+    let result;
+    try { result = await withActivity(() => bridge.invoke('instances.verify', { id: instance.id })); }
+    catch (err) { await alertDialog({ title: 'Doğrulanamadı', message: err.message }); return; }
+    loadDetails();
+
+    const fixed = result.repaired.length + result.moved.length;
+    const clean = !fixed && !result.gameError && !result.missing.length && !result.manual.length && !result.notes.length;
+    const line = (mark, text, detail) => el('div', { class: 'health-item' },
+        el('span', { class: 'verify-mark ' + mark, 'aria-hidden': 'true' }, mark === 'ok' ? '✓' : '!'),
+        el('div', { class: 'health-text' }, el('b', {}, text), detail && el('span', {}, detail)));
+    const items = [
+        line('ok', result.checkedCount ? `${result.checkedCount} içerik denetlendi` : 'İçerik listesi denetlendi',
+            result.repaired.length ? `Yeniden indirilenler: ${result.repaired.join(', ')}` : 'Hepsi sağlam.'),
+        result.moved.length > 0 && line('ok', `${result.moved.length} sorunlu dosya mods-yedek klasörüne taşındı`,
+            result.moved.map(f => f.replace(/^mods\//, '')).join(', ')),
+        line(result.gameError ? 'warn' : 'ok', result.gameError ? 'Oyun dosyaları denetlenemedi' : 'Oyun dosyaları denetlendi', result.gameError
+            || 'Minecraft, mod yükleyici ve kütüphaneler; eksik ya da bozuk olan yeniden indirildi.'),
+        ...result.notes.map(n => line('warn', 'Onarılamadı', n)),
+        result.missing.length > 0 && line('warn', 'Eksik bağımlılıklar', `${result.missing.join(', ')} — oyunu açarken kurmanı önerecek.`),
+        result.manual.length > 0 && line('warn', `${result.manual.length} dosya elle indirilmeli`, result.manual.map(m => m.title).join(', ')),
+    ].filter(Boolean);
+
+    const choice = await openModal(close => [
+        el('div', { class: 'modal-head' }, clean ? `${instance.name}: sorun yok` : `${instance.name} doğrulandı`),
+        el('div', { class: 'modal-body health-body' },
+            el('p', { class: 'hint' }, clean ? 'Dosyalarda bir sorun bulunmadı.'
+                : fixed ? 'Bulunan sorunlar onarıldı. Aşağıda kalanlar varsa onlara bak.' : 'Bazı şeyler kendiliğinden onarılamadı:'),
+            el('div', { class: 'health-list' }, items)),
+        el('div', { class: 'modal-foot' },
+            result.manual.length > 0 && el('button', { class: 'btn', onclick: () => close('manual') }, 'Elle indir…'),
+            el('button', { class: 'btn btn-primary', onclick: () => close() }, 'Tamam')),
+    ].filter(Boolean));
+    if (choice === 'manual') { await showManualDownloads(result.manual, instance.kind === 'custom' ? instance.id : null); loadDetails(); }
+}
+
 // ── Çökme özeti ───────────────────────────────────────────────────────
 const CRASH_ACTIONS = {
     install: a => bridge.invoke('mods.installMissing', { instanceId: a.instanceId, projectIds: a.projectIds }),

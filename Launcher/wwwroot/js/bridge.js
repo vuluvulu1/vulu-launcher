@@ -344,6 +344,7 @@ const mockBackend = (() => {
         },
         'packs.setRoles': async args => { await wait(250); mockPackRoles[args.id] = args.roles; return { success: true }; },
         'feedback.list': async args => { await wait(300); return feedback.filter(f => f.pack === args.pack); },
+        'instances.verify': async () => { await wait(1500); return { checkedCount: 42, repaired: ['Sodium'], moved: ['mods/tombstone (1).jar'], notes: [], missing: [], manual: [], gameError: null }; },
         'friends.list': async () => { await wait(150); return JSON.parse(JSON.stringify(mockFriends)); },
         'friends.request': async args => {
             await wait(200);

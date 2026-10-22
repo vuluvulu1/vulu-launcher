@@ -1331,3 +1331,8 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .friends-count { padding: 0 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-hi); font-size: 11px; letter-spacing: 0; }
 .friend-actions { display: flex; gap: 6px; flex: none; }
 .friend-badge { background: var(--ok); }
+
+/* Dosyaları doğrula */
+.verify-mark { width: 26px; height: 26px; flex: none; display: grid; place-items: center; border-radius: 50%; font-weight: 700; }
+.verify-mark.ok { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+.verify-mark.warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
