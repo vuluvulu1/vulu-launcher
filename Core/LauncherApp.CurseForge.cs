@@ -44,7 +44,8 @@ namespace VuluLauncher
         private async Task<object?> PlaceManualAsync(string instanceId)
         {
             var instance = RequireCustomInstance(instanceId);
-            string? downloads = ManualFiles.DownloadsFolder();
+            // Android'deki DownloadsDirectory uygulamanın kendi klasörü; orada kullanıcının indirdikleri yok
+            string? downloads = OperatingSystem.IsWindows() && Directory.Exists(_host.DownloadsDirectory) ? _host.DownloadsDirectory : null;
             var results = await Task.Run(() => ManualFiles.Place(instance, downloads));
             int placed = results.Count(r => r.Status == "placed");
             if (placed > 0) Log($"{instance.Name}: elle indirilen {placed} dosya yerine kondu.", "ok");

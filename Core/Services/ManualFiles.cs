@@ -1,5 +1,4 @@
 using System.IO.Compression;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace VuluLauncher
@@ -23,27 +22,6 @@ namespace VuluLauncher
     internal static class ManualFiles
     {
         public const string BackupFolder = "mods-yedek";
-
-        /// <summary>Kullanıcının İndirilenler klasörü; bulunamazsa (ya da Windows değilse) null.</summary>
-        public static string? DownloadsFolder()
-        {
-            if (!OperatingSystem.IsWindows()) return null;
-            try
-            {
-                var downloads = new Guid("374DE290-123F-4565-9164-39C4925E467B");
-                if (SHGetKnownFolderPath(downloads, 0, IntPtr.Zero, out var pointer) == 0)
-                {
-                    try { if (Marshal.PtrToStringUni(pointer) is { Length: > 0 } path && Directory.Exists(path)) return path; }
-                    finally { Marshal.FreeCoTaskMem(pointer); }
-                }
-            }
-            catch { }
-            string fallback = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-            return Directory.Exists(fallback) ? fallback : null;
-        }
-
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
-        private static extern int SHGetKnownFolderPath([MarshalAs(UnmanagedType.LPStruct)] Guid id, uint flags, IntPtr token, out IntPtr path);
 
         /// <summary>
         /// Bekleyen dosyaları İndirilenler'de arar; doğru olanları yerine koyar, instance'ın içerik listesine ekler ve

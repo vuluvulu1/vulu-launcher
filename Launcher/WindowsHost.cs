@@ -79,7 +79,28 @@ namespace VuluLauncher
         public bool MoveToTrash(string path) => FileClipboard.Recycle(path);
 
         public string PicturesDirectory => Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-        public string DownloadsDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        /// <summary>Kullanıcının İndirilenler klasörü; başka bir yere taşınmışsa da doğru yeri verir.</summary>
+        public string DownloadsDirectory
+        {
+            get
+            {
+                try
+                {
+                    if (SHGetKnownFolderPath(FolderDownloads, 0, IntPtr.Zero, out var pointer) == 0)
+                    {
+                        try { if (Marshal.PtrToStringUni(pointer) is { Length: > 0 } path) return path; }
+                        finally { Marshal.FreeCoTaskMem(pointer); }
+                    }
+                }
+                catch { }
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            }
+        }
+
+        private static readonly Guid FolderDownloads = new("374DE290-123F-4565-9164-39C4925E467B");
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern int SHGetKnownFolderPath([MarshalAs(UnmanagedType.LPStruct)] Guid id, uint flags, IntPtr token, out IntPtr path);
 
         public byte[] Protect(byte[] data) => ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
         public byte[] Unprotect(byte[] data) => ProtectedData.Unprotect(data, null, DataProtectionScope.CurrentUser);
