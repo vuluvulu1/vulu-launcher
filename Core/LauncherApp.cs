@@ -364,13 +364,13 @@ namespace VuluLauncher
             try
             {
                 var meta = instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(instanceId[InstancePrefix.Length..]) : null;
-                var problems = await Task.Run(() => ManualFiles.Check(Path.Combine(AppPaths.Instances, target.Folder), meta));
+                var problems = await Task.Run(() => ManualFiles.Check(Path.Combine(AppPaths.Instances, target.Folder), meta, target.Loader));
                 if (problems == null) return null;
                 Log($"Sorunlu dosyalar: {problems.Broken.Count} bozuk, {problems.Duplicates.Count} kopya, {problems.PendingManual.Count} elle indirilecek.", "warn");
                 return new
                 {
                     broken = problems.Broken.Select(b => new { file = b.File, reason = b.Reason }),
-                    duplicates = problems.Duplicates.Select(d => new { file = d.File, copyOf = d.CopyOf }),
+                    duplicates = problems.Duplicates.Select(d => new { file = d.File, copyOf = d.CopyOf, reason = d.Reason }),
                     manual = ManualList(problems.PendingManual),
                 };
             }

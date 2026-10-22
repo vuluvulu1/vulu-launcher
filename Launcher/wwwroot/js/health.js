@@ -33,7 +33,9 @@ function missingDepsDialog(missing, instance) {
  */
 function fileProblemsDialog(files, instance) {
     const bad = [...files.broken.map(b => ({ file: b.file, text: b.reason })),
-        ...files.duplicates.map(d => ({ file: d.file, text: `${d.copyOf} dosyasının kopyası; aynı mod iki kez yüklenir.` }))];
+        ...files.duplicates.map(d => ({ file: d.file, text: d.reason === 'version'
+            ? `${d.copyOf} ile aynı mod; aynı modun iki sürümü birlikte yüklenemez.`
+            : `${d.copyOf} dosyasının kopyası; aynı mod iki kez yüklenir.` }))];
     const canFix = instance.kind === 'custom';
     return openModal(close => {
         const sections = [];

@@ -8,7 +8,8 @@ namespace VuluLauncher
     internal sealed record ManualPlacement(ManualDownload File, string Status, string? Problem = null);
 
     /// <summary>Bozuk ya da kopya jar'lar ve yerine konmamış elle indirilecekler; oyun açılmadan önce gösterilir.</summary>
-    internal sealed record ModFileProblems(List<(string File, string Reason)> Broken, List<(string File, string CopyOf)> Duplicates,
+    /// <param name="Duplicates">Fazla dosya, kalan dosya ve nedeni (aynı içerik ya da aynı modun başka sürümü).</param>
+    internal sealed record ModFileProblems(List<(string File, string Reason)> Broken, List<(string File, string CopyOf, string Reason)> Duplicates,
         List<ManualDownload> PendingManual)
     {
         public bool Any => Broken.Count > 0 || Duplicates.Count > 0 || PendingManual.Count > 0;
@@ -108,13 +109,13 @@ namespace VuluLauncher
         }
 
         /// <summary>
-        /// mods klasöründeki boş/açılmayan jar'lar, aynı dosyanın kopyaları ("x (1).jar") ve henüz yerine konmamış
-        /// elle indirilecekler. Sorun yoksa null.
+        /// mods klasöründeki boş/açılmayan jar'lar, aynı dosyanın kopyaları ("x (1).jar"), aynı modun iki sürümü ve henüz
+        /// yerine konmamış elle indirilecekler. Sorun yoksa null.
         /// </summary>
-        public static ModFileProblems? Check(string instanceDir, InstanceMeta? instance)
+        public static ModFileProblems? Check(string instanceDir, InstanceMeta? instance, string loader)
         {
             var broken = new List<(string, string)>();
-            var duplicates = new List<(string, string)>();
+            var duplicates = new List<(string, string, string)>();
             string modsDir = Path.Combine(instanceDir, "mods");
             if (Directory.Exists(modsDir))
             {
@@ -131,8 +132,26 @@ namespace VuluLauncher
                     foreach (var same in group.GroupBy(Sha1Of).Where(g => g.Key != null && g.Count() > 1))
                     {
                         var keep = same.OrderBy(j => CopySuffix.IsMatch(Path.GetFileNameWithoutExtension(j.Name))).ThenBy(j => j.Name.Length).First();
-                        foreach (var copy in same.Where(j => j != keep)) duplicates.Add(($"mods/{copy.Name}", keep.Name));
+                        foreach (var copy in same.Where(j => j != keep)) duplicates.Add(($"mods/{copy.Name}", keep.Name, "copy"));
                     }
+
+                // Aynı modun iki farklı dosyası (ör. iki sürüm): launcher'ın kurduğu kalır, yoksa en son değiştirilen
+                if (loader != "vanilla")
+                {
+                    var flagged = duplicates.Select(d => d.Item1).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    var recorded = instance?.Content.Select(c => c.File).ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>();
+                    var mods = ModScanner.Scan(instanceDir, loader).Mods.Where(m => !flagged.Contains($"mods/{m.File}")).ToList();
+                    foreach (var group in mods.SelectMany(m => m.PrimaryIds.Select(id => (Id: id, Mod: m)))
+                                 .GroupBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
+                                 .Where(g => g.Select(x => x.Mod.File).Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1))
+                    {
+                        var files = group.Select(x => x.Mod.File).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                        string keep = files.OrderByDescending(f => recorded.Contains($"mods/{f}"))
+                            .ThenByDescending(f => File.GetLastWriteTimeUtc(Path.Combine(modsDir, f))).First();
+                        foreach (var extra in files.Where(f => f != keep && flagged.Add($"mods/{f}")))
+                            duplicates.Add(($"mods/{extra}", keep, "version"));
+                    }
+                }
             }
 
             var pending = instance?.PendingManual.Where(m =>

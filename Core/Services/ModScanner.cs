@@ -4,8 +4,12 @@ using System.Text.RegularExpressions;
 
 namespace VuluLauncher
 {
-    /// <summary>Bir mod jar'ının tanımı: verdiği kimlikler ve zorunlu bağımlılıkları.</summary>
-    internal sealed record ModInfo(string File, string Name, IReadOnlyList<string> Ids, IReadOnlyList<string> Requires, bool ClientOnly);
+    /// <summary>
+    /// Bir mod jar'ının tanımı: verdiği kimlikler (gömülü jar'larınkiler dahil), zorunlu bağımlılıkları ve jar'ın asıl
+    /// kimlikleri (gömülü kütüphaneler hariç; aynı modun iki sürümünü ayırt etmek için).
+    /// </summary>
+    internal sealed record ModInfo(string File, string Name, IReadOnlyList<string> Ids, IReadOnlyList<string> Requires, bool ClientOnly,
+        IReadOnlyList<string> PrimaryIds);
 
     /// <summary>Eksik bir bağımlılık ve onu isteyen modların adları.</summary>
     internal sealed record MissingDependency(string Id, IReadOnlyList<string> RequiredBy);
@@ -104,7 +108,10 @@ namespace VuluLauncher
                 parsed = true;
                 break;
             }
-            if (!parsed && depth == 0) return null;
+            // Dil sağlayıcıları (Kotlin for Forge, Scalable Cat's Force): mod tanımı yok, adı jar'ın modül adı.
+            // Modlar onlara normal bir mod gibi bağımlı olur ("kotori_scala").
+            if (LanguageProviderId(zip) is { } provider) { ids.Add(provider); parsed = true; }
+            var own = ids.ToList();
 
             // Gömülü jar'lar: verdikleri kimlikler bu jar'ın kimlikleri sayılır (bağımlılıkları sayılmaz)
             if (depth < MaxDepth)
@@ -125,9 +132,30 @@ namespace VuluLauncher
                 }
             }
 
-            if (ids.Count == 0) return depth == 0 ? null : new ModInfo(label, label, ids, requires, clientOnly);
+            if (ids.Count == 0) return depth == 0 ? null : new ModInfo(label, label, ids, requires, clientOnly, ids);
+            // Kendi tanımı olmayan kap jar'ın (ör. kotlinforforge-all) asıl kimlikleri içindekilerdir
+            var primary = (parsed ? own : ids).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             return new ModInfo(label, name ?? ids[0], ids.Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
-                requires.Distinct(StringComparer.OrdinalIgnoreCase).ToList(), clientOnly);
+                requires.Distinct(StringComparer.OrdinalIgnoreCase).ToList(), clientOnly, primary);
+        }
+
+        private static readonly string[] LanguageServices =
+        {
+            "META-INF/services/net.neoforged.neoforgespi.language.IModLanguageLoader",
+            "META-INF/services/net.minecraftforge.forgespi.language.IModLanguageProvider",
+        };
+
+        private static string? LanguageProviderId(ZipArchive zip)
+        {
+            if (!LanguageServices.Any(s => zip.GetEntry(s) != null) || zip.GetEntry("META-INF/MANIFEST.MF") is not { } entry) return null;
+            // Manifest'in yalnızca ana bölümü okunur (kütüphaneli jar'larda her dosyanın özetiyle MB'larca olabiliyor)
+            using var reader = new StreamReader(entry.Open());
+            for (int i = 0; i < 200 && reader.ReadLine() is { Length: > 0 } line; i++)
+            {
+                var match = Regex.Match(line, @"^Automatic-Module-Name:\s*([A-Za-z0-9_.\-]+)\s*$");
+                if (match.Success) return match.Groups[1].Value;
+            }
+            return null;
         }
 
         private static string? Text(ZipArchive zip, string entryName)
