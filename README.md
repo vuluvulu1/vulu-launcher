@@ -9,7 +9,7 @@ Minecraft'ı kurmayı, modlamayı ve oynamayı tek bir uygulamada toplayan bir l
 [![Sürüm](https://img.shields.io/github/v/release/vuluvulu1/vulu-launcher?style=for-the-badge&label=s%C3%BCr%C3%BCm&color=c27e3e)](https://github.com/vuluvulu1/vulu-launcher/releases/latest)
 [![İndirme](https://img.shields.io/github/downloads/vuluvulu1/vulu-launcher/total?style=for-the-badge&label=indirme&color=3d6b4f)](https://github.com/vuluvulu1/vulu-launcher/releases)
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-2b5797?style=for-the-badge&logo=windows11&logoColor=white)
-![Android](https://img.shields.io/badge/Android-8%2B%20%C3%B6nizleme-3d8b5a?style=for-the-badge&logo=android&logoColor=white)
+![Android](https://img.shields.io/badge/Android-8%2B-3d8b5a?style=for-the-badge&logo=android&logoColor=white)
 ![.NET](https://img.shields.io/badge/.NET-10-512bd4?style=for-the-badge&logo=dotnet&logoColor=white)
 
 **[İndir (vulu-launcher-setup.exe)](https://vuluvulu.com.tr/releases/vulu-launcher-setup.exe)** · [vuluvulu.com.tr](https://vuluvulu.com.tr/launcher)
@@ -28,7 +28,7 @@ Hesaplar davetle açılır: giriş ekranından ya da [siteden](https://vuluvulu.
 
 Windows ilk seferde SmartScreen uyarısı verebilir: *Ek bilgi → Yine de çalıştır*.
 
-### Android (önizleme)
+### Android
 
 **[APK'yı indir](https://vuluvulu.com.tr/releases/android/vulu-launcher.apk)** · Android 8 ve üstü. Aynı hesap, sosyal akış, mesajlar, paketler ve sunucular, telefon ekranına göre tasarlanmış haliyle. Minecraft da uygulamanın içinden açılır (oyun motoru: Amethyst); paketler ve modlar telefona kurulabilir. İlk açılışta oyun dosyaları ve Java bir kez iner (1.20.1 için yaklaşık 700 MB). Yeni sürüm çıkınca uygulama haber verir.
 
