@@ -176,10 +176,35 @@ async function openSettingsPage() {
             isDesktopApp() && el('div', { class: 'set-inline' },
                 el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'base' }) }, 'Aç'),
                 el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'instances' }) }, 'Instance\'lar'))),
-        settingRow('Sürüm', null, el('span', { class: 'set-value' }, 'vulu Launcher v' + info.version)));
+        settingRow('Sürüm', null, el('span', { class: 'set-value' }, 'vulu Launcher v' + info.version)),
+        settingRow('Açık kaynak lisansları', 'Kullanılan bileşenler ve lisans metinleri.',
+            el('button', { class: 'btn btn-sm', onclick: openLicenses }, 'Göster')));
 
     // Oyun ayarları (Java, RAM, pencere) telefonda oyun açılana kadar gösterilmez
     body.replaceChildren(...[state.canLaunchGame && game, behaviour, look, account].filter(Boolean));
+}
+
+// Üçüncü taraf bileşenlerin listesi ve lisans metinleri (wwwroot/licenses, fonts). Windows'ta sayfa diskten (file://)
+// açıldığı için fetch çalışmaz; metinler iframe'de gösterilir.
+const LICENSE_FILES = [
+    ['licenses/notices.txt', 'Bileşenler'],
+    ['licenses/LGPL-3.0.txt', 'GNU LGPL 3.0'], ['licenses/GPL-3.0.txt', 'GNU GPL 3.0'],
+    ['licenses/LGPL-2.1.txt', 'GNU LGPL 2.1'], ['licenses/GPL-2.0.txt', 'GNU GPL 2.0'],
+    ['licenses/Apache-2.0.txt', 'Apache 2.0'], ['licenses/MIT.txt', 'MIT'], ['licenses/BSD-2-Clause.txt', 'BSD 2-Clause'],
+    ['licenses/LWJGL.txt', 'LWJGL (BSD 3-Clause)'], ['licenses/ANGLE.txt', 'ANGLE'], ['licenses/SDL-zlib.txt', 'SDL (zlib)'],
+    ['fonts/OFL-IBMPlex.txt', 'IBM Plex (OFL)'], ['fonts/OFL-GreatVibes.txt', 'Great Vibes (OFL)'],
+    ['fonts/OFL-Silkscreen.txt', 'Silkscreen (OFL)'],
+];
+
+function openLicenses() {
+    const frame = el('iframe', { class: 'license-frame', src: LICENSE_FILES[0][0], title: 'Lisans metni' });
+    const picker = el('select', { onchange: event => { frame.src = event.target.value; } },
+        ...LICENSE_FILES.map(([file, name]) => el('option', { value: file }, name)));
+    return openModal(close => [
+        el('div', { class: 'modal-head' }, 'Açık kaynak lisansları'),
+        el('div', { class: 'modal-body license-body' }, picker, frame),
+        el('div', { class: 'modal-foot' }, el('button', { class: 'btn btn-primary', onclick: () => close() }, 'Kapat')),
+    ], { wide: true });
 }
 
 // Tema geçiş efektleri: ekranı kapatan katmanın süresi ve temanın değiştiği an (ms)

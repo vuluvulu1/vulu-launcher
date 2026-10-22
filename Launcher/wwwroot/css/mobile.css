@@ -290,7 +290,7 @@
         animation: sheet-in .2s ease-out both;
     }
     @keyframes sheet-in { from { transform: translateY(30px); opacity: 0; } }
-    .modal:has(.fb-body) { height: calc(100% - 24px); }
+    .modal:has(.fb-body), .modal:has(.license-body) { height: calc(100% - 24px); }
     .modal-head { height: 54px; padding: 0 12px 0 16px; font-size: 15.5px; }
     .modal-body { padding: 14px 16px; }
     .modal-foot { flex-wrap: wrap; padding: 10px 12px; }

@@ -1,0 +1,71 @@
+﻿vulu Launcher — üçüncü taraf bileşenler
+
+vulu Launcher'ın kendisi AGPL-3.0 ile lisanslıdır; kaynak kodu:
+https://github.com/vuluvulu1/vulu-launcher
+
+Aşağıdaki bileşenler kendi yazarlarına aittir ve kendi lisanslarıyla dağıtılır;
+vulu Launcher'ın lisansı onları kapsamaz. Lisans metinleri bu pencerede, altta.
+
+Minecraft, Mojang AB / Microsoft'un ticari markasıdır. vulu Launcher, Mojang ya
+da Microsoft ile bağlantılı değildir ve onlar tarafından desteklenmez.
+
+
+═══ Her iki sürüm (Windows ve Android) ═══
+
+• .NET çalışma zamanı, System.Security.Cryptography.ProtectedData — Microsoft — MIT
+• CmlLib.Core, CmlLib.Core.Installer.Forge — AlphaBs — MIT
+• IBM Plex Sans / Mono, Great Vibes, Silkscreen yazı tipleri — SIL Open Font License 1.1
+  (metinleri: fonts/OFL-*.txt)
+
+═══ Yalnızca Windows ═══
+
+• Photino.NET — TryPhotino — Apache 2.0
+
+═══ Yalnızca Android ═══
+
+• .NET MAUI, .NET for Android — Microsoft — MIT
+• AndroidX, Material Components, Kotlin, Glide, Tink ve MAUI'nin getirdiği diğer
+  Google / JetBrains kütüphaneleri — Apache 2.0
+
+── Oyun motoru ──
+
+Android sürümü Minecraft'ı Amethyst ile açar. vulu, Amethyst'i değiştirerek
+(kendi arayüzünden yönetilebilen, gömülü bir kütüphaneye çevirerek) kullanır.
+
+• Amethyst (AngelAuraMC) — PojavLauncher (PojavLauncherTeam) çatalı,
+  Boardwalk (zhuowei) tabanlı — GNU LGPL 3.0
+    Özgün kaynak: https://github.com/AngelAuraMC/Amethyst-Android
+    vulu'nun değiştirilmiş kaynağı (vulu dalı):
+      https://github.com/vuluvulu1/vulu-amethyst
+    Motoru içeren uygulamanın tam kaynağı ve derleme betikleri (tools/android-*.ps1):
+      https://github.com/vuluvulu1/vulu-launcher
+  Motorun bu parçaları da Amethyst projesinden gelir ve aynı lisansla dağıtılır:
+  jre_lwjgl3glfw, forge_installer, arc_dns_injector, MioLibPatcher,
+  methods_injector_agent, SimpleFPEWrapper.
+
+• LWJGL 3 — Lightweight Java Game Library — BSD 3-Clause (LWJGL.txt)
+• LWJGLX (LWJGL 2 uyumluluk katmanı) — AngelAuraMC — lisansı belirtilmemiş
+• MobileGlues (MobileGL-Dev) — GNU LGPL 2.1
+    https://github.com/MobileGL-Dev/MobileGlues
+• ANGLE — The ANGLE Project Authors — BSD tarzı lisans (ANGLE.txt)
+• OpenAL Soft (Chris Robinson) — GNU LGPL 2.1 / GPL 2.0
+    https://github.com/kcat/openal-soft
+  ◦ Oboe (Google) — Apache 2.0
+• SDL3 ve sdl2-compat — Sam Lantinga ve SDL katkıcıları — zlib (SDL-zlib.txt)
+• SPIRV-Cross (Khronos / ARM) — Apache 2.0
+• shaderc (Google) — Apache 2.0
+• FreeType — FreeType Project License (LWJGL ile birlikte)
+• imgui-java (SpaiR) ve Dear ImGui (Omar Cornut) — MIT
+• zstd-jni (Luben Karavelov) — BSD 2-Clause
+• JNA — Apache 2.0 / LGPL 2.1
+• bytehook (ByteDance) — MIT
+• caciocavallo — GNU GPL 2.0, Classpath istisnasıyla
+• Apache Commons Codec, Apache Commons (Exagear paketi), exp4j, Gson — Apache 2.0
+• TouchController proxy client (fifthlight) — GNU LGPL 3.0
+• JDOM 2 — JDOM lisansı (Apache tarzı)
+• javax.annotation API — CDDL 1.1 / GPL 2.0, Classpath istisnasıyla
+• XZ for Java (Tukaani) — kamu malı
+• HtmlCleaner — BSD
+• Java çalışma zamanı (OpenJDK 8/17/21/25, AngelAuraMC derlemeleri) — GNU GPL 2.0,
+  Classpath istisnasıyla. APK'nın içinde değildir; oyun ilk açıldığında
+  https://github.com/AngelAuraMC adresindeki sürümlerden indirilir.

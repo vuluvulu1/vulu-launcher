@@ -522,6 +522,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .modal-body.form { white-space: normal; display: flex; flex-direction: column; gap: 6px; }
 .modal-body.form label:not(.check) { font: 600 12px var(--font); color: var(--muted); margin-top: 8px; }
 .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); background: var(--bg); }
+/* Lisans metinleri: düz metin dosyası iframe'de, okunur olsun diye her temada açık zemin */
+.license-body { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; overflow: hidden; }
+.license-frame { flex: 1; min-height: 0; width: 100%; border: 1px solid var(--line); border-radius: var(--r-lg); background: #f4f1ec; }
 .form-error { min-height: 18px; color: var(--error); font-size: 12.5px; }
 .row { display: flex; gap: 18px; align-items: center; }
 
