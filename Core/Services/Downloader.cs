@@ -37,21 +37,50 @@ namespace VuluLauncher
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             string partPath = path + ".part";
 
+            // Daha önce indirilmiş aynı mod dosyası (hash'iyle) yeniden indirilmez
+            string? cacheKey = ModCache.KeyFor(uri, sha1, sha512);
+            if (cacheKey != null && ModCache.TryPlace(cacheKey, path))
+            {
+                long size = new FileInfo(path).Length;
+                contentLength?.Invoke(size);
+                bytesRead?.Report(size);
+                return;
+            }
+
+            // İndirme panelindeki iş: iptal edilirse durur, duraklatılırsa parça arasında bekler
+            var job = DownloadJob.Current;
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellation, job?.Token ?? CancellationToken.None);
+            var token = linked.Token;
+
             try
             {
-                using (var response = await Http.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellation))
+                // Geçici ağ hataları (bağlantı koptu, sunucu 5xx) birkaç kez yeniden denenir
+                for (int attempt = 1; ; attempt++)
                 {
-                    response.EnsureSuccessStatusCode();
-                    if (response.Content.Headers.ContentLength is long length) contentLength?.Invoke(length);
-                    using var stream = await response.Content.ReadAsStreamAsync(cancellation);
-                    using var file = File.Create(partPath);
-
-                    byte[] buffer = new byte[81920];
-                    int read;
-                    while ((read = await stream.ReadAsync(buffer, cancellation)) > 0)
+                    long written = 0;
+                    try
                     {
-                        await file.WriteAsync(buffer.AsMemory(0, read), cancellation);
-                        bytesRead?.Report(read);
+                        using var response = await Http.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
+                        response.EnsureSuccessStatusCode();
+                        if (response.Content.Headers.ContentLength is long length) contentLength?.Invoke(length);
+                        using var stream = await response.Content.ReadAsStreamAsync(token);
+                        using var file = File.Create(partPath);
+
+                        byte[] buffer = new byte[81920];
+                        int read;
+                        while ((read = await stream.ReadAsync(buffer, token)) > 0)
+                        {
+                            await file.WriteAsync(buffer.AsMemory(0, read), token);
+                            written += read;
+                            bytesRead?.Report(read);
+                            if (job != null) await job.WaitIfPausedAsync(token);
+                        }
+                        break;
+                    }
+                    catch (Exception ex) when (attempt < 3 && !token.IsCancellationRequested && IsTransient(ex))
+                    {
+                        bytesRead?.Report(-written);   // yarım kalan denemenin baytları geri alınır
+                        await Task.Delay(TimeSpan.FromSeconds(attempt * 2), token);
                     }
                 }
 
@@ -59,12 +88,22 @@ namespace VuluLauncher
                 else if (!string.IsNullOrEmpty(sha1)) Verify(partPath, sha1, SHA1.HashData);
 
                 File.Move(partPath, path, overwrite: true);
+                if (cacheKey != null) ModCache.Remember(cacheKey, path);
             }
             finally
             {
                 if (File.Exists(partPath)) File.Delete(partPath);
             }
         }
+
+        /// <summary>Yeniden denemeye değer hata: ağ ya da sunucu kaynaklı (4xx değil), zaman aşımı.</summary>
+        private static bool IsTransient(Exception ex) => ex switch
+        {
+            HttpRequestException http => http.StatusCode is null || (int)http.StatusCode >= 500,
+            IOException => true,
+            TaskCanceledException => true,   // HttpClient zaman aşımı (iptal edildiyse yukarıda elenir)
+            _ => false,
+        };
 
         private static void Verify(string path, string expected, Func<Stream, byte[]> hash)
         {

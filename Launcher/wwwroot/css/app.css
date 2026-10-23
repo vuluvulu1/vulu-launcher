@@ -1385,3 +1385,5 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 /* vulu Packs: kurulu paket düğmesi öne çıkar */
 .btn.btn-installed { border-color: color-mix(in srgb, var(--ok) 55%, var(--line)); background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); font-weight: 600; }
 .btn.btn-installed:hover { background: color-mix(in srgb, var(--ok) 24%, transparent); }
+.dl-btn.dl-stop:hover svg { stroke: var(--error); }
+.dl-btn svg rect { fill: none; }

@@ -78,6 +78,9 @@ namespace VuluLauncher
             RegisterFriendCommands();
             RegisterVerifyCommands();
             RegisterProjectDetailCommands();
+            // İndirme paneli: duraklat / sürdür / iptal et
+            _bridge.On("downloads.pause", args => Task.FromResult<object?>(new { ok = DownloadJob.Pause(args.Int("id"), args.Bool("paused")) }));
+            _bridge.On("downloads.cancel", args => Task.FromResult<object?>(new { ok = DownloadJob.Cancel(args.Int("id")) }));
             RegisterWorldCommands();
             RegisterMessageCommands();
             RegisterLibraryCommands();
@@ -116,8 +119,11 @@ namespace VuluLauncher
             if (!_host.IsForeground) _host.Notify(title, body, tag);
         }
 
-        private void Log(string text, string level) =>
+        private void Log(string text, string level)
+        {
+            if (level == "error") LogFile.Write("[hata] " + text);
             _bridge?.Log(text, level == "replace" ? "accent" : level, replaceLast: level == "replace");
+        }
 
         // ════════════════════════════════════════════════════════════════
         // UYGULAMA / GİRİŞ

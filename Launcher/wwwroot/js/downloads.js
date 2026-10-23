@@ -34,6 +34,9 @@ const DL_ICONS = {
     failed: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v6M12 16.5v.5"/></svg>',
     chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>',
     close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>',
+    resume: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z"/></svg>',
+    stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>',
 };
 
 function renderDownloads() {
@@ -53,7 +56,10 @@ function renderDownloads() {
         icon,
         el('div', { class: 'dl-titles' },
             el('b', { title: job.title }, running ? job.title : (job.message || job.title)),
-            el('span', { class: 'dl-phase' }, running ? (job.phase || 'Hazırlanıyor') : job.state === 'done' ? job.title.replace(/ (kuruluyor|güncelleniyor|hazırlanıyor)$/, '') : 'Başarısız')),
+            el('span', { class: 'dl-phase' }, running ? (job.paused ? 'Duraklatıldı' : (job.phase || 'Hazırlanıyor')) : job.state === 'done' ? job.title.replace(/ (kuruluyor|güncelleniyor|hazırlanıyor)$/, '') : 'Başarısız')),
+        running && job.pausable && el('button', { class: 'dl-btn', 'data-action': job.paused ? 'resume' : 'pause', title: job.paused ? 'Sürdür' : 'Duraklat' },
+            fromMarkup(DL_ICONS[job.paused ? 'resume' : 'pause'])),
+        running && el('button', { class: 'dl-btn dl-stop', 'data-action': 'cancel', title: 'İptal et' }, fromMarkup(DL_ICONS.stop)),
         el('button', { class: 'dl-btn', 'data-action': 'toggle', title: downloads.expanded ? 'Ayrıntıları gizle' : 'Ayrıntıları göster' },
             fromMarkup(DL_ICONS.chevron)),
         !running && el('button', { class: 'dl-btn', 'data-action': 'close', title: 'Kapat' }, fromMarkup(DL_ICONS.close)));
@@ -141,6 +147,13 @@ function setupDownloads() {
             store.set('downloadsExpanded', downloads.expanded);
             renderDownloads();
         } else if (action === 'close') closeDownloads();
+        else if ((action === 'pause' || action === 'resume') && downloads.job) {
+            bridge.invoke('downloads.pause', { id: downloads.job.id, paused: action === 'pause' }).catch(() => { });
+        } else if (action === 'cancel' && downloads.job) {
+            const job = downloads.job;
+            confirmDialog({ title: 'İndirme iptal edilsin mi?', message: `${job.title} durdurulur; yarım inen dosyalar silinir.`, okText: 'İptal et', cancelText: 'Devam et', danger: true })
+                .then(ok => { if (ok) bridge.invoke('downloads.cancel', { id: job.id }).catch(() => { }); });
+        }
     };
     root.addEventListener('pointerdown', event => {
         const button = event.button === 0 && event.target.closest('[data-action]');

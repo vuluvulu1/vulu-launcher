@@ -366,7 +366,7 @@ namespace VuluLauncher
                 job.Phase = "Modlar indiriliyor";
                 var items = downloads.ToDictionary(d => d.File.Id, d => job.Add(d.Mod?.Name ?? d.File.DisplayName, d.File.FileLength));
                 int done = 0;
-                await Parallel.ForEachAsync(downloads, new ParallelOptions { MaxDegreeOfParallelism = 6 }, async (d, cancellation) =>
+                await Parallel.ForEachAsync(downloads, new ParallelOptions { MaxDegreeOfParallelism = 6, CancellationToken = job.Token }, async (d, cancellation) =>
                 {
                     string path = Downloader.ResolveInside(instanceDir, d.Relative)
                         ?? throw new InvalidDataException($"Modpack geçersiz bir dosya yolu içeriyor: {d.Relative}");

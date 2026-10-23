@@ -71,6 +71,8 @@ namespace VuluLauncher
                     }
                     catch (Exception ex)
                     {
+                        // Ayrıntısıyla günlüğe: kullanıcı "hata verdi" dediğinde nedeni buradan bulunur
+                        if (ex is not InvalidOperationException) LogFile.Write($"[{command}] {ex}");
                         Respond(requestId, false, null, ex.Message);
                     }
                 });
@@ -109,9 +111,10 @@ namespace VuluLauncher
             {
                 _send(JsonSerializer.Serialize(payload, Json));
             }
-            catch
+            catch (Exception ex)
             {
-                // Pencere kapanırken gelen geç mesajlar yok sayılır
+                // Pencere kapanırken gelen geç mesajlar yok sayılır; başka bir nedenle gitmediyse günlüğe yazılır
+                LogFile.Write($"[bridge] mesaj gönderilemedi: {ex.GetType().Name}: {ex.Message}");
             }
         }
 

@@ -157,8 +157,10 @@ namespace VuluLauncher
                         .Append(MArgument.FromCommandLine(settings.JvmArgs));
                 }
 
+                // CmlLib'in indirmesi duraklatılamaz, yalnızca iptal edilebilir
+                job.Pausable = false;
                 var process = await launcher.InstallAndBuildProcessAsync(
-                    versionName, option, FileProgress(), ByteProgress(), CancellationToken.None);
+                    versionName, option, FileProgress(), ByteProgress(), job.Token);
 
                 if (skins != null) AddSkinAgent(process.StartInfo, skins);
 
@@ -229,7 +231,7 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Forge ve NeoForge paketlerinin oyun dosyaları telefonda denetlenemiyor.");
 
             string versionName = await EnsureLoaderAsync(launcher, target, javaPath);
-            await launcher.InstallAsync(versionName, FileProgress(), ByteProgress(), CancellationToken.None);
+            await launcher.InstallAsync(versionName, FileProgress(), ByteProgress(), DownloadJob.Current?.Token ?? CancellationToken.None);
         }
 
         /// <summary>
@@ -250,7 +252,7 @@ namespace VuluLauncher
             {
                 string versionName = await EnsureLoaderAsync(launcher, target, javaPath: "");
                 job.Phase = "Oyun dosyaları indiriliyor";
-                await launcher.InstallAsync(versionName, FileProgress(), ByteProgress(), CancellationToken.None);
+                await launcher.InstallAsync(versionName, FileProgress(), ByteProgress(), DownloadJob.Current?.Token ?? CancellationToken.None);
 
                 var javaArgs = new List<string>();
                 if (skins != null)

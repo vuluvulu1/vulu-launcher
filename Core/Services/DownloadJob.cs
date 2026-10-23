@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace VuluLauncher
@@ -16,6 +17,51 @@ namespace VuluLauncher
 
         private static readonly AsyncLocal<DownloadJob?> CurrentJob = new();
         private static int _nextId;
+        private static readonly ConcurrentDictionary<int, DownloadJob> Running = new();
+
+        /// <summary>Arayüzdeki "iptal et": işin bütün indirmeleri durur, iş "İptal edildi" diye biter.</summary>
+        public static bool Cancel(int id)
+        {
+            if (!Running.TryGetValue(id, out var job)) return false;
+            job._cancel.Cancel();
+            job.SetPaused(false);   // duraklatılmışsa bekleyen indirmeler de iptali görsün
+            return true;
+        }
+
+        /// <summary>Arayüzdeki "duraklat/sürdür": launcher'ın kendi indirmeleri parça arasında bekler.</summary>
+        public static bool Pause(int id, bool paused)
+        {
+            if (!Running.TryGetValue(id, out var job)) return false;
+            job.SetPaused(paused);
+            return true;
+        }
+
+        private readonly CancellationTokenSource _cancel = new();
+        private volatile TaskCompletionSource? _resume;   // null değilse duraklatılmış
+        private volatile bool _pausable = true;
+
+        /// <summary>İptal edilince tetiklenir; iş boyunca yapılan indirmelere verilir.</summary>
+        public CancellationToken Token => _cancel.Token;
+
+        /// <summary>Duraklatılabilir mi: CmlLib'in oyun dosyası indirmesi dışarıdan durdurulamıyor, yalnızca iptal edilir.</summary>
+        public bool Pausable { set { _pausable = value; if (!value) SetPaused(false); Touch(); } }
+
+        private void SetPaused(bool paused)
+        {
+            lock (_gate)
+            {
+                if (paused && _pausable && _resume == null) _resume = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                else if (!paused && _resume != null) { _resume.TrySetResult(); _resume = null; }
+                _dirty = true;
+            }
+        }
+
+        /// <summary>Duraklatıldıysa sürdürülene (ya da iptal edilene) kadar bekler.</summary>
+        public async Task WaitIfPausedAsync(CancellationToken cancellation)
+        {
+            var resume = _resume;
+            if (resume != null) await resume.Task.WaitAsync(cancellation);
+        }
 
         /// <summary>Bu async akışta süren iş; yoksa null.</summary>
         public static DownloadJob? Current => CurrentJob.Value is { IsFinished: false } job ? job : null;
@@ -49,6 +95,7 @@ namespace VuluLauncher
             _title = title;
             _previous = CurrentJob.Value;
             CurrentJob.Value = this;
+            Running[_id] = this;
             _timer = new Timer(_ => Tick(), null, EmitIntervalMs, EmitIntervalMs);
         }
 
@@ -87,7 +134,9 @@ namespace VuluLauncher
 
         public void Complete(string message) => Finish("done", message);
 
-        public void Fail(string message) => Finish("failed", message);
+        public void Fail(string message) => Finish("failed", _cancel.IsCancellationRequested ? "İptal edildi" : message);
+
+        public bool IsCancelled => _cancel.IsCancellationRequested;
 
         private void Finish(string state, string message)
         {
@@ -99,6 +148,8 @@ namespace VuluLauncher
                 _dirty = true;
             }
             _timer.Dispose();
+            Running.TryRemove(_id, out _);
+            _resume?.TrySetResult();
             // Görünmeden biten iş sessizce kapanır; görünen işin sonucu gösterilir
             if (_visible || state == "failed" && TotalBytes() > 0) Send(force: true);
             if (CurrentJob.Value == this) CurrentJob.Value = _previous;
@@ -157,6 +208,8 @@ namespace VuluLauncher
                     phase = _phase,
                     state = _state,
                     message = _message,
+                    paused = _resume != null,
+                    pausable = _pausable,
                     files = new { done = filesDone, total = filesTotal },
                     bytes = new { done, total },
                     speed = Math.Round(speed),
