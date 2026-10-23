@@ -271,6 +271,8 @@ async function searchModrinth(append) {
     const rows = result.hits.map(renderModrinthHit);
     if (append) results.append(...rows);
     else { results.replaceChildren(...rows); $('page-modrinth').scrollTop = 0; }
+    // Paketin getirdiği ya da elle konan modlar da "kurulu" görünsün (dosya hash'leriyle bulunur)
+    if (!isPack && modrinth.targetId) installedIndex(modrinth.targetId).then(applyInstalledIndex).catch(() => { });
 
     const target = state.instances.find(i => i.id === modrinth.targetId);
     const count = `${result.total.toLocaleString('tr-TR')} sonuç`;
@@ -284,6 +286,27 @@ async function searchModrinth(append) {
 
     more.hidden = modrinth.offset >= modrinth.total || result.hits.length === 0;
     more.disabled = false;
+}
+
+/** Instance'ta kurulu projeler (kayıtlı içerik + hash'le tanınan dosyalar); instance başına bir kez sorulur. */
+const installedIndexCache = new Map();
+function installedIndex(instanceId) {
+    if (!installedIndexCache.has(instanceId))
+        installedIndexCache.set(instanceId, bridge.invoke('content.installedIndex', { instanceId }).catch(err => { installedIndexCache.delete(instanceId); throw err; }));
+    return installedIndexCache.get(instanceId);
+}
+
+/** Kayıtlı olmayıp dosyası bulunan projelerin düğmesi "Kurulu" olur (yeniden kurulursa iki kopya olurdu). */
+function applyInstalledIndex(index) {
+    const present = new Set(index[modrinth.source === 'curseforge' ? 'curseforge' : 'modrinth'] || []);
+    for (const card of $('mr-results').querySelectorAll('.mr-hit[data-id]')) {
+        const button = card.querySelector('.mr-install');
+        if (!button || !present.has(card.dataset.id) || card.dataset.recorded === '1') continue;
+        button.textContent = 'Kurulu ✓';
+        button.disabled = true;
+        button.classList.remove('btn-primary');
+        button.title = 'Bu instance\'ta zaten var (paketle ya da elle gelmiş)';
+    }
 }
 
 /** Kurulumu çalıştırır; sonucu düğmenin üzerinde gösterir. versionId boşsa en yeni uyumlu sürüm kurulur. */
@@ -317,6 +340,7 @@ async function installModrinthHit(hit, button, versionId) {
 
         button.classList.remove('btn-primary');
         button.textContent = result.installed.length ? 'Kuruldu ✓' : original;
+        installedIndexCache.delete(instanceId);
         if (result.manual && result.manual.length) await showManualDownloads(result.manual, instanceId);
         // Hedef yeni seçildiyse sonuçlar artık o instance'a göre süzülür
         if (newTarget) { modrinth.targetId = instanceId; openModrinthPage(); }
@@ -439,7 +463,7 @@ function pickModrinthVersion(hit) {
 function renderModrinthHit(hit) {
     const isPack = hit.type === 'modpack';
     const button = canInstallGames()
-        ? el('button', { class: 'btn btn-sm ' + (hit.installed ? '' : 'btn-primary') },
+        ? el('button', { class: 'btn btn-sm mr-install ' + (hit.installed ? '' : 'btn-primary') },
             isPack ? 'Instance olarak kur' : hit.installed ? 'Güncelle' : 'Kur')
         : desktopOnlyButton();
     if (canInstallGames()) button.addEventListener('click', () => installModrinthHit(hit, button, ''));
@@ -456,7 +480,7 @@ function renderModrinthHit(hit) {
     ].filter(Boolean);
 
     const open = () => openProjectDetails(hit);
-    const card = el('div', { class: 'mr-hit' },
+    const card = el('div', { class: 'mr-hit', 'data-id': hit.id, 'data-recorded': hit.installed ? '1' : '0' },
         hit.iconUrl ? el('img', { class: 'mr-icon clickable', src: hit.iconUrl, alt: '', loading: 'lazy', onclick: open })
             : el('div', { class: 'mr-icon plain clickable', onclick: open }),
         el('div', { class: 'mr-text clickable', onclick: event => { if (!event.target.closest('button')) open(); }, title: 'Ayrıntıları göster' },

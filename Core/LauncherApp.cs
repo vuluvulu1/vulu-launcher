@@ -78,6 +78,7 @@ namespace VuluLauncher
             RegisterFriendCommands();
             RegisterVerifyCommands();
             RegisterProjectDetailCommands();
+            RegisterInstalledIndexCommands();
             // İndirme paneli: duraklat / sürdür / iptal et
             _bridge.On("downloads.pause", args => Task.FromResult<object?>(new { ok = DownloadJob.Pause(args.Int("id"), args.Bool("paused")) }));
             _bridge.On("downloads.cancel", args => Task.FromResult<object?>(new { ok = DownloadJob.Cancel(args.Int("id")) }));

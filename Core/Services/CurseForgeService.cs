@@ -102,6 +102,18 @@ namespace VuluLauncher
             (await _api.GetAsync<CfResponse<CfMod>>($"/curseforge/mods/{modId}")).Data
                 ?? throw new InvalidOperationException("CurseForge projesi bulunamadı.");
 
+        /// <summary>Parmak izleri CurseForge'daki dosyalarla eşleşen projelerin kimlikleri (en fazla 1000'lik parçalarla).</summary>
+        public async Task<HashSet<int>> MatchFingerprintsAsync(IEnumerable<uint> fingerprints)
+        {
+            var result = new HashSet<int>();
+            foreach (var chunk in fingerprints.Distinct().Chunk(1000))
+            {
+                var response = await _api.PostAsync<CfResponse<CfFingerprintMatches>>("/curseforge/fingerprints", new { fingerprints = chunk });
+                foreach (var match in response.Data?.ExactMatches ?? new()) result.Add(match.Id);
+            }
+            return result;
+        }
+
         /// <summary>Projenin açıklaması (HTML).</summary>
         public async Task<string> DescriptionAsync(int modId) =>
             (await _api.GetAsync<CfResponse<string>>($"/curseforge/mods/{modId}/description")).Data ?? "";
@@ -472,6 +484,9 @@ namespace VuluLauncher
         public int MainFileId { get; set; }
         public List<CfScreenshot> Screenshots { get; set; } = new();
     }
+
+    internal sealed class CfFingerprintMatches { public List<CfFingerprintMatch> ExactMatches { get; set; } = new(); }
+    internal sealed class CfFingerprintMatch { public int Id { get; set; } }
 
     internal sealed class CfScreenshot
     {
