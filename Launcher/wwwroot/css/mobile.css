@@ -247,7 +247,6 @@
 
     /* Profil */
     .profile-layout { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-    .profile-banner { height: 80px; }
     .profile-banner.has-image { min-height: 80px; }
     .profile-banner-actions { opacity: 1; }
     .profile-head { flex-wrap: wrap; gap: 12px; padding: 0 16px 16px; margin-top: -30px; }
