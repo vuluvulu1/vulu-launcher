@@ -531,7 +531,7 @@ html[data-ui="neon"] .profile-banner {
         repeating-linear-gradient(90deg, rgba(0, 234, 255, .12) 0 1px, transparent 1px 22px),
         linear-gradient(90deg, rgba(255, 43, 214, .35), rgba(123, 92, 255, .3), rgba(0, 234, 255, .3));
 }
-html[data-ui="neon"] .profile-head .avatar-xl { border-radius: 0; border-color: #09091a; box-shadow: 0 0 0 1px var(--accent), var(--glow-cyan); }
+html[data-ui="neon"] .profile-head .avatar-xl { border-radius: 0; border-color: #09091a; box-shadow: 0 0 0 1px var(--accent), var(--glow-cyan); background: linear-gradient(var(--pink-soft), var(--pink-soft)), #09091a; }
 html[data-ui="neon"] .profile-id h1 { font: 700 22px var(--font-hud); letter-spacing: .04em; }
 html[data-ui="neon"] .profile-pack { border-radius: 0; background: rgba(4, 4, 12, .6); }
 html[data-ui="neon"] .profile-foot { background: #06060f; }

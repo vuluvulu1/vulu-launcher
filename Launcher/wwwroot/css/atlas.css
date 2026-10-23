@@ -401,7 +401,7 @@ html[data-ui="atlas"] .profile-banner {
     background: repeating-linear-gradient(90deg, rgba(46, 107, 102, .16) 0 1px, transparent 1px 34px),
         repeating-linear-gradient(0deg, rgba(46, 107, 102, .16) 0 1px, transparent 1px 34px), #e3d4b5;
 }
-html[data-ui="atlas"] .profile-head .avatar-xl { border-color: var(--surface); box-shadow: 0 2px 6px rgba(70, 45, 20, .25); }
+html[data-ui="atlas"] .profile-head .avatar-xl { border-color: var(--surface); background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--surface); box-shadow: 0 2px 6px rgba(70, 45, 20, .25); }
 html[data-ui="atlas"] .profile-id h1 { font: italic 700 26px var(--font-serif); color: var(--ink); }
 html[data-ui="atlas"] .profile-bio { font: 15px/1.65 var(--font-serif); color: #3d3022; }
 html[data-ui="atlas"] .profile-pack { background: #fffcf5; }
