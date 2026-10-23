@@ -45,7 +45,8 @@ function renderDownloads() {
     const pct = downloadPercent(job);
     root.className = 'dl ' + job.state + (downloads.expanded ? ' expanded' : '') + (state.page === 'home' ? ' at-top' : '');
 
-    const icon = running ? el('span', { class: 'dl-icon' }, el('span', { class: 'spinner' }))
+    // Panel her durumda yeniden çizilir; dönen halka baştan başlamasın diye animasyonu zamana göre kaydırılır
+    const icon = running ? el('span', { class: 'dl-icon' }, el('span', { class: 'spinner', style: `animation-delay:-${Math.round(performance.now() % 800)}ms` }))
         : el('span', { class: 'dl-icon' }, fromMarkup(DL_ICONS[job.state === 'done' ? 'done' : 'failed']));
 
     const head = el('div', { class: 'dl-head' },

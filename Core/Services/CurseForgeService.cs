@@ -251,6 +251,58 @@ namespace VuluLauncher
                 await InstallRecursiveAsync(instance, dependency.ModId, visited, installed, manual, isDependency: true);
         }
 
+        // ── Eksik bağımlılıklar ───────────────────────────────────────────
+        /// <summary>
+        /// Eksik mod kimliklerinin CurseForge karşılığı. Önce onları isteyen modların CurseForge dosyalarındaki zorunlu
+        /// bağımlılıklara bakılır ("kotlinforforge" → Kotlin for Forge), bulunamazsa CurseForge'da aranır. Yalnızca bu
+        /// instance'ın sürümü ve yükleyicisiyle uyumlu dosyası olan projeler döner.
+        /// </summary>
+        public async Task<Dictionary<string, CfMod>> ResolveModIdsAsync(InstanceMeta instance, ModScan scan, IEnumerable<MissingDependency> missing)
+        {
+            var result = new Dictionary<string, CfMod>(StringComparer.OrdinalIgnoreCase);
+            var wanted = missing.ToList();
+            if (wanted.Count == 0) return result;
+
+            async Task<bool> Compatible(CfMod mod) =>
+                mod.ClassId == 6 && (await CompatibleFilesAsync(mod.Id, instance.McVersion, instance.Loader, isMod: true)).Count > 0;
+            bool Matches(string id, CfMod mod) => ModrinthService.Normalize(mod.Slug) == ModrinthService.Normalize(id)
+                || ModrinthService.Normalize(mod.Name) == ModrinthService.Normalize(id);
+
+            // 1) İsteyen modların CurseForge dosyalarındaki zorunlu bağımlılıklar
+            try
+            {
+                var requesterFiles = scan.Mods.Where(m => wanted.Any(w => w.RequiredBy.Contains(m.Name))).Select(m => "mods/" + m.File)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var fileIds = instance.Content.Where(c => c.Source == Source && requesterFiles.Contains(c.File) && int.TryParse(c.VersionId, out _))
+                    .Select(c => int.Parse(c.VersionId)).ToList();
+                var depIds = fileIds.Count == 0 ? new List<int>()
+                    : (await FilesByIdsAsync(fileIds)).SelectMany(f => f.Dependencies).Where(d => d.RelationType == RelationRequired).Select(d => d.ModId).Distinct().ToList();
+                var candidates = depIds.Count == 0 ? new List<CfMod>() : await ModsAsync(depIds);
+                foreach (var dep in wanted)
+                {
+                    var match = candidates.FirstOrDefault(c => Matches(dep.Id, c)) ?? candidates.FirstOrDefault(c => ModrinthService.LooksLike(dep.Id, c.Slug, c.Name));
+                    if (match != null && await Compatible(match)) result[dep.Id] = match;
+                }
+            }
+            catch (Exception ex) when (ex is ApiException or HttpRequestException or TaskCanceledException) { }
+
+            // 2) Arama: kimliğin kendisiyle ve alt çizgiler boşluk yapılarak
+            foreach (var dep in wanted.Where(d => !result.ContainsKey(d.Id)))
+            {
+                try
+                {
+                    foreach (var query in ModrinthService.SearchQueries(dep.Id))
+                    {
+                        var (hits, _) = await SearchAsync(query, "mod", instance.McVersion, instance.Loader, 0, "relevance", null);
+                        var hit = hits.FirstOrDefault(h => Matches(dep.Id, h)) ?? hits.Take(3).FirstOrDefault(h => ModrinthService.LooksLike(dep.Id, h.Slug, h.Name));
+                        if (hit != null && await Compatible(hit)) { result[dep.Id] = hit; break; }
+                    }
+                }
+                catch (Exception ex) when (ex is ApiException or HttpRequestException or TaskCanceledException) { }
+            }
+            return result;
+        }
+
         // ── Modpack ───────────────────────────────────────────────────────
         /// <summary>
         /// CurseForge modpack'ini indirir ve ondan yeni bir instance oluşturur. İndirilemeyen (dağıtıma kapalı)

@@ -900,13 +900,16 @@ async function play({ ignoreMissing = false, ignoreFiles = false, join = '' } = 
     if (missing && missing.length) {
         const choice = await missingDepsDialog(missing, instance);
         if (choice === 'install') {
+            let result;
             try {
-                await withActivity(() => bridge.invoke('mods.installMissing', {
-                    instanceId: instance.id, projectIds: missing.filter(m => m.projectId).map(m => m.projectId),
+                // Hepsi tek seferde; kurulanların da eksiği çıkarsa launcher onları ayrıca sormadan kurar
+                result = await withActivity(() => bridge.invoke('mods.installMissing', {
+                    instanceId: instance.id, items: missing.filter(m => m.projectId).map(m => ({ source: m.source || 'modrinth', projectId: m.projectId })),
                 }));
                 loadDetails();
             } catch (err) { appendLog({ text: err.message, level: 'error' }); return; }
-            return play({ ignoreMissing: missing.some(m => !m.projectId), ignoreFiles, join });
+            if (result.manual && result.manual.length) await showManualDownloads(result.manual, instance.id);
+            return play({ ignoreMissing: (result.remaining || []).length > 0, ignoreFiles, join });
         }
         if (choice === 'ignore') return play({ ignoreMissing: true, ignoreFiles, join });
     }

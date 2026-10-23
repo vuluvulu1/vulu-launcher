@@ -271,13 +271,26 @@ namespace VuluLauncher
             return result;
         }
 
-        private static string Normalize(string s) => new(s.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
+        /// <summary>
+        /// Mod kimliğinden arama metinleri: kendisi, alt çizgi/tire yerine boşluk ve sık kelimeler ayrılarak
+        /// ("kotlinforforge" → "kotlin for forge"; arama motorları bitişik yazılanı bulamıyor).
+        /// </summary>
+        internal static List<string> SearchQueries(string modId)
+        {
+            string spaced = modId.Replace('_', ' ').Replace('-', ' ');
+            string words = System.Text.RegularExpressions.Regex.Replace(spaced,
+                @"(?<=[a-z]{3})(config|tweaks|utils|core|mods|mod|lib|api|for|the|and|of)(?=[a-z]{3}|\b)", " $1 ", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            words = System.Text.RegularExpressions.Regex.Replace(words, "\\s+", " ").Trim();
+            return new[] { modId, spaced, words }.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        internal static string Normalize(string s) => new(s.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
 
         /// <summary>
         /// Mod kimliği bu projeye mi ait: adres ya da ad (parantezli kısa adlar atılarak) kimlikle aynı ya da biri ötekinin başı.
         /// "yet_another_config_lib_v3" ↔ "YetAnotherConfigLib (YACL)", "cloth_config" ↔ "cloth-config".
         /// </summary>
-        private static bool LooksLike(string modId, string slug, string title)
+        internal static bool LooksLike(string modId, string slug, string title)
         {
             string key = Normalize(modId);
             string baseTitle = Normalize(System.Text.RegularExpressions.Regex.Replace(title, @"\([^)]*\)|\[[^\]]*\]", ""));
@@ -348,11 +361,16 @@ namespace VuluLauncher
                     }
                     if (result[dep.Id] != null) continue;
 
-                    var hits = await SearchAsync(dep.Id.Replace('_', ' ').Replace('-', ' '), "mod", instance.McVersion, instance.Loader, 0);
                     string key = Normalize(dep.Id);
-                    var hit = hits.Hits.FirstOrDefault(h => Normalize(h.Slug) == key || Normalize(h.Title) == key)
-                        ?? hits.Hits.Take(3).FirstOrDefault(h => LooksLike(dep.Id, h.Slug, h.Title));
-                    if (hit != null) result[dep.Id] = new MrProject { Id = hit.ProjectId, Slug = hit.Slug, Title = hit.Title, ProjectType = "mod", IconUrl = hit.IconUrl };
+                    foreach (var query in SearchQueries(dep.Id))
+                    {
+                        var hits = await SearchAsync(query, "mod", instance.McVersion, instance.Loader, 0);
+                        var hit = hits.Hits.FirstOrDefault(h => Normalize(h.Slug) == key || Normalize(h.Title) == key)
+                            ?? hits.Hits.Take(3).FirstOrDefault(h => LooksLike(dep.Id, h.Slug, h.Title));
+                        if (hit == null) continue;
+                        result[dep.Id] = new MrProject { Id = hit.ProjectId, Slug = hit.Slug, Title = hit.Title, ProjectType = "mod", IconUrl = hit.IconUrl };
+                        break;
+                    }
                 }
                 catch (Exception) { }
             }

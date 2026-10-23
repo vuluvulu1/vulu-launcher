@@ -1381,3 +1381,7 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .md hr { border: 0; border-top: 1px solid var(--line); margin: 14px 0; }
 .md .md-center { text-align: center; }
 .md summary { cursor: pointer; font-weight: 600; }
+
+/* vulu Packs: kurulu paket düğmesi öne çıkar */
+.btn.btn-installed { border-color: color-mix(in srgb, var(--ok) 55%, var(--line)); background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); font-weight: 600; }
+.btn.btn-installed:hover { background: color-mix(in srgb, var(--ok) 24%, transparent); }

@@ -41,6 +41,7 @@ namespace VuluLauncher
         }
 
         public bool IsRunning => _running == 1;
+        private volatile bool _downloadingGameFiles;   // CmlLib bayt bildirdiyse dosya inmekte demektir
 
         /// <summary>Oyun kapandığında çağrılır.</summary>
         public event Action? Exited;
@@ -61,12 +62,21 @@ namespace VuluLauncher
             Runtime = Path.Combine(CorePath, "runtime")
         };
 
-        /// <summary>Java'yı launcher kendisi yönettiği için Mojang'ın Java indiricisi devre dışı bırakılır.</summary>
-        public static MinecraftLauncher CreateLauncher(MinecraftPath path)
+        /// <summary>
+        /// Java'yı launcher kendisi yönettiği için Mojang'ın Java indiricisi devre dışı bırakılır.
+        /// CmlLib varsayılan olarak her açılışta binlerce dosyanın hash'ini hesaplar; oyun açılırken yalnızca dosyanın
+        /// var olup olmadığı ve boyutu denetlenir, hash'ler "Dosyaları doğrula"da (verifyHashes) denetlenir.
+        /// </summary>
+        public static MinecraftLauncher CreateLauncher(MinecraftPath path, bool verifyHashes = false)
         {
             var parameters = MinecraftLauncherParameters.CreateDefault(path, Downloader.Http);
             var javaExtractor = parameters.FileExtractors?.OfType<JavaFileExtractor>().FirstOrDefault();
             if (javaExtractor != null) parameters.FileExtractors!.Remove(javaExtractor);
+            if (parameters.GameInstaller is CmlLib.Core.Installers.GameInstallerBase installer)
+            {
+                installer.CheckFileSize = true;
+                installer.CheckFileChecksum = verifyHashes;
+            }
             return new MinecraftLauncher(parameters);
         }
 
@@ -94,7 +104,7 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Oyun zaten çalışıyor.");
 
             // Her şey kuruluysa iş hızla biter ve panelde görünmez; ilk açılışta indirilenler panelde izlenir
-            using var job = new DownloadJob($"{target.Name} hazırlanıyor") { Phase = "Oyun dosyaları denetleniyor" };
+            using var job = new DownloadJob($"{target.Name} hazırlanıyor") { Phase = "Hazırlanıyor" };
             try
             {
                 var settings = AppSettings.Current;
@@ -111,11 +121,14 @@ namespace VuluLauncher
                     return;
                 }
 
+                job.Phase = "Java hazırlanıyor";
                 int javaMajor = await GetRequiredJavaAsync(launcher, target.McVersion);
                 string javaPath = await _java.EnsureAsync(javaMajor);
 
+                job.Phase = target.Loader == "vanilla" ? "Minecraft hazırlanıyor" : "Mod yükleyici hazırlanıyor";
                 string versionName = await EnsureLoaderAsync(launcher, target, javaPath);
-                job.Phase = "Oyun dosyaları indiriliyor";
+                // Bir dosya inmeye başlarsa ByteProgress bunu "indiriliyor" yapar
+                job.Phase = "Oyun dosyaları kontrol ediliyor";
 
                 var option = new MLaunchOption
                 {
@@ -207,7 +220,7 @@ namespace VuluLauncher
             if (IsRunning) throw new InvalidOperationException("Oyun açıkken dosyalar doğrulanamaz.");
             string instanceDir = Path.Combine(AppPaths.Instances, target.Folder);
             Directory.CreateDirectory(instanceDir);
-            var launcher = CreateLauncher(CreatePath(instanceDir));
+            var launcher = CreateLauncher(CreatePath(instanceDir), verifyHashes: true);
 
             // Android'de Java'yı oyun motoru seçer; Forge ve NeoForge orada henüz kurulamıyor
             string javaPath = "";
@@ -364,8 +377,9 @@ namespace VuluLauncher
         {
             // İlerleme başka thread'den gelir; iş, akıştan şimdi alınır
             var job = DownloadJob.Current;
+            // Bir dosya gerçekten indiriliyorsa "indiriliyor", yalnızca denetleniyorsa "kontrol ediliyor" yazar
             var log = new ThrottledProgress<InstallerProgressChangedEventArgs>(e =>
-                _log($"Dosyalar kontrol ediliyor... {e.ProgressedTasks}/{e.TotalTasks}  {e.Name}", "replace"), 100);
+                _log($"{(_downloadingGameFiles ? "Oyun dosyaları indiriliyor" : "Dosyalar kontrol ediliyor")}... {e.ProgressedTasks}/{e.TotalTasks}  {e.Name}", "replace"), 100);
             return new ThrottledProgress<InstallerProgressChangedEventArgs>(e =>
             {
                 job?.Aggregate(e.ProgressedTasks, e.TotalTasks, e.Name);
@@ -376,7 +390,16 @@ namespace VuluLauncher
         private IProgress<ByteProgress>? ByteProgress()
         {
             var job = DownloadJob.Current;
-            return job == null ? null : new ThrottledProgress<ByteProgress>(p => job.AggregateBytes(p.ProgressedBytes, p.TotalBytes), 0);
+            _downloadingGameFiles = false;
+            return new ThrottledProgress<ByteProgress>(p =>
+            {
+                if (p.TotalBytes > 0 && !_downloadingGameFiles)
+                {
+                    _downloadingGameFiles = true;
+                    if (job != null) job.Phase = "Oyun dosyaları indiriliyor";
+                }
+                job?.AggregateBytes(p.ProgressedBytes, p.TotalBytes);
+            }, 0);
         }
     }
 

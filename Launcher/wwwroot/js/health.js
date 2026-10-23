@@ -4,6 +4,13 @@
  * Eksik bağımlılıklar: hangi modun neyi istediği ve Modrinth karşılığı.
  * Dönen değer: 'install' (eksikleri kur ve oyna) | 'ignore' (yine de oyna) | undefined (vazgeç)
  */
+/** CurseForge sayfaları cf.openPage ile, diğerleri (Modrinth) tarayıcıda açılır. */
+function openContentLink(url) {
+    if (!url) return;
+    const command = /^https:\/\/(www\.)?curseforge\.com\//.test(url) ? 'cf.openPage' : 'links.open';
+    bridge.invoke(command, { url }).catch(() => { });
+}
+
 function missingDepsDialog(missing, instance) {
     const installable = missing.filter(m => m.projectId);
     const canInstall = instance.kind === 'custom' && installable.length > 0;
@@ -16,9 +23,14 @@ function missingDepsDialog(missing, instance) {
             el('div', { class: 'health-list' }, missing.map(m => el('div', { class: 'health-item' },
                 m.iconUrl ? el('img', { class: 'health-icon', src: m.iconUrl, alt: '' }) : el('span', { class: 'health-icon' }),
                 el('div', { class: 'health-text' },
-                    el('b', {}, m.title || m.id),
+                    el('b', {}, m.title || m.id, m.source && el('span', { class: 'badge' }, m.source === 'curseforge' ? 'CurseForge' : 'Modrinth')),
                     el('span', {}, `İsteyen: ${m.requiredBy.join(', ')}`),
-                    !m.projectId && el('span', { class: 'health-warn' }, 'Modrinth\'te bulunamadı; elle kurman gerekiyor.')))))),
+                    !m.projectId && el('span', { class: 'health-warn' }, 'CurseForge\'ta da Modrinth\'te de bulunamadı; elle kurman gerekiyor.')),
+                // Bulunduysa projenin sayfası, bulunamadıysa CurseForge araması
+                el('button', {
+                    class: 'link-btn', title: m.pageUrl || m.searchUrl,
+                    onclick: () => openContentLink(m.pageUrl || m.searchUrl),
+                }, m.pageUrl ? 'Sayfa ↗' : 'Ara ↗'))))),
         el('div', { class: 'modal-foot' },
             el('button', { class: 'btn', onclick: () => close(undefined) }, 'Vazgeç'),
             el('button', { class: 'btn', onclick: () => close('ignore') }, 'Yine de oyna'),
