@@ -340,6 +340,7 @@ namespace VuluLauncher
                 hits = result.Hits.Select(h => new
                 {
                     id = h.ProjectId,
+                    latestVersion = h.LatestVersion,   // modpack özeti (mod sayısı) için
                     slug = h.Slug,
                     type = h.ProjectType,
                     title = h.Title,

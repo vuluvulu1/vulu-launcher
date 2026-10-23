@@ -77,6 +77,7 @@ namespace VuluLauncher
             RegisterCommunityCommands();
             RegisterFriendCommands();
             RegisterVerifyCommands();
+            RegisterProjectDetailCommands();
             RegisterWorldCommands();
             RegisterMessageCommands();
             RegisterLibraryCommands();

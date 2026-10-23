@@ -75,6 +75,10 @@ namespace VuluLauncher
             return await GetAsync<MrSearchResult>(url);
         }
 
+        /// <summary>Ayrıntı sayfası için projenin tamamı: açıklama (markdown), galeri, bağlantılar.</summary>
+        public Task<MrProjectDetail> ProjectDetailAsync(string idOrSlug) =>
+            GetAsync<MrProjectDetail>($"{Api}/project/{Uri.EscapeDataString(idOrSlug)}");
+
         public Task<MrProject> ProjectAsync(string idOrSlug) =>
             GetAsync<MrProject>($"{Api}/project/{Uri.EscapeDataString(idOrSlug)}");
 
@@ -515,6 +519,35 @@ namespace VuluLauncher
         public int TotalHits { get; set; }
     }
 
+    internal sealed class MrProjectDetail
+    {
+        public string Id { get; set; } = "";
+        public string Slug { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string ProjectType { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Body { get; set; } = "";
+        public string? IconUrl { get; set; }
+        public long Downloads { get; set; }
+        public long Followers { get; set; }
+        public string? Updated { get; set; }
+        public List<string> Categories { get; set; } = new();
+        public List<string> Loaders { get; set; } = new();
+        public List<string> GameVersions { get; set; } = new();
+        public List<MrGalleryImage> Gallery { get; set; } = new();
+        public string? SourceUrl { get; set; }
+        public string? IssuesUrl { get; set; }
+        public string? WikiUrl { get; set; }
+        public string? DiscordUrl { get; set; }
+    }
+
+    internal sealed class MrGalleryImage
+    {
+        public string Url { get; set; } = "";
+        public string? Title { get; set; }
+        public bool Featured { get; set; }
+    }
+
     internal sealed class MrSearchHit
     {
         public string ProjectId { get; set; } = "";
@@ -531,6 +564,7 @@ namespace VuluLauncher
         public List<string> DisplayCategories { get; set; } = new();
         /// <summary>Desteklenen Minecraft sürümleri (Modrinth'te "versions" alanı).</summary>
         public List<string> Versions { get; set; } = new();
+        public string? LatestVersion { get; set; }
     }
 
     internal sealed class MrCategory

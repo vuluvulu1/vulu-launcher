@@ -115,6 +115,7 @@ namespace VuluLauncher
                         .OrderBy(v => Version.TryParse(v, out var x) ? x : new Version(0, 0)).TakeLast(30),
                     installed = installed.Contains(m.Id.ToString()),
                     pageUrl = CurseForgeService.PageUrl(m),
+                    latestVersion = m.MainFileId > 0 ? m.MainFileId.ToString() : null,   // modpack özeti (mod sayısı) için
                     // Yapımcı başka uygulamalardan indirmeye izin vermiyorsa arayüz önceden haber verir
                     manualOnly = m.AllowModDistribution == false,
                 }),

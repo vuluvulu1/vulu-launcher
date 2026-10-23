@@ -484,6 +484,22 @@ const mockBackend = (() => {
         },
         'servers.delete': async args => { mockServers = mockServers.filter(x => x.id !== args.id); return { success: true }; },
 
+        'content.packInfo': async () => { await wait(600); return { modCount: 499, mcVersion: '1.21.1', loader: 'neoforge' }; },
+        'content.details': async () => { await wait(400); return {
+            html: null,
+            markdown: `# Hoş geldin
+
+Bu paket **teknoloji** ve *büyü* modlarını bir araya getirir. [Discord](https://discord.gg/ornek)
+
+- 400+ mod
+- Görev kitabı
+
+<center><img src="https://cdn.modrinth.com/data/AANobbMI/icon.png" width="96"></center>
+
+<script>alert(1)</script><a href="javascript:alert(1)">kötü</a>`,
+            gallery: [{ url: 'assets/launchervanillabg.jpg', thumb: 'assets/launchervanillabg.jpg', title: 'Başlangıç' }],
+            links: [{ label: 'Kaynak kod', url: 'https://github.com/ornek/paket' }] }; },
+        'links.open': async () => ({ opened: true }),
         'modrinth.search': async args => { await wait(350); return { total: 38, offset: args.offset, hits: sampleHits(args.type) }; },
         'modrinth.filters': async args => {
             await wait(200);

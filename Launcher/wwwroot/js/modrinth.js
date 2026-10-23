@@ -444,14 +444,22 @@ function renderModrinthHit(hit) {
         : desktopOnlyButton();
     if (canInstallGames()) button.addEventListener('click', () => installModrinthHit(hit, button, ''));
 
+    // Minecraft sürümü ve (modpack'lerde) mod sayısı; mod sayısı kart görünür olunca paketin manifest'inden okunur
+    const mcLabel = mcVersionLabel(isPack ? (hit.gameVersions || []).slice(-1) : hit.gameVersions);
+    const versionChip = el('span', { class: 'chip static mc' }, mcLabel || '');
+    const countChip = isPack && el('span', { class: 'chip static loading' }, '… mod');
     const tags = [
+        mcLabel && versionChip,
+        countChip,
         ...hit.categories.map(name => el('span', { class: 'chip static' }, categoryLabel(name))),
         ...(hit.type === 'mod' || isPack ? hit.loaders.map(name => el('span', { class: 'chip static loader' }, LOADER_NAMES[name] || name)) : []),
-    ];
+    ].filter(Boolean);
 
-    return el('div', { class: 'mr-hit' },
-        hit.iconUrl ? el('img', { class: 'mr-icon', src: hit.iconUrl, alt: '', loading: 'lazy' }) : el('div', { class: 'mr-icon plain' }),
-        el('div', { class: 'mr-text' },
+    const open = () => openProjectDetails(hit);
+    const card = el('div', { class: 'mr-hit' },
+        hit.iconUrl ? el('img', { class: 'mr-icon clickable', src: hit.iconUrl, alt: '', loading: 'lazy', onclick: open })
+            : el('div', { class: 'mr-icon plain clickable', onclick: open }),
+        el('div', { class: 'mr-text clickable', onclick: event => { if (!event.target.closest('button')) open(); }, title: 'Ayrıntıları göster' },
             el('div', { class: 'mr-title' }, hit.title, el('span', { class: 'mr-author' }, hit.author),
                 hit.manualOnly && el('span', { class: 'badge', title: 'Yapımcısı başka uygulamalardan indirilmesine izin vermiyor; CurseForge sitesinden indirilir' }, 'Elle indirilir')),
             el('div', { class: 'mr-desc' }, hit.description),
@@ -476,6 +484,8 @@ function renderModrinthHit(hit) {
                         ? bridge.invoke('cf.openPage', { url: hit.pageUrl })
                         : bridge.invoke('modrinth.openPage', { type: hit.type, slug: hit.slug })).catch(() => { }),
                 }, 'Sayfa ↗'))));
+    if (isPack) attachPackInfo(card, hit, versionChip, countChip);
+    return card;
 }
 
 /**

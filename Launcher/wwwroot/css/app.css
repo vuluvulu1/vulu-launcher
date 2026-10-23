@@ -1336,3 +1336,48 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .verify-mark { width: 26px; height: 26px; flex: none; display: grid; place-items: center; border-radius: 50%; font-weight: 700; }
 .verify-mark.ok { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
 .verify-mark.warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+
+/* ── Keşfet: proje ayrıntıları ─────────────────────────────────────── */
+.mr-hit .clickable { cursor: pointer; }
+.mr-hit .mr-text.clickable:hover .mr-title { color: var(--accent-hi); }
+.chip.static.mc { color: var(--text); }
+.chip.static.loading { opacity: .55; }
+.modal-wide:has(.pd-body) { width: min(920px, calc(100vw - 48px)); height: min(820px, calc(100vh - 48px)); }
+.modal-head.pd-head { height: auto; align-items: flex-start; gap: 14px; padding: 16px 18px 12px; border-bottom: 0; }
+.pd-icon { width: 64px; height: 64px; flex: none; border-radius: var(--r); object-fit: cover; background: var(--surface); }
+.pd-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pd-title b { font: 600 18px var(--font); display: flex; align-items: center; gap: 8px; }
+.pd-title .hint { font-weight: 400; }
+.pd-summary { font-weight: 400; }
+.pd-summary { font-size: 13px; color: var(--muted); }
+.pd-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 0 20px 12px; }
+.pd-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.pd-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pd-links { display: flex; gap: 10px; }
+.pd-tabbar { padding: 0 20px 10px; border-bottom: 1px solid var(--line); }
+.pd-body { flex: 1; overflow-y: auto; }
+.pd-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.pd-gallery figure { margin: 0; }
+.pd-gallery img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r); cursor: zoom-in; background: var(--surface); }
+.pd-gallery figcaption { margin-top: 4px; font-size: 12px; color: var(--muted); }
+.pd-versions { display: flex; flex-direction: column; }
+.pd-viewer { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px; cursor: zoom-out; }
+.pd-viewer img { max-width: 100%; max-height: calc(100vh - 140px); object-fit: contain; border-radius: var(--r); }
+.modal-wide:has(.pd-viewer) { height: auto; width: min(1200px, calc(100vw - 48px)); }
+/* Açıklama metni */
+.md { font-size: 13.5px; line-height: 1.6; overflow-wrap: anywhere; }
+.md img { max-width: 100%; height: auto; border-radius: 4px; }
+.md h1, .md h2, .md h3, .md h4 { margin: 18px 0 8px; font-family: var(--font); line-height: 1.3; }
+.md h1 { font-size: 20px; } .md h2 { font-size: 17px; } .md h3 { font-size: 15px; } .md h4 { font-size: 14px; }
+.md p { margin: 0 0 10px; }
+.md a[data-href] { color: var(--accent-hi); text-decoration: underline; cursor: pointer; }
+.md ul, .md ol { margin: 0 0 10px; padding-left: 22px; }
+.md blockquote { margin: 0 0 10px; padding: 4px 12px; border-left: 3px solid var(--line-strong); color: var(--muted); }
+.md code { font: 12.5px var(--font-mono); padding: 1px 4px; border-radius: 4px; background: var(--surface); }
+.md pre { padding: 10px; border-radius: var(--r); background: var(--surface); overflow-x: auto; }
+.md pre code { padding: 0; background: none; }
+.md table { border-collapse: collapse; margin: 0 0 10px; }
+.md td, .md th { padding: 4px 8px; border: 1px solid var(--line); }
+.md hr { border: 0; border-top: 1px solid var(--line); margin: 14px 0; }
+.md .md-center { text-align: center; }
+.md summary { cursor: pointer; font-weight: 600; }

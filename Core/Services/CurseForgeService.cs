@@ -102,6 +102,10 @@ namespace VuluLauncher
             (await _api.GetAsync<CfResponse<CfMod>>($"/curseforge/mods/{modId}")).Data
                 ?? throw new InvalidOperationException("CurseForge projesi bulunamadı.");
 
+        /// <summary>Projenin açıklaması (HTML).</summary>
+        public async Task<string> DescriptionAsync(int modId) =>
+            (await _api.GetAsync<CfResponse<string>>($"/curseforge/mods/{modId}/description")).Data ?? "";
+
         public async Task<List<CfMod>> ModsAsync(IEnumerable<int> modIds)
         {
             var result = new List<CfMod>();
@@ -413,6 +417,15 @@ namespace VuluLauncher
         public List<CfFileIndex> LatestFilesIndexes { get; set; } = new();
         public CfLinks? Links { get; set; }
         public bool? AllowModDistribution { get; set; }
+        public int MainFileId { get; set; }
+        public List<CfScreenshot> Screenshots { get; set; } = new();
+    }
+
+    internal sealed class CfScreenshot
+    {
+        public string Title { get; set; } = "";
+        public string Url { get; set; } = "";
+        public string? ThumbnailUrl { get; set; }
     }
 
     internal sealed class CfCategory
@@ -426,7 +439,13 @@ namespace VuluLauncher
 
     internal sealed class CfAuthor { public string Name { get; set; } = ""; }
     internal sealed class CfLogo { public string? ThumbnailUrl { get; set; } public string? Url { get; set; } }
-    internal sealed class CfLinks { public string? WebsiteUrl { get; set; } }
+    internal sealed class CfLinks
+    {
+        public string? WebsiteUrl { get; set; }
+        public string? WikiUrl { get; set; }
+        public string? IssuesUrl { get; set; }
+        public string? SourceUrl { get; set; }
+    }
 
     internal sealed class CfFileIndex
     {
