@@ -392,17 +392,24 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .stage-bg.plain { background: var(--bg); }
 .stage-bg.plain::after { display: none; }
 .stage-bg.side { background-color: var(--bg); background-size: auto 100%; background-position: right center; }
-/* Arka planı olmayan modpack'te paketin simgesi büyütülüp bulanıklaştırılarak arkaya yayılır (sahne simsiyah kalmasın) */
-.stage-glow {
-    position: absolute; inset: -80px; z-index: 0; pointer-events: none;
-    background: center / cover no-repeat; filter: blur(70px) saturate(1.5); opacity: .8; transform: scale(1.1);
+/*
+ * Arka planı olmayan modpack'te (ekran görüntüsü yok) sahne simsiyah kalmasın: paketin simgesi sağda büyük ve
+ * hafif eğik durur, soldan içeri doğru belirir; arkasında simgenin renklerinden yumuşak bir ışık olur.
+ * Resim --art değişkeniyle verilir.
+ */
+.stage-glow { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--bg); }
+.stage-glow::before {
+    content: ""; position: absolute; inset: -25%;
+    background: var(--art) center / cover no-repeat; filter: blur(110px) saturate(1.2); opacity: .22;
+}
+.stage-glow::after {
+    content: ""; position: absolute; right: -6%; top: 46%; height: 115%; aspect-ratio: 1;
+    transform: translateY(-50%) rotate(-7deg);
+    background: var(--art) center / contain no-repeat; opacity: .26;
+    -webkit-mask: linear-gradient(90deg, transparent 0%, #000 60%);
+    mask: linear-gradient(90deg, transparent 0%, #000 60%);
 }
 .stage-bg.glow { background: transparent; }
-.stage-bg.glow::after {
-    background:
-        linear-gradient(180deg, rgba(13, 11, 10, .1) 0%, rgba(13, 11, 10, .35) 45%, rgba(13, 11, 10, .9) 85%),
-        linear-gradient(90deg, rgba(13, 11, 10, .45) 0%, rgba(13, 11, 10, 0) 65%);
-}
 .stage > :not(.stage-bg):not(.stage-glow) { position: relative; z-index: 1; }
 .stage > .dock { z-index: 3; }
 

@@ -516,12 +516,14 @@ function loaderLabel(instance) {
 
 function renderInstanceLists() {
     const card = instance => {
-        const thumb = el('div', { class: 'thumb' + (instance.thumbnail ? '' : ' plain') });
-        if (instance.thumbnail) thumb.style.backgroundImage = `url("${instance.thumbnail}")`;
+        // Arka planı olmayan modpack'te kartın resmi paketin simgesi olur (sağdaki küçük simgeye o zaman gerek kalmaz)
+        const picture = instance.thumbnail || instance.iconUrl;
+        const thumb = el('div', { class: 'thumb' + (picture ? '' : ' plain') });
+        if (picture) thumb.style.backgroundImage = `url("${picture}")`;
 
         return el('button', { class: 'pack-card', 'data-id': instance.id, onclick: () => { selectInstance(instance); showPage('home'); } },
             thumb,
-            instance.iconUrl && el('img', { class: 'card-icon', src: instance.iconUrl, alt: '' }),
+            instance.iconUrl && instance.thumbnail && el('img', { class: 'card-icon', src: instance.iconUrl, alt: '' }),
             state.packUpdates && state.packUpdates[instance.id] && el('span', { class: 'card-update', title: 'Paketin yeni sürümü var' }),
             el('div', { class: 'info' },
                 el('span', { class: 'name' }, instance.name),
@@ -578,7 +580,7 @@ function selectInstance(instance) {
     bg.style.backgroundImage = instance.background ? `url("${instance.background}")` : '';
     const glow = $('stage-glow');
     glow.hidden = !glowImage;
-    glow.style.backgroundImage = glowImage ? `url("${glowImage}")` : '';
+    if (glowImage) glow.style.setProperty('--art', `url("${glowImage}")`);
 
     const logo = $('pack-logo'), title = $('pack-title');
     logo.hidden = !instance.logo;
