@@ -89,23 +89,24 @@ namespace Installer
             {
                 case "ready":
                     string dir = _installedDir ?? InstallInfo.DefaultDirectory;
-                    Send(new { type = "init", dir, reinstall = _installedDir != null, freeMb = InstallEngine.FreeSpaceMb(dir) });
+                    Send(new { type = "init", dir, reinstall = _installedDir != null, freeMb = InstallEngine.FreeSpaceMb(dir), warning = InstallEngine.PathWarning(dir) });
                     _ = LoadReleaseAsync();
                     break;
                 case "pickFolder":
                     var picked = _window.ShowOpenFolder("Kurulum klasörünü seç", null, false);
                     if (picked is { Length: > 0 })
                     {
-                        // Seçilen klasörün içine "vulu Launcher" alt klasörü açılır (oyun dosyaları da burada durur)
+                        // Seçilen klasörün içine "vuluLauncher" alt klasörü açılır (oyun dosyaları da burada durur)
                         string chosen = picked[0];
-                        if (!Path.GetFileName(chosen.TrimEnd('\\')).Equals(InstallInfo.AppName, StringComparison.OrdinalIgnoreCase))
-                            chosen = Path.Combine(chosen, InstallInfo.AppName);
-                        Send(new { type = "dir", dir = chosen, freeMb = InstallEngine.FreeSpaceMb(chosen) });
+                        string last = Path.GetFileName(chosen.TrimEnd('\\'));
+                        if (!last.Equals(InstallInfo.FolderName, StringComparison.OrdinalIgnoreCase) && !last.Equals(InstallInfo.AppName, StringComparison.OrdinalIgnoreCase))
+                            chosen = Path.Combine(chosen, InstallInfo.FolderName);
+                        Send(new { type = "dir", dir = chosen, freeMb = InstallEngine.FreeSpaceMb(chosen), warning = InstallEngine.PathWarning(chosen) });
                     }
                     break;
                 case "checkDir":
                     string asked = msg.TryGetProperty("dir", out var d) ? d.GetString() ?? "" : "";
-                    try { Send(new { type = "dir", dir = InstallEngine.ValidateDirectory(asked), freeMb = InstallEngine.FreeSpaceMb(asked) }); }
+                    try { Send(new { type = "dir", dir = InstallEngine.ValidateDirectory(asked), freeMb = InstallEngine.FreeSpaceMb(asked), warning = InstallEngine.PathWarning(asked) }); }
                     catch (Exception ex) { Send(new { type = "dir", dir = asked, error = ex.Message }); }
                     break;
                 case "reloadRelease":

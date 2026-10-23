@@ -74,13 +74,17 @@ namespace Installer
             if (string.IsNullOrWhiteSpace(dir)) throw new InvalidOperationException("Kurulum klasörü seçilmedi.");
             string full = Path.GetFullPath(dir.Trim().Trim('"'));
             if (string.Equals(full.TrimEnd('\\'), Path.GetPathRoot(full)?.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Diskin köküne kurulamaz; bir klasör seç (ör. D:\\Oyunlar\\vulu Launcher).");
+                throw new InvalidOperationException("Diskin köküne kurulamaz; bir klasör seç (ör. D:\\Oyunlar\\vuluLauncher).");
 
             string windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
             if (full.StartsWith(windows, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Windows klasörüne kurulamaz.");
             return full;
         }
+
+        /// <summary>Yolda boşluk varsa uyarı (kuruluma engel değil): bazı mod yükleyiciler ve modlar boşluklu yolda sorun çıkarır.</summary>
+        public static string? PathWarning(string dir) =>
+            dir.Contains(' ') ? "Yolda boşluk var; bazı modlar ve mod yükleyiciler boşluklu klasörlerde sorun çıkarabilir. Boşluksuz bir klasör önerilir." : null;
 
         /// <summary>Seçilen klasörün sürücüsündeki boş alan (MB); okunamazsa null.</summary>
         public static long? FreeSpaceMb(string dir)

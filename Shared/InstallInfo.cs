@@ -10,6 +10,11 @@ namespace VuluShared
     public static class InstallInfo
     {
         public const string AppName = "vulu Launcher";
+        /// <summary>
+        /// Kurulum klasörünün adı. Boşluksuz: oyun dosyaları da bu klasörde durur ve bazı mod yükleyiciler/modlar
+        /// boşluklu yollarda sorun çıkarıyor.
+        /// </summary>
+        public const string FolderName = "vuluLauncher";
         public const string Publisher = "vulu";
         public const string UninstallSwitch = "--uninstall";
 
@@ -17,7 +22,7 @@ namespace VuluShared
 
         /// <summary>Varsayılan klasör. Oyun dosyaları da burada durduğu için kurulumda değiştirilebilir.</summary>
         public static string DefaultDirectory => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", AppName);
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", FolderName);
 
         public static string StartMenuShortcut => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.Programs), AppName + ".lnk");

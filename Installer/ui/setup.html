@@ -250,11 +250,11 @@ function showPage(id) {
 
 function formatMb(mb) { return mb >= 1024 ? (mb / 1024).toFixed(1).replace('.', ',') + ' GB' : Math.round(mb) + ' MB'; }
 
-function setDirHint(freeMb, error) {
+function setDirHint(freeMb, error, warning) {
     const hint = $('dir-hint');
-    hint.classList.toggle('error', !!error);
+    hint.classList.toggle('error', !!error || !!warning);
     if (error) { hint.textContent = error; return; }
-    hint.replaceChildren('Oyun dosyaları ve dünyalar da bu klasörde durur.');
+    hint.replaceChildren(warning || 'Oyun dosyaları ve dünyalar da bu klasörde durur.');
     if (freeMb != null) {
         const free = document.createElement('span');
         free.className = 'mono';
@@ -287,7 +287,7 @@ function receive(msg) {
         case 'init':
             state.installedDir = msg.reinstall ? msg.dir : '';
             $('dir').value = msg.dir;
-            setDirHint(msg.freeMb);
+            setDirHint(msg.freeMb, null, msg.warning);
             if (msg.reinstall) $('install').textContent = 'Güncelle / Onar';
             break;
         case 'release':
@@ -305,7 +305,7 @@ function receive(msg) {
             break;
         case 'dir':
             $('dir').value = msg.dir;
-            setDirHint(msg.freeMb, msg.error);
+            setDirHint(msg.freeMb, msg.error, msg.warning);
             updateInstallButton();
             break;
         case 'status':
