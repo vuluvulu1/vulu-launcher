@@ -70,9 +70,35 @@ async function openSettingsPage() {
 
     const width = el('input', { type: 'number', min: 0, max: 7680, value: s.gameWidth || '', placeholder: 'Genişlik' });
     const height = el('input', { type: 'number', min: 0, max: 4320, value: s.gameHeight || '', placeholder: 'Yükseklik' });
+    // Hazır boyutlar; elle yazılan boyut "Özel" sayılır
+    const SIZE_PRESETS = [['0x0', 'Varsayılan'], ['1280x720', '1280×720'], ['1600x900', '1600×900'], ['1920x1080', '1920×1080'], ['custom', 'Özel']];
+    const sizeKey = (w, h) => !w && !h ? '0x0' : SIZE_PRESETS.some(([k]) => k === `${w}x${h}`) ? `${w}x${h}` : 'custom';
+    const customSize = el('div', { class: 'set-inline narrow', hidden: sizeKey(s.gameWidth, s.gameHeight) !== 'custom' }, width, el('span', {}, '×'), height);
     const saveSize = () => changeSetting({ gameWidth: Number(width.value) || 0, gameHeight: Number(height.value) || 0 });
     width.addEventListener('change', saveSize);
     height.addEventListener('change', saveSize);
+    const sizePresets = segmentedControl(SIZE_PRESETS, sizeKey(s.gameWidth, s.gameHeight), value => {
+        customSize.hidden = value !== 'custom';
+        if (value === 'custom') { width.focus(); return true; }
+        const [w, h] = value.split('x').map(Number);
+        width.value = w || ''; height.value = h || '';
+        return changeSetting({ gameWidth: w, gameHeight: h });
+    });
+
+    // Bilgisayarda bulunan Java'lar: otomatik modda aynı sürüm indirilmeden kullanılır; istenirse biri seçilir
+    const detected = info.detectedJava || [];
+    const detectedList = el('div', { class: 'set-stack java-list' }, detected.length
+        ? detected.map(j => el('div', { class: 'java-row' },
+            el('div', {}, el('b', {}, `Java ${j.version}`), el('span', { class: 'hint' }, ` · ${j.source}`),
+                el('div', { class: 'hint java-path', title: j.path }, j.path)),
+            el('button', {
+                class: 'btn btn-sm', onclick: async () => {
+                    javaPath.value = j.path;
+                    javaCustom.hidden = false;
+                    if (await changeSetting({ javaMode: 'custom', customJavaPath: j.path }) !== false) openSettingsPage();
+                },
+            }, s.javaMode === 'custom' && s.customJavaPath === j.path ? 'Seçili ✓' : 'Bunu kullan')))
+        : [el('span', { class: 'hint' }, 'Bilgisayarda kurulu Java bulunamadı; gereken sürüm otomatik indirilir.')]);
 
     const game = el('section', { class: 'set-section' },
         el('h2', {}, 'Oyun'),
@@ -80,15 +106,16 @@ async function openSettingsPage() {
             segmentedControl([[0, 'Önerilen'], ...info.ramOptionsGb.map(gb => [gb, gb + ' GB'])], s.defaultRamGb,
                 value => changeSetting({ defaultRamGb: value }))),
         // Java'yı, pencereyi ve tam ekranı telefonda oyun motoru (Amethyst) yönetir
-        isDesktopApp() && settingRow('Java', 'Otomatik modda oyunun istediği sürüm (8, 17, 21...) Eclipse Temurin olarak indirilir.',
+        isDesktopApp() && settingRow('Java', 'Otomatik modda oyunun istediği sürüm (8, 17, 21...) bilgisayarda kuruluysa o kullanılır, yoksa Eclipse Temurin olarak indirilir.',
             el('div', { class: 'set-stack' },
-                segmentedControl([['auto', 'Otomatik (Adoptium)'], ['custom', 'Elle seç']], s.javaMode, async value => {
+                segmentedControl([['auto', 'Otomatik'], ['custom', 'Elle seç']], s.javaMode, async value => {
                     javaCustom.hidden = value !== 'custom';
                     // Elle modda yol girilene kadar kaydetme; boş yol hata verir
                     if (value === 'custom' && !javaPath.value.trim()) return true;
                     return changeSetting({ javaMode: value, customJavaPath: javaPath.value });
                 }),
                 javaCustom)),
+        isDesktopApp() && settingRow('Bilgisayarda bulunan Java', null, detectedList),
         isDesktopApp() && settingRow('İndirilen Java sürümleri', javaInstalled,
             el('button', {
                 class: 'btn btn-sm', disabled: info.installedJava.length === 0,
@@ -105,8 +132,8 @@ async function openSettingsPage() {
                 },
             }, 'Sil')),
         settingRow('Ek JVM argümanları', 'İleri düzey. Boş bırakılırsa varsayılanlar kullanılır.', jvmArgs),
-        isDesktopApp() && settingRow('Oyun penceresi', 'Boş bırakılırsa oyunun varsayılan boyutu kullanılır.',
-            el('div', { class: 'set-inline narrow' }, width, el('span', {}, '×'), height)),
+        isDesktopApp() && settingRow('Oyun penceresi', 'Oyun açıldığında pencerenin boyutu. Varsayılan: oyunun kendi boyutu.',
+            el('div', { class: 'set-stack' }, sizePresets, customSize)),
         isDesktopApp() && settingRow('Tam ekran başlat', null, toggleControl(s.fullscreen, value => changeSetting({ fullscreen: value }))));
 
     // ── Launcher davranışı ────────────────────────────────────────────
@@ -116,6 +143,9 @@ async function openSettingsPage() {
             segmentedControl([['keep', 'Açık kalsın'], ['minimize', 'Küçült'], ['close', 'Kapat']], s.onGameStart,
                 value => changeSetting({ onGameStart: value }))),
         settingRow('Açılış animasyonunu atla', null, toggleControl(s.skipSplash, value => changeSetting({ skipSplash: value }))),
+        isDesktopApp() && settingRow('Launcher boyutu', 'Otomatikte büyük ekranlarda pencere ve yazılar ekranla birlikte büyür.',
+            segmentedControl([[0, 'Otomatik'], [100, '%100'], [125, '%125'], [150, '%150'], [175, '%175']], s.windowScale || 0,
+                value => changeSetting({ windowScale: value }))),
         settingRow('Arkadaşların ne görsün', 'Sunucular ve profil sayfasındaki arkadaş listesinde.',
             segmentedControl([['full', 'Ne oynadığım'], ['online', 'Sadece çevrimiçi'], ['hidden', 'Görünmez']], s.presenceMode || 'full',
                 value => changeSetting({ presenceMode: value }))),

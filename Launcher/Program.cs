@@ -48,9 +48,7 @@ namespace VuluLauncher
                 return;
             }
 
-            double scale = GetDpiForSystem() / 96.0;
-            if (scale < 1) scale = 1;
-            var (width, height) = FitToWorkArea((int)(BaseWidth * scale), (int)(BaseHeight * scale));
+            var (width, height, zoom) = WindowLayout(AppSettings.Current.WindowScale);
 
             var window = new PhotinoWindow()
                 .SetTitle("vulu Launcher")
@@ -63,6 +61,7 @@ namespace VuluLauncher
                 .SetUseOsDefaultSize(false)
                 .SetUseOsDefaultLocation(false)
                 .SetSize(width, height)
+                .SetZoom(zoom)
                 .Center();
 
             // Sağ tık menüsü hiçbir sürümde açılmaz (tarayıcı menüsü launcher'a ait değil)
@@ -91,6 +90,29 @@ namespace VuluLauncher
             window.WaitForClose();
 
             app.Shutdown();
+        }
+
+        /// <summary>
+        /// Pencere boyutu ve arayüz yakınlaştırması. Otomatikte (0) büyük ekranlarda pencere ekranın yaklaşık
+        /// %72'sine büyür ve arayüz onunla birlikte yakınlaşır (küçük görünmesin); seçilen yüzde (125, 150...) bunu sabitler.
+        /// Her durumda pencere masaüstünün kullanılabilir alanına sığdırılır.
+        /// </summary>
+        internal static (int Width, int Height, int Zoom) WindowLayout(int setting)
+        {
+            double dpi = Math.Max(1, GetDpiForSystem() / 96.0);
+            double k = setting / 100.0;
+            if (setting == 0)
+            {
+                var area = new RECT();
+                k = SystemParametersInfo(0x0030 /* SPI_GETWORKAREA */, 0, ref area, 0)
+                    ? Math.Min(0.72 * (area.Right - area.Left) / (BaseWidth * dpi), 0.80 * (area.Bottom - area.Top) / (BaseHeight * dpi))
+                    : 1;
+                k = Math.Clamp(Math.Round(k * 20) / 20, 1, 1.6);   // %5 adımlarla, %100–160
+            }
+            var (width, height) = FitToWorkArea((int)(BaseWidth * dpi * k), (int)(BaseHeight * dpi * k));
+            // Pencere ekrana sığdırılmak için küçüldüyse yakınlaştırma da o oranda azalır
+            double fit = Math.Min(width / (BaseWidth * dpi * k), height / (BaseHeight * dpi * k));
+            return (width, height, (int)Math.Round(100 * k * Math.Min(1, fit)));
         }
 
         /// <summary>

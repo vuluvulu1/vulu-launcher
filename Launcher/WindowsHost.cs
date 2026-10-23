@@ -39,6 +39,17 @@ namespace VuluLauncher
         public bool IsForeground => TrayNotifier.IsActive(_window.WindowHandle);
         public void BringToFront() => TrayNotifier.BringToFront(_window.WindowHandle);
         public void Minimize() => _window.SetMinimized(true);
+
+        public void ApplyWindowScale(int scale)
+        {
+            var (width, height, zoom) = Program.WindowLayout(scale);
+            _window.Invoke(() =>
+            {
+                _window.SetSize(width, height);
+                _window.Zoom = zoom;
+                _window.Center();
+            });
+        }
         public void Close() => _window.Close();
 
         public void BeginWindowDrag()

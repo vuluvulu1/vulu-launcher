@@ -52,6 +52,14 @@ namespace VuluLauncher
                 string? existing = FindJavaExe(installDir);
                 if (existing != null) return existing;
 
+                // Bilgisayarda aynı ana sürümden bir Java kuruluysa indirmek yerine o kullanılır
+                var system = Detect().FirstOrDefault(j => j.Major == major);
+                if (system != null)
+                {
+                    _log($"Bilgisayardaki Java {major} kullanılıyor ({system.Source}).", "muted");
+                    return system.Path;
+                }
+
                 _log($"Java {major} bulunamadı, Adoptium'dan indiriliyor...", "accent");
                 // Oyun başlatılırken o işe eklenir; ayarlardan istenince kendi işi olur
                 var parent = DownloadJob.Current;
@@ -76,6 +84,76 @@ namespace VuluLauncher
             {
                 Gate.Release();
             }
+        }
+
+        internal sealed record DetectedJava(int Major, string Version, string Path, string Source);
+
+        private static List<DetectedJava>? _detected;
+        private static DateTime _detectedAt;
+
+        /// <summary>
+        /// Bilgisayarda kurulu Java'lar: JAVA_HOME, Program Files altındaki bilinen dağıtımlar ve resmi Minecraft
+        /// launcher'ının Java'ları. Sürüm, Java klasöründeki "release" dosyasından okunur. Sonuç bir dakika saklanır.
+        /// </summary>
+        public static List<DetectedJava> Detect()
+        {
+            if (_detected != null && DateTime.UtcNow - _detectedAt < TimeSpan.FromMinutes(1)) return _detected;
+            var found = new List<DetectedJava>();
+            if (!OperatingSystem.IsWindows()) return _detected = found;
+
+            var homes = new List<(string Home, string Source)>();
+            if (Environment.GetEnvironmentVariable("JAVA_HOME") is { Length: > 0 } javaHome) homes.Add((javaHome, "JAVA_HOME"));
+            var vendors = new[] { "Java", "Eclipse Adoptium", "Eclipse Foundation", "Microsoft", "Zulu", "BellSoft", "Amazon Corretto", "Semeru", "OpenJDK" };
+            foreach (var root in new[] { Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs") }.Where(r => r.Length > 0).Distinct())
+                foreach (var vendor in vendors)
+                {
+                    string dir = Path.Combine(root, vendor);
+                    if (!Directory.Exists(dir)) continue;
+                    try { foreach (var home in Directory.GetDirectories(dir)) homes.Add((home, vendor)); } catch { }
+                }
+            // Resmi Minecraft launcher'ının indirdiği Java'lar
+            string mojang = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "runtime");
+            if (Directory.Exists(mojang))
+                try
+                {
+                    foreach (var runtime in Directory.GetDirectories(mojang))
+                        foreach (var platform in Directory.GetDirectories(runtime))
+                            foreach (var home in Directory.GetDirectories(platform)) homes.Add((home, "Minecraft Launcher"));
+                }
+                catch { }
+
+            foreach (var (home, source) in homes)
+            {
+                string exe = Path.Combine(home, "bin", "java.exe");
+                if (!File.Exists(exe) || ReadVersion(home) is not { } version) continue;
+                int major = ParseMajor(version);
+                if (major > 0 && !found.Any(f => f.Path.Equals(exe, StringComparison.OrdinalIgnoreCase)))
+                    found.Add(new DetectedJava(major, version, exe, source));
+            }
+            _detectedAt = DateTime.UtcNow;
+            return _detected = found.OrderByDescending(f => f.Major).ToList();
+        }
+
+        /// <summary>Java klasöründeki "release" dosyasından JAVA_VERSION (ör. "21.0.4" ya da eski "1.8.0_402").</summary>
+        private static string? ReadVersion(string home)
+        {
+            try
+            {
+                string release = Path.Combine(home, "release");
+                if (!File.Exists(release)) return null;
+                foreach (var line in File.ReadLines(release))
+                    if (line.StartsWith("JAVA_VERSION=", StringComparison.Ordinal)) return line["JAVA_VERSION=".Length..].Trim().Trim('"');
+            }
+            catch { }
+            return null;
+        }
+
+        private static int ParseMajor(string version)
+        {
+            var parts = version.Split('.', '_', '-', '+');
+            if (!int.TryParse(parts[0], out int first)) return 0;
+            return first == 1 && parts.Length > 1 && int.TryParse(parts[1], out int legacy) ? legacy : first;
         }
 
         /// <summary>Kurulu Temurin sürümlerini listeler (ayarlar ekranı için).</summary>

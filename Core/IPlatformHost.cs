@@ -21,6 +21,9 @@ namespace VuluLauncher
         /// <summary>Arayüze JSON mesajı gönderir.</summary>
         void SendToUi(string json);
 
+        /// <summary>Launcher penceresinin boyutu ve arayüzün yakınlaştırması (Ayarlar → Launcher boyutu). 0 = otomatik.</summary>
+        void ApplyWindowScale(int scale) { }
+
         /// <summary>Launcher şu an kullanıcının önünde mi (değilse bildirim gösterilir).</summary>
         bool IsForeground { get; }
 

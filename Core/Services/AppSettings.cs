@@ -19,6 +19,9 @@ namespace VuluLauncher
         public int GameHeight { get; set; }
         public bool Fullscreen { get; set; }
 
+        /// <summary>Launcher penceresinin boyutu: 0 = ekrana göre otomatik, yoksa yüzde (100, 125, 150, 175).</summary>
+        public int WindowScale { get; set; }
+
         // ── Launcher davranışı ────────────────────────────────────────────
         /// <summary>"keep" | "minimize" | "close"</summary>
         public string OnGameStart { get; set; } = "keep";
@@ -91,6 +94,7 @@ namespace VuluLauncher
             JvmArgs = (JvmArgs ?? "").Trim();
             GameWidth = Math.Clamp(GameWidth, 0, 7680);
             GameHeight = Math.Clamp(GameHeight, 0, 4320);
+            if (WindowScale != 0) WindowScale = Math.Clamp(WindowScale, 100, 200);
             if (OnGameStart is not ("minimize" or "close")) OnGameStart = "keep";
             MusicVolume = Math.Clamp(MusicVolume, 0, 100);
             if (!System.Text.RegularExpressions.Regex.IsMatch(AccentColor ?? "", "^#[0-9a-fA-F]{6}$")) AccentColor = "#c27e3e";

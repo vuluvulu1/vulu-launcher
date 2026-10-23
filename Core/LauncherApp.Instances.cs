@@ -554,6 +554,8 @@ namespace VuluLauncher
                 settings = AppSettings.Current,
                 ramOptionsGb = PackCatalog.RamOptionsGb,
                 installedJava = JavaManager.InstalledVersions().OrderBy(v => v),
+                // Bilgisayarda bulunan Java'lar: otomatik modda aynı sürüm indirilmeden kullanılır, istenirse seçilir
+                detectedJava = JavaManager.Detect().Select(j => new { major = j.Major, version = j.Version, path = j.Path, source = j.Source }),
                 version = LauncherUpdateService.LocalVersion,
                 gameFolder = AppPaths.Base,
                 hasSavedPassword = !string.IsNullOrEmpty(savedPassword),
@@ -570,7 +572,9 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Seçilen Java dosyası bulunamadı. Otomatik moda dönün ya da geçerli bir java.exe seçin.");
 
             bool playtimeChanged = settings.ShowPlaytimeOnProfile != AppSettings.Current.ShowPlaytimeOnProfile;
+            bool scaleChanged = settings.WindowScale != AppSettings.Current.WindowScale;
             AppSettings.Save(settings);
+            if (scaleChanged) _host.ApplyWindowScale(AppSettings.Current.WindowScale);
             _discord.SetEnabled(_host.IsDesktop && settings.DiscordPresence);
             if (playtimeChanged) _ = SyncPlaytimeAsync();
             SignalPresence();   // "görünmez" seçilince arkadaş listesinden hemen düşülür

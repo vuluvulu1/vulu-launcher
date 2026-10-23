@@ -1387,3 +1387,8 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .btn.btn-installed:hover { background: color-mix(in srgb, var(--ok) 24%, transparent); }
 .dl-btn.dl-stop:hover svg { stroke: var(--error); }
 .dl-btn svg rect { fill: none; }
+
+/* Ayarlar: bulunan Java listesi */
+.java-list { gap: 6px; }
+.java-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.java-path { font: 11px var(--font-mono); max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
