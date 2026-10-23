@@ -12,6 +12,7 @@
   <ItemGroup>
     <!-- Doğrulama, updater'ın kullandığı kodun aynısıyla yapılır -->
     <Compile Include="..\..\Shared\Releases.cs" Link="Shared\Releases.cs" />
+    <Compile Include="..\..\Shared\ServerConnection.cs" Link="Shared\ServerConnection.cs" />
   </ItemGroup>
 
 </Project>
