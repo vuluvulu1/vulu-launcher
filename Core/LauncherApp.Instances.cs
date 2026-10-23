@@ -440,6 +440,7 @@ namespace VuluLauncher
             {
                 var instance = await _modrinth.InstallModpackAsync(projectId, NullIfEmpty(versionId));
                 await UseModpackIconAsLogoAsync(instance);
+                await UseModpackScreenshotAsBackgroundAsync(instance);
                 return new { success = true, error = (string?)null, id = InstancePrefix + instance.Folder, name = instance.Name };
             }
             catch (Exception ex)

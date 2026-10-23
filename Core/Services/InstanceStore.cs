@@ -39,6 +39,8 @@ namespace VuluLauncher
         public int SharedPackRevision { get; set; }
         /// <summary>Paketin logosu (ya da modpack'in simgesi) bir kez indirildi mi (kullanıcı sonradan kaldırırsa geri getirilmez).</summary>
         public bool PackLogoSynced { get; set; }
+        /// <summary>Modpack'in ekran görüntüsü arka plan olarak bir kez indirildi mi (kaldırılırsa geri getirilmez).</summary>
+        public bool PackBackgroundSynced { get; set; }
         public string? Description { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public List<InstalledContent> Content { get; set; } = new();

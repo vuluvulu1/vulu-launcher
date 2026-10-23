@@ -556,6 +556,7 @@ function clearSelection() {
     $('pack-actions').replaceChildren();
     $('stage-bg').className = 'stage-bg plain';
     $('stage-bg').style.backgroundImage = '';
+    $('stage-glow').hidden = true;
     state.details = null;
     $('pack-stats').hidden = true;
     renderVersionPicker();
@@ -569,9 +570,15 @@ function selectInstance(instance) {
     markSelectedCard();
 
     const bg = $('stage-bg');
-    bg.classList.toggle('plain', !instance.background);
+    // Arka planı yoksa (ör. ekran görüntüsü olmayan modpack) paketin simgesi bulanık bir zemin olur
+    const glowImage = !instance.background && (instance.iconUrl || instance.logo);
+    bg.classList.toggle('plain', !instance.background && !glowImage);
+    bg.classList.toggle('glow', !!glowImage);
     bg.classList.toggle('side', !!instance.background && instance.backgroundStyle === 'side');
     bg.style.backgroundImage = instance.background ? `url("${instance.background}")` : '';
+    const glow = $('stage-glow');
+    glow.hidden = !glowImage;
+    glow.style.backgroundImage = glowImage ? `url("${glowImage}")` : '';
 
     const logo = $('pack-logo'), title = $('pack-title');
     logo.hidden = !instance.logo;

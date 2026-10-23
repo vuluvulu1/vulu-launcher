@@ -188,6 +188,54 @@ namespace VuluLauncher
         }
 
         /// <summary>
+        /// CurseForge/Modrinth modpack'inin öne çıkan ekran görüntüsünü instance'ın arka planı yapar (Oyna sayfası
+        /// simsiyah kalmasın). Bir kez yapılır: kullanıcı arka planı kaldırır ya da değiştirirse dokunulmaz.
+        /// </summary>
+        private async Task<bool> UseModpackScreenshotAsBackgroundAsync(InstanceMeta meta)
+        {
+            if (meta.PackBackgroundSynced || meta.SharedPackId != null || meta.ModpackProjectId == null) return false;
+            string id = InstancePrefix + meta.Folder;
+            void MarkDone() { meta.PackBackgroundSynced = true; InstanceStore.Save(meta); }
+            if (BackgroundFile(id) != null) { MarkDone(); return false; }
+
+            string? url;
+            try
+            {
+                string cfPrefix = CurseForgeService.Source + ":";
+                if (meta.ModpackProjectId.StartsWith(cfPrefix, StringComparison.Ordinal))
+                {
+                    if (!int.TryParse(meta.ModpackProjectId[cfPrefix.Length..], out int modId)) return false;
+                    url = (await _curseforge.ModAsync(modId)).Screenshots.FirstOrDefault(s => !string.IsNullOrEmpty(s.Url))?.Url;
+                }
+                else
+                {
+                    var gallery = (await _modrinth.ProjectDetailAsync(meta.ModpackProjectId)).Gallery;
+                    url = (gallery.FirstOrDefault(g => g.Featured) ?? gallery.FirstOrDefault())?.Url;
+                }
+            }
+            catch { return false; /* ağ yoksa bir sonraki açılışta yeniden denenir */ }
+
+            // Görseli olmayan projede tekrar sorulmaz
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps
+                || !ModpackIconHosts.Contains(uri.Host, StringComparer.OrdinalIgnoreCase)) { MarkDone(); return false; }
+
+            string ext = Path.GetExtension(uri.AbsolutePath).ToLowerInvariant();
+            if (!ImageExtensions.Contains(ext)) ext = ".png";
+            string temp = Path.Combine(Path.GetTempPath(), $"vulu-bg-{Guid.NewGuid():N}{ext}");
+            try
+            {
+                await Downloader.DownloadAsync(uri.AbsoluteUri, temp);
+                if (new FileInfo(temp).Length is 0 or > 15L * 1024 * 1024) { MarkDone(); return false; }
+                Directory.CreateDirectory(AppPaths.Backgrounds);
+                File.Move(temp, Path.Combine(AppPaths.Backgrounds, BackgroundKey(id) + ext), overwrite: true);
+                MarkDone();
+                return true;
+            }
+            catch { return false; }
+            finally { if (File.Exists(temp)) File.Delete(temp); }
+        }
+
+        /// <summary>
         /// Eski sürümlerdeki bir hata yüzünden paketten kurulan instance'lara logo inmiyordu. Girişten sonra bir kez,
         /// logosu hiç inmemiş paket instance'larına paketin logosu, CurseForge/Modrinth modpack'lerine projenin simgesi
         /// indirilir; ana ekran yenilenir.
@@ -196,10 +244,14 @@ namespace VuluLauncher
         {
             try
             {
-                var missing = InstanceStore.List().Where(m => !m.PackLogoSynced && LogoFile(InstancePrefix + m.Folder) == null).ToList();
-                if (missing.Count == 0) return;
-                var store = Packs;
                 bool changed = false;
+                // Bu özellikten önce kurulmuş CurseForge/Modrinth modpack'lerine arka plan
+                foreach (var meta in InstanceStore.List().Where(m => !m.PackBackgroundSynced && m.SharedPackId == null && m.ModpackProjectId != null))
+                    if (await UseModpackScreenshotAsBackgroundAsync(meta)) changed = true;
+
+                var missing = InstanceStore.List().Where(m => !m.PackLogoSynced && LogoFile(InstancePrefix + m.Folder) == null).ToList();
+                if (missing.Count == 0) { if (changed) _bridge.Emit("logosChanged"); return; }
+                var store = Packs;
                 foreach (var meta in missing)
                 {
                     if (meta.SharedPackId == null) { if (await UseModpackIconAsLogoAsync(meta)) changed = true; continue; }

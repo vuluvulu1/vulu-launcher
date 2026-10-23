@@ -392,7 +392,18 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .stage-bg.plain { background: var(--bg); }
 .stage-bg.plain::after { display: none; }
 .stage-bg.side { background-color: var(--bg); background-size: auto 100%; background-position: right center; }
-.stage > :not(.stage-bg) { position: relative; z-index: 1; }
+/* Arka planı olmayan modpack'te paketin simgesi büyütülüp bulanıklaştırılarak arkaya yayılır (sahne simsiyah kalmasın) */
+.stage-glow {
+    position: absolute; inset: -80px; z-index: 0; pointer-events: none;
+    background: center / cover no-repeat; filter: blur(70px) saturate(1.5); opacity: .8; transform: scale(1.1);
+}
+.stage-bg.glow { background: transparent; }
+.stage-bg.glow::after {
+    background:
+        linear-gradient(180deg, rgba(13, 11, 10, .1) 0%, rgba(13, 11, 10, .35) 45%, rgba(13, 11, 10, .9) 85%),
+        linear-gradient(90deg, rgba(13, 11, 10, .45) 0%, rgba(13, 11, 10, 0) 65%);
+}
+.stage > :not(.stage-bg):not(.stage-glow) { position: relative; z-index: 1; }
 .stage > .dock { z-index: 3; }
 
 .stage-body { flex: 1; min-height: 0; display: flex; align-items: flex-end; padding-bottom: 22px; }
