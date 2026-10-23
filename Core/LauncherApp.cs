@@ -29,6 +29,7 @@ namespace VuluLauncher
             CredentialManager.Protect = host.Protect;
             CredentialManager.Unprotect = host.Unprotect;
             LocalFiles.Url = host.FileUrl;
+            VuluShared.ServerConnection.Log = text => LogFile.Write("[bağlantı] " + text);
             _api = new ApiClient(() => _login.Token);
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
@@ -152,7 +153,7 @@ namespace VuluLauncher
         {
             try
             {
-                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+                using var http = VuluShared.ServerConnection.CreateClient(TimeSpan.FromSeconds(20));
                 using var response = await http.GetAsync($"{ApiConfig.BaseUrl}/ping");
                 return new { reachable = true };
             }

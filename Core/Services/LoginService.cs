@@ -5,10 +5,7 @@ namespace VuluLauncher
 {
     public class LoginService
     {
-        private static readonly HttpClient _http = new()
-        {
-            Timeout = TimeSpan.FromSeconds(90)
-        };
+        private static readonly HttpClient _http = VuluShared.ServerConnection.CreateClient(TimeSpan.FromSeconds(90));
 
 
         public string? Token { get; private set; }

@@ -64,6 +64,11 @@ namespace VuluLauncher
                 .SetZoom(zoom)
                 .Center();
 
+            // Önceki açılışta alan adına ulaşılamayıp yedek adres kullanıldıysa arayüz de (profil resimleri, skinler)
+            // alan adını çözmeden o adrese gider. TLS yine vuluvulu.com.tr adına doğrulanır.
+            if (VuluShared.ServerConnection.FallbackAddress is { } fallback)
+                window.SetBrowserControlInitParameters($"--host-resolver-rules=\"MAP {VuluShared.ServerConnection.Host} {fallback}\"");
+
             // Sağ tık menüsü hiçbir sürümde açılmaz (tarayıcı menüsü launcher'a ait değil)
             window.SetContextMenuEnabled(false);
 #if !DEBUG

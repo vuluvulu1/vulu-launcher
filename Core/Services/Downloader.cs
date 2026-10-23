@@ -9,7 +9,8 @@ namespace VuluLauncher
 
         private static HttpClient CreateClient()
         {
-            var client = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+            // vulu sunucusuna giden istekler (paket dosyaları, ping) yedek adreslerle de bağlanabilir; diğer siteler etkilenmez
+            var client = VuluShared.ServerConnection.CreateClient(TimeSpan.FromMinutes(10));
             // Modrinth, kimliği belli bir User-Agent ister
             client.DefaultRequestHeaders.UserAgent.ParseAdd(
                 $"vulu-launcher/{LauncherUpdateService.LocalVersion} (+https://vuluvulu.com.tr)");

@@ -32,6 +32,7 @@
   <ItemGroup>
     <!-- Launcher ve Updater ile ortak: GitHub release bilgisi, pencere ikonu, kurulum kaydı ve kısayollar -->
     <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
+    <Compile Include="..\Shared\ServerConnection.cs" Link="Shared\ServerConnection.cs" />
     <Compile Include="..\Shared\WindowIcon.cs" Link="Shared\WindowIcon.cs" />
     <Compile Include="..\Shared\InstallInfo.cs" Link="Shared\InstallInfo.cs" />
 

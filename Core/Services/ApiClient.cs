@@ -14,7 +14,7 @@ namespace VuluLauncher
         public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
         // Paket yüklemesi büyük olabilir; tek istekte uzun sürebilir
-        private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(30) };
+        private static readonly HttpClient Http = VuluShared.ServerConnection.CreateClient(TimeSpan.FromMinutes(30));
 
         private readonly Func<string?> _token;
 

@@ -35,7 +35,7 @@ namespace VuluShared
 
         public static HttpClient CreateHttpClient(TimeSpan timeout)
         {
-            var http = new HttpClient { Timeout = timeout };
+            var http = ServerConnection.CreateClient(timeout);
             http.DefaultRequestHeaders.UserAgent.ParseAdd("vulu-launcher");
             return http;
         }
