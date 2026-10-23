@@ -25,6 +25,12 @@ namespace VuluLauncher
 
     internal sealed class GameLauncher
     {
+        /// <summary>
+        /// Java Türkçe sistemde tr_TR yerel ayarıyla açılır; "WHITE".toLowerCase() "whıte" olur ve bazı modlar (Occultism vb.)
+        /// kayıt sırasında çöker. Java bu yüzden İngilizce açılır; oyunun içindeki dil bundan etkilenmez.
+        /// </summary>
+        private const string EnglishLocaleArgs = "-Duser.language=en -Duser.country=US";
+
         private static readonly Regex UsernameRegex = new(@"^[a-zA-Z0-9_]{1,16}$", RegexOptions.Compiled);
 
         private readonly Action<string, string> _log;
@@ -151,11 +157,11 @@ namespace VuluLauncher
                     option.ScreenWidth = settings.GameWidth;
                     option.ScreenHeight = settings.GameHeight;
                 }
+                // Kullanıcının kendi argümanları sonra eklendiği için isterse yerel ayarı değiştirebilir
+                var jvmArgs = MLaunchOption.DefaultExtraJvmArguments.Append(MArgument.FromCommandLine(EnglishLocaleArgs));
                 if (!string.IsNullOrWhiteSpace(settings.JvmArgs))
-                {
-                    option.ExtraJvmArguments = MLaunchOption.DefaultExtraJvmArguments
-                        .Append(MArgument.FromCommandLine(settings.JvmArgs));
-                }
+                    jvmArgs = jvmArgs.Append(MArgument.FromCommandLine(settings.JvmArgs));
+                option.ExtraJvmArguments = jvmArgs;
 
                 // CmlLib'in indirmesi duraklatılamaz, yalnızca iptal edilebilir
                 job.Pausable = false;
@@ -254,7 +260,7 @@ namespace VuluLauncher
                 job.Phase = "Oyun dosyaları indiriliyor";
                 await launcher.InstallAsync(versionName, FileProgress(), ByteProgress(), DownloadJob.Current?.Token ?? CancellationToken.None);
 
-                var javaArgs = new List<string>();
+                var javaArgs = new List<string> { EnglishLocaleArgs };
                 if (skins != null)
                 {
                     javaArgs.Add($"-javaagent:{skins.AgentJar}={skins.ApiRoot}");
