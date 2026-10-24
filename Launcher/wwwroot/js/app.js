@@ -653,10 +653,29 @@ function renderPackActions(instance) {
     ].filter(Boolean));
 }
 
+/**
+ * Açılır menüyü düğmenin yanına, pencereye sığacak şekilde yerleştirir: üstte yer varsa yukarı, yoksa aşağı açılır;
+ * iki tarafa da sığmazsa geniş olan tarafa açılıp kaydırılır. Menü sabit konumlu olduğu için sahnenin kenarında kesilmez.
+ */
+function positionMenu(menu, anchor) {
+    const margin = 8, gap = 6;
+    menu.style.maxHeight = '';
+    const a = anchor.getBoundingClientRect();
+    const height = menu.scrollHeight + 2, width = menu.offsetWidth;
+    const above = a.top - gap - margin, below = window.innerHeight - a.bottom - gap - margin;
+    const up = height <= above || (height > below && above > below);
+    const room = up ? above : below;
+    if (height > room) menu.style.maxHeight = room + 'px';
+    const shown = Math.min(height, room);
+    menu.style.top = (up ? a.top - gap - shown : a.bottom + gap) + 'px';
+    menu.style.left = Math.max(margin, Math.min(a.left, window.innerWidth - width - margin)) + 'px';
+}
+
 function openPackMenu() {
     const menu = $('pack-menu');
     if (!menu) return;
     menu.hidden = false;
+    positionMenu(menu, $('btn-pack-more'));
     $('btn-pack-more').setAttribute('aria-expanded', 'true');
     menu.querySelector('button')?.focus();
 }
@@ -669,6 +688,9 @@ function closePackMenu() {
 }
 
 document.addEventListener('mousedown', event => { if (!event.target.closest('.more-wrap')) closePackMenu(); });
+window.addEventListener('resize', closePackMenu);
+// Sayfa kayarsa menü düğmeden kopmasın diye kapanır (menünün kendi içinde kaydırması hariç)
+document.addEventListener('scroll', event => { if (!event.target.closest?.('.more-menu')) closePackMenu(); }, true);
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && $('pack-menu') && !$('pack-menu').hidden) { closePackMenu(); $('btn-pack-more').focus(); }
 });

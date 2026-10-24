@@ -249,7 +249,8 @@
     .profile-layout { grid-template-columns: minmax(0, 1fr); gap: 18px; }
     .profile-banner.has-image { min-height: 80px; }
     .profile-banner-actions { opacity: 1; }
-    .profile-head { flex-wrap: wrap; gap: 12px; padding: 0 16px 16px; margin-top: -30px; }
+    .profile-head { flex-wrap: wrap; gap: 12px; padding: 0 16px 16px; }
+    .profile-head .avatar-xl { margin-top: -30px; }
     .avatar-xl { width: 72px; height: 72px; font-size: 28px; }
     .profile-head-actions { width: 100%; flex-wrap: wrap; }
     .profile-head-actions .btn { flex: 1 1 auto; }
