@@ -122,7 +122,12 @@ function setupTitlebar() {
     titlebar.addEventListener('pointercancel', stop);
 
     $('btn-min').addEventListener('click', () => bridge.send('window.minimize'));
-    $('btn-close').addEventListener('click', () => bridge.send('window.close'));
+    $('btn-close').addEventListener('click', () => {
+        // Bildirim alanına küçülürse pencere yeniden kurulduğunda aynı sayfaya dönülür, müzik çalıyorsa sürer
+        store.set('resumePage', state.page);
+        store.set('resumeMusic', !$('music').paused);
+        bridge.send('window.close');
+    });
 
     // Kurulum izni verilip uygulamaya dönülünce bekleyen güncelleme yeniden denenir (APK yeniden inmez)
     bridge.on('appResumed', () => {
@@ -220,6 +225,14 @@ async function showLogin({ auto = false } = {}) {
     $('tab-admin').hidden = true;
     showLoginCard('login');
     closePopovers();
+
+    // Pencere bildirim alanından geri açıldı: oturum C# tarafında açık, giriş ekranı ve perde atlanır
+    if (init.session) {
+        state.gameRunning = !!init.gameRunning;
+        hideSplash();
+        await enterLauncher(init.session, { resume: true });
+        return;
+    }
 
     username.value = init.savedUsername || '';
     password.value = '';
@@ -385,9 +398,9 @@ async function openCurtainsTo(viewId) {
     hideSplash();
 }
 
-async function enterLauncher(session) {
+async function enterLauncher(session, { resume = false } = {}) {
     // Perde (otomatik girişte zaten kapalı) arayüzden önce gelir; arayüz arkada hazırlanır
-    const useSplash = !state.settings.skipSplash;
+    const useSplash = !resume && !state.settings.skipSplash;
     if (useSplash && splashStartedAt === null) beginSplash(session.username);
 
     state.username = session.username;
@@ -411,7 +424,13 @@ async function enterLauncher(session) {
     refreshPackUpdates();
     refreshAnnouncement();
 
-    if (!useSplash) {
+    if (resume) {
+        const page = store.get('resumePage', 'home');
+        if (page && page !== 'home' && document.getElementById('page-' + page)) showPage(page);
+        showView('view-main');
+        if (store.get('resumeMusic', false)) startMusic();
+        updatePlayButton();
+    } else if (!useSplash) {
         showView('view-main');
         startMusic();
     } else {
@@ -990,8 +1009,7 @@ function setupConsole() {
     bridge.on('log', lines => lines.forEach(appendLog));
     bridge.on('gameExited', () => { state.gameRunning = false; updatePlayButton(); loadDetails(); });
     bridge.on('logosChanged', () => reloadInstances(state.selected && state.selected.id));
-    bridge.on('windowHidden', onWindowHidden);
-    bridge.on('playingStarted', showPlayingToast);
+    bridge.on('toast', showToast);
     bridge.on('gameCrashed', crash => showCrashDialog(crash));
 
     $('console-clear').addEventListener('click', clearConsole);
@@ -1019,50 +1037,34 @@ async function saveSettings(patch) {
     return result.settings;
 }
 
-// ── Bildirim alanı ────────────────────────────────────────────────────
-// Launcher bildirim alanına küçülünce müzik susar, animasyonlar ve sayfa yenilemeleri durur (bilgisayara yük
-// olmasın). Bildirimleri arka uç (C#) göndermeye devam eder. Pencere geri gelince müzik kaldığı yerden sürer.
-let resumeMusicOnShow = false;
-const inTray = () => document.documentElement.classList.contains('in-tray');
-
-function onWindowHidden() {
-    const audio = $('music');
-    resumeMusicOnShow = !audio.paused;
-    audio.pause();
-    refreshMusicWidget();
-    document.documentElement.classList.add('in-tray');
-}
-
-window.addEventListener('focus', () => {
-    if (!inTray()) return;
-    document.documentElement.classList.remove('in-tray');
-    if (resumeMusicOnShow) $('music').play().catch(() => {});
-    resumeMusicOnShow = false;
-    refreshMusicWidget();
-});
-
-// ── "Oyunda" bildirimi ────────────────────────────────────────────────
+// ── Bildirim kartı ────────────────────────────────────────────────────
 /**
- * Biri oyuna girince sağ altta Steam'deki gibi küçük bir kart. Launcher öndeyken gösterilir; arkadayken ya da
- * bildirim alanındayken arka uç Windows bildirimi gönderir. En fazla üç kart üst üste durur, her biri 6 sn sonra gider.
+ * Launcher öndeyken gelen bildirimler sağ altta Steam'deki gibi küçük kart olur (arkadayken aynı kart masaüstünde
+ * C# tarafından çizilir). Açık olan konuşmanın mesajı kart olmaz. En fazla üç kart üst üste durur, her biri 6 sn sonra
+ * gider; tıklanınca ilgili sayfa açılır.
  */
-function showPlayingToast(p) {
-    if (!p || !p.username || inTray() || !document.hasFocus()) return;
-    let stack = $('playing-toasts');
-    if (!stack) stack = document.body.appendChild(el('div', { id: 'playing-toasts', class: 'playing-toasts', 'aria-live': 'polite' }));
+function showToast(n) {
+    if (!n || !n.title) return;
+    if (n.tag && n.tag.startsWith('dm:') && state.page === 'messages' && typeof dm !== 'undefined' && dm.active === n.tag.slice(3)) return;
+    let stack = $('toasts');
+    if (!stack) stack = document.body.appendChild(el('div', { id: 'toasts', class: 'toasts', 'aria-live': 'polite' }));
 
-    const known = (typeof profile !== 'undefined' && profile.members || []).find(m => m.username === p.username);
+    const person = n.tag && /^(dm|friend|profile):/.test(n.tag) ? n.tag.slice(n.tag.indexOf(':') + 1) : null;
+    const known = person && (typeof profile !== 'undefined' && profile.members || []).find(m => m.username === person);
     let timer = 0;
     const dismiss = () => {
         clearTimeout(timer);
         card.classList.add('leaving');
         setTimeout(() => card.remove(), 250);
     };
-    const card = el('button', { type: 'button', class: 'playing-toast', title: 'Profili aç', onclick: () => { dismiss(); openProfile(p.username); } },
-        avatarEl(known || { username: p.username }, 'avatar-md'),
-        el('div', { class: 'playing-text' },
-            el('div', {}, el('b', {}, p.username), ' oyunda'),
-            el('div', { class: 'playing-game' }, p.instance || 'Minecraft')));
+    const card = el('button', {
+        type: 'button', class: 'toast' + (n.tag && n.tag.startsWith('profile:') ? ' playing' : ''),
+        onclick: () => { dismiss(); if (n.tag) routeNotification(n.tag); },
+    },
+        person ? avatarEl(known || { username: person }, 'avatar-md') : el('img', { class: 'toast-logo', src: 'assets/logo.png', alt: '' }),
+        el('div', { class: 'toast-text' },
+            el('b', {}, n.title),
+            n.body && el('div', { class: 'toast-body' }, n.body)));
     stack.append(card);
     while (stack.children.length > 3) stack.firstElementChild.remove();
     timer = setTimeout(dismiss, 6000);

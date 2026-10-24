@@ -48,9 +48,28 @@ namespace VuluLauncher
                 return;
             }
 
+            using var host = new WindowsHost(CreateWindow, Path.Combine(AppContext.BaseDirectory, "wwwroot", "index.html"));
+            var bridge = new Bridge(host.SendToUi);
+            var app = new LauncherApp(bridge, host);
+            host.NotificationClicked += app.OnNotificationClicked;
+            app.RegisterCommands();
+            app.SetStartupAction(action);
+            single.Listen(app.OnRemoteCommand);
+
+            // Pencere bildirim alanına küçülünce kapatılıp açılınca yeniden kurulur; her yeni pencere köprüye bağlanır
+            host.Run(window => window.RegisterWebMessageReceivedHandler((_, message) => bridge.HandleMessage(message)));
+
+            app.Shutdown();
+        }
+
+        /// <summary>Launcher penceresi: ilk açılışta ve bildirim alanından her geri açılışta yeniden kurulur.</summary>
+        private static PhotinoWindow CreateWindow()
+        {
             var (width, height, zoom) = WindowLayout(AppSettings.Current.WindowSize);
 
             var window = new PhotinoWindow()
+                // Photino her arayüz mesajını konsola yazar (JSON içeriğiyle); gereksiz iş, kapalı
+                .SetLogVerbosity(0)
                 .SetTitle("vulu Launcher")
                 .SetIconFile(Path.Combine(AppContext.BaseDirectory, "logo.ico"))
                 // Tarayıcı önbelleği varsayılan olarak bütün Photino uygulamalarının paylaştığı klasöre yazılır;
@@ -81,20 +100,7 @@ namespace VuluLauncher
                 RoundCorners(window.WindowHandle);
                 VuluShared.WindowIcon.Apply(window.WindowHandle, Path.Combine(AppContext.BaseDirectory, "logo.ico"));
             };
-
-            using var host = new WindowsHost(window);
-            var bridge = new Bridge(host.SendToUi);
-            var app = new LauncherApp(bridge, host);
-            host.NotificationClicked += app.OnNotificationClicked;
-            app.RegisterCommands();
-            app.SetStartupAction(action);
-            single.Listen(app.OnRemoteCommand);
-
-            window.RegisterWebMessageReceivedHandler((_, message) => bridge.HandleMessage(message));
-            window.Load(Path.Combine(AppContext.BaseDirectory, "wwwroot", "index.html"));
-            window.WaitForClose();
-
-            app.Shutdown();
+            return window;
         }
 
         /// <summary>

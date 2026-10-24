@@ -120,13 +120,13 @@ namespace VuluLauncher
                                 string shotId = e.GetProperty("shotId").GetString()!;
                                 _bridge.Emit("shotEvent", new { from, kind, text, shotId });
                                 if (AppSettings.Current.SocialNotifications)
-                                    NotifyIfAway(kind == "like" ? $"{from} ekran görüntünü beğendi" : $"{from} yorum yaptı",
+                                    ShowNotification(kind == "like" ? $"{from} ekran görüntünü beğendi" : $"{from} yorum yaptı",
                                         kind == "like" ? "Sosyal'de görmek için tıkla." : text, "shot:" + shotId);
                             }
                         }
                     }
                     catch (Exception) { /* bağlantı yoksa bir sonraki turda */ }
-                    await Task.Delay(TimeSpan.FromSeconds(20));
+                    await Task.Delay(TimeSpan.FromSeconds(_host.IsWindowOpen ? 20 : 60));
                 }
             });
         }

@@ -9,16 +9,12 @@ namespace VuluLauncher
         // ════════════════════════════════════════════════════════════════
 
         /// <summary>
-        /// Kapat tuşu: ayar açıksa launcher bildirim alanına küçülür (arka uç mesajları ve bildirimleri sürdürür),
-        /// değilse kapanır. Arayüz gizlenmeden önce müziği ve zamanlayıcılarını durdurur.
+        /// Kapat tuşu: ayar açıksa launcher bildirim alanına küçülür (pencere ve tarayıcı kapanır, bu süreç mesaj ve
+        /// bildirim denetimlerini sürdürür), değilse tamamen kapanır.
         /// </summary>
         private void CloseWindow()
         {
-            if (AppSettings.Current.CloseToTray && _host.CanHideToTray)
-            {
-                _bridge.Emit("windowHidden");
-                _host.HideToTray();
-            }
+            if (AppSettings.Current.CloseToTray && _host.CanHideToTray) _host.HideToTray();
             else _host.Close();
         }
 
@@ -67,8 +63,7 @@ namespace VuluLauncher
             // Aynı anda çok kişi girerse bildirim yağmuru olmasın
             foreach (var (user, instance, friend) in started.Take(3))
             {
-                _bridge.Emit("playingStarted", new { username = user, instance, friend });
-                NotifyIfAway($"{user} oyunda", $"{instance} oynuyor", "profile:" + user);
+                ShowNotification($"{user} oyunda", $"{instance} oynuyor", "profile:" + user);
             }
 
             static string? Str(JsonElement e, string name) =>

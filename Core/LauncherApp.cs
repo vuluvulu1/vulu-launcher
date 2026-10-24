@@ -59,6 +59,10 @@ namespace VuluLauncher
 
             // ── Uygulama ──────────────────────────────────────────────────
             _bridge.On("app.init", _ => Task.FromResult<object?>(Init()));
+#if DEBUG
+            // Yalnızca geliştirme derlemesinde: bildirim kartını denemek için
+            _bridge.On("debug.notify", args => { ShowNotification(args.Str("title"), args.Str("body"), args.Str("tag")); return Task.FromResult<object?>(null); });
+#endif
             _bridge.On("app.wake", async _ => await WakeServerAsync());
 
             _bridge.On("auth.login", async args => await LoginAsync(args));
@@ -115,10 +119,14 @@ namespace VuluLauncher
             _bridge.Emit("notificationClicked");
         }
 
-        /// <summary>Bildirimler yalnızca launcher kullanıcının önünde değilken gösterilir.</summary>
-        private void NotifyIfAway(string title, string body, string tag)
+        /// <summary>
+        /// Bütün bildirimler buradan geçer: launcher öndeyse arayüzün içinde sağ altta kart olarak, değilse
+        /// (arkada, bildirim alanında, oyundayken) masaüstünde Steam'deki gibi kart olarak gösterilir.
+        /// </summary>
+        private void ShowNotification(string title, string body, string tag)
         {
-            if (!_host.IsForeground) _host.Notify(title, body, tag);
+            if (_host.IsForeground) _bridge.Emit("toast", new { title, body, tag });
+            else _host.Notify(title, body, tag);
         }
 
         private void Log(string text, string level)
@@ -144,7 +152,10 @@ namespace VuluLauncher
                 // Kayıtlı şifre arayüze gönderilmez; arayüz sadece var olduğunu bilir
                 hasSavedPassword = !string.IsNullOrEmpty(password),
                 ramOptionsGb = PackCatalog.RamOptionsGb,
-                settings = AppSettings.Current
+                settings = AppSettings.Current,
+                // Pencere bildirim alanından geri açıldıysa oturum hâlâ açıktır: arayüz giriş ekranını atlayıp devam eder
+                session = string.IsNullOrEmpty(_login.Token) ? null : new { username = _login.Username, isAdmin = _login.IsAdmin },
+                gameRunning = _game.IsRunning
             };
         }
 

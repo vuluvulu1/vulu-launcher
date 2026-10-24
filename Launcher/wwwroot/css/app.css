@@ -1414,21 +1414,21 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .java-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .java-path { font: 11px var(--font-mono); max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ── Bildirim alanı ve "oyunda" kartı ──────────────────────────────── */
-/* Gizliyken hiçbir animasyon çalışmasın */
-.in-tray *, .in-tray *::before, .in-tray *::after { animation-play-state: paused !important; }
-
-.playing-toasts { position: fixed; right: 18px; bottom: 18px; z-index: 90; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-.playing-toast {
-    pointer-events: auto; width: 270px; display: flex; align-items: center; gap: 11px; padding: 10px 12px;
-    border: 1px solid var(--line-strong); border-left: 3px solid var(--ok); border-radius: var(--r-lg);
+/* ── Bildirim kartları (sağ alt) ──────────────────────────────────── */
+.toasts { position: fixed; right: 18px; bottom: 18px; z-index: 90; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast {
+    pointer-events: auto; width: 290px; display: flex; align-items: center; gap: 11px; padding: 10px 12px;
+    border: 1px solid var(--line-strong); border-left: 3px solid var(--accent); border-radius: var(--r-lg);
     background: var(--surface); box-shadow: var(--shadow-pop); color: var(--text); font: 13px var(--font); text-align: left;
-    animation: playing-in .28s cubic-bezier(.2, .8, .2, 1);
+    animation: toast-in .28s cubic-bezier(.2, .8, .2, 1);
 }
-.playing-toast:hover { background: var(--raised); }
-.playing-toast.leaving { opacity: 0; transform: translateX(16px); transition: opacity .22s, transform .22s; }
-.playing-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.playing-text b { font-weight: 600; }
-.playing-game { color: var(--ok); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-@keyframes playing-in { from { opacity: 0; transform: translateY(14px); } }
-@media (prefers-reduced-motion: reduce) { .playing-toast { animation: none; } }
+.toast.playing { border-left-color: var(--ok); }
+.toast:hover { background: var(--raised); }
+.toast.leaving { opacity: 0; transform: translateX(16px); transition: opacity .22s, transform .22s; }
+.toast-logo { width: 34px; height: 34px; flex: none; border-radius: var(--r); }
+.toast-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.toast-text b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toast-body { color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toast.playing .toast-body { color: var(--ok); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(14px); } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }

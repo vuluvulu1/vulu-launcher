@@ -51,7 +51,6 @@ function schedulePresence() {
     clearInterval(community.timer);
     if (state.page === 'servers' || state.page === 'profile' || state.page === 'friends')
         community.timer = setInterval(() => {
-            if (document.documentElement.classList.contains('in-tray')) return;   // gizliyken yenilemeye gerek yok
             refreshPresence();
             if (state.page === 'servers') pingAll();
         }, PRESENCE_REFRESH_MS);

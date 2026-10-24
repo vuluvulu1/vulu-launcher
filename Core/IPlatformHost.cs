@@ -27,6 +27,9 @@ namespace VuluLauncher
         /// <summary>Ekranın kullanılabilir alanı (piksel); bilinmiyorsa null. Ekrana sığmayan boyutlar listelenmez.</summary>
         (int Width, int Height)? ScreenWorkArea => null;
 
+        /// <summary>Pencere açık mı; bildirim alanındayken false (arka plan denetimleri seyrekleşir).</summary>
+        bool IsWindowOpen => true;
+
         /// <summary>Bildirim alanına küçültme destekleniyor mu (Windows).</summary>
         bool CanHideToTray => false;
 

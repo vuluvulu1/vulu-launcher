@@ -194,7 +194,11 @@ async function onNotificationClicked() {
     let pending;
     try { pending = await bridge.invoke('app.takeNotification'); } catch { return; }
     const tag = pending && pending.tag;
-    if (!tag) return;
+    if (tag) routeNotification(tag);
+}
+
+/** Bildirimin etiketine göre ilgili sayfayı açar (masaüstü bildirimi ya da arayüzdeki kart). */
+async function routeNotification(tag) {
     if (tag.startsWith('dm:')) {
         showPage('messages');
         openMessagesPage(tag.slice(3));

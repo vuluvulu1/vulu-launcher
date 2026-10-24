@@ -360,7 +360,7 @@ namespace VuluLauncher
                                 bool fresh;
                                 lock (_packUpdatesNotified) fresh = _packUpdatesNotified.Add(key);
                                 if (fresh && AppSettings.Current.PackUpdateNotifications)
-                                    NotifyIfAway($"{u.GetProperty("name").GetString()} güncellendi",
+                                    ShowNotification($"{u.GetProperty("name").GetString()} güncellendi",
                                         $"Paketin yeni sürümü (rev {u.GetProperty("to").GetInt32()}) hazır. Güncellemek için tıkla.",
                                         "pack:" + u.GetProperty("instanceId").GetString());
                             }

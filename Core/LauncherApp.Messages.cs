@@ -318,11 +318,11 @@ namespace VuluLauncher
         }
 
         // ── Bildirim ──────────────────────────────────────────────────────
-        /// <summary>Launcher öndeyken değilse gelen mesajlar Windows bildirimi olur (kişi başına bir bildirim).</summary>
+        /// <summary>Gelen mesajlar bildirim olur (kişi başına bir tane). Arayüz, o konuşma açıkken kartı göstermez.</summary>
         private void NotifyMessages(List<object> views)
         {
             var settings = AppSettings.Current;
-            if (!settings.DmNotifications || views.Count == 0 || _host.IsForeground) return;
+            if (!settings.DmNotifications || views.Count == 0) return;
             var incoming = views.Select(v => JsonSerializer.SerializeToElement(v, DmJson)).Where(v => !v.GetProperty("mine").GetBoolean());
             foreach (var group in incoming.GroupBy(v => v.GetProperty("peer").GetString()!).Take(3))
             {
@@ -341,7 +341,7 @@ namespace VuluLauncher
                         : "Yeni şifreli mesaj";
                     if (count > 1) body = $"({count} yeni) " + body;
                 }
-                _host.Notify(group.Key, body, "dm:" + group.Key);
+                ShowNotification(group.Key, body, "dm:" + group.Key);
             }
         }
 
@@ -378,7 +378,8 @@ namespace VuluLauncher
                         }
                     }
                     catch (Exception) { /* bağlantı yoksa bir sonraki turda */ }
-                    await Task.Delay(TimeSpan.FromSeconds(4));
+                    // Pencere kapalıyken (bildirim alanında) daha seyrek sorulur: bilgisayara ve sunucuya yük olmasın
+                    await Task.Delay(TimeSpan.FromSeconds(_host.IsWindowOpen ? 4 : 15));
                 }
             });
         }
