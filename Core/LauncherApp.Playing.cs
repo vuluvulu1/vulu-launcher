@@ -14,7 +14,11 @@ namespace VuluLauncher
         /// </summary>
         private void CloseWindow()
         {
-            if (AppSettings.Current.CloseToTray && _host.CanHideToTray) _host.HideToTray();
+            if (AppSettings.Current.CloseToTray && _host.CanHideToTray)
+            {
+                _discord.SetHidden(true);   // küçükken Discord'da görünmesin (oyun açıksa "oynuyor" kalır)
+                _host.HideToTray();
+            }
             else _host.Close();
         }
 

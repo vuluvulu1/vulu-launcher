@@ -27,6 +27,9 @@ namespace VuluLauncher
         private JsonObject? _browsing;           // launcher'daki son sayfa; oyun kapanınca buna dönülür
         private bool _playing;
         private bool _enabled;
+        private bool _hidden;
+        /// <summary>Durum gösterilsin mi: ayar açık ve launcher bildirim alanında değil (oyun açıksa yine gösterilir).</summary>
+        private bool Active => _enabled && (!_hidden || _playing);
         private readonly long _sessionStart = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         // Discord durum güncellemesini sınırlar (~20 sn'de 5); hızlı sayfa geçişleri birleştirilir
         private static readonly TimeSpan MinInterval = TimeSpan.FromSeconds(4);
@@ -40,6 +43,20 @@ namespace VuluLauncher
                 _enabled = enabled;
                 if (enabled && _loop == null && ApplicationId.Length > 0)
                     _loop = Task.Run(() => RunAsync(_stop.Token));
+            }
+            Signal();
+        }
+
+        /// <summary>
+        /// Launcher bildirim alanına küçüldü (true) ya da pencere yeniden açıldı (false). Küçükken Discord'da hiçbir şey
+        /// görünmez; oyun açıksa "oynuyor" durumu kalır, oyun kapanınca o da silinir.
+        /// </summary>
+        public void SetHidden(bool hidden)
+        {
+            lock (_gate)
+            {
+                if (_hidden == hidden) return;
+                _hidden = hidden;
             }
             Signal();
         }
@@ -170,7 +187,7 @@ namespace VuluLauncher
             while (!stop.IsCancellationRequested)
             {
                 bool enabled;
-                lock (_gate) enabled = _enabled;
+                lock (_gate) enabled = Active;
                 if (!enabled)
                 {
                     await WaitAsync(Timeout.InfiniteTimeSpan, stop);
@@ -204,7 +221,7 @@ namespace VuluLauncher
                                 if (wait > TimeSpan.Zero) await Task.Delay(wait, linked.Token);   // bu sürede gelen değişiklikler birleşir
                                 lastSent = DateTime.UtcNow;
                                 JsonObject? activity;
-                                lock (_gate) { enabled = _enabled; activity = _activity; }
+                                lock (_gate) { enabled = Active; activity = _activity; }
                                 await SendActivityAsync(pipe, enabled ? activity : null, stop);
                                 if (!enabled) break;
                                 await Task.WhenAny(reader, WaitAsync(Timeout.InfiniteTimeSpan, linked.Token));   // bağlantı koparsa bekleyen de iptal olur

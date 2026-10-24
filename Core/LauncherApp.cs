@@ -140,6 +140,7 @@ namespace VuluLauncher
         // ════════════════════════════════════════════════════════════════
         private object Init()
         {
+            _discord.SetHidden(false);   // pencere (yeniden) açıldı: Discord durumu geri gelir
             var (username, password) = CredentialManager.Load();
             return new
             {
