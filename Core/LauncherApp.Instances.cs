@@ -555,6 +555,8 @@ namespace VuluLauncher
                 settings = AppSettings.Current,
                 ramOptionsGb = PackCatalog.RamOptionsGb,
                 installedJava = JavaManager.InstalledVersions().OrderBy(v => v),
+                screen = _host.ScreenWorkArea is { } area ? new { width = area.Width, height = area.Height } : null,
+                canHideToTray = _host.CanHideToTray,
                 // Bilgisayarda bulunan Java'lar: otomatik modda aynı sürüm indirilmeden kullanılır, istenirse seçilir
                 detectedJava = JavaManager.Detect().Select(j => new { major = j.Major, version = j.Version, path = j.Path, source = j.Source }),
                 version = LauncherUpdateService.LocalVersion,
@@ -573,9 +575,9 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Seçilen Java dosyası bulunamadı. Otomatik moda dönün ya da geçerli bir java.exe seçin.");
 
             bool playtimeChanged = settings.ShowPlaytimeOnProfile != AppSettings.Current.ShowPlaytimeOnProfile;
-            bool scaleChanged = settings.WindowScale != AppSettings.Current.WindowScale;
+            bool sizeChanged = settings.WindowSize != AppSettings.Current.WindowSize;
             AppSettings.Save(settings);
-            if (scaleChanged) _host.ApplyWindowScale(AppSettings.Current.WindowScale);
+            if (sizeChanged) _host.ApplyWindowSize(AppSettings.Current.WindowSize);
             _discord.SetEnabled(_host.IsDesktop && settings.DiscordPresence);
             if (playtimeChanged) _ = SyncPlaytimeAsync();
             SignalPresence();   // "görünmez" seçilince arkadaş listesinden hemen düşülür
@@ -629,6 +631,7 @@ namespace VuluLauncher
             _ = Task.Run(async () => { try { await api.DeleteAsync<System.Text.Json.JsonElement>("/users/me/presence"); } catch { } });
             _login = new LoginService();
             _knownFriendRequests = null;   // sonra giriş yapan kişinin istekleri açılışta bildirim olmaz
+            ResetPlayingWatch();
             // Mesaj anahtarı bellekten silinir: bu bilgisayarda sonra giriş yapan biri önceki kullanıcının anahtarını kullanamaz
             lock (_dmGate)
             {

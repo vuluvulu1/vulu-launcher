@@ -48,7 +48,7 @@ namespace VuluLauncher
                 return;
             }
 
-            var (width, height, zoom) = WindowLayout(AppSettings.Current.WindowScale);
+            var (width, height, zoom) = WindowLayout(AppSettings.Current.WindowSize);
 
             var window = new PhotinoWindow()
                 .SetTitle("vulu Launcher")
@@ -98,22 +98,24 @@ namespace VuluLauncher
         }
 
         /// <summary>
-        /// Pencere boyutu ve arayüz yakınlaştırması. Otomatikte (0) büyük ekranlarda pencere ekranın yaklaşık
-        /// %72'sine büyür ve arayüz onunla birlikte yakınlaşır (küçük görünmesin); seçilen yüzde (125, 150...) bunu sabitler.
-        /// Her durumda pencere masaüstünün kullanılabilir alanına sığdırılır.
+        /// Pencere boyutu ve arayüz yakınlaştırması. Otomatikte ("") büyük ekranlarda pencere ekranın yaklaşık %72'sine
+        /// büyür ve arayüz onunla birlikte yakınlaşır (küçük görünmesin). Hazır boyut seçildiyse ("1600x900") pencere tam
+        /// o boyutta olur, arayüz pencereye göre ölçeklenir (LoL istemcisindeki gibi). Her durumda pencere masaüstünün
+        /// kullanılabilir alanına sığdırılır.
         /// </summary>
-        internal static (int Width, int Height, int Zoom) WindowLayout(int setting)
+        internal static (int Width, int Height, int Zoom) WindowLayout(string setting)
         {
             double dpi = Math.Max(1, GetDpiForSystem() / 96.0);
-            double k = setting / 100.0;
-            if (setting == 0)
+            if (AppSettings.ParseWindowSize(setting) is { } size)
             {
-                var area = new RECT();
-                k = SystemParametersInfo(0x0030 /* SPI_GETWORKAREA */, 0, ref area, 0)
-                    ? Math.Min(0.72 * (area.Right - area.Left) / (BaseWidth * dpi), 0.80 * (area.Bottom - area.Top) / (BaseHeight * dpi))
-                    : 1;
-                k = Math.Clamp(Math.Round(k * 20) / 20, 1, 1.6);   // %5 adımlarla, %100–160
+                var (w, h) = FitToWorkArea(size.Width, size.Height);
+                double z = Math.Min(w / (BaseWidth * dpi), h / (BaseHeight * dpi));
+                return (w, h, (int)Math.Round(100 * Math.Clamp(z, 0.6, 2.5)));
             }
+            double k = WorkArea() is { } area
+                ? Math.Min(0.72 * area.Width / (BaseWidth * dpi), 0.80 * area.Height / (BaseHeight * dpi))
+                : 1;
+            k = Math.Clamp(Math.Round(k * 20) / 20, 1, 1.6);   // %5 adımlarla, %100–160
             var (width, height) = FitToWorkArea((int)(BaseWidth * dpi * k), (int)(BaseHeight * dpi * k));
             // Pencere ekrana sığdırılmak için küçüldüyse yakınlaştırma da o oranda azalır
             double fit = Math.Min(width / (BaseWidth * dpi * k), height / (BaseHeight * dpi * k));
@@ -126,12 +128,16 @@ namespace VuluLauncher
         /// </summary>
         private static (int Width, int Height) FitToWorkArea(int width, int height)
         {
-            var area = new RECT();
-            if (!SystemParametersInfo(0x0030 /* SPI_GETWORKAREA */, 0, ref area, 0)) return (width, height);
+            if (WorkArea() is not { } area) return (width, height);
+            return (Math.Min(width, (int)(area.Width * 0.96)), Math.Min(height, (int)(area.Height * 0.96)));
+        }
 
-            int maxWidth = (int)((area.Right - area.Left) * 0.96);
-            int maxHeight = (int)((area.Bottom - area.Top) * 0.96);
-            return (Math.Min(width, maxWidth), Math.Min(height, maxHeight));
+        /// <summary>Masaüstünün görev çubuğu dışındaki alanı (piksel).</summary>
+        internal static (int Width, int Height)? WorkArea()
+        {
+            var area = new RECT();
+            return SystemParametersInfo(0x0030 /* SPI_GETWORKAREA */, 0, ref area, 0)
+                ? (area.Right - area.Left, area.Bottom - area.Top) : null;
         }
 
         [StructLayout(LayoutKind.Sequential)]

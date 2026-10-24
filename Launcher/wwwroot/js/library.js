@@ -198,6 +198,8 @@ async function onNotificationClicked() {
     if (tag.startsWith('dm:')) {
         showPage('messages');
         openMessagesPage(tag.slice(3));
+    } else if (tag.startsWith('profile:')) {
+        openProfile(tag.slice(8));
     } else if (tag.startsWith('friend:')) {
         showPage('friends');
     } else if (tag.startsWith('shot:')) {

@@ -60,6 +60,7 @@ namespace VuluLauncher
                                 object body = mode == "online" ? new { state = "online" } : playing ?? new { state = "launcher" };
                                 await _api.PostAsync<JsonElement>("/users/me/presence", body);
                             }
+                            await CheckPlayingAsync();
                         }
                     }
                     catch (Exception) { /* sunucuya ulaşılamazsa bir sonraki turda denenir */ }

@@ -990,6 +990,8 @@ function setupConsole() {
     bridge.on('log', lines => lines.forEach(appendLog));
     bridge.on('gameExited', () => { state.gameRunning = false; updatePlayButton(); loadDetails(); });
     bridge.on('logosChanged', () => reloadInstances(state.selected && state.selected.id));
+    bridge.on('windowHidden', onWindowHidden);
+    bridge.on('playingStarted', showPlayingToast);
     bridge.on('gameCrashed', crash => showCrashDialog(crash));
 
     $('console-clear').addEventListener('click', clearConsole);
@@ -1015,6 +1017,55 @@ async function saveSettings(patch) {
     const result = await bridge.invoke('settings.save', { ...state.settings, ...patch });
     applySettings(result.settings);
     return result.settings;
+}
+
+// ── Bildirim alanı ────────────────────────────────────────────────────
+// Launcher bildirim alanına küçülünce müzik susar, animasyonlar ve sayfa yenilemeleri durur (bilgisayara yük
+// olmasın). Bildirimleri arka uç (C#) göndermeye devam eder. Pencere geri gelince müzik kaldığı yerden sürer.
+let resumeMusicOnShow = false;
+const inTray = () => document.documentElement.classList.contains('in-tray');
+
+function onWindowHidden() {
+    const audio = $('music');
+    resumeMusicOnShow = !audio.paused;
+    audio.pause();
+    refreshMusicWidget();
+    document.documentElement.classList.add('in-tray');
+}
+
+window.addEventListener('focus', () => {
+    if (!inTray()) return;
+    document.documentElement.classList.remove('in-tray');
+    if (resumeMusicOnShow) $('music').play().catch(() => {});
+    resumeMusicOnShow = false;
+    refreshMusicWidget();
+});
+
+// ── "Oyunda" bildirimi ────────────────────────────────────────────────
+/**
+ * Biri oyuna girince sağ altta Steam'deki gibi küçük bir kart. Launcher öndeyken gösterilir; arkadayken ya da
+ * bildirim alanındayken arka uç Windows bildirimi gönderir. En fazla üç kart üst üste durur, her biri 6 sn sonra gider.
+ */
+function showPlayingToast(p) {
+    if (!p || !p.username || inTray() || !document.hasFocus()) return;
+    let stack = $('playing-toasts');
+    if (!stack) stack = document.body.appendChild(el('div', { id: 'playing-toasts', class: 'playing-toasts', 'aria-live': 'polite' }));
+
+    const known = (typeof profile !== 'undefined' && profile.members || []).find(m => m.username === p.username);
+    let timer = 0;
+    const dismiss = () => {
+        clearTimeout(timer);
+        card.classList.add('leaving');
+        setTimeout(() => card.remove(), 250);
+    };
+    const card = el('button', { type: 'button', class: 'playing-toast', title: 'Profili aç', onclick: () => { dismiss(); openProfile(p.username); } },
+        avatarEl(known || { username: p.username }, 'avatar-md'),
+        el('div', { class: 'playing-text' },
+            el('div', {}, el('b', {}, p.username), ' oyunda'),
+            el('div', { class: 'playing-game' }, p.instance || 'Minecraft')));
+    stack.append(card);
+    while (stack.children.length > 3) stack.firstElementChild.remove();
+    timer = setTimeout(dismiss, 6000);
 }
 
 // ── Müzik ─────────────────────────────────────────────────────────────

@@ -12,6 +12,8 @@ namespace VuluLauncher
         private const int WM_APP_TRAY = 0x8000 + 1;
         private const int WM_CLOSE = 0x0010;
         private const int WM_LBUTTONUP = 0x0202;
+        private const int WM_CONTEXTMENU = 0x007B;
+        private const int MenuOpen = 1, MenuExit = 2;
         private const int NIN_SELECT = 0x0400;
         private const int NIN_BALLOONUSERCLICK = 0x0405;
         private const int NIM_ADD = 0, NIM_MODIFY = 1, NIM_DELETE = 2, NIM_SETVERSION = 4;
@@ -30,6 +32,8 @@ namespace VuluLauncher
         public event Action<string?>? Clicked;
         /// <summary>Bildirim alanı simgesine tıklandı.</summary>
         public event Action? IconClicked;
+        /// <summary>Simgenin sağ tık menüsünden "Çıkış" seçildi.</summary>
+        public event Action? ExitRequested;
 
         public TrayNotifier(string iconPath) => _iconPath = iconPath;
 
@@ -59,6 +63,17 @@ namespace VuluLauncher
                 }
             }
             catch { /* bildirim gösterilemezse launcher etkilenmez */ }
+        }
+
+        /// <summary>Simgeyi bildirim alanına koyar (launcher gizlenirken; geri açmak için).</summary>
+        public void ShowIcon()
+        {
+            try
+            {
+                if (!EnsureWindow()) return;
+                lock (_gate) if (!_disposed && !_added) AddIcon();
+            }
+            catch { }
         }
 
         private bool AddIcon()
@@ -132,12 +147,32 @@ namespace VuluLauncher
                 {
                     if (ev == NIN_BALLOONUSERCLICK) Clicked?.Invoke(_lastTag);
                     else if (ev is NIN_SELECT or WM_LBUTTONUP) IconClicked?.Invoke();
+                    else if (ev == WM_CONTEXTMENU) ShowMenu(hwnd);
                 }
                 catch { }
                 return IntPtr.Zero;
             }
             if (msg == WM_CLOSE) { DestroyWindow(hwnd); PostQuitMessage(0); return IntPtr.Zero; }
             return DefWindowProc(hwnd, msg, wParam, lParam);
+        }
+
+        /// <summary>Sağ tık menüsü: Aç / Çıkış. Menü her açılışta oluşturulup kapanınca yok edilir.</summary>
+        private void ShowMenu(IntPtr hwnd)
+        {
+            IntPtr menu = CreatePopupMenu();
+            if (menu == IntPtr.Zero) return;
+            try
+            {
+                AppendMenu(menu, 0, MenuOpen, "vulu Launcher'ı aç");
+                AppendMenu(menu, 0x800 /* MF_SEPARATOR */, 0, null);
+                AppendMenu(menu, 0, MenuExit, "Çıkış");
+                GetCursorPos(out var at);
+                SetForegroundWindow(hwnd);   // menü dışına tıklanınca kapansın diye gerekli
+                int chosen = TrackPopupMenu(menu, 0x100 /* TPM_RETURNCMD */ | 0x20 /* TPM_BOTTOMALIGN */, at.X, at.Y, 0, hwnd, IntPtr.Zero);
+                if (chosen == MenuOpen) IconClicked?.Invoke();
+                else if (chosen == MenuExit) ExitRequested?.Invoke();
+            }
+            finally { DestroyMenu(menu); }
         }
 
         public void Dispose()
@@ -155,12 +190,21 @@ namespace VuluLauncher
             }
         }
 
-        /// <summary>Pencereyi küçültülmüşse geri açıp öne getirir.</summary>
+        /// <summary>Pencereyi küçültülmüş ya da gizlenmişse geri açıp öne getirir.</summary>
         public static void BringToFront(IntPtr window)
         {
             if (window == IntPtr.Zero) return;
             if (IsIconic(window)) ShowWindow(window, 9 /* SW_RESTORE */);
+            else if (!IsWindowVisible(window)) ShowWindow(window, 5 /* SW_SHOW */);
             SetForegroundWindow(window);
+        }
+
+        /// <summary>Pencereyi küçültüp görev çubuğundan da gizler.</summary>
+        public static void Hide(IntPtr window)
+        {
+            if (window == IntPtr.Zero) return;
+            ShowWindow(window, 6 /* SW_MINIMIZE */);
+            ShowWindow(window, 0 /* SW_HIDE */);
         }
 
         /// <summary>Kullanıcı şu an bu pencereye bakıyor mu (önde ve küçültülmemiş)?</summary>
@@ -219,5 +263,14 @@ namespace VuluLauncher
         [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr hwnd);
         [DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr hwnd, int cmd);
         [DllImport("user32.dll")] private static extern bool IsIconic(IntPtr hwnd);
+        [DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr hwnd);
+        [DllImport("user32.dll")] private static extern IntPtr CreatePopupMenu();
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern bool AppendMenu(IntPtr menu, int flags, int id, string? text);
+        [DllImport("user32.dll")] private static extern int TrackPopupMenu(IntPtr menu, int flags, int x, int y, int reserved, IntPtr hwnd, IntPtr rect);
+        [DllImport("user32.dll")] private static extern bool DestroyMenu(IntPtr menu);
+        [DllImport("user32.dll")] private static extern bool GetCursorPos(out POINT point);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT { public int X, Y; }
     }
 }

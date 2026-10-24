@@ -50,7 +50,11 @@ async function refreshPresence() {
 function schedulePresence() {
     clearInterval(community.timer);
     if (state.page === 'servers' || state.page === 'profile' || state.page === 'friends')
-        community.timer = setInterval(() => { refreshPresence(); if (state.page === 'servers') pingAll(); }, PRESENCE_REFRESH_MS);
+        community.timer = setInterval(() => {
+            if (document.documentElement.classList.contains('in-tray')) return;   // gizliyken yenilemeye gerek yok
+            refreshPresence();
+            if (state.page === 'servers') pingAll();
+        }, PRESENCE_REFRESH_MS);
 }
 
 // ── Sunucular sayfası ─────────────────────────────────────────────────

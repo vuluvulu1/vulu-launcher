@@ -32,6 +32,16 @@ function segmentedControl(options, current, onPick) {
     return wrap;
 }
 
+/** LoL istemcisindeki gibi hazır pencere boyutları; ekranın kullanılabilir alanına sığmayanlar listelenmez. */
+const WINDOW_SIZES = [[1280, 720], [1366, 768], [1600, 900], [1920, 1080], [2560, 1440]];
+function windowSizeOptions(screen, current) {
+    const fits = ([w, h]) => !screen || (w <= screen.width && h <= screen.height);
+    const options = [['', 'Otomatik'], ...WINDOW_SIZES.filter(fits).map(([w, h]) => [`${w}x${h}`, `${w}×${h}`])];
+    // Daha önce seçilmiş ama artık (başka ekranda) sığmayan boyut da görünsün ki seçili olduğu belli olsun
+    if (current && !options.some(([key]) => key === current)) options.push([current, current.replace('x', '×')]);
+    return options;
+}
+
 function toggleControl(checked, onChange) {
     const input = el('input', { type: 'checkbox', checked });
     input.addEventListener('change', async () => { if (!(await onChange(input.checked))) input.checked = !input.checked; });
@@ -143,9 +153,15 @@ async function openSettingsPage() {
             segmentedControl([['keep', 'Açık kalsın'], ['minimize', 'Küçült'], ['close', 'Kapat']], s.onGameStart,
                 value => changeSetting({ onGameStart: value }))),
         settingRow('Açılış animasyonunu atla', null, toggleControl(s.skipSplash, value => changeSetting({ skipSplash: value }))),
-        isDesktopApp() && settingRow('Launcher boyutu', 'Otomatikte büyük ekranlarda pencere ve yazılar ekranla birlikte büyür.',
-            segmentedControl([[0, 'Otomatik'], [100, '%100'], [125, '%125'], [150, '%150'], [175, '%175']], s.windowScale || 0,
-                value => changeSetting({ windowScale: value }))),
+        isDesktopApp() && settingRow('Launcher boyutu', 'Pencerenin boyutu; arayüz pencereyle birlikte ölçeklenir. Ekrana sığmayan boyutlar gösterilmez.',
+            segmentedControl(windowSizeOptions(info.screen, s.windowSize || ''), s.windowSize || '',
+                value => changeSetting({ windowSize: value }))),
+        isDesktopApp() && info.canHideToTray && settingRow('Kapat tuşu', 'Bildirim alanına küçülünce mesaj ve oyun bildirimleri gelmeye devam eder; launcher az kaynak kullanır. Tamamen kapatmak için simgeye sağ tıkla → Çıkış.',
+            segmentedControl([[true, 'Bildirim alanına küçült'], [false, 'Kapat']], s.closeToTray !== false,
+                value => changeSetting({ closeToTray: value }))),
+        settingRow('Oyuna girenler', 'Biri oyuna girince sağ altta "oyunda" bildirimi.',
+            segmentedControl([['friends', 'Arkadaşlarım'], ['all', 'Herkes'], ['off', 'Kapalı']], s.playingNotifications || 'friends',
+                value => changeSetting({ playingNotifications: value }))),
         settingRow('Arkadaşların ne görsün', 'Sunucular ve profil sayfasındaki arkadaş listesinde.',
             segmentedControl([['full', 'Ne oynadığım'], ['online', 'Sadece çevrimiçi'], ['hidden', 'Görünmez']], s.presenceMode || 'full',
                 value => changeSetting({ presenceMode: value }))),

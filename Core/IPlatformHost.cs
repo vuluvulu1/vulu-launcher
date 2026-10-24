@@ -21,8 +21,17 @@ namespace VuluLauncher
         /// <summary>Arayüze JSON mesajı gönderir.</summary>
         void SendToUi(string json);
 
-        /// <summary>Launcher penceresinin boyutu ve arayüzün yakınlaştırması (Ayarlar → Launcher boyutu). 0 = otomatik.</summary>
-        void ApplyWindowScale(int scale) { }
+        /// <summary>Launcher penceresinin boyutu (Ayarlar → Launcher boyutu): "" otomatik, yoksa "1280x720".</summary>
+        void ApplyWindowSize(string size) { }
+
+        /// <summary>Ekranın kullanılabilir alanı (piksel); bilinmiyorsa null. Ekrana sığmayan boyutlar listelenmez.</summary>
+        (int Width, int Height)? ScreenWorkArea => null;
+
+        /// <summary>Bildirim alanına küçültme destekleniyor mu (Windows).</summary>
+        bool CanHideToTray => false;
+
+        /// <summary>Pencereyi gizler, bildirim alanında simge kalır; simgeye tıklanınca geri açılır.</summary>
+        void HideToTray() => Minimize();
 
         /// <summary>Launcher şu an kullanıcının önünde mi (değilse bildirim gösterilir).</summary>
         bool IsForeground { get; }

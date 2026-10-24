@@ -19,13 +19,17 @@ namespace VuluLauncher
         public int GameHeight { get; set; }
         public bool Fullscreen { get; set; }
 
-        /// <summary>Launcher penceresinin boyutu: 0 = ekrana göre otomatik, yoksa yüzde (100, 125, 150, 175).</summary>
-        public int WindowScale { get; set; }
+        /// <summary>Launcher penceresinin boyutu: "" = ekrana göre otomatik, yoksa "1280x720" gibi piksel boyutu.</summary>
+        public string WindowSize { get; set; } = "";
 
         // ── Launcher davranışı ────────────────────────────────────────────
         /// <summary>"keep" | "minimize" | "close"</summary>
         public string OnGameStart { get; set; } = "keep";
         public bool SkipSplash { get; set; }
+        /// <summary>Kapat tuşu launcher'ı bildirim alanına küçültür (mesaj ve oyun bildirimleri gelmeye devam eder).</summary>
+        public bool CloseToTray { get; set; } = true;
+        /// <summary>Biri oyuna girince bildirim: "friends" (arkadaşlarım) | "all" (herkes) | "off".</summary>
+        public string PlayingNotifications { get; set; } = "friends";
         public bool ConsoleExpanded { get; set; }
         /// <summary>Discord'da "vulu Launcher oynuyor" durumu.</summary>
         public bool DiscordPresence { get; set; } = true;
@@ -85,6 +89,14 @@ namespace VuluLauncher
             return new AppSettings();
         }
 
+        /// <summary>"1280x720" → (1280, 720); geçersizse ya da otomatikse null.</summary>
+        public static (int Width, int Height)? ParseWindowSize(string? value)
+        {
+            var parts = (value ?? "").Split('x');
+            return parts.Length == 2 && int.TryParse(parts[0], out int w) && int.TryParse(parts[1], out int h)
+                && w is >= 800 and <= 7680 && h is >= 500 and <= 4320 ? (w, h) : null;
+        }
+
         /// <summary>Elle düzenlenmiş ya da arayüzden gelen değerleri güvenli aralıklara çeker.</summary>
         private void Normalize()
         {
@@ -94,7 +106,8 @@ namespace VuluLauncher
             JvmArgs = (JvmArgs ?? "").Trim();
             GameWidth = Math.Clamp(GameWidth, 0, 7680);
             GameHeight = Math.Clamp(GameHeight, 0, 4320);
-            if (WindowScale != 0) WindowScale = Math.Clamp(WindowScale, 100, 200);
+            WindowSize = ParseWindowSize(WindowSize) is { } size ? $"{size.Width}x{size.Height}" : "";
+            if (PlayingNotifications is not ("all" or "off")) PlayingNotifications = "friends";
             if (OnGameStart is not ("minimize" or "close")) OnGameStart = "keep";
             MusicVolume = Math.Clamp(MusicVolume, 0, 100);
             if (!System.Text.RegularExpressions.Regex.IsMatch(AccentColor ?? "", "^#[0-9a-fA-F]{6}$")) AccentColor = "#c27e3e";

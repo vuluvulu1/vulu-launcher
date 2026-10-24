@@ -55,7 +55,7 @@ namespace VuluLauncher
             _bridge.OnInline("window.dragStart", _ => _host.BeginWindowDrag());
             _bridge.OnInline("window.dragMove", _ => _host.MoveWindowDrag());
             _bridge.OnInline("window.minimize", _ => _host.Minimize());
-            _bridge.OnInline("window.close", _ => _host.Close());
+            _bridge.OnInline("window.close", _ => CloseWindow());
 
             // ── Uygulama ──────────────────────────────────────────────────
             _bridge.On("app.init", _ => Task.FromResult<object?>(Init()));

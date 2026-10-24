@@ -573,7 +573,7 @@ Bu paket **teknoloji** ve *büyü* modlarını bir araya getirir. [Discord](http
             return { success: true, id: 'inst:fabulously', name: 'Fabulously Optimized' };
         },
 
-        'settings.get': async () => ({ settings, ramOptionsGb: [4, 8, 12, 16], installedJava: [17, 21], version: '0.7', gameFolder: 'D:\\Launchers\\vulu Launcher\\', hasSavedPassword: true, savedUsername: 'vulu' }),
+        'settings.get': async () => ({ settings, ramOptionsGb: [4, 8, 12, 16], installedJava: [17, 21], screen: { width: 1920, height: 1040 }, canHideToTray: true, version: '0.7', gameFolder: 'D:\\Launchers\\vulu Launcher\\', hasSavedPassword: true, savedUsername: 'vulu' }),
         'settings.save': async args => { settings = { ...args }; return { settings }; },
         'settings.pickJava': async () => ({ path: 'C:\\Program Files\\Java\\jdk-21\\bin\\java.exe' }),
         'settings.removeJava': async () => ({ removed: 2 }),

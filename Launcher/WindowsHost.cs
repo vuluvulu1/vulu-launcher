@@ -20,6 +20,7 @@ namespace VuluLauncher
         {
             _window = window;
             _tray.IconClicked += BringToFront;
+            _tray.ExitRequested += () => _window.Invoke(_window.Close);
         }
 
         /// <summary>Bildirime tıklanınca; LauncherApp oluşturulunca bağlanır.</summary>
@@ -37,12 +38,48 @@ namespace VuluLauncher
         public void SendToUi(string json) => _window.SendWebMessage(json);
 
         public bool IsForeground => TrayNotifier.IsActive(_window.WindowHandle);
-        public void BringToFront() => TrayNotifier.BringToFront(_window.WindowHandle);
+        public void BringToFront()
+        {
+            if (Interlocked.Exchange(ref _inTray, 0) == 1) Efficiency.Leave();
+            TrayNotifier.BringToFront(_window.WindowHandle);
+        }
+
+        private int _inTray, _trayGeneration;
         public void Minimize() => _window.SetMinimized(true);
 
-        public void ApplyWindowScale(int scale)
+        public (int Width, int Height)? ScreenWorkArea => Program.WorkArea();
+        public bool CanHideToTray => true;
+
+        /// <summary>
+        /// Pencere önce küçültülür (tarayıcı çizimi ve zamanlayıcıları kısar), sonra görev çubuğundan da gizlenir.
+        /// Bildirim alanında simge kalır; tıklanınca ya da launcher yeniden açılınca pencere geri gelir.
+        /// </summary>
+        public void HideToTray()
         {
-            var (width, height, zoom) = Program.WindowLayout(scale);
+            _tray.ShowIcon();
+            _window.Invoke(() => TrayNotifier.Hide(_window.WindowHandle));
+            if (Interlocked.Exchange(ref _inTray, 1) == 1) return;
+            int generation = Interlocked.Increment(ref _trayGeneration);   // arada açılıp yeniden gizlenirse eski döngü biter
+            // Arayüz müziği durdurup sakinleşince süreçler verimlilik moduna alınır ve bellekleri boşaltılır;
+            // gizli kaldıkça beş dakikada bir yeniden boşaltılır
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(3000);
+                bool Current() => Volatile.Read(ref _inTray) == 1 && Volatile.Read(ref _trayGeneration) == generation;
+                if (!Current()) return;
+                Efficiency.Enter();
+                while (true)
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(5));
+                    if (!Current()) return;
+                    Efficiency.Trim();
+                }
+            });
+        }
+
+        public void ApplyWindowSize(string size)
+        {
+            var (width, height, zoom) = Program.WindowLayout(size);
             _window.Invoke(() =>
             {
                 _window.SetSize(width, height);
