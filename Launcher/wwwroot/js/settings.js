@@ -227,7 +227,44 @@ async function openSettingsPage() {
             el('button', { class: 'btn btn-sm', onclick: openLicenses }, 'Göster')));
 
     // Oyun ayarları (Java, RAM, pencere) telefonda oyun açılana kadar gösterilmez
-    body.replaceChildren(...[state.canLaunchGame && game, behaviour, look, account].filter(Boolean));
+    body.replaceChildren(...[state.canLaunchGame && game, behaviour, look, isDesktopApp() && storageSection(), account].filter(Boolean));
+}
+
+// ── Depolama ──────────────────────────────────────────────────────────
+// Boyutlar diskte dolaşılarak hesaplanır (birkaç saniye sürebilir); bölüm önce boş açılır, sonra dolar.
+function storageSection() {
+    const rows = el('div', {}, el('div', { class: 'set-hint' }, 'Hesaplanıyor…'));
+    const section = el('section', { class: 'set-section' }, el('h2', {}, 'Depolama'), rows);
+    const size = bytes => el('span', { class: 'set-value' }, formatBytes(bytes));
+
+    const render = usage => rows.replaceChildren(
+        settingRow('Önbellek', 'Silinmiş ya da güncellenmiş paketlerden kalan modlar, arayüzün tarayıcı verisi ve ekran görüntüsü önizlemeleri. '
+            + (usage.modCacheShared > 0 ? `Kurulu paketlerinle paylaşılan ${formatBytes(usage.modCacheShared)} mod ek yer kaplamaz, sayılmadı. ` : '')
+            + (usage.browserPending ? 'Tarayıcı önbelleği launcher bir sonraki açılışında silinecek.' : ''),
+            el('div', { class: 'set-inline' }, size(usage.cache),
+                el('button', {
+                    class: 'btn btn-sm', onclick: async () => {
+                        const accepted = await confirmDialog({
+                            title: 'Önbelleği temizle',
+                            message: 'Hiçbir paketin kullanmadığı modlar, tarayıcı önbelleği ve ekran görüntüsü önizlemeleri silinecek. Paketlerine, dünyalarına ve ayarlarına dokunulmaz.',
+                            okText: 'Temizle', cancelText: 'Vazgeç', danger: true,
+                        });
+                        if (!accepted) return;
+                        try {
+                            const result = await bridge.invoke('storage.clear');
+                            flashSaved(formatBytes(result.freed) + ' boşaldı ✓');
+                        } catch (err) { flashSaved(err.message, true); }
+                        load();
+                    },
+                }, 'Temizle'))),
+        settingRow('Paketler', 'Kurulu paketlerin modları, ayarları ve dünyaları.', size(usage.instances)),
+        settingRow('Minecraft dosyaları', 'Paketlerin ortak kullandığı oyun sürümleri, kütüphaneler ve sesler/dokular.', size(usage.game)),
+        settingRow('Java', "Launcher'ın indirdiği Java sürümleri (yukarıdan silinebilir).", size(usage.java)));
+
+    const load = () => bridge.invoke('storage.usage').then(render)
+        .catch(err => rows.replaceChildren(el('div', { class: 'set-hint' }, err.message)));
+    load();
+    return section;
 }
 
 // Üçüncü taraf bileşenlerin listesi ve lisans metinleri (wwwroot/licenses, fonts). Windows'ta sayfa diskten (file://)

@@ -577,6 +577,8 @@ Bu paket **teknoloji** ve *büyü* modlarını bir araya getirir. [Discord](http
         'settings.save': async args => { settings = { ...args }; return { settings }; },
         'settings.pickJava': async () => ({ path: 'C:\\Program Files\\Java\\jdk-21\\bin\\java.exe' }),
         'settings.removeJava': async () => ({ removed: 2 }),
+        'storage.usage': async () => { await wait(400); return { modCache: 120e6, modCacheShared: 610e6, browser: 90e6, shots: 2e6, cache: 212e6, game: 1.4e9, java: 420e6, instances: 680e6, browserPending: false }; },
+        'storage.clear': async () => ({ freed: 212e6, browserPending: true }),
         'files.open': async () => ({ opened: true }),
         'screenshots.list': async () => {
             await wait(250);

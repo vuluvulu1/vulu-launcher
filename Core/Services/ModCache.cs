@@ -6,11 +6,16 @@ namespace VuluLauncher
     /// Mod önbelleği: CurseForge ve Modrinth dosyaları hash'leriyle değişmez olduğu için bir kez indirilen dosya başka
     /// instance'lara yeniden indirilmeden konur. Önbellek dosyaları instance'lardakilere sabit bağlantıdır (hard link):
     /// aynı veri diskte iki kez yer kaplamaz. Yalnızca Windows'ta ve aynı sürücüde; olmazsa normal indirilir.
-    /// Önbellek 5 GB'ı geçince en eski kullanılanlar silinir (instance'lardaki dosyalar yerinde kalır).
+    /// Bir instance'ta hâlâ duran dosya önbellekte ek yer kaplamaz; yalnızca hiçbir instance'ın kullanmadığı (silinmiş ya
+    /// da güncellenmiş paketlerden kalan) "yetim" dosyalar yer tutar. Yetimler 14 gün sonra, toplamları 500 MB'ı geçerse
+    /// daha önce silinir.
     /// </summary>
     internal static class ModCache
     {
-        private const long MaxBytes = 5L * 1024 * 1024 * 1024;
+        private const long MaxOrphanBytes = 500L * 1024 * 1024;
+        private static readonly TimeSpan OrphanLifetime = TimeSpan.FromDays(14);
+        // Yetim olduğu fark edilen dosya bu öznitelikle işaretlenir ve o andan itibaren süresi işler
+        private const FileAttributes OrphanMark = FileAttributes.NotContentIndexed;
         private static readonly string[] Hosts = { "cdn.modrinth.com", "edge.forgecdn.net", "mediafilez.forgecdn.net" };
         private static int _pruning;
 
@@ -35,6 +40,8 @@ namespace VuluLauncher
                 if (!HashMatches(cached, key)) { File.Delete(cached); return false; }
                 if (File.Exists(path)) File.Delete(path);
                 if (!CreateHardLink(path, cached, IntPtr.Zero)) return false;
+                var info = new FileInfo(cached);
+                if (info.Attributes.HasFlag(OrphanMark)) info.Attributes &= ~OrphanMark;   // yeniden kullanılıyor
                 File.SetLastWriteTimeUtc(cached, DateTime.UtcNow);   // en son kullanılan; temizlikte en son silinir
                 return true;
             }
@@ -50,9 +57,31 @@ namespace VuluLauncher
                 string cached = Path.Combine(Root, key);
                 if (File.Exists(cached)) return;
                 if (!CreateHardLink(cached, path, IntPtr.Zero)) return;   // başka sürücü: önbelleğe alınmaz
-                if (Interlocked.Exchange(ref _pruning, 1) == 0) _ = Task.Run(Prune);
+                PruneInBackground();
             }
             catch { }
+        }
+
+        /// <summary>Süresi dolan yetimleri arka planda siler (açılışta ve her yeni dosyada).</summary>
+        public static void PruneInBackground()
+        {
+            if (OperatingSystem.IsWindows() && Interlocked.Exchange(ref _pruning, 1) == 0) _ = Task.Run(() => Prune(clearAll: false));
+        }
+
+        /// <summary>Hiçbir instance'ın kullanmadığı bütün önbellek dosyalarını siler; silinen bayt sayısı.</summary>
+        public static long ClearOrphans() => OperatingSystem.IsWindows() ? Prune(clearAll: true) : 0;
+
+        /// <summary>Önbellekte instance'larla paylaşılan (ek yer tutmayan) ve yetim (yer tutan) dosyaların boyutu.</summary>
+        public static (long Shared, long Orphan) Measure()
+        {
+            long shared = 0, orphan = 0;
+            if (!OperatingSystem.IsWindows() || !Directory.Exists(Root)) return (0, 0);
+            foreach (var file in new DirectoryInfo(Root).EnumerateFiles())
+            {
+                try { if (LinkCount(file.FullName) > 1) shared += file.Length; else orphan += file.Length; }
+                catch { }
+            }
+            return (shared, orphan);
         }
 
         private static bool HashMatches(string path, string key)
@@ -62,21 +91,59 @@ namespace VuluLauncher
             return string.Equals(Convert.ToHexString(hash), key, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static void Prune()
+        private static long Prune(bool clearAll)
         {
+            long freed = 0;
             try
             {
-                var files = new DirectoryInfo(Root).GetFiles().OrderByDescending(f => f.LastWriteTimeUtc).ToList();
-                long total = 0;
-                foreach (var file in files)
+                if (!Directory.Exists(Root)) return 0;
+                long kept = 0;
+                var now = DateTime.UtcNow;
+                foreach (var file in new DirectoryInfo(Root).GetFiles().OrderByDescending(f => f.LastWriteTimeUtc))
                 {
-                    total += file.Length;
-                    if (total > MaxBytes) file.Delete();
+                    try
+                    {
+                        if (LinkCount(file.FullName) > 1) continue;   // bir instance'ta duruyor: ek yer kaplamıyor
+                        bool expired = file.Attributes.HasFlag(OrphanMark) && now - file.LastWriteTimeUtc > OrphanLifetime;
+                        if (clearAll || expired || kept + file.Length > MaxOrphanBytes)
+                        {
+                            long size = file.Length;
+                            file.Delete();
+                            freed += size;
+                            continue;
+                        }
+                        kept += file.Length;
+                        if (!file.Attributes.HasFlag(OrphanMark))
+                        {
+                            file.Attributes |= OrphanMark;
+                            file.LastWriteTimeUtc = now;   // yetim kalma süresi şimdi başlar
+                        }
+                    }
+                    catch { }
                 }
             }
             catch { }
-            finally { Interlocked.Exchange(ref _pruning, 0); }
+            finally { if (!clearAll) Interlocked.Exchange(ref _pruning, 0); }
+            return freed;
         }
+
+        /// <summary>Dosyanın kaç sabit bağlantısı var: 1 ise yalnızca önbellekte duruyor.</summary>
+        private static uint LinkCount(string path)
+        {
+            using var handle = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            return GetFileInformationByHandle(handle, out var info) ? info.NumberOfLinks : 2;   // bilinmiyorsa dokunma
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        private struct FileInformation
+        {
+            public uint Attributes;
+            public long CreationTime, LastAccessTime, LastWriteTime;
+            public uint VolumeSerialNumber, FileSizeHigh, FileSizeLow, NumberOfLinks, FileIndexHigh, FileIndexLow;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool GetFileInformationByHandle(Microsoft.Win32.SafeHandles.SafeFileHandle file, out FileInformation info);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern bool CreateHardLink(string fileName, string existingFileName, IntPtr securityAttributes);

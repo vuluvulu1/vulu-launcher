@@ -42,6 +42,8 @@ namespace VuluLauncher
             _bridge.On("settings.save", args => Task.FromResult<object?>(SaveSettings(args)));
             _bridge.On("settings.pickJava", async _ => await PickJavaAsync());
             _bridge.On("settings.removeJava", _ => Task.FromResult<object?>(RemoveDownloadedJava()));
+            _bridge.On("storage.usage", async _ => await Task.Run(Storage.Usage));
+            _bridge.On("storage.clear", async _ => await Task.Run(Storage.Clear));
             _bridge.On("files.open", args => Task.FromResult<object?>(OpenFolder(args.Str("target"), args.Str("id"))));
 
             _bridge.On("auth.logout", _ => Task.FromResult<object?>(Logout()));

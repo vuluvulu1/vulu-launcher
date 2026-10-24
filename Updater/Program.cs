@@ -89,6 +89,8 @@ namespace Updater
                 .SetSize((int)(BaseWidth * scale), (int)(BaseHeight * scale))
                 .Center();
 
+            // Güncelleyici yalnızca kendi sayfasını gösterir; tarayıcı önbelleğinin büyümesine gerek yok
+            _window.SetBrowserControlInitParameters("--disk-cache-size=10485760");
             _window.SetContextMenuEnabled(false);
 #if !DEBUG
             _window.SetDevToolsEnabled(false);

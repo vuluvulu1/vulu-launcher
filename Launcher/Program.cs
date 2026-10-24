@@ -48,6 +48,9 @@ namespace VuluLauncher
                 return;
             }
 
+            // Tarayıcı önbelleği, WebView2 dosyaları kilitlemeden önce temizlenebilir
+            Storage.CleanUpAtStartup();
+
             using var host = new WindowsHost(CreateWindow, Path.Combine(AppContext.BaseDirectory, "wwwroot", "index.html"));
             var bridge = new Bridge(host.SendToUi);
             var app = new LauncherApp(bridge, host);
@@ -83,10 +86,12 @@ namespace VuluLauncher
                 .SetZoom(zoom)
                 .Center();
 
-            // Önceki açılışta alan adına ulaşılamayıp yedek adres kullanıldıysa arayüz de (profil resimleri, skinler)
-            // alan adını çözmeden o adrese gider. TLS yine vuluvulu.com.tr adına doğrulanır.
+            // Tarayıcının disk önbelleği sınırlanır. Önceki açılışta alan adına ulaşılamayıp yedek adres kullanıldıysa
+            // arayüz de (profil resimleri, skinler) alan adını çözmeden o adrese gider; TLS yine vuluvulu.com.tr adına doğrulanır.
+            string browserArgs = Storage.BrowserArguments;
             if (VuluShared.ServerConnection.FallbackAddress is { } fallback)
-                window.SetBrowserControlInitParameters($"--host-resolver-rules=\"MAP {VuluShared.ServerConnection.Host} {fallback}\"");
+                browserArgs += $" --host-resolver-rules=\"MAP {VuluShared.ServerConnection.Host} {fallback}\"";
+            window.SetBrowserControlInitParameters(browserArgs);
 
             // Sağ tık menüsü hiçbir sürümde açılmaz (tarayıcı menüsü launcher'a ait değil)
             window.SetContextMenuEnabled(false);
