@@ -4,4 +4,5 @@
   <Project Path="Android/vuluLauncher.Android.csproj" />
   <Project Path="Updater/Updater.csproj" Id="a5507476-417e-477c-a9f5-a562b8d163df" />
   <Project Path="Installer/Installer.csproj" />
+  <Project Path="Tests/Vulu.Tests.csproj" />
 </Solution>

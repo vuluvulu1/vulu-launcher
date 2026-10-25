@@ -38,7 +38,9 @@ param(
     [switch]$Publish,
     [switch]$AlsoGitHub,
     [switch]$Yes,
-    [switch]$Local
+    [switch]$Local,
+    # Testleri atlar (yalnızca acil durumda)
+    [switch]$SkipTests
 )
 
 if ($Publish -and $Local) { throw "-Publish ve -Local birlikte kullanılamaz." }
@@ -65,6 +67,13 @@ function Write-Json($path, $value) {
 }
 
 Write-Host "==> vulu Launcher v$Version hazırlanıyor" -ForegroundColor Cyan
+
+# Testler geçmeden sürüm çıkmaz (Tests/: imza, yarım dosya, bellek, bildirim alanı...)
+if (-not $SkipTests) {
+    Write-Host "==> Testler çalıştırılıyor"
+    dotnet test (Join-Path $root "Tests\Vulu.Tests.csproj") -c Release --nologo -v q
+    if ($LASTEXITCODE -ne 0) { throw "Testler geçmedi; sürüm çıkarılmadı. (Acil durumda -SkipTests)" }
+}
 if (Test-Path $outDir) { Remove-Item $outDir -Recurse -Force }
 New-Item -ItemType Directory -Force $appDir | Out-Null
 

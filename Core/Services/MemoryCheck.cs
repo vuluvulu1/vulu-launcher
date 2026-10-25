@@ -21,7 +21,12 @@ namespace VuluLauncher
         public static Result Fit(int requestedGb, bool modded)
         {
             if (!OperatingSystem.IsWindows() || Read() is not { } status) return new(requestedGb, null);
+            return Fit(requestedGb, modded, status, SystemDriveFreeGb());
+        }
 
+        /// <summary>Hesabın kendisi (ölçülen değerlerle; testlerde de kullanılır).</summary>
+        internal static Result Fit(int requestedGb, bool modded, Status status, double? systemDriveFreeGb)
+        {
             double overhead = modded ? ModdedOverheadGb : VanillaOverheadGb;
             int byCommit = (int)Math.Floor(status.AvailCommitGb - overhead);
             int byPhysical = (int)Math.Floor(status.TotalGb - SystemReserveGb);
@@ -32,7 +37,7 @@ namespace VuluLauncher
                 ? $"şu an yalnızca yaklaşık {status.AvailCommitGb:0.#} GB boş bellek var (RAM + sanal bellek)"
                 : $"bilgisayarda toplam {status.TotalGb:0.#} GB RAM var, Windows'a da yer kalmalı";
             string hint = byCommit < byPhysical ? " Açık programları (tarayıcı, Discord vb.) kapatmak işe yarar." : "";
-            if (byCommit < byPhysical && SystemDriveFreeGb() is < 5 and var free)
+            if (byCommit < byPhysical && systemDriveFreeGb is < 5 and var free)
                 hint += $" Sistem diskinde yalnızca {free:0.#} GB yer kaldığı için Windows sanal belleği büyütemiyor; orada yer açmak da işe yarar.";
 
             if (limit >= MinimumGb)

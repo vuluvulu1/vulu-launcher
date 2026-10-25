@@ -51,4 +51,8 @@
     <Copy SourceFiles="@(UpdaterFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
   </Target>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Vulu.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -21,6 +21,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="vulu Launcher" />
     <InternalsVisibleTo Include="vuluLauncher.Android" />
+    <InternalsVisibleTo Include="Vulu.Tests" />
   </ItemGroup>
 
   <ItemGroup>
