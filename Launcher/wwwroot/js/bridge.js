@@ -573,6 +573,12 @@ Bu paket **teknoloji** ve *büyü* modlarını bir araya getirir. [Discord](http
             return { success: true, id: 'inst:fabulously', name: 'Fabulously Optimized' };
         },
 
+        'radio.genres': async () => [{ id: 'lofi', label: 'Lo-fi' }, { id: 'chill', label: 'Chill' }, { id: 'game', label: 'Oyun müzikleri' }, { id: 'turkpop', label: 'Türkçe pop' }, { id: 'rock', label: 'Rock' }, { id: 'electronic', label: 'Elektronik' }],
+        'radio.stations': async ({ genre }) => {
+            const q = { lofi: 'tag=lofi', chill: 'tag=chillout', game: 'tag=video%20game%20music', turkpop: 'tag=pop&countrycode=TR', rock: 'tag=rock', electronic: 'tag=electronic' }[genre];
+            const list = await (await fetch(`https://de1.api.radio-browser.info/json/stations/search?${q}&hidebroken=true&order=clickcount&reverse=true&limit=30`)).json();
+            return list.filter(s => s.lastcheckok === 1 && s.url_resolved).map(s => ({ id: s.stationuuid, name: s.name.trim(), url: s.url_resolved, country: s.country || '' }));
+        },
         'settings.get': async () => ({ settings, ramOptionsGb: [4, 8, 12, 16], installedJava: [17, 21], screen: { width: 1920, height: 1040 }, canHideToTray: true, version: '0.7', gameFolder: 'D:\\Launchers\\vulu Launcher\\', hasSavedPassword: true, savedUsername: 'vulu' }),
         'settings.save': async args => { settings = { ...args }; return { settings }; },
         'settings.pickJava': async () => ({ path: 'C:\\Program Files\\Java\\jdk-21\\bin\\java.exe' }),

@@ -200,9 +200,9 @@ async function openSettingsPage() {
                 await setUiTheme(value, () => openSettingsPage());
                 return true;
             })),
-        settingRow('Menü müziği', null, toggleControl(s.musicEnabled, async value => {
+        settingRow('Radyo', 'Soldaki çalar internet radyosu çalar; istasyonu ve türü adına tıklayarak seçebilirsin.', toggleControl(s.musicEnabled, async value => {
             if (!(await changeSetting({ musicEnabled: value }))) return false;
-            if (value) $('music').play().catch(() => { });
+            if (value) startRadio(); else stopRadio();
             return true;
         })),
         settingRow('Ses düzeyi', null, el('div', { class: 'set-inline' }, volume)),
@@ -508,7 +508,7 @@ async function logout() {
     try { await bridge.invoke('auth.logout'); }
     catch (err) { await alertDialog({ title: 'Çıkış yapılamadı', message: err.message }); return; }
 
-    $('music').pause();
+    stopRadio();
     adminTab = null;
     pendingRegistrations = [];
     updateAdminBadge();

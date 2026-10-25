@@ -357,7 +357,17 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .music-top { display: flex; align-items: center; gap: 10px; }
 .music-art { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: var(--r); background: var(--accent-soft); }
 .music-art svg { width: 16px; height: 16px; fill: none; stroke: var(--accent-hi); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.music-meta { min-width: 0; display: flex; flex-direction: column; }
+.music-meta { min-width: 0; flex: 1; display: flex; flex-direction: column; padding: 2px 4px; margin: -2px -4px; border: 0; border-radius: var(--r-sm); background: none; color: inherit; text-align: left; cursor: pointer; }
+.music-meta:hover { background: var(--hover); }
+.music-live { --pct: 0%; border-radius: 2px; }
+.radio-menu { width: 260px; max-width: calc(100vw - 16px); }
+.radio-genres { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 4px 8px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.radio-genres .chip { padding: 3px 9px; border: 1px solid var(--line-strong); border-radius: 999px; background: transparent; color: var(--muted); font: 500 11.5px var(--font); cursor: pointer; }
+.radio-genres .chip:hover { color: var(--text); }
+.radio-genres .chip.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-hi); }
+.radio-list { display: flex; flex-direction: column; gap: 1px; max-height: 320px; overflow-y: auto; }
+.radio-list .more-item { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.radio-note { padding: 10px; color: var(--muted); font-size: 12.5px; }
 .music-title { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .music-artist { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .music-seek { --pct: 0%; height: 3px; background: linear-gradient(90deg, var(--accent) var(--pct), rgba(255, 255, 255, .1) var(--pct)) !important; }

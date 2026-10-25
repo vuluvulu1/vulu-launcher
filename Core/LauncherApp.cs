@@ -17,6 +17,7 @@ namespace VuluLauncher
         private readonly JavaManager _java;
         private readonly ModrinthService _modrinth;
         private readonly CurseForgeService _curseforge;
+        private readonly RadioService _radio = new();
         private readonly GameLauncher _game;
         private readonly DiscordPresence _discord = new();
 
@@ -59,6 +60,8 @@ namespace VuluLauncher
 
             // ── Uygulama ──────────────────────────────────────────────────
             _bridge.On("app.init", _ => Task.FromResult<object?>(Init()));
+            _bridge.On("radio.genres", _ => Task.FromResult<object?>(RadioService.Genres.Select(g => new { id = g.Key, label = g.Value.Label })));
+            _bridge.On("radio.stations", async args => (object?)await _radio.StationsAsync(args.Str("genre")));
 #if DEBUG
             // Yalnızca geliştirme derlemesinde: bildirim kartını denemek için
             _bridge.On("debug.notify", args => { ShowNotification(args.Str("title"), args.Str("body"), args.Str("tag")); return Task.FromResult<object?>(null); });

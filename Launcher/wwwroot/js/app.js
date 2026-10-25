@@ -125,7 +125,7 @@ function setupTitlebar() {
     $('btn-close').addEventListener('click', () => {
         // Bildirim alanına küçülürse pencere yeniden kurulduğunda aynı sayfaya dönülür, müzik çalıyorsa sürer
         store.set('resumePage', state.page);
-        store.set('resumeMusic', !$('music').paused);
+        store.set('resumeMusic', radioPlaying());
         bridge.send('window.close');
     });
 
@@ -1026,7 +1026,7 @@ function applySettings(settings) {
     const audio = $('music');
     $('music-volume').value = settings.musicVolume;
     audio.volume = settings.musicVolume / 100;
-    if (!settings.musicEnabled && !audio.paused) audio.pause();
+    if (!settings.musicEnabled && radioPlaying()) stopRadio();
     refreshMusicWidget();
 }
 
@@ -1070,36 +1070,139 @@ function showToast(n) {
     timer = setTimeout(dismiss, 6000);
 }
 
-// ── Müzik ─────────────────────────────────────────────────────────────
+// ── Radyo ─────────────────────────────────────────────────────────────
+/**
+ * Soldaki çalar bir internet radyosu: istasyonlar türe göre radio-browser.info dizininden gelir (C# tarafı alır),
+ * ses doğrudan istasyonun yayınından çalınır. Durdurunca yayın bağlantısı da kapatılır (boşuna veri inmesin).
+ * Çalmayan istasyon atlanır. Seçilen tür ve istasyon hatırlanır.
+ */
+const radio = { genres: [], stations: [], genre: store.get('radioGenre', 'lofi'), index: 0, failures: 0, loading: null };
+
+function radioStation() { return radio.stations[radio.index] || null; }
+function radioGenreLabel() { return (radio.genres.find(g => g.id === radio.genre) || {}).label || ''; }
+function radioPlaying() { const audio = $('music'); return !!audio.getAttribute('src') && !audio.paused; }
+
+async function loadRadioGenres() {
+    if (!radio.genres.length) radio.genres = await bridge.invoke('radio.genres');
+    if (!radio.genres.some(g => g.id === radio.genre)) radio.genre = radio.genres[0].id;
+}
+
+async function loadRadioStations(genre) {
+    radio.genre = genre;
+    store.set('radioGenre', genre);
+    radio.stations = await bridge.invoke('radio.stations', { genre });
+    const saved = store.get('radioStation', '');
+    radio.index = Math.max(0, radio.stations.findIndex(st => st.id === saved));
+}
+
+/** İstasyon listesi yoksa getirir (aynı anda birden çok istek olmasın). */
+function ensureRadio() {
+    if (radio.stations.length) return Promise.resolve();
+    if (!radio.loading) radio.loading = loadRadioGenres().then(() => loadRadioStations(radio.genre)).finally(() => { radio.loading = null; });
+    return radio.loading;
+}
+
+function playStation(index) {
+    if (!radio.stations.length) return;
+    radio.index = (index + radio.stations.length) % radio.stations.length;
+    const station = radioStation();
+    store.set('radioStation', station.id);
+    const audio = $('music');
+    audio.src = station.url;
+    audio.play().catch(() => { /* çalmazsa "error" olayı sıradakine geçer */ });
+    refreshMusicWidget();
+}
+
+function stopRadio() {
+    const audio = $('music');
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();   // yayın bağlantısını kapatır
+    refreshMusicWidget();
+}
+
+async function startRadio() {
+    try {
+        await ensureRadio();
+        playStation(radio.index);
+    } catch (err) {
+        $('music-title').textContent = 'Radyo';
+        $('music-artist').textContent = 'İstasyonlar alınamadı';
+    }
+}
+
 function refreshMusicWidget() {
-    const audio = $('music'), off = audio.paused;
-    document.querySelector('.music').classList.toggle('paused', off);
-    $('music-toggle').setAttribute('aria-label', off ? 'Müziği çal' : 'Müziği duraklat');
-    $('music-toggle').title = off ? 'Çal' : 'Duraklat';
+    const audio = $('music'), playing = radioPlaying();
+    document.querySelector('.music').classList.toggle('paused', !playing);
+    $('music-toggle').setAttribute('aria-label', playing ? 'Radyoyu durdur' : 'Radyoyu çal');
+    $('music-toggle').title = playing ? 'Durdur' : 'Çal';
     $('music-mute').classList.toggle('muted', audio.muted);
     $('music-mute').setAttribute('aria-label', audio.muted ? 'Sesi aç' : 'Sesi kapat');
     $('music-mute').title = audio.muted ? 'Sesi aç' : 'Sesi kapat';
+    $('music-live').style.setProperty('--pct', playing ? '100%' : '0%');
+    const station = radioStation();
+    $('music-title').textContent = station ? station.name : 'Radyo';
+    $('music-artist').textContent = station
+        ? [radioGenreLabel(), station.country].filter(Boolean).join(' · ')
+        : 'Çalmak için ▶';
 }
 
-function refreshMusicProgress() {
-    const audio = $('music'), seek = $('music-seek');
-    const value = audio.duration > 0 ? Math.round(audio.currentTime / audio.duration * 1000) : 0;
-    if (!seek.matches(':active')) seek.value = value; // sürüklerken zıplamasın
-    seek.style.setProperty('--pct', seek.value / 10 + '%');
+/** İstasyon menüsü: üstte türler, altta o türün istasyonları. */
+async function openRadioMenu() {
+    let menu = $('radio-menu');
+    if (menu && !menu.hidden) { menu.hidden = true; return; }
+    if (!menu) {
+        menu = document.body.appendChild(el('div', { id: 'radio-menu', class: 'more-menu radio-menu', role: 'menu', hidden: true }));
+        document.addEventListener('mousedown', event => {
+            if (!menu.hidden && !event.target.closest('#radio-menu, #music-station')) menu.hidden = true;
+        });
+        document.addEventListener('keydown', event => { if (event.key === 'Escape') menu.hidden = true; });
+    }
+    const render = () => {
+        menu.replaceChildren(
+            el('div', { class: 'radio-genres' }, radio.genres.map(g => el('button', {
+                type: 'button', class: 'chip' + (g.id === radio.genre ? ' active' : ''),
+                onclick: async () => {
+                    menu.replaceChildren(el('div', { class: 'radio-note' }, 'Yükleniyor…'));
+                    try { await loadRadioStations(g.id); radio.index = 0; playStation(0); saveSettings({ musicEnabled: true }).catch(() => { }); }
+                    catch { /* liste alınamazsa eskisi kalır */ }
+                    render();
+                },
+            }, g.label))),
+            radio.stations.length
+                ? el('div', { class: 'radio-list' }, radio.stations.map((st, i) => el('button', {
+                    type: 'button', role: 'menuitem', class: 'more-item' + (i === radio.index ? ' accent' : ''),
+                    title: st.country || '',
+                    onclick: () => { menu.hidden = true; playStation(i); saveSettings({ musicEnabled: true }).catch(() => { }); },
+                }, st.name)))
+                : el('div', { class: 'radio-note' }, 'Bu türde istasyon bulunamadı.'));
+        positionMenu(menu, $('music-station'));
+    };
+    menu.replaceChildren(el('div', { class: 'radio-note' }, 'Yükleniyor…'));
+    menu.hidden = false;
+    positionMenu(menu, $('music-station'));
+    try { await ensureRadio(); } catch { menu.replaceChildren(el('div', { class: 'radio-note' }, 'İstasyonlar alınamadı.')); return; }
+    render();
 }
 
 function setupMusic() {
-    const audio = $('music'), slider = $('music-volume'), seek = $('music-seek');
+    const audio = $('music'), slider = $('music-volume');
     let saveTimer = null;
 
-    audio.addEventListener('timeupdate', refreshMusicProgress);
-    audio.addEventListener('loadedmetadata', refreshMusicProgress);
     audio.addEventListener('volumechange', refreshMusicWidget);
-    seek.addEventListener('input', () => {
-        if (audio.duration > 0) audio.currentTime = seek.value / 1000 * audio.duration;
-        seek.style.setProperty('--pct', seek.value / 10 + '%');
+    audio.addEventListener('play', refreshMusicWidget);
+    audio.addEventListener('pause', refreshMusicWidget);
+    audio.addEventListener('playing', () => { radio.failures = 0; refreshMusicWidget(); });
+    // Yayın açılmazsa (istasyon kapalı, biçim desteklenmiyor) sıradakine geçilir; art arda dört başarısızlıkta durulur
+    audio.addEventListener('error', () => {
+        if (!audio.getAttribute('src')) return;
+        if (++radio.failures >= 4) { stopRadio(); $('music-artist').textContent = 'İstasyon çalınamadı'; radio.failures = 0; return; }
+        playStation(radio.index + 1);
     });
-    $('music-restart').addEventListener('click', () => { audio.currentTime = 0; refreshMusicProgress(); });
+
+    $('music-prev').addEventListener('click', async () => { await ensureRadio().catch(() => { }); playStation(radio.index - 1); });
+    $('music-next').addEventListener('click', async () => { await ensureRadio().catch(() => { }); playStation(radio.index + 1); });
+    $('music-station').addEventListener('click', openRadioMenu);
     $('music-mute').addEventListener('click', () => { audio.muted = !audio.muted; });
 
     slider.addEventListener('input', () => {
@@ -1109,18 +1212,15 @@ function setupMusic() {
         saveTimer = setTimeout(() => saveSettings({ musicVolume: Number(slider.value) }).catch(() => { }), 400);
     });
     $('music-toggle').addEventListener('click', () => {
-        const enable = audio.paused;
-        if (enable) audio.play().catch(() => { });
-        else audio.pause();
+        const enable = !radioPlaying();
+        if (enable) startRadio(); else stopRadio();
         saveSettings({ musicEnabled: enable }).catch(() => { });
     });
-    audio.addEventListener('play', refreshMusicWidget);
-    audio.addEventListener('pause', refreshMusicWidget);
 }
 
 function startMusic() {
     if (!state.settings.musicEnabled) return;
-    $('music').play().catch(() => { /* otomatik oynatma engellendiyse kullanıcı düğmeyle açar */ });
+    startRadio();
 }
 
 // ── Başlat ────────────────────────────────────────────────────────────
