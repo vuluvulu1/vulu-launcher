@@ -202,6 +202,12 @@ async function routeNotification(tag) {
     if (tag.startsWith('dm:')) {
         showPage('messages');
         openMessagesPage(tag.slice(3));
+    } else if (tag.startsWith('invite:')) {
+        // Davet kartındaki "Katıl": sunucu vulu listesindeyse katılır (gerekirse paketi kurar), yoksa konuşma açılır
+        const [, peer, cardId] = tag.split(':');
+        const server = (await serversForCards().catch(() => [])).find(s => s.id === cardId);
+        if (server) joinServer(server);
+        else { showPage('messages'); openMessagesPage(peer); }
     } else if (tag.startsWith('profile:')) {
         openProfile(tag.slice(8));
     } else if (tag.startsWith('friend:')) {

@@ -1440,5 +1440,7 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .toast-text b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .toast-body { color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .toast.playing .toast-body { color: var(--ok); }
+.toast-text { flex: 1; }
+.toast-join { flex: none; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(14px); } }
 @media (prefers-reduced-motion: reduce) { .toast { animation: none; } }

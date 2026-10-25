@@ -150,14 +150,21 @@ namespace VuluLauncher
         private static uint AccentFor(string? tag) =>
             tag != null && tag.StartsWith("profile:", StringComparison.Ordinal) ? Rgb(0x7c, 0xc4, 0x7f) : Rgb(0xc2, 0x7e, 0x3e);
 
-        /// <summary>Etiketten kişi adı (dm:, friend:, profile:); varsa kartta onun baş harfi görünür.</summary>
+        /// <summary>Etiketten kişi adı (dm:, friend:, profile:, invite:kişi:sunucu); varsa kartta onun baş harfi görünür.</summary>
         private static string? PersonOf(string? tag)
         {
             if (tag == null) return null;
+            if (IsInvite(tag)) return tag.Split(':')[1];
             foreach (var prefix in new[] { "dm:", "friend:", "profile:" })
                 if (tag.StartsWith(prefix, StringComparison.Ordinal) && tag.Length > prefix.Length) return tag[prefix.Length..];
             return null;
         }
+
+        /// <summary>Sunucu daveti ("invite:kişi:sunucu"): kartta "Katıl" düğmesi çizilir.</summary>
+        private static bool IsInvite(string? tag) => tag != null && tag.StartsWith("invite:", StringComparison.Ordinal) && tag.Split(':').Length == 3;
+
+        /// <summary>"Katıl" düğmesinin kart içindeki yeri.</summary>
+        private RECT JoinButton() => new() { Left = S(Width) - S(72), Top = (S(Height) - S(28)) / 2, Right = S(Width) - S(12), Bottom = (S(Height) + S(28)) / 2 };
 
         private void BeginClose(Card card)
         {
@@ -198,7 +205,16 @@ namespace VuluLauncher
                     }
                     return IntPtr.Zero;
                 case WM_LBUTTONUP when card != null && !card.Closing:
-                    try { Clicked?.Invoke(card.Tag); } catch { }
+                    // Davette yalnızca "Katıl" düğmesi katılır; kartın geri kalanı konuşmayı açar
+                    string? clicked = card.Tag;
+                    if (IsInvite(clicked))
+                    {
+                        int x = (short)(lParam.ToInt64() & 0xFFFF), y = (short)((lParam.ToInt64() >> 16) & 0xFFFF);
+                        var button = JoinButton();
+                        bool onButton = x >= button.Left && x <= button.Right && y >= button.Top && y <= button.Bottom;
+                        if (!onButton) clicked = "dm:" + PersonOf(clicked);
+                    }
+                    try { Clicked?.Invoke(clicked); } catch { }
                     BeginClose(card);
                     return IntPtr.Zero;
                 case WM_DESTROY when card != null:
@@ -250,9 +266,23 @@ namespace VuluLauncher
                 SelectObject(dc, oldBrush);
                 DeleteObject(accent);
 
-                // Başlık ve metin (sığmazsa "…")
+                // Başlık ve metin (sığmazsa "…"); davette sağda "Katıl" düğmesi
                 SetBkMode(dc, 1);
                 int textLeft = x + size + S(12), right = w - S(14);
+                if (IsInvite(card.Tag))
+                {
+                    var button = JoinButton();
+                    IntPtr fill = CreateSolidBrush(card.Accent);
+                    IntPtr prevBrush = SelectObject(dc, fill), prevPen = SelectObject(dc, GetStockObject(8 /* NULL_PEN */));
+                    RoundRect(dc, button.Left, button.Top, button.Right + 1, button.Bottom + 1, S(8), S(8));
+                    SelectObject(dc, prevBrush); SelectObject(dc, prevPen);
+                    DeleteObject(fill);
+                    IntPtr prevFont = SelectObject(dc, _fontTitle);
+                    SetTextColor(dc, Rgb(0x16, 0x0e, 0x07));
+                    DrawText(dc, "Katıl", -1, ref button, 0x1 | 0x4 | 0x20);
+                    SelectObject(dc, prevFont);
+                    right = button.Left - S(10);
+                }
                 IntPtr oldFont = SelectObject(dc, _fontTitle);
                 SetTextColor(dc, Rgb(0xec, 0xe6, 0xdd));
                 var title = new RECT { Left = textLeft, Top = S(16), Right = right, Bottom = S(36) };

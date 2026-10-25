@@ -1049,7 +1049,9 @@ function showToast(n) {
     let stack = $('toasts');
     if (!stack) stack = document.body.appendChild(el('div', { id: 'toasts', class: 'toasts', 'aria-live': 'polite' }));
 
-    const person = n.tag && /^(dm|friend|profile):/.test(n.tag) ? n.tag.slice(n.tag.indexOf(':') + 1) : null;
+    const invite = n.tag && /^invite:[^:]+:[^:]+$/.test(n.tag);
+    const person = invite ? n.tag.split(':')[1]
+        : n.tag && /^(dm|friend|profile):/.test(n.tag) ? n.tag.slice(n.tag.indexOf(':') + 1) : null;
     const known = person && (typeof profile !== 'undefined' && profile.members || []).find(m => m.username === person);
     let timer = 0;
     const dismiss = () => {
@@ -1059,12 +1061,17 @@ function showToast(n) {
     };
     const card = el('button', {
         type: 'button', class: 'toast' + (n.tag && n.tag.startsWith('profile:') ? ' playing' : ''),
-        onclick: () => { dismiss(); if (n.tag) routeNotification(n.tag); },
+        // Davette kartın kendisi konuşmayı açar, "Katıl" düğmesi sunucuya katılır
+        onclick: () => { dismiss(); if (n.tag) routeNotification(invite ? 'dm:' + person : n.tag); },
     },
         person ? avatarEl(known || { username: person }, 'avatar-md') : el('img', { class: 'toast-logo', src: 'assets/logo.png', alt: '' }),
         el('div', { class: 'toast-text' },
             el('b', {}, n.title),
-            n.body && el('div', { class: 'toast-body' }, n.body)));
+            n.body && el('div', { class: 'toast-body' }, n.body)),
+        invite && el('span', {
+            class: 'btn btn-sm btn-primary toast-join', role: 'button',
+            onclick: event => { event.stopPropagation(); dismiss(); routeNotification(n.tag); },
+        }, 'Katıl'));
     stack.append(card);
     while (stack.children.length > 3) stack.firstElementChild.remove();
     timer = setTimeout(dismiss, 6000);

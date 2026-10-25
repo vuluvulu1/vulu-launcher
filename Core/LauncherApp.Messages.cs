@@ -327,7 +327,7 @@ namespace VuluLauncher
             foreach (var group in incoming.GroupBy(v => v.GetProperty("peer").GetString()!).Take(3))
             {
                 int count = group.Count();
-                string body;
+                string body, tag = "dm:" + group.Key;
                 if (!settings.DmNotificationPreview) body = count > 1 ? $"{count} yeni mesaj" : "Yeni mesaj";
                 else
                 {
@@ -340,8 +340,12 @@ namespace VuluLauncher
                             : $"🎮 Sunucuya davet etti: {k.GetProperty("name").GetString()}")
                         : "Yeni şifreli mesaj";
                     if (count > 1) body = $"({count} yeni) " + body;
+                    // Sunucu daveti: kartta "Katıl" düğmesi olur (kart kimliği yalnızca güvenli karakterlerdir)
+                    if (card is { } invite && invite.GetProperty("type").GetString() == "server"
+                        && invite.TryGetProperty("id", out var id) && id.GetString() is { Length: > 0 } cardId && DmCardId.IsMatch(cardId))
+                        tag = $"invite:{group.Key}:{cardId}";
                 }
-                ShowNotification(group.Key, body, "dm:" + group.Key);
+                ShowNotification(group.Key, body, tag);
             }
         }
 
