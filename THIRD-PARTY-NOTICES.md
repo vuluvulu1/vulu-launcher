@@ -6,6 +6,7 @@ vulu Launcher aşağıdaki bileşenleri içerir ya da kullanır. Bunlar kendi ya
 |---|---|
 | .NET çalışma zamanı ve System.Security.Cryptography.ProtectedData (Microsoft) | MIT |
 | Photino.NET | Apache 2.0 |
+| hls.js (radyo yayınları) | Apache 2.0 |
 | .NET MAUI ve .NET for Android (Microsoft; Android sürümü) | MIT |
 | CmlLib.Core ve CmlLib.Core.Installer.Forge | MIT |
 | authlib-injector (yushijinhun; pakete gömülmez, ilk ihtiyaçta resmî adresinden indirilir) | GNU AGPL 3.0 |

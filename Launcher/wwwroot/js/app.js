@@ -1083,11 +1083,11 @@ function showToast(n) {
  * ses doğrudan istasyonun yayınından çalınır. Durdurunca yayın bağlantısı da kapatılır (boşuna veri inmesin).
  * Çalmayan istasyon atlanır. Seçilen tür ve istasyon hatırlanır.
  */
-const radio = { genres: [], stations: [], genre: store.get('radioGenre', ''), index: 0, failures: 0, loading: null, playToken: 0 };
+const radio = { genres: [], stations: [], genre: store.get('radioGenre', ''), index: 0, failures: 0, loading: null, playToken: 0, hls: null };
 
 function radioStation() { return radio.stations[radio.index] || null; }
 function radioGenreLabel() { return (radio.genres.find(g => g.id === radio.genre) || {}).label || ''; }
-function radioPlaying() { const audio = $('music'); return !!audio.getAttribute('src') && !audio.paused; }
+function radioPlaying() { const audio = $('music'); return (!!audio.getAttribute('src') || !!radio.hls) && !audio.paused; }
 
 async function loadRadioGenres() {
     if (!radio.genres.length) radio.genres = await bridge.invoke('radio.genres');
@@ -1134,15 +1134,37 @@ async function playStation(index) {
     try { source = await radioSource(station); }
     catch { if (token === radio.playToken) audio.dispatchEvent(new Event('error')); return; }
     if (token !== radio.playToken) return;   // bu arada başka bir istasyon seçildi
-    audio.src = source;
+    attachRadioSource(audio, source);
     audio.play().catch(() => { /* çalmazsa "error" olayı sıradakine geçer */ });
     // Sıradaki şarkı arkada hazırlanır: geçişte bekleme olmasın
     const next = radio.stations[(radio.index + 1) % radio.stations.length];
     if (next && next.kind === 'song' && next !== station) radioSource(next).catch(() => { });
 }
 
+/**
+ * Yayını çalara bağlar. HLS (.m3u8) yayınları (Kral Pop, Pal Nostalji ve birçok Türk radyosu) tarayıcıda doğrudan
+ * çalmaz; hls.js ile parçalar halinde alınır. Önceki HLS bağlantısı her seferinde kapatılır.
+ */
+function attachRadioSource(audio, source) {
+    if (radio.hls) { radio.hls.destroy(); radio.hls = null; }
+    const isHls = /\.m3u8(\?|$)/i.test(source);
+    // Tarayıcı HLS'i "çalabilirim" dese de (canPlayType) güvenilmez; hls.js varsa hep o kullanılır
+    if (isHls && window.Hls && Hls.isSupported()) {
+        const hls = new Hls({ maxBufferLength: 20, backBufferLength: 0 });
+        hls.on(Hls.Events.ERROR, (_, data) => {
+            if (data.fatal && radio.hls === hls) { hls.destroy(); radio.hls = null; audio.dispatchEvent(new Event('error')); }
+        });
+        hls.loadSource(source);
+        hls.attachMedia(audio);
+        radio.hls = hls;
+        return;
+    }
+    audio.src = source;
+}
+
 function stopRadio() {
     const audio = $('music');
+    if (radio.hls) { radio.hls.destroy(); radio.hls = null; }
     audio.pause();
     audio.removeAttribute('src');
     audio.load();   // yayın bağlantısını kapatır
@@ -1225,7 +1247,7 @@ function setupMusic() {
     audio.addEventListener('ended', () => { if (radioStation()?.kind === 'song') playStation(radio.index + 1); });
     // Yayın açılmazsa (istasyon kapalı, biçim desteklenmiyor) sıradakine geçilir; art arda dört başarısızlıkta durulur
     audio.addEventListener('error', () => {
-        if (!audio.getAttribute('src') && radioStation()?.kind !== 'song') return;
+        if (!audio.getAttribute('src') && !radio.hls && radioStation()?.kind !== 'song') return;
         if (++radio.failures >= 4) { stopRadio(); $('music-artist').textContent = 'İstasyon çalınamadı'; radio.failures = 0; return; }
         playStation(radio.index + 1);
     });

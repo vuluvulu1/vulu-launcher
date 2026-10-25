@@ -20,6 +20,20 @@ namespace VuluLauncher
             ["electronic"] = ("Elektronik", "tag=electronic"),
         };
 
+        /// <summary>
+        /// Türün başına sabitlenen istasyonlar (dizinde yoksa ya da sırası düşükse de görünsün diye). HLS (.m3u8)
+        /// yayınları arayüzde hls.js ile çalınır.
+        /// </summary>
+        private static readonly IReadOnlyDictionary<string, RadioStation[]> Pinned = new Dictionary<string, RadioStation[]>
+        {
+            ["turkpop"] = new[]
+            {
+                new RadioStation("pin-kralpop", "Kral Pop", "https://ssldyg.radyotvonline.com/smil/smil:kralpop.smil/playlist.m3u8", "Türkiye", null, 128),
+                new RadioStation("pin-joyfm", "Joy FM", "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_FM128AAC.aac", "Türkiye", null, 128),
+                new RadioStation("pin-palnostalji", "Pal Nostalji", "https://moondigitaledge.radyotvonline.net/palnostalji/playlist.m3u8", "Türkiye", null, 128),
+            },
+        };
+
         // Dizinin aynaları; biri çalışmazsa sıradaki denenir
         private static readonly string[] Mirrors = { "https://de1.api.radio-browser.info", "https://nl1.api.radio-browser.info", "https://at1.api.radio-browser.info", "https://fi1.api.radio-browser.info" };
         private static readonly TimeSpan CacheFor = TimeSpan.FromHours(6);
@@ -42,7 +56,9 @@ namespace VuluLauncher
                 {
                     string url = $"{mirror}/json/stations/search?{info.Query}&hidebroken=true&order=clickcount&reverse=true&limit=60";
                     var found = await Downloader.Http.GetFromJsonAsync<List<RbStation>>(url) ?? new();
+                    var pinned = Pinned.GetValueOrDefault(genre, Array.Empty<RadioStation>());
                     var stations = found
+                        .Where(s => !pinned.Any(p => SameName(p.Name, s.Name)))   // sabitlenenlerin kopyaları listede tekrar çıkmasın
                         .Where(s => !string.IsNullOrWhiteSpace(s.UrlResolved) && s.LastCheckOk == 1
                             && s.Codec is "MP3" or "AAC" or "AAC+" or "OGG"
                             && Uri.TryCreate(s.UrlResolved, UriKind.Absolute, out var u) && (u.Scheme == "https" || u.Scheme == "http"))
@@ -53,13 +69,20 @@ namespace VuluLauncher
                         .Select(s => new RadioStation(s.StationUuid, s.Name.Trim(), s.UrlResolved!, s.Country ?? "",
                             s.Favicon is { Length: > 0 } f && f.StartsWith("https://", StringComparison.Ordinal) ? f : null, s.Bitrate))
                         .ToList();
+                    stations.InsertRange(0, pinned);
                     lock (_gate) _cache[genre] = (DateTime.UtcNow, stations);
                     return stations;
                 }
                 catch (Exception e) { last = e; }
             }
+            // Dizine ulaşılamasa da sabitlenen istasyonlar çalınabilir
+            if (Pinned.TryGetValue(genre, out var only)) return only.ToList();
             throw new InvalidOperationException("Radyo listesi alınamadı: " + (last?.Message ?? "bağlantı yok"));
         }
+
+        /// <summary>"PAL Nostalji" ile "Pal Nostalji" aynı istasyon sayılır (büyük/küçük harf ve boşluklar önemsiz).</summary>
+        private static bool SameName(string a, string b) =>
+            string.Equals(string.Concat(a.Where(char.IsLetterOrDigit)), string.Concat(b.Where(char.IsLetterOrDigit)), StringComparison.OrdinalIgnoreCase);
 
         private sealed class RbStation
         {

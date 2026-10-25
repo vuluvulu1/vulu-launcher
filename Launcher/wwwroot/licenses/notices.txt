@@ -20,6 +20,7 @@ da Microsoft ile bağlantılı değildir ve onlar tarafından desteklenmez.
 ═══ Yalnızca Windows ═══
 
 • Photino.NET — TryPhotino — Apache 2.0
+• hls.js (radyo yayınları) — Dailymotion — Apache 2.0
 
 ═══ Yalnızca Android ═══
 
