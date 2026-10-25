@@ -86,6 +86,55 @@ namespace VuluLauncher
             return new MinecraftLauncher(parameters);
         }
 
+        /// <summary>
+        /// Yarım kalmış kütüphaneleri siler ki yeniden insin. Fabric/Quilt gibi mod yükleyicilerin sürüm dosyası
+        /// kütüphanelerin boyutunu ve hash'ini vermez; indirme yarıda kesilirse (iptal, kapanma, bağlantı kopması)
+        /// dosya "var" sayılır ve oyun "KnotClient bulunamadı" gibi hatalarla açılmaz. Her jar'ın sonundaki zip dizini
+        /// okunur (dosyanın yalnızca son birkaç KB'ı); bozuk olan silinir, kurulum onu yeniden indirir.
+        /// </summary>
+        private async Task RemoveBrokenLibrariesAsync(MinecraftLauncher launcher, string versionName)
+        {
+            try
+            {
+                var version = await launcher.GetVersionAsync(versionName);
+                string root = launcher.MinecraftPath.Library;
+                foreach (var library in version.ConcatInheritedCollection(v => v.Libraries))
+                {
+                    string? relative;
+                    try { relative = library.GetLibraryPath(); } catch { continue; }
+                    if (string.IsNullOrEmpty(relative) || !relative.EndsWith(".jar", StringComparison.OrdinalIgnoreCase)) continue;
+                    string path = Path.Combine(root, relative);
+                    if (!File.Exists(path) || IsCompleteZip(path)) continue;
+                    try
+                    {
+                        File.Delete(path);
+                        _log($"Yarım kalmış dosya yeniden indirilecek: {Path.GetFileName(path)}", "warn");
+                    }
+                    catch { /* kullanımdaysa kurulum yine de denenir */ }
+                }
+            }
+            catch { /* denetim yapılamazsa kurulum her zamanki gibi sürer */ }
+        }
+
+        /// <summary>Zip'in sonundaki "merkezi dizin sonu" kaydı yerinde mi (yarım inen dosyada olmaz).</summary>
+        internal static bool IsCompleteZip(string path)
+        {
+            try
+            {
+                using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                long length = file.Length;
+                if (length < 22) return false;
+                int tail = (int)Math.Min(length, 22 + 65535);   // kayıt + en uzun yorum
+                var buffer = new byte[tail];
+                file.Seek(-tail, SeekOrigin.End);
+                file.ReadExactly(buffer);
+                for (int i = tail - 22; i >= 0; i--)
+                    if (buffer[i] == 0x50 && buffer[i + 1] == 0x4b && buffer[i + 2] == 0x05 && buffer[i + 3] == 0x06) return true;
+                return false;
+            }
+            catch { return true; }   // okunamıyorsa (kilitli) dokunulmaz
+        }
+
         /// <summary>Sürümün istediği Java ana sürümü; eski sürümler belirtmez, onlar Java 8 ister.</summary>
         public static async Task<int> GetRequiredJavaAsync(MinecraftLauncher launcher, string versionName)
         {
@@ -133,6 +182,7 @@ namespace VuluLauncher
 
                 job.Phase = target.Loader == "vanilla" ? "Minecraft hazırlanıyor" : "Mod yükleyici hazırlanıyor";
                 string versionName = await EnsureLoaderAsync(launcher, target, javaPath);
+                await RemoveBrokenLibrariesAsync(launcher, versionName);
                 // Bir dosya inmeye başlarsa ByteProgress bunu "indiriliyor" yapar
                 job.Phase = "Oyun dosyaları kontrol ediliyor";
 
@@ -237,6 +287,7 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Forge ve NeoForge paketlerinin oyun dosyaları telefonda denetlenemiyor.");
 
             string versionName = await EnsureLoaderAsync(launcher, target, javaPath);
+            await RemoveBrokenLibrariesAsync(launcher, versionName);
             await launcher.InstallAsync(versionName, FileProgress(), ByteProgress(), DownloadJob.Current?.Token ?? CancellationToken.None);
         }
 
@@ -257,6 +308,7 @@ namespace VuluLauncher
             try
             {
                 string versionName = await EnsureLoaderAsync(launcher, target, javaPath: "");
+                await RemoveBrokenLibrariesAsync(launcher, versionName);
                 job.Phase = "Oyun dosyaları indiriliyor";
                 await launcher.InstallAsync(versionName, FileProgress(), ByteProgress(), DownloadJob.Current?.Token ?? CancellationToken.None);
 
