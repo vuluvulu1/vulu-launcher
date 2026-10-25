@@ -127,8 +127,57 @@ namespace VuluLauncher
         /// </summary>
         private void ShowNotification(string title, string body, string tag)
         {
-            if (_host.IsForeground) _bridge.Emit("toast", new { title, body, tag });
-            else _host.Notify(title, body, tag);
+            // Bildirim bir kişiden geliyorsa (mesaj, istek, oyunda, davet) kartta onun profil resmi görünür
+            _ = Task.Run(async () =>
+            {
+                string? avatar = PersonOfTag(tag) is { } person ? await AvatarFileAsync(person) : null;
+                try
+                {
+                    if (_host.IsForeground) _bridge.Emit("toast", new { title, body, tag, avatar = avatar == null ? null : LocalFiles.Url(avatar) });
+                    else _host.Notify(title, body, tag, avatar);
+                }
+                catch { /* bildirim gösterilemezse launcher etkilenmez */ }
+            });
+        }
+
+        /// <summary>Etiketten kişi: "dm:ali", "friend:ali", "profile:ali", "invite:ali:sunucu".</summary>
+        private static string? PersonOfTag(string tag)
+        {
+            var parts = tag.Split(':');
+            return parts.Length >= 2 && parts[0] is "dm" or "friend" or "profile" or "invite" && parts[1].Length > 0 ? parts[1] : null;
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex SafeUsername = new("^[A-Za-z0-9_.-]{1,32}$");
+
+        /// <summary>
+        /// Kişinin profil resmi (önbellekte; bir gün tazelenir). Resmi yoksa bir saat boyunca yeniden sorulmaz.
+        /// Resim sunucudaki herkese açık adresten alınır; en fazla 2 MB.
+        /// </summary>
+        private static async Task<string?> AvatarFileAsync(string username)
+        {
+            if (!SafeUsername.IsMatch(username)) return null;
+            string dir = Path.Combine(AppPaths.AppData, "cache", "avatars");
+            string file = Path.Combine(dir, username + ".img"), none = Path.Combine(dir, username + ".none");
+            try
+            {
+                if (File.Exists(file) && DateTime.UtcNow - File.GetLastWriteTimeUtc(file) < TimeSpan.FromDays(1)) return file;
+                if (File.Exists(none) && DateTime.UtcNow - File.GetLastWriteTimeUtc(none) < TimeSpan.FromHours(1)) return null;
+                Directory.CreateDirectory(dir);
+                using var response = await Downloader.Http.GetAsync($"{ApiConfig.BaseUrl}/users/{Uri.EscapeDataString(username)}/avatar");
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    File.WriteAllText(none, "");
+                    if (File.Exists(file)) File.Delete(file);
+                    return null;
+                }
+                if (!response.IsSuccessStatusCode) return File.Exists(file) ? file : null;
+                byte[] data = await response.Content.ReadAsByteArrayAsync();
+                if (data.Length is 0 or > 2 * 1024 * 1024) return File.Exists(file) ? file : null;
+                await File.WriteAllBytesAsync(file, data);
+                if (File.Exists(none)) File.Delete(none);
+                return file;
+            }
+            catch { return File.Exists(file) ? file : null; }
         }
 
         private void Log(string text, string level)

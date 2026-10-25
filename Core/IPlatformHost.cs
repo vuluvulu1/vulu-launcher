@@ -50,6 +50,9 @@ namespace VuluLauncher
         /// <summary>Sistem bildirimi; tıklanınca <see cref="LauncherApp.OnNotificationClicked"/> çağrılır.</summary>
         void Notify(string title, string body, string? tag);
 
+        /// <summary>Bildirim, gönderenin profil resmiyle (yerel dosya; yoksa null). Desteklemeyen platform resimsiz gösterir.</summary>
+        void Notify(string title, string body, string? tag, string? imagePath) => Notify(title, body, tag);
+
         /// <summary>Tek dosya seçtirir. Vazgeçilirse null. Dönen yol uygulamanın okuyabileceği yerel bir dosyadır.</summary>
         Task<string?> PickFileAsync(string title, string filterName, string[] extensions);
 

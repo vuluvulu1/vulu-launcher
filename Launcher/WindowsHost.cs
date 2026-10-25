@@ -144,12 +144,13 @@ namespace VuluLauncher
 
         public void Close() => Exit();
 
-        /// <summary>Masaüstü kartı; öndeki uygulama tam ekransa (oyun) onun üstüne çıkmaz, Windows bildirimi olur.</summary>
-        public void Notify(string title, string body, string? tag)
-        {
-            if (ToastWindow.FullscreenAppInFront()) _tray.Show(title, body, tag);
-            else _toast.Show(title, body, tag);
-        }
+        /// <summary>
+        /// Masaüstünde sağ altta kart. Tam ekran oyunun üstünde de görünür (odağı çalmaz, oyunu küçültmez); Windows
+        /// bildirimi tam ekranda gizlendiği için ona düşülmez.
+        /// </summary>
+        public void Notify(string title, string body, string? tag) => _toast.Show(title, body, tag);
+
+        public void Notify(string title, string body, string? tag, string? imagePath) => _toast.Show(title, body, tag, imagePath);
 
         public void BeginWindowDrag()
         {

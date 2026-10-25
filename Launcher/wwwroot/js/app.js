@@ -1064,7 +1064,10 @@ function showToast(n) {
         // Davette kartın kendisi konuşmayı açar, "Katıl" düğmesi sunucuya katılır
         onclick: () => { dismiss(); if (n.tag) routeNotification(invite ? 'dm:' + person : n.tag); },
     },
-        person ? avatarEl(known || { username: person }, 'avatar-md') : el('img', { class: 'toast-logo', src: 'assets/logo.png', alt: '' }),
+        // Profil resmi C# tarafından önbelleğe alınıp yerel adresle gelir; yoksa bilinen üye bilgisi ya da baş harf
+        n.avatar ? el('img', { class: 'toast-avatar', src: n.avatar, alt: '' })
+            : person ? avatarEl(known || { username: person }, 'avatar-md toast-avatar')
+            : el('img', { class: 'toast-logo', src: 'assets/logo.png', alt: '' }),
         el('div', { class: 'toast-text' },
             el('b', {}, n.title),
             n.body && el('div', { class: 'toast-body' }, n.body)),
