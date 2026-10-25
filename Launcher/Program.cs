@@ -18,6 +18,11 @@ namespace VuluLauncher
         {
             // Masaüstü kısayolu: "--play <paket>" / "--join <sunucu>"
             var action = StartupAction.Parse(args);
+#if DEBUG
+            // Yalnızca geliştirme derlemesinde: testler gerçek kullanıcı verisine (kayıtlı şifre, ayarlar) dokunmasın
+            if (Environment.GetEnvironmentVariable("VULU_APP_DATA") is { Length: > 0 } testData)
+                AppPaths.Initialize(testData, AppContext.BaseDirectory);
+#endif
 
             // Launcher zaten açıksa yeni kopya açılmaz; istek açık olana gider ve o öne gelir
             using var single = new SingleInstance();

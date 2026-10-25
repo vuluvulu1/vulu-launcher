@@ -1083,7 +1083,7 @@ function showToast(n) {
  * ses doğrudan istasyonun yayınından çalınır. Durdurunca yayın bağlantısı da kapatılır (boşuna veri inmesin).
  * Çalmayan istasyon atlanır. Seçilen tür ve istasyon hatırlanır.
  */
-const radio = { genres: [], stations: [], genre: store.get('radioGenre', 'lofi'), index: 0, failures: 0, loading: null };
+const radio = { genres: [], stations: [], genre: store.get('radioGenre', ''), index: 0, failures: 0, loading: null, playToken: 0 };
 
 function radioStation() { return radio.stations[radio.index] || null; }
 function radioGenreLabel() { return (radio.genres.find(g => g.id === radio.genre) || {}).label || ''; }
@@ -1102,22 +1102,43 @@ async function loadRadioStations(genre) {
     radio.index = Math.max(0, radio.stations.findIndex(st => st.id === saved));
 }
 
-/** İstasyon listesi yoksa getirir (aynı anda birden çok istek olmasın). */
+/**
+ * İstasyon listesi yoksa getirir (aynı anda birden çok istek olmasın). İlk açılışta vulu Radyo'da şarkı varsa o,
+ * yoksa Lo-fi seçilir.
+ */
 function ensureRadio() {
     if (radio.stations.length) return Promise.resolve();
-    if (!radio.loading) radio.loading = loadRadioGenres().then(() => loadRadioStations(radio.genre)).finally(() => { radio.loading = null; });
+    if (!radio.loading) radio.loading = (async () => {
+        await loadRadioGenres();
+        if (radio.genre) { await loadRadioStations(radio.genre); return; }
+        try { await loadRadioStations('vulu'); } catch { radio.stations = []; }
+        if (!radio.stations.length) await loadRadioStations('lofi');
+    })().finally(() => { radio.loading = null; });
     return radio.loading;
 }
 
-function playStation(index) {
+/** vulu Radyo şarkıları bir kez indirilip yerel dosyadan çalınır; istasyonlar doğrudan yayından. */
+async function radioSource(station) {
+    if (station.kind !== 'song') return station.url;
+    return (await bridge.invoke('radio.songFile', { id: station.id })).url;
+}
+
+async function playStation(index) {
     if (!radio.stations.length) return;
     radio.index = (index + radio.stations.length) % radio.stations.length;
-    const station = radioStation();
+    const station = radioStation(), token = ++radio.playToken;
     store.set('radioStation', station.id);
-    const audio = $('music');
-    audio.src = station.url;
-    audio.play().catch(() => { /* çalmazsa "error" olayı sıradakine geçer */ });
     refreshMusicWidget();
+    const audio = $('music');
+    let source;
+    try { source = await radioSource(station); }
+    catch { if (token === radio.playToken) audio.dispatchEvent(new Event('error')); return; }
+    if (token !== radio.playToken) return;   // bu arada başka bir istasyon seçildi
+    audio.src = source;
+    audio.play().catch(() => { /* çalmazsa "error" olayı sıradakine geçer */ });
+    // Sıradaki şarkı arkada hazırlanır: geçişte bekleme olmasın
+    const next = radio.stations[(radio.index + 1) % radio.stations.length];
+    if (next && next.kind === 'song' && next !== station) radioSource(next).catch(() => { });
 }
 
 function stopRadio() {
@@ -1182,7 +1203,7 @@ async function openRadioMenu() {
                     title: st.country || '',
                     onclick: () => { menu.hidden = true; playStation(i); saveSettings({ musicEnabled: true }).catch(() => { }); },
                 }, st.name)))
-                : el('div', { class: 'radio-note' }, 'Bu türde istasyon bulunamadı.'));
+                : el('div', { class: 'radio-note' }, radio.genre === 'vulu' ? 'vulu Radyo\'da henüz şarkı yok.' : 'Bu türde istasyon bulunamadı.'));
         positionMenu(menu, $('music-station'));
     };
     menu.replaceChildren(el('div', { class: 'radio-note' }, 'Yükleniyor…'));
@@ -1200,9 +1221,11 @@ function setupMusic() {
     audio.addEventListener('play', refreshMusicWidget);
     audio.addEventListener('pause', refreshMusicWidget);
     audio.addEventListener('playing', () => { radio.failures = 0; refreshMusicWidget(); });
+    // vulu Radyo'da şarkı bitince sıradaki çalar (liste başa döner)
+    audio.addEventListener('ended', () => { if (radioStation()?.kind === 'song') playStation(radio.index + 1); });
     // Yayın açılmazsa (istasyon kapalı, biçim desteklenmiyor) sıradakine geçilir; art arda dört başarısızlıkta durulur
     audio.addEventListener('error', () => {
-        if (!audio.getAttribute('src')) return;
+        if (!audio.getAttribute('src') && radioStation()?.kind !== 'song') return;
         if (++radio.failures >= 4) { stopRadio(); $('music-artist').textContent = 'İstasyon çalınamadı'; radio.failures = 0; return; }
         playStation(radio.index + 1);
     });

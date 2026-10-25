@@ -1263,6 +1263,10 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .storage-total { max-width: 620px; }
 .storage-bar { display: flex; height: 14px; margin: 10px 0 6px; overflow: hidden; border-radius: 7px; background: var(--raised); }
 .storage-bar span { display: block; height: 100%; }
+.radio-storage { height: 6px; max-width: 620px; }
+.user-row.radio-song { grid-template-columns: 1fr auto auto; }
+.radio-song-fields { display: grid; grid-template-columns: 1.4fr 1fr; gap: 6px; min-width: 0; }
+.radio-song-fields input { min-width: 0; }
 .storage-legend { display: flex; flex-direction: column; gap: 6px; max-width: 620px; margin-top: 14px; }
 .storage-legend div { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 .storage-legend i { width: 10px; height: 10px; border-radius: 3px; flex: none; }

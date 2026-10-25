@@ -26,12 +26,14 @@ function renderAdminTabs() {
             tab('roles', 'Roller'),
             tab('registrations', 'Kayıt istekleri', pendingRegistrations.length),
             tab('announcement', 'Duyuru'),
+            tab('radio', 'Radyo'),
             tab('storage', 'Alan')),
         content);
 
     if (adminTab === 'registrations') renderRegistrationsTab(content);
     else if (adminTab === 'announcement') renderAnnouncementTab(content);
     else if (adminTab === 'storage') renderStorageTab(content);
+    else if (adminTab === 'radio') renderRadioTab(content);
     else if (adminTab === 'roles') renderRolesTab(content);
     else renderUsersTab(content);
 }
