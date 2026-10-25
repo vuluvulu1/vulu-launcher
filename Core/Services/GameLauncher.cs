@@ -186,6 +186,11 @@ namespace VuluLauncher
                 // Bir dosya inmeye başlarsa ByteProgress bunu "indiriliyor" yapar
                 job.Phase = "Oyun dosyaları kontrol ediliyor";
 
+                // Seçilen RAM bilgisayara sığmazsa oyun "bellek yok" diye çökmesin: sığan en yüksek değerle açılır
+                var memory = MemoryCheck.Fit(ramGb, target.Loader != "vanilla");
+                if (memory.Warning != null) _log(memory.Warning, "warn");
+                ramGb = memory.RamGb;
+
                 var option = new MLaunchOption
                 {
                     MaximumRamMb = ramGb * 1024,
