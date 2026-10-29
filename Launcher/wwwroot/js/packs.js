@@ -50,55 +50,89 @@ function accessTags(pack, roles) {
     return [el('span', { class: 'tag tag-access', title: 'Yalnızca bu roldekiler ve adminler görür' }, '🔒 ' + (names.join(', ') || 'Kısıtlı'))];
 }
 
-function packTile(pack, result) {
+/** Paketin ana düğmesi: Kur / Güncelle / Kurulu · Aç (telefonda kurulmaz, kurulu olan açılabilir). */
+function packPrimaryButton(pack, before) {
+    const installed = pack.installed;
+    const outdated = installed && installed.revision < pack.revision;
+    const run = fn => async () => { if (before) before(); await fn(); };
+    if (!canInstallGames()) return installed
+        ? el('button', { class: 'btn btn-sm btn-installed', onclick: run(() => openInstalledPack(installed.instanceId)) }, 'Kurulu · Aç')
+        : desktopOnlyButton();
+    if (!installed) return el('button', { class: 'btn btn-primary btn-sm', onclick: run(() => installPack(pack)) }, 'Kur');
+    if (outdated) return el('button', { class: 'btn btn-primary btn-sm', onclick: run(() => updatePack(pack)) }, 'Güncelle');
+    return el('button', { class: 'btn btn-sm btn-installed', onclick: run(() => openInstalledPack(installed.instanceId)) }, 'Kurulu · Aç');
+}
+
+function packCover(pack) {
     const cover = el('div', { class: 'pack-cover' + (pack.coverUrl ? '' : ' plain') });
     if (pack.coverUrl) cover.style.backgroundImage = `url("${pack.coverUrl}")`;
     else cover.append(el('span', {}, pack.name));
+    return cover;
+}
 
-    const installed = pack.installed;
-    const outdated = installed && installed.revision < pack.revision;
+const packLoaderLabel = pack => pack.loader === 'vanilla' ? 'Vanilla' : `${LOADER_NAMES[pack.loader] || pack.loader} ${pack.loaderVersion || ''}`.trim();
+
+/**
+ * Keşfet'teki kart: kapak, ad, kısa açıklama, üç temel etiket ve tek ana düğme. Geri kalan her şey (bütün etiketler,
+ * değişiklikler, geri bildirim, gönderme, admin işlemleri) karta tıklayınca açılan ayrıntı penceresindedir.
+ */
+function packTile(pack, result) {
+    const outdated = pack.installed && pack.installed.revision < pack.revision;
     const updated = parseDate(pack.updatedAt);
-
-    let primary;
-    // Telefonda kurulmaz ve güncellenmez (oyun açılmıyor); kurulu olan yine açılabilir
-    if (!canInstallGames()) primary = installed
-        ? el('button', { class: 'btn btn-sm btn-installed', onclick: () => openInstalledPack(installed.instanceId) }, 'Kurulu · Aç')
-        : desktopOnlyButton();
-    else if (!installed) primary = el('button', { class: 'btn btn-primary btn-sm', onclick: () => installPack(pack) }, 'Kur');
-    else if (outdated) primary = el('button', { class: 'btn btn-primary btn-sm', onclick: () => updatePack(pack) }, 'Güncelle');
-    else primary = el('button', { class: 'btn btn-sm btn-installed', onclick: () => openInstalledPack(installed.instanceId) }, 'Kurulu · Aç');
-
-    return el('article', { class: 'pack-tile' },
-        cover,
+    const open = () => openPackDetails(pack, result);
+    return el('article', { class: 'pack-tile clickable', tabindex: '0', onclick: open,
+        onkeydown: e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) { e.preventDefault(); open(); } } },
+        packCover(pack),
         outdated && el('span', { class: 'pack-badge' }, 'Güncelleme var'),
         el('div', { class: 'pack-body' },
             el('h2', { class: 'pack-name' }, pack.name),
-            el('div', { class: 'pack-meta' },
-                [pack.author && ('Paylaşan: ' + pack.author), updated && relativeDate(updated), 'rev ' + pack.revision]
-                    .filter(Boolean).join(' · ')),
-            pack.description && el('p', { class: 'pack-desc-text' }, pack.description),
+            el('div', { class: 'pack-meta' }, [pack.author, updated && relativeDate(updated)].filter(Boolean).join(' · ')),
+            pack.description && el('p', { class: 'pack-desc-text clamp' }, pack.description),
             el('div', { class: 'pack-tags' },
                 el('span', { class: 'tag' }, 'Minecraft ' + pack.mcVersion),
-                el('span', { class: 'tag' }, pack.loader === 'vanilla' ? 'Vanilla'
-                    : `${LOADER_NAMES[pack.loader] || pack.loader} ${pack.loaderVersion || ''}`.trim()),
-                pack.modCount > 0 && el('span', { class: 'tag' }, pack.modCount + ' mod'),
-                ...contentTags(pack),
-                pack.recommendedRamGb > 0 && el('span', { class: 'tag', title: 'Önerilen RAM' }, pack.recommendedRamGb + ' GB RAM'),
-                ...accessTags(pack, result.roles),
-                el('span', { class: 'tag' }, formatSize(pack.sizeMb))),
-            el('div', { class: 'pack-foot' },
-                primary,
-                result.feedbackEnabled && el('button', {
-                    class: 'btn btn-sm btn-feedback', title: 'Geri bildirim ve istekler',
-                    onclick: () => openFeedback(pack, result.isAdmin),
-                },
-                    fromMarkup('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg>'),
-                    'Geri bildirim',
-                    pack.openFeedback > 0 && el('span', { class: 'count' }, pack.openFeedback)),
-                el('button', { class: 'btn btn-sm', title: 'Bir arkadaşına mesajla gönder', onclick: () => shareCardWith(packInvite(pack)) }, 'Gönder'),
-                (pack.changelog || []).length > 0 && el('button', { class: 'btn btn-sm', title: 'Her sürümde neyin değiştiği', onclick: () => showChangelog(pack) }, 'Değişiklikler'),
-                result.isAdmin && result.roles && el('button', { class: 'btn btn-sm', title: 'Kimler görebilir', onclick: () => editPackAccess(pack, result.roles) }, 'Erişim'),
-                result.isAdmin && el('button', { class: 'btn btn-sm btn-danger', onclick: () => deletePack(pack) }, 'Sil'))));
+                el('span', { class: 'tag' }, packLoaderLabel(pack)),
+                pack.modCount > 0 && el('span', { class: 'tag' }, pack.modCount + ' mod')),
+            el('div', { class: 'pack-foot', onclick: e => e.stopPropagation() },
+                packPrimaryButton(pack),
+                el('button', { class: 'link-btn pack-more-link', onclick: open },
+                    'Ayrıntılar', pack.openFeedback > 0 && el('span', { class: 'count', title: 'Açık geri bildirim' }, pack.openFeedback)))));
+}
+
+/** Paketin ayrıntıları: bütün bilgiler, işlemler ve değişiklik geçmişi tek pencerede. */
+function openPackDetails(pack, result) {
+    const updated = parseDate(pack.updatedAt);
+    return openModal(close => {
+        const action = (label, onclick, cls = 'btn btn-sm', title) => el('button', { class: cls, title, onclick: () => { close(); onclick(); } }, label);
+        return [
+            el('div', { class: 'pack-detail-head' },
+                packCover(pack),
+                el('div', { class: 'pack-detail-title' },
+                    el('h2', {}, pack.name),
+                    el('div', { class: 'pack-meta' },
+                        [pack.author && ('Paylaşan: ' + pack.author), updated && relativeDate(updated), 'rev ' + pack.revision].filter(Boolean).join(' · ')))),
+            el('div', { class: 'modal-body pack-detail-body' },
+                pack.description && el('p', { class: 'pack-detail-desc' }, pack.description),
+                el('div', { class: 'pack-tags' },
+                    el('span', { class: 'tag' }, 'Minecraft ' + pack.mcVersion),
+                    el('span', { class: 'tag' }, packLoaderLabel(pack)),
+                    pack.modCount > 0 && el('span', { class: 'tag' }, pack.modCount + ' mod'),
+                    ...contentTags(pack),
+                    pack.recommendedRamGb > 0 && el('span', { class: 'tag', title: 'Önerilen RAM' }, pack.recommendedRamGb + ' GB RAM'),
+                    ...accessTags(pack, result.roles),
+                    el('span', { class: 'tag' }, formatSize(pack.sizeMb))),
+                (pack.changelog || []).length > 0 && el('div', { class: 'pack-detail-section' },
+                    el('div', { class: 'share-title' }, 'Değişiklikler'),
+                    el('div', { class: 'changelog' }, pack.changelog.slice(0, 5).map(changeEntry)),
+                    pack.changelog.length > 5 && el('button', { class: 'link-btn', onclick: () => { close(); showChangelog(pack); } }, `Bütün geçmiş (${pack.changelog.length})`))),
+            el('div', { class: 'modal-foot pack-detail-foot' },
+                result.isAdmin && result.roles && action('Erişim', () => editPackAccess(pack, result.roles), 'btn btn-sm', 'Kimler görebilir'),
+                result.isAdmin && action('Sil', () => deletePack(pack), 'btn btn-sm btn-danger'),
+                el('span', { class: 'spacer' }),
+                result.feedbackEnabled && action(pack.openFeedback > 0 ? `Geri bildirim (${pack.openFeedback})` : 'Geri bildirim', () => openFeedback(pack, result.isAdmin)),
+                action('Arkadaşına gönder', () => shareCardWith(packInvite(pack))),
+                packPrimaryButton(pack, () => close())),
+        ];
+    }, { wide: true });
 }
 
 /** Paketi kimlerin görebileceği (admin). Yeni revizyon açılmaz; kuranların paketi değişmez. */
