@@ -61,7 +61,8 @@ async function openServersPage() {
     if (community.loading) return;
     community.loading = true;
     $('servers-add').hidden = !state.isAdmin;
-    $('servers-status').textContent = 'Yükleniyor…';
+    $('servers-status').textContent = '';
+    if (!community.servers.length) $('servers-grid').replaceChildren(...[0, 1].map(() => el('div', { class: 'server-card skeleton server-skel' })));
     try {
         const [servers] = await Promise.all([
             bridge.invoke('community.servers'),
@@ -71,10 +72,15 @@ async function openServersPage() {
             ensureMembers(),   // arkadaş listesindeki avatarlar için
         ]);
         community.servers = servers;
-        $('servers-status').textContent = servers.length ? '' : (state.isAdmin
-            ? 'Henüz sunucu eklenmemiş. "+ Sunucu ekle" ile ilk sunucuyu ekle.'
-            : 'Henüz sunucu eklenmemiş.');
         renderServers();
+        if (!servers.length) $('servers-grid').replaceChildren(emptyState({
+            icon: '⛁',
+            title: 'Henüz sunucu yok',
+            text: state.isAdmin
+                ? 'Bir sunucu ekle; oyuncular "Bağlan" ile doğru paketi açıp doğrudan sunucuya girer.'
+                : 'Admin bir sunucu eklediğinde burada görünecek.',
+            action: state.isAdmin && el('button', { class: 'btn btn-primary btn-sm', onclick: () => openServerDialog(null) }, '+ Sunucu ekle'),
+        }));
         renderFriends();
         pingAll();
     } catch (err) {

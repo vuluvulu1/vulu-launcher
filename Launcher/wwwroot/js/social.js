@@ -20,8 +20,11 @@ async function loadShots() {
     const requestId = ++social.requestId;
     const status = $('shots-status');
     status.classList.remove('error');
-    if (!social.shots.length) status.textContent = 'Yükleniyor…';
-    const slow = setTimeout(() => { if (status.textContent === 'Yükleniyor…') status.textContent = WAKING_TEXT; }, 4000);
+    if (!social.shots.length) {
+        status.textContent = '';
+        $('shots-grid').replaceChildren(...[0, 1, 2].map(() => el('div', { class: 'shot-tile skeleton shot-skel' })));
+    }
+    const slow = setTimeout(() => { if (!social.shots.length) status.textContent = WAKING_TEXT; }, 4000);
     try {
         const last = social.shots[social.shots.length - 1];
         const result = await bridge.invoke('social.feed', {
@@ -31,10 +34,14 @@ async function loadShots() {
         if (requestId !== social.requestId) return;
         social.shots = social.shots.concat(result.shots);
         social.more = result.more;
-        status.textContent = social.shots.length ? '' : social.filter === 'mine'
-            ? 'Henüz ekran görüntüsü paylaşmadın. "+ Paylaş" ile ilkini paylaş.'
-            : 'Henüz kimse ekran görüntüsü paylaşmadı. İlk paylaşan sen ol!';
+        status.textContent = '';
         renderShots();
+        if (!social.shots.length) $('shots-grid').replaceChildren(emptyState({
+            icon: '▦',
+            title: social.filter === 'mine' ? 'Henüz ekran görüntüsü paylaşmadın' : 'Akış şimdilik boş',
+            text: 'Oyunda F2 ile ekran görüntüsü al, sonra buradan paylaş. Bütün vulu üyeleri görür, beğenip yorum yapabilir.',
+            action: el('button', { class: 'btn btn-primary btn-sm', onclick: startShareFlow }, '+ Ekran görüntüsü paylaş'),
+        }));
     } catch (err) {
         if (requestId !== social.requestId) return;
         status.textContent = 'Ekran görüntüleri alınamadı: ' + err.message;

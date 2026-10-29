@@ -118,3 +118,12 @@ function adminMark() {
     const mark = fromMarkup('<span class="admin-mark" title="Admin" role="img" aria-label="Admin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3.2v5.6c0 5-3.4 8.9-8 10.2-4.6-1.3-8-5.2-8-10.2V5.7z"/><path class="tick" d="M8.5 12.2l2.4 2.4 4.6-4.8"/></svg></span>');
     return mark;
 }
+
+/** Boş durum: ne olduğu, ne yapılabileceği ve (varsa) tek bir düğme. icon: kısa bir karakter ya da emoji. */
+function emptyState({ icon = '', title, text = '', action = null }) {
+    return el('div', { class: 'empty-state' },
+        icon && el('div', { class: 'empty-icon', 'aria-hidden': 'true' }, icon),
+        el('h3', {}, title),
+        text && el('p', {}, text),
+        action);
+}

@@ -49,7 +49,12 @@ function showPage(name) {
     if (SOCIAL_PAGES.includes(name)) { socialFrom = name; name = 'social'; }
 
     state.page = name;
-    for (const page of document.querySelectorAll('.page')) page.hidden = page.id !== 'page-' + name;
+    for (const page of document.querySelectorAll('.page')) {
+        const show = page.id === 'page-' + name;
+        // Sayfa değişince yeni sayfa hafifçe belirir (aynı sayfaya tekrar basınca değil)
+        if (show && page.hidden) { page.classList.remove('page-enter'); void page.offsetWidth; page.classList.add('page-enter'); }
+        page.hidden = !show;
+    }
     for (const button of document.querySelectorAll('#page-tabs button'))
         button.classList.toggle('active', button.dataset.page === name || (button.dataset.page === 'discover' && DISCOVER_PAGES.includes(name)));
     $('btn-user').classList.toggle('active', name === 'profile');
@@ -148,6 +153,7 @@ function setupTitlebar() {
     });
 
     $('btn-user').addEventListener('click', () => openProfile(state.username));
+    $('btn-search').addEventListener('click', () => { if (!document.querySelector('.palette')) openPalette(); });
     $('btn-feedback').addEventListener('click', () => openFeedback('launcher', state.isAdmin));
 }
 
@@ -217,6 +223,7 @@ async function showLogin({ auto = false } = {}) {
     state.apiBase = init.apiBaseUrl || '';
     state.canLaunchGame = init.canLaunchGame !== false;   // Android'de oyun henüz açılmıyor
     $('btn-user').hidden = true;
+    $('btn-search').hidden = true;
     $('btn-feedback').hidden = true;
     stopFriendRequests();
     $('page-tabs').hidden = true;
@@ -405,6 +412,7 @@ async function enterLauncher(session, { resume = false } = {}) {
     $('user-name').textContent = session.username;
     setAvatar($('user-avatar'), { username: session.username, avatarVersion: 0 });
     $('btn-user').hidden = false;
+    $('btn-search').hidden = false;
     loadMyProfile(); // avatarı arka planda getirir
     state.isAdmin = !!session.isAdmin;
     $('page-tabs').hidden = false;
@@ -749,6 +757,61 @@ document.addEventListener('scroll', event => { if (!event.target.closest?.('.mor
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && $('pack-menu') && !$('pack-menu').hidden) { closePackMenu(); $('btn-pack-more').focus(); }
 });
+
+// ── Hızlı arama (Ctrl+K) ──────────────────────────────────────────────
+// Paketler, sayfalar ve kişiler tek kutuda: yaz, ok tuşlarıyla seç, Enter ile git.
+document.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && !$('view-main').hidden) {
+        event.preventDefault();
+        if (!document.querySelector('.palette')) openPalette();
+    }
+});
+
+function paletteItems() {
+    const pages = [['home', 'Oyna'], ['packs', 'vulu Packs'], ['modrinth', 'Mod ara (Modrinth / CurseForge)'], ['servers', 'Sunucular'],
+        ['social', 'Sosyal'], ['settings', 'Ayarlar'], state.isAdmin && ['admin', 'Admin paneli']].filter(Boolean);
+    const people = [...new Set([...friends.friends, ...dm.conversations.map(c => c.username), ...profile.members.map(m => m.username)])]
+        .filter(name => name && name !== state.username);
+    return [
+        ...state.instances.map(i => ({ kind: 'Paket', label: i.name, sub: loaderLabel(i), run: () => { selectInstance(i); showPage('home'); } })),
+        ...pages.map(([page, label]) => ({ kind: 'Sayfa', label, run: () => showPage(page) })),
+        ...people.map(name => ({ kind: 'Kişi', label: name, sub: friends.friends.includes(name) ? 'Arkadaş' : 'Üye', run: () => openConversation(name) })),
+        { kind: 'Eylem', label: 'Profilim', run: () => openProfile(state.username) },
+        state.selected && state.selected.kind === 'custom' && { kind: 'Eylem', label: `${state.selected.name}: içeriği yönet`, run: () => openInstanceContent(state.selected) },
+        canInstallGames() && { kind: 'Eylem', label: 'Yeni instance', run: () => openNewInstanceDialog() },
+    ].filter(Boolean);
+}
+
+function openPalette() {
+    const all = paletteItems();
+    let index = 0, shown = [];
+    return openModal(close => {
+        const input = el('input', { type: 'text', class: 'palette-input', placeholder: 'Paket, sayfa ya da kişi ara…', spellcheck: false, autofocus: true });
+        const list = el('div', { class: 'palette-list', role: 'listbox' });
+        const render = () => {
+            const q = input.value.trim().toLocaleLowerCase('tr');
+            shown = (q ? all.filter(i => i.label.toLocaleLowerCase('tr').includes(q)) : all.filter(i => i.kind !== 'Kişi')).slice(0, 40);
+            index = Math.min(index, Math.max(0, shown.length - 1));
+            list.replaceChildren(...(shown.length ? shown.map((item, i) => el('button', {
+                class: 'palette-item' + (i === index ? ' active' : ''), role: 'option', 'aria-selected': String(i === index),
+                onmousemove: () => { if (index !== i) { index = i; render(); } },
+                onclick: () => { close(); item.run(); },
+            }, el('span', { class: 'palette-kind' }, item.kind), el('span', { class: 'palette-label' }, item.label), item.sub && el('span', { class: 'palette-sub' }, item.sub)))
+                : [el('p', { class: 'hint palette-none' }, 'Sonuç yok.')]));
+            const active = list.querySelector('.active');
+            if (active) active.scrollIntoView({ block: 'nearest' });
+        };
+        input.addEventListener('input', () => { index = 0; render(); });
+        input.addEventListener('keydown', e => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); index = Math.min(index + 1, shown.length - 1); render(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); index = Math.max(index - 1, 0); render(); }
+            else if (e.key === 'Enter' && shown[index]) { e.preventDefault(); const item = shown[index]; close(); item.run(); }
+        });
+        render();
+        return [el('div', { class: 'palette' }, input, list,
+            el('div', { class: 'palette-foot' }, el('span', {}, '↑↓ seç'), el('span', {}, 'Enter git'), el('span', {}, 'Esc kapat')))];
+    });
+}
 
 // ── Vanilla sürüm seçimi ──────────────────────────────────────────────
 /** Sunucunun Vanilla paketinde Minecraft sürümü seçilebilir; modlu paketlerin sürümü sabittir. */

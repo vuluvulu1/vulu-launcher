@@ -1569,3 +1569,24 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 #settings-search { width: 260px; }
 .set-section { scroll-margin-top: 12px; }
 .members-find { margin: 4px 10px 10px; align-self: flex-start; }
+
+/* ── Cila: boş durumlar, iskeletler, sayfa geçişi, hızlı arama ── */
+.empty-state { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 440px; margin: 40px auto; padding: 28px 24px; text-align: center; border: 1px dashed var(--line-strong); border-radius: var(--r-lg); }
+.empty-state h3 { margin: 0; font: 600 16px var(--font); }
+.empty-state p { margin: 0 0 6px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.empty-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: var(--accent-soft); color: var(--accent-hi); font-size: 22px; }
+.shot-skel { aspect-ratio: 4 / 3; border: 0; }
+.server-skel { height: 150px; border: 0; }
+.page-enter { animation: page-enter .18s ease-out; }
+@keyframes page-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .page-enter { animation: none; } }
+.palette { display: flex; flex-direction: column; min-width: min(560px, 90vw); }
+.palette-input { margin: 12px; font-size: 15px; height: 42px; }
+.palette-list { max-height: min(50vh, 420px); overflow-y: auto; padding: 0 6px 6px; }
+.palette-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: var(--r-md); background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.palette-item.active { background: var(--hover); }
+.palette-kind { flex: none; width: 52px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.palette-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.palette-sub { flex: none; font-size: 12px; color: var(--muted); }
+.palette-none { padding: 10px; }
+.palette-foot { display: flex; gap: 14px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--muted); }
