@@ -873,7 +873,7 @@ document.addEventListener('keydown', event => {
 // ── Hızlı arama (Ctrl+K) ──────────────────────────────────────────────
 // Paketler, sayfalar ve kişiler tek kutuda: yaz, ok tuşlarıyla seç, Enter ile git.
 document.addEventListener('keydown', event => {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && !$('view-main').hidden) {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && !$('view-main').hidden && $('view-splash').hidden && !$('btn-search').hidden) {
         event.preventDefault();
         if (!document.querySelector('.palette')) openPalette();
     }
@@ -1723,8 +1723,11 @@ window.addEventListener('DOMContentLoaded', () => {
     $('btn-play').addEventListener('click', () => play());
     $('btn-ram').addEventListener('click', () => setPopover('ram-pop', 'btn-ram', $('ram-pop').hidden));
     $('btn-new-instance').addEventListener('click', () => openNewInstanceDialog());
-    for (const button of document.querySelectorAll('#page-tabs button'))
+    for (const button of document.querySelectorAll('#page-tabs button')) {
         button.addEventListener('click', () => showPage(button.dataset.page));
+        // Dar pencerede sekmede yalnızca simge kalır; adı ipucunda görünsün
+        if (!button.title) button.title = [...button.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join(' ').trim();
+    }
 
     // Sağ tık menüsü açılmasın (pencere ayarı yanında, sayfa düzeyinde de)
     window.addEventListener('contextmenu', event => event.preventDefault());
