@@ -228,6 +228,55 @@ async function openSettingsPage() {
 
     // Oyun ayarları (Java, RAM, pencere) telefonda oyun açılana kadar gösterilmez
     body.replaceChildren(...[state.canLaunchGame && game, behaviour, look, isDesktopApp() && storageSection(), account].filter(Boolean));
+    buildSettingsNav();
+    filterSettings();
+}
+
+// ── Bölüm menüsü ve arama ─────────────────────────────────────────────
+let settingsObserver = null;
+
+function buildSettingsNav() {
+    const sections = [...$('settings-body').querySelectorAll('.set-section')];
+    const links = sections.map((section, i) => {
+        section.id = 'set-sec-' + i;
+        return el('button', {
+            type: 'button', 'data-target': section.id,
+            onclick: () => section.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+        }, section.querySelector('h2').textContent);
+    });
+    $('settings-nav').replaceChildren(...links);
+    const mark = id => links.forEach(l => l.classList.toggle('active', l.dataset.target === id));
+    if (sections[0]) mark(sections[0].id);
+    // Kaydırırken üstte görünen bölüm menüde seçili olur
+    if (settingsObserver) settingsObserver.disconnect();
+    settingsObserver = new IntersectionObserver(entries => {
+        const top = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (top) mark(top.target.id);
+    }, { root: $('page-settings'), rootMargin: '0px 0px -65% 0px' });
+    sections.forEach(s => settingsObserver.observe(s));
+}
+
+/** Aramaya uyan ayar satırları kalır; hiç satırı kalmayan bölüm gizlenir. */
+function filterSettings() {
+    const query = $('settings-search').value.trim().toLocaleLowerCase('tr');
+    let any = false;
+    for (const section of $('settings-body').querySelectorAll('.set-section')) {
+        const title = section.querySelector('h2').textContent.toLocaleLowerCase('tr');
+        let shown = 0;
+        for (const row of section.querySelectorAll('.set-row')) {
+            const match = !query || title.includes(query) || row.textContent.toLocaleLowerCase('tr').includes(query);
+            row.hidden = !match;
+            if (match) shown++;
+        }
+        section.hidden = shown === 0 && !!query;
+        any = any || !section.hidden;
+        const link = $('settings-nav').querySelector(`[data-target="${section.id}"]`);
+        if (link) link.hidden = section.hidden;
+    }
+    let none = $('settings-none');
+    if (!none) { none = el('p', { id: 'settings-none', class: 'hint' }); $('settings-body').append(none); }
+    none.textContent = any ? '' : `"${$('settings-search').value.trim()}" ile ilgili bir ayar yok.`;
+    none.hidden = any;
 }
 
 // ── Depolama ──────────────────────────────────────────────────────────
@@ -517,4 +566,10 @@ async function logout() {
     state.instances = [];
     state.selected = null;
     await showLogin();
+}
+
+function setupSettingsPage() {
+    const search = $('settings-search');
+    search.addEventListener('input', filterSettings);
+    search.addEventListener('keydown', e => { if (e.key === 'Escape') { search.value = ''; filterSettings(); } });
 }

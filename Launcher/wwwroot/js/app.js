@@ -1421,6 +1421,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupMessagesPage();
     setupLibrary();
     setupSocial();
+    setupSettingsPage();
     $('mr-filter-toggle').addEventListener('click', () => {
         const open = $('mr-filter-toggle').closest('.mr-side').classList.toggle('open');
         $('mr-filter-toggle').setAttribute('aria-expanded', String(open));

@@ -1558,3 +1558,13 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .pack-detail-desc { margin: 0; line-height: 1.55; white-space: pre-wrap; }
 .pack-detail-section { display: flex; flex-direction: column; gap: 8px; }
 .pack-detail-foot .spacer { flex: 1; }
+
+/* ── Ayarlar: bölüm menüsü ve arama ── */
+.settings-layout { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 20px; align-items: start; }
+.settings-nav { position: sticky; top: 0; display: flex; flex-direction: column; gap: 2px; }
+.settings-nav button { padding: 8px 12px; border: 0; border-left: 2px solid transparent; border-radius: 0 var(--r-md) var(--r-md) 0; background: none; color: var(--muted); font: 600 13px var(--font); text-align: left; cursor: pointer; }
+.settings-nav button:hover { color: var(--text); background: var(--hover); }
+.settings-nav button.active { color: var(--text); border-left-color: var(--accent); background: var(--hover); }
+.settings-nav button[hidden], .set-row[hidden], .set-section[hidden] { display: none; }
+#settings-search { width: 260px; }
+.set-section { scroll-margin-top: 12px; }

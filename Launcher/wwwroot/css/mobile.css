@@ -213,6 +213,12 @@
 
     /* Sunucular */
     .servers-layout { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    /* Ayarlar: bölüm menüsü yatay, kaydırılabilir şerit olur */
+    .settings-layout { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .settings-nav { flex-direction: row; overflow-x: auto; scrollbar-width: none; background: var(--bg); z-index: 2; padding: 4px 0; }
+    .settings-nav button { flex: none; border-left: 0; border-bottom: 2px solid transparent; border-radius: 0; white-space: nowrap; }
+    .settings-nav button.active { border-bottom-color: var(--accent); background: none; }
+    #settings-search { width: 100%; }
     .server-icon { width: 52px; height: 52px; }
     .servers-grid { grid-template-columns: 1fr; }
     .server-foot .btn { flex: 1 1 auto; }

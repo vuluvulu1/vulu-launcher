@@ -356,9 +356,16 @@
         <div id="page-settings" class="page page-scroll" hidden>
             <header class="page-head">
                 <h1>Ayarlar</h1>
-                <span id="settings-saved" class="page-note"></span>
+                <div class="page-head-actions">
+                    <span id="settings-saved" class="page-note"></span>
+                    <input id="settings-search" type="search" placeholder="Ayar ara… (ör. RAM, Java, bildirim)" spellcheck="false" />
+                </div>
             </header>
-            <div id="settings-body"></div>
+            <!-- Solda bölümler (tıklayınca oraya kayar, kaydırınca seçili olan değişir), sağda ayarlar -->
+            <div class="settings-layout">
+                <nav id="settings-nav" class="settings-nav" aria-label="Ayar bölümleri"></nav>
+                <div id="settings-body"></div>
+            </div>
         </div>
 
         <!-- vulu Packs: adminin paylaştığı paketler -->
