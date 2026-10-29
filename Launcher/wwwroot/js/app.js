@@ -456,7 +456,51 @@ async function enterLauncher(session, { resume = false } = {}) {
 
     await runStartupAction();   // masaüstü kısayolundan açıldıysa
     await onNotificationClicked();   // kapalıyken ya da giriş ekranındayken bildirime dokunulduysa
+    if (!resume && !store.get('tourDone', false)) await startTour();
     await offerLauncherUpdate();
+}
+
+// ── İlk açılış rehberi ────────────────────────────────────────────────
+// Dört kısa adım; her adımda ilgili üst sekme parlar ve "Göster" o sayfayı açar. Bir kez gösterilir;
+// Ayarlar → Launcher'dan yeniden açılabilir.
+const TOUR_STEPS = [
+    { page: 'packs', icon: '📦', title: 'Paket kur', text: 'Keşfet\'teki vulu Packs, ekibin hazırladığı mod paketleri. "Kur"a bas; modlar, ayarlar ve görev kitapları kendiliğinden iner. Kendi modlarını istersen "+ Yeni" ile instance oluştur.' },
+    { page: 'home', icon: '▶', title: 'Oyna', text: 'Soldan paketi seç, sağ alttaki OYNA\'ya bas. RAM düğmesiyle belleği ayarlarsın. Alttaki sekmelerde dünyaların, ekran görüntülerin ve modların durur.' },
+    { page: 'social', icon: '👥', title: 'Arkadaş ekle', text: 'Sosyal\'de soldaki kutudan birini ara ve "+ Ekle"ye bas. Arkadaşlarınla uçtan uca şifreli mesajlaşır, ekran görüntüsü paylaşırsın; oyundalarsa yanlarında "Katıl" çıkar.' },
+    { page: 'servers', icon: '⛁', title: 'Sunucuya bağlan', text: 'Sunucular\'da "Bağlan"a bas: doğru paket açılır (gerekirse önce kurulur) ve oyun doğrudan sunucuya girer. Ctrl+K ile her şeyi hızlıca arayabilirsin.' },
+];
+
+function startTour() {
+    let step = 0;
+    const glow = page => {
+        for (const b of document.querySelectorAll('#page-tabs button')) b.classList.toggle('tour-glow', b.dataset.page === page || (page === 'packs' && b.dataset.page === 'discover'));
+    };
+    return openModal(close => {
+        const dots = el('div', { class: 'tour-dots' });
+        const icon = el('div', { class: 'tour-icon', 'aria-hidden': 'true' });
+        const title = el('h2', { class: 'tour-title' });
+        const text = el('p', { class: 'tour-text' });
+        const back = el('button', { class: 'btn', onclick: () => { step--; render(); } }, 'Geri');
+        const next = el('button', { class: 'btn btn-primary', onclick: () => { if (step < TOUR_STEPS.length - 1) { step++; render(); } else finish(); } });
+        const show = el('button', { class: 'link-btn', onclick: () => { finish(); showPage(TOUR_STEPS[step].page); } }, 'Göster');
+        function render() {
+            const s = TOUR_STEPS[step];
+            icon.textContent = s.icon;
+            title.textContent = s.title;
+            text.textContent = s.text;
+            back.hidden = step === 0;
+            next.textContent = step === TOUR_STEPS.length - 1 ? 'Başla' : 'İleri';
+            dots.replaceChildren(...TOUR_STEPS.map((_, i) => el('span', { class: i === step ? 'active' : '' })));
+            glow(s.page);
+        }
+        function finish() { store.set('tourDone', true); glow(null); close(); }
+        render();
+        return [
+            el('div', { class: 'modal-body tour' }, el('div', { class: 'tour-kicker' }, 'vulu Launcher\'a hoş geldin'), icon, title, text, dots),
+            el('div', { class: 'modal-foot' },
+                el('button', { class: 'link-btn tour-skip', onclick: finish }, 'Atla'), show, el('span', { class: 'spacer' }), back, next),
+        ];
+    }).then(() => { store.set('tourDone', true); glow(null); });
 }
 
 async function offerLauncherUpdate() {

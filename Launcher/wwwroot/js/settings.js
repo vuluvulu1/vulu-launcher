@@ -223,6 +223,8 @@ async function openSettingsPage() {
                 el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'base' }) }, 'Aç'),
                 el('button', { class: 'btn btn-sm', onclick: () => bridge.invoke('files.open', { target: 'instances' }) }, 'Instance\'lar'))),
         settingRow('Sürüm', null, el('span', { class: 'set-value' }, 'vulu Launcher v' + info.version)),
+        settingRow('Tanıtım rehberi', 'İlk açılışta gösterilen dört adımlık kısa rehber.',
+            el('button', { class: 'btn btn-sm', onclick: () => startTour() }, 'Yeniden göster')),
         settingRow('Açık kaynak lisansları', 'Kullanılan bileşenler ve lisans metinleri.',
             el('button', { class: 'btn btn-sm', onclick: openLicenses }, 'Göster')));
 
