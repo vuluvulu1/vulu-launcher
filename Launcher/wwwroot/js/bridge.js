@@ -597,6 +597,14 @@ Bu paket **teknoloji** ve *büyü* modlarını bir araya getirir. [Discord](http
         'storage.usage': async () => { await wait(400); return { modCache: 120e6, modCacheShared: 610e6, browser: 90e6, shots: 2e6, cache: 212e6, game: 1.4e9, java: 420e6, instances: 680e6, browserPending: false }; },
         'storage.clear': async () => ({ freed: 212e6, browserPending: true }),
         'files.open': async () => ({ opened: true }),
+        'notifications.list': async () => {
+            const ago = m => new Date(Date.now() - m * 60000).toISOString();
+            return [
+                { id: 3, title: 'Steve_TR', body: 'Bu akşam AGLR\'ye giriyor musun?', tag: 'dm:Steve_TR', at: ago(2), avatar: null },
+                { id: 2, title: 'Arkadaşlık isteği', body: 'misafir seni arkadaş olarak eklemek istiyor.', tag: 'friend:misafir', at: ago(40), avatar: null },
+                { id: 1, title: 'Hafif Survival güncellendi', body: 'rev 2 → rev 3', tag: 'pack:p2', at: ago(60 * 26), avatar: null },
+            ];
+        },
         'worlds.list': async () => {
             await wait(250);
             const ago = h => new Date(Date.now() - h * 3600000).toISOString();

@@ -213,6 +213,7 @@
 
     /* Sunucular */
     .servers-layout { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    .notif-pop { position: fixed; top: calc(var(--titlebar-h, 52px) + 6px); left: 8px; right: 8px; width: auto; }
     /* Ayarlar: bölüm menüsü yatay, kaydırılabilir şerit olur */
     .settings-layout { grid-template-columns: minmax(0, 1fr); gap: 10px; }
     .settings-nav { flex-direction: row; overflow-x: auto; scrollbar-width: none; background: var(--bg); z-index: 2; padding: 4px 0; }

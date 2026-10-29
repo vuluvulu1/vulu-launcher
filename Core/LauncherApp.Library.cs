@@ -33,6 +33,7 @@ namespace VuluLauncher
             _bridge.On("screenshots.copy", args => Task.FromResult<object?>(CopyScreenshot(args.Str("id"), args.Str("name"))));
             _bridge.On("screenshots.delete", args => Task.FromResult<object?>(DeleteScreenshot(args.Str("id"), args.Str("name"))));
             _bridge.On("packs.updates", async _ => await PackUpdatesAsync());
+            _bridge.On("notifications.list", _ => Task.FromResult<object?>(ListNotifications()));
             _bridge.On("app.takeNotification", _ =>
             {
                 string? tag;

@@ -224,6 +224,7 @@ async function showLogin({ auto = false } = {}) {
     state.canLaunchGame = init.canLaunchGame !== false;   // Android'de oyun henüz açılmıyor
     $('btn-user').hidden = true;
     $('btn-search').hidden = true;
+    $('btn-notif').hidden = true;
     $('btn-feedback').hidden = true;
     stopFriendRequests();
     $('page-tabs').hidden = true;
@@ -413,6 +414,8 @@ async function enterLauncher(session, { resume = false } = {}) {
     setAvatar($('user-avatar'), { username: session.username, avatarVersion: 0 });
     $('btn-user').hidden = false;
     $('btn-search').hidden = false;
+    $('btn-notif').hidden = false;
+    loadNotifications();
     loadMyProfile(); // avatarı arka planda getirir
     state.isAdmin = !!session.isAdmin;
     $('page-tabs').hidden = false;
@@ -1273,6 +1276,74 @@ function showToast(n) {
     timer = setTimeout(dismiss, 6000);
 }
 
+// ── Bildirim merkezi ──────────────────────────────────────────────────
+// Liste C# tarafında tutulur (simge durumundayken gelenler dahil); okundu bilgisi bu bilgisayarda saklanır.
+const notifs = { items: [], seenAt: Number(store.get('notifSeenAt', '0')) || 0 };
+
+async function loadNotifications() {
+    try { notifs.items = await bridge.invoke('notifications.list'); } catch { notifs.items = []; }
+    renderNotifications();
+}
+
+function onNotification(n) {
+    if (notifs.items.some(x => x.id === n.id)) return;
+    notifs.items.unshift(n);
+    notifs.items.length = Math.min(notifs.items.length, 50);
+    renderNotifications();
+}
+
+function renderNotifications() {
+    const unread = notifs.items.filter(n => new Date(n.at).getTime() > notifs.seenAt).length;
+    const badge = $('notif-badge');
+    badge.textContent = unread > 9 ? '9+' : String(unread);
+    badge.hidden = !unread;
+    if ($('notif-pop').hidden) return;
+    $('notif-list').replaceChildren(...(notifs.items.length ? notifs.items.map(n => {
+        const person = /^(dm|friend|profile|invite):([^:]+)/.exec(n.tag || '');
+        const isNew = new Date(n.at).getTime() > notifs.seenAt;
+        return el('button', {
+            class: 'notif-item' + (isNew ? ' new' : ''),
+            onclick: () => { setNotifPopover(false); if (n.tag) routeNotification(n.tag.startsWith('invite:') ? 'dm:' + person[2] : n.tag); },
+        },
+            n.avatar ? el('img', { class: 'avatar avatar-md', src: n.avatar, alt: '' })
+                : person ? avatarEl({ username: person[2], avatarVersion: memberAvatarVersion(person[2]) }, 'avatar-md')
+                : el('img', { class: 'avatar avatar-md', src: 'assets/logo.png', alt: '' }),
+            el('span', { class: 'notif-text' },
+                el('b', {}, n.title),
+                n.body && el('span', { class: 'notif-body' }, n.body),
+                el('span', { class: 'notif-time' }, relativeTime(new Date(n.at)))));
+    }) : [emptyState({ icon: '🔔', title: 'Bildirim yok', text: 'Mesajlar, arkadaşlık istekleri, paket güncellemeleri ve oyuna giren arkadaşların burada görünür.' })]));
+}
+
+/** "az önce", "5 dk önce", "3 sa önce", sonra tarih. */
+function relativeTime(date) {
+    const minutes = Math.floor((Date.now() - date.getTime()) / 60000);
+    if (minutes < 1) return 'az önce';
+    if (minutes < 60) return `${minutes} dk önce`;
+    if (minutes < 24 * 60) return `${Math.floor(minutes / 60)} sa önce`;
+    return relativeDate(date);
+}
+
+function markNotificationsSeen() {
+    notifs.seenAt = Date.now();
+    store.set('notifSeenAt', String(notifs.seenAt));
+}
+
+function setNotifPopover(open) {
+    $('notif-pop').hidden = !open;
+    $('btn-notif').setAttribute('aria-expanded', String(open));
+    if (open) renderNotifications();
+    else { markNotificationsSeen(); renderNotifications(); }
+}
+
+function setupNotifications() {
+    bridge.on('notification', onNotification);
+    $('btn-notif').addEventListener('click', () => setNotifPopover($('notif-pop').hidden));
+    $('notif-clear').addEventListener('click', () => { markNotificationsSeen(); renderNotifications(); });
+    document.addEventListener('mousedown', e => { if (!$('notif-pop').hidden && !e.target.closest('.notif-wrap')) setNotifPopover(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('notif-pop').hidden) { setNotifPopover(false); $('btn-notif').focus(); } });
+}
+
 // ── Radyo ─────────────────────────────────────────────────────────────
 /**
  * Soldaki çalar bir internet radyosu: istasyonlar türe göre radio-browser.info dizininden gelir (C# tarafı alır),
@@ -1485,6 +1556,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupLibrary();
     setupSocial();
     setupSettingsPage();
+    setupNotifications();
     $('mr-filter-toggle').addEventListener('click', () => {
         const open = $('mr-filter-toggle').closest('.mr-side').classList.toggle('open');
         $('mr-filter-toggle').setAttribute('aria-expanded', String(open));

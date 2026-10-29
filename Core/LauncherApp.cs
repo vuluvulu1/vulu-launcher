@@ -125,15 +125,39 @@ namespace VuluLauncher
         /// Bütün bildirimler buradan geçer: launcher öndeyse arayüzün içinde sağ altta kart olarak, değilse
         /// (arkada, bildirim alanında, oyundayken) masaüstünde Steam'deki gibi kart olarak gösterilir.
         /// </summary>
+        // Bildirim merkezi: son bildirimler bellekte tutulur. Launcher simge durumundayken (arayüz kapalı) gelenler de
+        // kaybolmaz; pencere açılınca arayüz "notifications.list" ile alır.
+        private const int NotificationHistory = 50;
+        private readonly List<NotificationEntry> _notifications = new();
+        private long _notificationSeq;
+
+        private sealed record NotificationEntry(long Id, string Title, string Body, string Tag, DateTime At, string? Avatar);
+
+        private object NotificationJson(NotificationEntry n) => new { id = n.Id, title = n.Title, body = n.Body, tag = n.Tag, at = n.At, avatar = n.Avatar };
+
+        private object ListNotifications()
+        {
+            lock (_notifications) return _notifications.AsEnumerable().Reverse().Select(NotificationJson).ToList();
+        }
+
         private void ShowNotification(string title, string body, string tag)
         {
             // Bildirim bir kişiden geliyorsa (mesaj, istek, oyunda, davet) kartta onun profil resmi görünür
             _ = Task.Run(async () =>
             {
                 string? avatar = PersonOfTag(tag) is { } person ? await AvatarFileAsync(person) : null;
+                string? avatarUrl = avatar == null ? null : LocalFiles.Url(avatar);
+                NotificationEntry entry;
+                lock (_notifications)
+                {
+                    entry = new NotificationEntry(++_notificationSeq, title, body, tag, DateTime.UtcNow, avatarUrl);
+                    _notifications.Add(entry);
+                    if (_notifications.Count > NotificationHistory) _notifications.RemoveAt(0);
+                }
                 try
                 {
-                    if (_host.IsForeground) _bridge.Emit("toast", new { title, body, tag, avatar = avatar == null ? null : LocalFiles.Url(avatar) });
+                    _bridge.Emit("notification", NotificationJson(entry));
+                    if (_host.IsForeground) _bridge.Emit("toast", new { title, body, tag, avatar = avatarUrl });
                     else _host.Notify(title, body, tag, avatar);
                 }
                 catch { /* bildirim gösterilemezse launcher etkilenmez */ }

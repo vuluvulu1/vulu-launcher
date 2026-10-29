@@ -1590,3 +1590,21 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .palette-sub { flex: none; font-size: 12px; color: var(--muted); }
 .palette-none { padding: 10px; }
 .palette-foot { display: flex; gap: 14px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--muted); }
+
+/* ── Bildirim merkezi ── */
+.notif-wrap { position: relative; display: flex; }
+#btn-notif { position: relative; }
+#btn-notif .tab-badge { position: absolute; top: 1px; right: 0; transform: scale(.85); }
+.notif-pop { position: absolute; top: calc(100% + 8px); right: -40px; z-index: 50; width: 360px; max-height: min(70vh, 520px); display: flex; flex-direction: column; border: 1px solid var(--line-strong); border-radius: var(--r-lg); background: var(--panel); box-shadow: 0 16px 40px rgba(0, 0, 0, .45); overflow: hidden; }
+.notif-pop[hidden] { display: none; }
+.notif-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.notif-list { overflow-y: auto; padding: 6px; }
+.notif-list .empty-state { margin: 16px auto; border: 0; }
+.notif-item { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: var(--r-md); background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.notif-item:hover { background: var(--hover); }
+.notif-item.new { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.notif-item.new .notif-text b::after { content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 6px; border-radius: 50%; background: var(--accent); vertical-align: middle; }
+.notif-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.notif-text b { font-size: 13px; }
+.notif-body { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.notif-time { font-size: 11px; color: var(--muted); }
