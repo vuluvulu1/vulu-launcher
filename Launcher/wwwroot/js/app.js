@@ -1565,9 +1565,29 @@ function refreshMusicWidget() {
     $('music-live').style.setProperty('--pct', playing ? '100%' : '0%');
     const station = radioStation();
     $('music-title').textContent = station ? station.name : 'Radyo';
-    $('music-artist').textContent = station
-        ? [radioGenreLabel(), station.country].filter(Boolean).join(' · ')
-        : 'Çalmak için ▶';
+    $('music-artist').replaceChildren(...(station
+        ? [playing && station.kind !== 'song' && el('span', { class: 'music-live-pill' }, 'CANLI'),
+            [radioGenreLabel(), station.country].filter(Boolean).join(' · ')].filter(Boolean)
+        : ['Çalmak için ▶']));
+}
+
+// Favori istasyonlar: tür ve ad olarak bu bilgisayarda saklanır; menünün en üstünde durur
+function radioFavorites() {
+    try { return JSON.parse(store.get('radioFavs', '[]')); } catch { return []; }
+}
+function isRadioFavorite(station) {
+    return radioFavorites().some(f => f.genre === radio.genre && f.name === station.name);
+}
+function toggleRadioFavorite(station) {
+    const favs = radioFavorites();
+    const i = favs.findIndex(f => f.genre === radio.genre && f.name === station.name);
+    if (i >= 0) favs.splice(i, 1); else favs.unshift({ genre: radio.genre, name: station.name });
+    store.set('radioFavs', JSON.stringify(favs.slice(0, 12)));
+}
+async function playRadioFavorite(fav) {
+    if (radio.genre !== fav.genre || !radio.stations.length) await loadRadioStations(fav.genre);
+    const index = radio.stations.findIndex(s => s.name === fav.name);
+    if (index >= 0) { playStation(index); saveSettings({ musicEnabled: true }).catch(() => { }); }
 }
 
 /** İstasyon menüsü: üstte türler, altta o türün istasyonları. */
@@ -1581,8 +1601,35 @@ async function openRadioMenu() {
         });
         document.addEventListener('keydown', event => { if (event.key === 'Escape') menu.hidden = true; });
     }
+    let query = '';
     const render = () => {
+        const favs = radioFavorites();
+        const genreName = id => (radio.genres.find(g => g.id === id) || {}).label || id;
+        const search = el('input', { type: 'text', class: 'radio-search', placeholder: 'İstasyon ara…', value: query, spellcheck: false });
+        search.addEventListener('input', () => { query = search.value; renderList(); });
+        const list = el('div', { class: 'radio-list' });
+        const renderList = () => {
+            const q = query.trim().toLocaleLowerCase('tr');
+            const shown = radio.stations.map((st, i) => [st, i]).filter(([st]) => !q || st.name.toLocaleLowerCase('tr').includes(q));
+            list.replaceChildren(...(shown.length ? shown.map(([st, i]) => el('div', { class: 'radio-row' },
+                el('button', {
+                    type: 'button', role: 'menuitem', class: 'more-item' + (i === radio.index ? ' accent' : ''), title: st.country || '',
+                    onclick: () => { menu.hidden = true; playStation(i); saveSettings({ musicEnabled: true }).catch(() => { }); },
+                }, st.name),
+                el('button', {
+                    type: 'button', class: 'radio-star' + (isRadioFavorite(st) ? ' on' : ''), title: isRadioFavorite(st) ? 'Favorilerden çıkar' : 'Favorilere ekle',
+                    onclick: () => { toggleRadioFavorite(st); render(); },
+                }, isRadioFavorite(st) ? '★' : '☆')))
+                : [el('div', { class: 'radio-note' }, q ? 'Bu adla istasyon yok.' : radio.genre === 'vulu' ? 'vulu Radyo\'da henüz şarkı yok.' : 'Bu türde istasyon bulunamadı.')]));
+        };
+        renderList();
         menu.replaceChildren(
+            favs.length > 0 && el('div', { class: 'radio-favs' },
+                el('div', { class: 'radio-section' }, 'Favoriler'),
+                favs.map(f => el('button', {
+                    type: 'button', class: 'more-item', title: genreName(f.genre),
+                    onclick: async () => { menu.hidden = true; try { await playRadioFavorite(f); } catch { } },
+                }, '★ ' + f.name, el('span', { class: 'radio-fav-genre' }, genreName(f.genre))))),
             el('div', { class: 'radio-genres' }, radio.genres.map(g => el('button', {
                 type: 'button', class: 'chip' + (g.id === radio.genre ? ' active' : ''),
                 onclick: async () => {
@@ -1592,13 +1639,8 @@ async function openRadioMenu() {
                     render();
                 },
             }, g.label))),
-            radio.stations.length
-                ? el('div', { class: 'radio-list' }, radio.stations.map((st, i) => el('button', {
-                    type: 'button', role: 'menuitem', class: 'more-item' + (i === radio.index ? ' accent' : ''),
-                    title: st.country || '',
-                    onclick: () => { menu.hidden = true; playStation(i); saveSettings({ musicEnabled: true }).catch(() => { }); },
-                }, st.name)))
-                : el('div', { class: 'radio-note' }, radio.genre === 'vulu' ? 'vulu Radyo\'da henüz şarkı yok.' : 'Bu türde istasyon bulunamadı.'));
+            radio.stations.length > 8 && search,
+            list);
         positionMenu(menu, $('music-station'));
     };
     menu.replaceChildren(el('div', { class: 'radio-note' }, 'Yükleniyor…'));

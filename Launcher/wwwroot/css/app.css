@@ -1644,3 +1644,25 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .modal-foot .spacer { flex: 1; }
 .tour-skip { color: var(--muted); }
 #page-tabs button.tour-glow { box-shadow: 0 0 0 2px var(--accent), 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent); border-radius: var(--r); }
+
+/* ── Radyo: çalarken ses çubukları, CANLI etiketi, favoriler ve arama ── */
+.music-eq { display: none; align-items: flex-end; gap: 2px; height: 14px; }
+.music-eq i { width: 3px; height: 40%; border-radius: 1px; background: var(--accent-hi); animation: music-eq .9s ease-in-out infinite; }
+.music-eq i:nth-child(2) { animation-delay: -.3s; }
+.music-eq i:nth-child(3) { animation-delay: -.6s; }
+@keyframes music-eq { 0%, 100% { height: 30%; } 50% { height: 100%; } }
+.music:not(.paused) .music-art svg { display: none; }
+.music:not(.paused) .music-eq { display: flex; }
+@media (prefers-reduced-motion: reduce) { .music-eq i { animation: none; height: 70%; } }
+.music-live-pill { display: inline-block; margin-right: 5px; padding: 0 5px; border-radius: 4px; background: #c43c3c; color: #fff; font: 700 9.5px/15px var(--font); letter-spacing: .05em; vertical-align: 1px; }
+.radio-menu { width: 290px; }
+.radio-section { padding: 4px 8px 2px; font: 600 11px var(--font); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.radio-favs { display: flex; flex-direction: column; padding-bottom: 6px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.radio-favs .more-item { display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; }
+.radio-fav-genre { margin-left: auto; font-size: 11px; color: var(--muted); }
+.radio-search { margin: 2px 4px 6px; height: 30px; font-size: 12.5px; }
+.radio-row { display: flex; align-items: center; }
+.radio-row .more-item { flex: 1; min-width: 0; }
+.radio-star { flex: none; width: 28px; height: 28px; border: 0; background: none; color: var(--muted); font-size: 15px; cursor: pointer; opacity: .5; }
+.radio-row:hover .radio-star, .radio-star.on { opacity: 1; }
+.radio-star.on { color: var(--accent-hi); }
