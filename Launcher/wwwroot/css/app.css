@@ -27,7 +27,7 @@
 
     --text: #ece6dd;
     --muted: #a0968c;
-    --dim: #6e655d;
+    --dim: #8a8077;   /* koyu zeminde okunur kalsın (WCAG AA ≈ 4.5:1) */
 
     --accent: #c27e3e;
     --accent-hi: color-mix(in srgb, var(--accent) 78%, white);

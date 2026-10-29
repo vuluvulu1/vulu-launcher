@@ -22,6 +22,10 @@ namespace VuluLauncher
         /// <summary>Launcher penceresinin boyutu: "" = ekrana göre otomatik, yoksa "1280x720" gibi piksel boyutu.</summary>
         public string WindowSize { get; set; } = "";
 
+        /// <summary>Yazı ve arayüz boyutu, yüzde: 90 | 100 | 110 | 125. Pencerenin yakınlaştırmasıyla çarpılır.</summary>
+        public int UiScale { get; set; } = 100;
+        public static readonly int[] UiScales = { 90, 100, 110, 125 };
+
         // ── Launcher davranışı ────────────────────────────────────────────
         /// <summary>"keep" | "minimize" | "close"</summary>
         public string OnGameStart { get; set; } = "keep";
@@ -107,6 +111,7 @@ namespace VuluLauncher
             GameWidth = Math.Clamp(GameWidth, 0, 7680);
             GameHeight = Math.Clamp(GameHeight, 0, 4320);
             WindowSize = ParseWindowSize(WindowSize) is { } size ? $"{size.Width}x{size.Height}" : "";
+            if (!UiScales.Contains(UiScale)) UiScale = 100;
             if (PlayingNotifications is not ("all" or "off")) PlayingNotifications = "friends";
             if (OnGameStart is not ("minimize" or "close")) OnGameStart = "keep";
             MusicVolume = Math.Clamp(MusicVolume, 0, 100);

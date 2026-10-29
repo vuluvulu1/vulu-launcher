@@ -121,6 +121,13 @@ namespace VuluLauncher
         /// </summary>
         internal static (int Width, int Height, int Zoom) WindowLayout(string setting)
         {
+            var (width, height, zoom) = BaseLayout(setting);
+            // Ayarlardaki "yazı ve arayüz boyutu" pencereyi değil, içindeki her şeyi büyütür
+            return (width, height, (int)Math.Round(Math.Clamp(zoom * AppSettings.Current.UiScale / 100.0, 60, 300)));
+        }
+
+        private static (int Width, int Height, int Zoom) BaseLayout(string setting)
+        {
             double dpi = Math.Max(1, GetDpiForSystem() / 96.0);
             if (AppSettings.ParseWindowSize(setting) is { } size)
             {

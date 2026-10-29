@@ -577,7 +577,7 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Seçilen Java dosyası bulunamadı. Otomatik moda dönün ya da geçerli bir java.exe seçin.");
 
             bool playtimeChanged = settings.ShowPlaytimeOnProfile != AppSettings.Current.ShowPlaytimeOnProfile;
-            bool sizeChanged = settings.WindowSize != AppSettings.Current.WindowSize;
+            bool sizeChanged = settings.WindowSize != AppSettings.Current.WindowSize || settings.UiScale != AppSettings.Current.UiScale;
             AppSettings.Save(settings);
             if (sizeChanged) _host.ApplyWindowSize(AppSettings.Current.WindowSize);
             _discord.SetEnabled(_host.IsDesktop && settings.DiscordPresence);

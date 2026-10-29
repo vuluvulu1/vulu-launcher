@@ -25,6 +25,9 @@ const store = {
     set(key, value) { try { localStorage.setItem(key, value); } catch { /* yok say */ } },
 };
 
+// Yazı ve arayüz boyutu (Ayarlar → Ses ve görünüm): masaüstünde pencerenin yakınlaştırmasıyla uygulanır
+const UI_SCALES = [['90', 'Küçük'], ['100', 'Normal'], ['110', 'Büyük'], ['125', 'Çok büyük']];
+
 /** Telefon yerleşimi (css/mobile.css ile aynı sınır): alt sekme çubuğu, tek sütun, liste → ayrıntı gezinmesi. */
 const MOBILE_QUERY = matchMedia('(max-width: 900px)');
 const isMobile = () => MOBILE_QUERY.matches;
