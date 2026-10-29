@@ -416,6 +416,10 @@ async function enterLauncher(session, { resume = false } = {}) {
     $('btn-search').hidden = false;
     $('btn-notif').hidden = false;
     loadNotifications();
+    clearInterval(state.sidebarPresence);
+    const sidebarPresence = () => refreshPresence().then(() => renderInstanceLists());
+    sidebarPresence();
+    state.sidebarPresence = setInterval(sidebarPresence, 120000);
     loadMyProfile(); // avatarı arka planda getirir
     state.isAdmin = !!session.isAdmin;
     $('page-tabs').hidden = false;
@@ -542,33 +546,91 @@ function loaderLabel(instance) {
     return instance.loader === 'vanilla' ? version : `${version} · ${LOADER_NAMES[instance.loader] || instance.loader}`;
 }
 
+/** Bu paketi şu an oynayan arkadaşlar/üyeler (kendin hariç). */
+function playingHere(instance) {
+    return (community.presence || []).filter(p => p.username !== state.username && p.state === 'playing'
+        && ((p.packId && (p.packId === instance.sharedPackId || p.packId === instance.packId)) || p.instance === instance.name));
+}
+
+/** Sağ tıkta ya da kartın menüsünde: paketin sık kullanılan işlemleri. */
+function instanceMenu(instance) {
+    const custom = instance.kind === 'custom';
+    const go = fn => () => { selectInstance(instance); showPage('home'); fn(); };
+    return [
+        canInstallGames() && { label: '▶ Oyna', run: go(() => play()) },
+        { label: 'Dünyalar', run: go(() => setInfoTab('worlds')) },
+        { label: 'Ekran görüntüleri', run: go(() => setInfoTab('shots')) },
+        custom && { label: 'İçerik', run: go(() => setInfoTab('content')) },
+        isDesktopApp() && { label: 'Klasörü aç', run: () => bridge.invoke('files.open', { target: 'instance', id: instance.id }) },
+        'sep',
+        { label: 'Görünüm', run: () => openAppearanceDialog(instance) },
+        custom && { label: 'Düzenle', run: () => openNewInstanceDialog(instance) },
+        custom && { label: 'Çoğalt', run: () => duplicateInstance(instance) },
+        isDesktopApp() && { label: 'Masaüstüne kısayol', run: () => createShortcut('play', instance.id, instance.name, instance.id) },
+        custom && 'sep',
+        custom && { label: 'Sil', run: () => deleteInstance(instance), danger: true },
+    ];
+}
+
+// Kişisel instance'ların sırası sürükleyerek değiştirilir ve bu bilgisayarda hatırlanır
+function orderedCustoms(customs) {
+    let order = [];
+    try { order = JSON.parse(store.get('instanceOrder', '[]')); } catch { }
+    const rank = id => { const i = order.indexOf(id); return i < 0 ? 1e9 : i; };
+    return customs.slice().sort((a, b) => rank(a.id) - rank(b.id));
+}
+
 function renderInstanceLists() {
-    const card = instance => {
+    const card = (instance, draggable) => {
         // Arka planı olmayan modpack'te kartın resmi paketin simgesi olur (sağdaki küçük simgeye o zaman gerek kalmaz)
         const picture = instance.thumbnail || instance.iconUrl;
-        const thumb = el('div', { class: 'thumb' + (picture ? '' : ' plain') });
+        const thumb = el('div', { class: 'thumb' + (picture ? '' : ' plain') }, picture ? null : instance.name.slice(0, 1).toLocaleUpperCase('tr'));
         if (picture) thumb.style.backgroundImage = `url("${picture}")`;
+        const here = playingHere(instance);
 
-        return el('button', { class: 'pack-card', 'data-id': instance.id, onclick: () => { selectInstance(instance); showPage('home'); } },
+        const node = el('button', {
+            class: 'pack-card', 'data-id': instance.id, draggable: draggable ? 'true' : null,
+            title: here.length ? `Şu an oynayan: ${here.map(p => p.username).join(', ')}` : null,
+            onclick: () => { selectInstance(instance); showPage('home'); },
+            oncontextmenu: e => { e.preventDefault(); openContextMenu(e.clientX, e.clientY, instanceMenu(instance)); },
+        },
             thumb,
             instance.iconUrl && instance.thumbnail && el('img', { class: 'card-icon', src: instance.iconUrl, alt: '' }),
             state.packUpdates && state.packUpdates[instance.id] && el('span', { class: 'card-update', title: 'Paketin yeni sürümü var' }),
             el('div', { class: 'info' },
                 el('span', { class: 'name' }, instance.name),
-                el('span', { class: 'ver' }, loaderLabel(instance))));
+                el('span', { class: 'ver' }, loaderLabel(instance),
+                    here.length > 0 && el('span', { class: 'card-playing' }, `● ${here.length} oyunda`))));
+        if (draggable) wireCardDrag(node);
+        return node;
     };
 
     // Vanilla en üstte tek başına durur; altında kullanıcının instance'ları
     const servers = state.instances.filter(i => i.kind === 'server');
-    const customs = state.instances.filter(i => i.kind === 'custom');
+    const customs = orderedCustoms(state.instances.filter(i => i.kind === 'custom'));
 
-    $('pack-list').replaceChildren(...servers.map(card));
+    $('pack-list').replaceChildren(...servers.map(i => card(i, false)));
 
     $('instance-list').replaceChildren(...(customs.length
-        ? customs.map(card)
+        ? customs.map(i => card(i, customs.length > 1))
         : [el('p', { class: 'pack-empty' }, 'Henüz instance yok. "+ Yeni" ile oluştur ya da Modrinth\'ten bir modpack kur.')]));
 
     markSelectedCard();
+}
+
+function wireCardDrag(node) {
+    node.addEventListener('dragstart', e => { node.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', node.dataset.id); });
+    node.addEventListener('dragend', () => {
+        node.classList.remove('dragging');
+        store.set('instanceOrder', JSON.stringify([...$('instance-list').querySelectorAll('.pack-card')].map(c => c.dataset.id)));
+    });
+    node.addEventListener('dragover', e => {
+        const dragging = $('instance-list').querySelector('.dragging');
+        if (!dragging || dragging === node) return;
+        e.preventDefault();
+        const r = node.getBoundingClientRect();
+        node.parentNode.insertBefore(dragging, e.clientY < r.top + r.height / 2 ? node : node.nextSibling);
+    });
 }
 
 function markSelectedCard() {

@@ -336,13 +336,13 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 
 /* Paket satırı: solda küçük resim, sağda ad ve sürüm */
 .pack-card {
-    position: relative; height: 52px; flex: none; padding: 0; text-align: left;
+    position: relative; height: 56px; flex: none; padding: 0; text-align: left;
     border: 1px solid transparent; border-radius: var(--r); background: transparent;
     transition: background .12s, border-color .12s;
 }
-.pack-card .thumb { position: absolute; top: 7px; left: 7px; width: 36px; height: 36px; border-radius: var(--r-sm); background: var(--surface) center / cover no-repeat; }
-.pack-card .thumb.plain { background: var(--accent-soft); }
-.pack-card .info { position: absolute; inset: 0 0 0 52px; display: flex; flex-direction: column; justify-content: center; padding-right: 10px; }
+.pack-card .thumb { position: absolute; top: 7px; left: 7px; width: 40px; height: 40px; border-radius: var(--r-sm); background: var(--surface) center / cover no-repeat; }
+.pack-card .thumb.plain { display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-hi); font: 700 16px var(--font); }
+.pack-card .info { position: absolute; inset: 0 0 0 56px; display: flex; flex-direction: column; justify-content: center; padding-right: 10px; }
 .pack-card .name { font: 600 13.5px var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pack-card .ver { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pack-card:hover { background: var(--hover); }
@@ -1216,7 +1216,7 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .safety-code { padding: 14px; border-radius: var(--r); background: var(--bg); text-align: center; font: 600 20px var(--font-mono); letter-spacing: .08em; word-spacing: .4em; user-select: all; }
 
 /* ── Paket güncellemesi ─────────────────────────────────────────────── */
-.pack-card .card-update { position: absolute; top: 5px; left: 37px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--panel); z-index: 1; }
+.pack-card .card-update { position: absolute; top: 5px; left: 41px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--panel); z-index: 1; }
 .pack-actions .btn.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 /* ── Mesaj davet kartları ───────────────────────────────────────────── */
@@ -1608,3 +1608,10 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .notif-text b { font-size: 13px; }
 .notif-body { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .notif-time { font-size: 11px; color: var(--muted); }
+
+/* Kenar çubuğu: oynayan sayısı, sürükleyerek sıralama, sağ tık menüsü */
+.card-playing { margin-left: 6px; color: #5fcf86; font-weight: 600; }
+.pack-card[draggable="true"] { cursor: grab; }
+.pack-card.dragging { opacity: .45; }
+.context-menu { position: fixed; z-index: 1000; min-width: 190px; }
+.more-item.danger { color: var(--error); }

@@ -127,3 +127,42 @@ function emptyState({ icon = '', title, text = '', action = null }) {
         text && el('p', {}, text),
         action);
 }
+
+/**
+ * Sağ tık menüsü: items = [{ label, run, danger? } | 'sep']. Fare konumunda açılır, pencereye sığacak şekilde kayar;
+ * dışarı tıklayınca, Esc'e basınca ya da bir öğe seçilince kapanır.
+ */
+function openContextMenu(x, y, items) {
+    document.querySelectorAll('.context-menu').forEach(m => m.remove());
+    const menu = el('div', { class: 'context-menu more-menu', role: 'menu' },
+        items.filter(Boolean).map(item => item === 'sep'
+            ? el('div', { class: 'more-sep', role: 'separator' })
+            : el('button', { type: 'button', role: 'menuitem', class: 'more-item' + (item.danger ? ' danger' : ''), onclick: () => { close(); item.run(); } }, item.label)));
+    document.body.append(menu);
+    const r = menu.getBoundingClientRect();
+    menu.style.left = Math.max(6, Math.min(x, innerWidth - r.width - 6)) + 'px';
+    menu.style.top = Math.max(6, Math.min(y, innerHeight - r.height - 6)) + 'px';
+    const first = menu.querySelector('button');
+    if (first) first.focus();
+    function close() {
+        menu.remove();
+        document.removeEventListener('mousedown', outside, true);
+        document.removeEventListener('keydown', onKey, true);
+        window.removeEventListener('blur', close);
+    }
+    function outside(e) { if (!menu.contains(e.target)) close(); }
+    function onKey(e) {
+        if (e.key === 'Escape') { e.stopPropagation(); close(); }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const buttons = [...menu.querySelectorAll('button')];
+            const i = buttons.indexOf(document.activeElement);
+            buttons[(i + (e.key === 'ArrowDown' ? 1 : buttons.length - 1)) % buttons.length].focus();
+        }
+    }
+    setTimeout(() => {
+        document.addEventListener('mousedown', outside, true);
+        document.addEventListener('keydown', onKey, true);
+        window.addEventListener('blur', close);
+    });
+}
