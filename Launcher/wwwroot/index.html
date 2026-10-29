@@ -288,15 +288,22 @@
                 </button>
             </div>
 
+            <!-- Alt bilgi alanı: paketin dünyaları, ekran görüntüleri, içeriği ve konsol (oyun açılınca konsola geçer) -->
             <div id="console" class="console">
                 <div class="console-head">
-                    <span>Konsol</span>
+                    <div id="info-tabs" class="info-tabs" role="tablist" aria-label="Paket bilgisi">
+                        <button type="button" role="tab" data-tab="worlds">Dünyalar</button>
+                        <button type="button" role="tab" data-tab="shots">Ekran görüntüleri</button>
+                        <button type="button" role="tab" data-tab="content">İçerik</button>
+                        <button type="button" role="tab" data-tab="log">Konsol <span id="log-dot" class="log-dot" title="Yeni hata var" hidden></span></button>
+                    </div>
                     <div>
                         <button id="console-clear" class="link-btn">Temizle</button>
                         <button id="console-toggle" class="link-btn">Büyüt</button>
                     </div>
                 </div>
                 <div id="console-body" class="console-body"></div>
+                <div id="info-body" class="info-body" hidden></div>
             </div>
         </div>
 

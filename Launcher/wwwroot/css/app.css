@@ -399,7 +399,15 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
         linear-gradient(180deg, rgba(13, 11, 10, .35) 0%, rgba(13, 11, 10, .55) 45%, rgba(13, 11, 10, .96) 82%),
         linear-gradient(90deg, rgba(13, 11, 10, .7) 0%, rgba(13, 11, 10, 0) 65%);
 }
-.stage-bg.plain { background: var(--bg); }
+/* Resmi ve simgesi olmayan paket: düz siyah yerine vurgu renginden hafif bir ışık ve blok ızgarası */
+.stage-bg.plain {
+    background:
+        radial-gradient(ellipse 70% 60% at 78% 30%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+        radial-gradient(ellipse 50% 50% at 10% 100%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, .025) 0 1px, transparent 1px 48px),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .025) 0 1px, transparent 1px 48px),
+        var(--bg);
+}
 .stage-bg.plain::after { display: none; }
 .stage-bg.side { background-color: var(--bg); background-size: auto 100%; background-position: right center; }
 /*
@@ -433,7 +441,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
     .stage-body { padding-bottom: 14px; }
     /* İstatistikler (mod sayısı, boyut…) yer kaplar; alçak pencerede sunucu kartı ve düğmeler öncelikli */
     #pack-stats { display: none; }
-    .console:not(.expanded) { height: 104px; }
+    .console:not(.expanded) { height: 112px; }
 }
 .stage-hero { margin-top: auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .pack-logo { max-height: 110px; max-width: 420px; object-fit: contain; object-position: left center; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .45)); }
@@ -1499,3 +1507,37 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .pack-check.ok { flex-direction: row; align-items: center; gap: 8px; border-color: var(--line); background: none; font-size: 12.5px; color: var(--muted); }
 
 .btn.btn-xs { height: 24px; padding: 0 8px; font-size: 11.5px; }
+
+/* ── Oyna: alt bilgi alanı (Dünyalar, Ekran görüntüleri, İçerik, Konsol) ── */
+.info-tabs { display: flex; gap: 2px; height: 100%; }
+.info-tabs button { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted); font: 600 12px var(--font); cursor: pointer; }
+.info-tabs button:hover { color: var(--text); }
+.info-tabs button.active { color: var(--text); border-bottom-color: var(--accent); }
+.info-tabs button[hidden] { display: none; }
+.log-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--error); }
+.log-dot[hidden] { display: none; }
+.console-head { padding-left: 4px; }
+.info-body { flex: 1; min-height: 0; overflow: auto; padding: 8px 10px; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.info-body[hidden], .console-body[hidden] { display: none; }
+.info-strip { display: flex; align-items: center; gap: 8px; height: 100%; }
+.info-world { display: flex; align-items: center; gap: 10px; flex: none; width: 210px; padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--raised); color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+.info-world:hover, .info-shot:hover { border-color: var(--line-strong); }
+.info-world .world-icon { width: 32px; height: 32px; }
+.info-world-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 11.5px; color: var(--muted); }
+.info-world-text b { font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.info-shot { flex: none; aspect-ratio: 16 / 9; height: min(100%, 120px); padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg); cursor: zoom-in; }
+.info-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.info-more { flex: none; align-self: center; padding: 0 8px; border: 0; background: none; color: var(--accent-hi); font: 600 12px var(--font); white-space: nowrap; cursor: pointer; }
+.info-more:hover { text-decoration: underline; }
+.info-empty { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; min-height: 100%; color: var(--muted); font-size: 12.5px; text-align: center; }
+.info-content { display: flex; flex-direction: column; gap: 8px; }
+.info-content-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; }
+.info-content-actions { display: flex; gap: 6px; }
+.info-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.info-chips .tag.off { opacity: .45; text-decoration: line-through; }
+.tag-more { border: 0; cursor: pointer; font: inherit; }
+/* Yüklenirken iskelet: soluk, yavaşça parlayan kutular */
+.skeleton { border-radius: var(--r-md); background: linear-gradient(90deg, var(--raised) 0%, color-mix(in srgb, var(--raised) 60%, var(--line-strong)) 50%, var(--raised) 100%); background-size: 200% 100%; animation: skeleton 1.3s ease-in-out infinite; }
+@keyframes skeleton { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+.info-skel { flex: none; width: 210px; min-height: 46px; }

@@ -597,6 +597,15 @@ Bu paket **teknoloji** ve *büyü* modlarını bir araya getirir. [Discord](http
         'storage.usage': async () => { await wait(400); return { modCache: 120e6, modCacheShared: 610e6, browser: 90e6, shots: 2e6, cache: 212e6, game: 1.4e9, java: 420e6, instances: 680e6, browserPending: false }; },
         'storage.clear': async () => ({ freed: 212e6, browserPending: true }),
         'files.open': async () => ({ opened: true }),
+        'worlds.list': async () => {
+            await wait(250);
+            const ago = h => new Date(Date.now() - h * 3600000).toISOString();
+            return { running: false, worlds: [
+                { name: 'Yeni Dünya', icon: null, lastPlayed: ago(3), sizeMb: 182, backups: [{ name: 'a', createdAt: ago(20), sizeMb: 170, auto: true }] },
+                { name: 'Yaratıcı test', icon: null, lastPlayed: ago(50), sizeMb: 24, backups: [] },
+                { name: 'Skyblock', icon: null, lastPlayed: ago(400), sizeMb: 61, backups: [] },
+            ] };
+        },
         'screenshots.list': async () => {
             await wait(250);
             const colors = ['#3d6b4f', '#6b4f3d', '#3d4f6b', '#6b3d5e', '#556b3d', '#3d6b6b'];

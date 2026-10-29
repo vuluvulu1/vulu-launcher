@@ -617,6 +617,7 @@ function selectInstance(instance) {
 
     renderPackActions(instance);
     renderPackServer(instance);
+    refreshInfo();
 
     // Öncelik: bu paket için yapılmış seçim → ayarlardaki varsayılan → paketin önerdiği
     const saved = parseInt(store.get('ram_' + instance.id, ''), 10);
@@ -683,8 +684,6 @@ function renderPackActions(instance) {
     const menuItems = [
         isCustom && item('Düzenle', () => openNewInstanceDialog(instance)),
         item('Görünüm', () => openAppearanceDialog(instance)),
-        item('Dünyalar ve yedekler', () => openWorldsDialog(instance)),
-        item('Ekran görüntüleri', () => openScreenshots(instance)),
         canInstallGames() && item('Dosyaları doğrula', () => verifyInstance(instance)),
         isDesktopApp() && item('Klasörü aç', () => bridge.invoke('files.open', { target: 'instance', id: instance.id })),
         isDesktopApp() && item('Masaüstüne kısayol', () => createShortcut('play', instance.id, instance.name, instance.id)),
@@ -704,7 +703,6 @@ function renderPackActions(instance) {
     const update = state.packUpdates && state.packUpdates[instance.id];
     $('pack-actions').replaceChildren(...[
         update && canInstallGames() && el('button', { class: 'btn btn-sm btn-primary', title: `rev ${update.from} → rev ${update.to}`, onclick: () => updateInstancePack(instance) }, 'Paketi güncelle'),
-        isCustom && el('button', { class: 'btn btn-sm', onclick: () => openInstanceContent(instance) }, 'İçerik'),
         isCustom && canInstallGames() && el('button', { class: 'btn btn-sm', onclick: () => openModrinthFor(instance) }, 'Mod ekle'),
         el('div', { class: 'more-wrap' }, toggle, menu),
     ].filter(Boolean));
@@ -955,6 +953,7 @@ async function play({ ignoreMissing = false, ignoreFiles = false, join = '' } = 
     if (!ignoreMissing && !ignoreFiles) clearConsole();
     state.activityText = '';
     launching = true;
+    setInfoTab('log', false);
     updatePlayButton();
     let missing = null, files = null;
     try {
@@ -1024,6 +1023,8 @@ function appendLog(line) {
     lastLineWasProgress = !!line.replace;
 
     if (stickToBottom) body.scrollTop = body.scrollHeight;
+    // Konsol sekmesi açık değilken gelen hata, sekmede kırmızı bir noktayla belli olur
+    if ((line.level === 'error' || line.level === 'gameError') && info.tab !== 'log') $('log-dot').hidden = false;
 
     // Oyun çıktısı dışındaki son satır, diğer sayfalardaki işlem göstergesinde de görünür
     // ve ana ekrandaki durum çubuğunu sürer
@@ -1038,6 +1039,96 @@ function clearConsole() {
     lastLineWasProgress = false;
 }
 
+// ── Oyna sayfasının alt bilgi alanı ───────────────────────────────────
+// Sekmeler: Dünyalar, Ekran görüntüleri, İçerik (yalnızca kişisel instance'larda) ve Konsol. Seçilen sekme hatırlanır;
+// oyun açılırken geçici olarak Konsol'a geçilir. Veriler paket başına önbellekte tutulur, oyun kapanınca yenilenir.
+const INFO_TABS = ['worlds', 'shots', 'content', 'log'];
+const info = { tab: store.get('infoTab', 'worlds'), cache: new Map(), seq: 0 };
+
+function setInfoTab(tab, remember = true) {
+    const custom = state.selected && state.selected.kind === 'custom';
+    if (!INFO_TABS.includes(tab) || (tab === 'content' && !custom)) tab = tab === 'content' ? 'worlds' : 'log';
+    info.tab = tab;
+    if (remember) store.set('infoTab', tab);
+    for (const button of document.querySelectorAll('#info-tabs button')) {
+        button.classList.toggle('active', button.dataset.tab === tab);
+        button.setAttribute('aria-selected', String(button.dataset.tab === tab));
+        if (button.dataset.tab === 'content') button.hidden = !custom;
+    }
+    $('console-body').hidden = tab !== 'log';
+    $('info-body').hidden = tab === 'log';
+    $('console-clear').hidden = tab !== 'log';
+    if (tab === 'log') { $('log-dot').hidden = true; $('console-body').scrollTop = $('console-body').scrollHeight; }
+    else renderInfoTab();
+}
+
+/** Paket değişince ya da oyun kapanınca: önbellek atılır, açık sekme yeniden çizilir. */
+function refreshInfo(forget = false) {
+    if (forget && state.selected) for (const key of [...info.cache.keys()]) if (key.startsWith(state.selected.id + '|')) info.cache.delete(key);
+    setInfoTab(store.get('infoTab', 'worlds'), false);
+}
+
+async function renderInfoTab() {
+    const instance = state.selected, tab = info.tab, box = $('info-body');
+    if (!instance || tab === 'log') return;
+    const key = instance.id + '|' + tab, seq = ++info.seq;
+    let data = info.cache.get(key);
+    if (!data) {
+        box.replaceChildren(el('div', { class: 'info-strip' }, [0, 1, 2, 3].map(() => el('div', { class: 'skeleton info-skel' }))));
+        try {
+            data = await bridge.invoke(tab === 'worlds' ? 'worlds.list' : tab === 'shots' ? 'screenshots.list' : 'instances.content', { id: instance.id });
+            info.cache.set(key, data);
+        } catch (err) {
+            if (seq !== info.seq) return;
+            box.replaceChildren(infoEmpty(instance.installed === false || /kurul/i.test(err.message)
+                ? 'Paket kurulunca dünyaları ve ekran görüntüleri burada görünür.' : err.message));
+            return;
+        }
+    }
+    if (seq !== info.seq || state.selected !== instance || info.tab !== tab) return;
+    box.replaceChildren(...(tab === 'worlds' ? infoWorlds(instance, data) : tab === 'shots' ? infoShots(instance, data) : infoContent(instance, data)));
+}
+
+function infoEmpty(text, ...actions) {
+    return el('div', { class: 'info-empty' }, el('span', {}, text), ...actions);
+}
+
+function infoWorlds(instance, data) {
+    const worlds = [...data.worlds].sort((a, b) => new Date(b.lastPlayed) - new Date(a.lastPlayed));
+    if (!worlds.length) return [infoEmpty('Henüz dünya yok. Oyunu açıp bir dünya oluşturunca burada görünür.')];
+    return [el('div', { class: 'info-strip' },
+        worlds.slice(0, 8).map(w => el('button', { class: 'info-world', title: `${w.name} · ${w.sizeMb} MB`, onclick: () => openWorldsDialog(instance) },
+            w.icon ? el('img', { class: 'world-icon', src: w.icon, alt: '' }) : el('span', { class: 'world-icon plain' }),
+            el('span', { class: 'info-world-text' },
+                el('b', {}, w.name),
+                el('span', {}, relativeDate(new Date(w.lastPlayed)) + (w.backups.length ? ` · ${w.backups.length} yedek` : ''))))),
+        el('button', { class: 'info-more', onclick: () => openWorldsDialog(instance) }, 'Yedekler ve geri yükleme ›'))];
+}
+
+function infoShots(instance, data) {
+    if (!data.shots.length) return [infoEmpty('Henüz ekran görüntüsü yok. Oyunda F2 tuşuna basınca burada görünür.')];
+    return [el('div', { class: 'info-strip' },
+        data.shots.slice(0, 10).map(shot => el('button', { class: 'info-shot', title: formatDate(new Date(shot.takenAt)), onclick: () => openScreenshots(instance) },
+            el('img', { src: shot.url, alt: '', loading: 'lazy', decoding: 'async' }))),
+        el('button', { class: 'info-more', onclick: () => openScreenshots(instance) }, `Tümü (${data.total}) ›`))];
+}
+
+function infoContent(instance, data) {
+    const items = data.items || [];
+    const count = type => items.filter(i => i.type === type).length;
+    const summary = [[count('mod'), 'mod'], [count('resourcepack'), 'kaynak paketi'], [count('shader'), 'shader']]
+        .filter(([n]) => n > 0).map(([n, label]) => `${n} ${label}`).join(' · ');
+    const manage = el('button', { class: 'btn btn-sm', onclick: () => openInstanceContent(instance) }, 'İçeriği yönet');
+    const add = canInstallGames() && el('button', { class: 'btn btn-sm btn-primary', onclick: () => openModrinthFor(instance) }, '+ İçerik ekle');
+    if (!items.length) return [infoEmpty('Bu instance\'ta henüz mod yok.', add, manage)];
+    const mods = items.filter(i => i.type === 'mod');
+    return [el('div', { class: 'info-content' },
+        el('div', { class: 'info-content-head' }, el('b', {}, summary), el('span', { class: 'info-content-actions' }, add, manage)),
+        el('div', { class: 'info-chips' },
+            mods.slice(0, 18).map(m => el('span', { class: 'tag' + (m.enabled === false ? ' off' : ''), title: m.enabled === false ? 'Kapalı' : (m.version || '') }, m.title)),
+            mods.length > 18 && el('button', { class: 'tag tag-more', onclick: () => openInstanceContent(instance) }, `+${mods.length - 18}`)))];
+}
+
 function setConsoleExpanded(expanded) {
     $('console').classList.toggle('expanded', expanded);
     $('console-toggle').textContent = expanded ? 'Küçült' : 'Büyüt';
@@ -1045,12 +1136,13 @@ function setConsoleExpanded(expanded) {
 
 function setupConsole() {
     bridge.on('log', lines => lines.forEach(appendLog));
-    bridge.on('gameExited', () => { state.gameRunning = false; updatePlayButton(); loadDetails(); });
+    bridge.on('gameExited', () => { state.gameRunning = false; updatePlayButton(); loadDetails(); refreshInfo(true); });
     bridge.on('logosChanged', () => reloadInstances(state.selected && state.selected.id));
     bridge.on('toast', showToast);
     bridge.on('gameCrashed', crash => showCrashDialog(crash));
 
     $('console-clear').addEventListener('click', clearConsole);
+    for (const button of document.querySelectorAll('#info-tabs button')) button.addEventListener('click', () => setInfoTab(button.dataset.tab));
     $('console-toggle').addEventListener('click', () => setConsoleExpanded(!$('console').classList.contains('expanded')));
 }
 

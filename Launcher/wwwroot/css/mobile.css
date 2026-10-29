@@ -171,6 +171,8 @@
     .console { flex: none; height: 120px; }
     .console.expanded { height: 52vh; }
     .console-head { height: 40px; }
+    .info-tabs { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    .info-tabs button { padding: 0 8px; white-space: nowrap; }
 
     /* ── İşlem göstergesi ve indirme paneli: sekme çubuğunun hemen üstünde ── */
     .activity, .dl, .dl.at-top { position: fixed; left: 10px; right: 10px; top: auto; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 10px); width: auto; max-width: none; }
