@@ -263,7 +263,7 @@ html[data-ui="atlas"] .stage-glow { display: none; }
 html[data-ui="atlas"] .stage > .dock { z-index: 3; }
 
 html[data-ui="atlas"] .stage-body { align-items: flex-start; padding-bottom: 18px; }
-html[data-ui="atlas"] .stage-hero { max-width: 52%; justify-content: flex-start; gap: 14px; }
+html[data-ui="atlas"] .stage-hero { max-width: 52%; justify-content: flex-start; gap: 14px; margin-top: 0; }
 html[data-ui="atlas"] .pack-title { font: 700 54px/1.05 var(--font-serif); color: var(--ink); text-shadow: none; letter-spacing: -.01em; }
 html[data-ui="atlas"] .pack-logo { object-position: left center; filter: drop-shadow(0 2px 0 rgba(43, 29, 18, .55)) drop-shadow(0 6px 10px rgba(70, 45, 20, .25)); }
 html[data-ui="atlas"] .pack-desc { font: italic 400 16px/1.55 var(--font-serif); color: #4c3d2c; }
@@ -277,6 +277,9 @@ html[data-ui="atlas"] .stat-value { font: 700 15px var(--font-serif); color: var
 html[data-ui="atlas"] .pack-actions .btn { background: var(--surface); border-color: rgba(70, 45, 20, .25); }
 html[data-ui="atlas"] .pack-actions .btn-accent { background: rgba(46, 107, 102, .08); border-color: rgba(46, 107, 102, .4); }
 html[data-ui="atlas"] .pack-actions .btn-danger { background: transparent; }
+/* Paketin sunucusu: kâğıt zemin üzerinde açık kart; MOTD renkleri okunsun diye MOTD satırı koyu kalır */
+html[data-ui="atlas"] .pack-server { flex-basis: 100%; min-width: 0; background: var(--surface); border-color: rgba(70, 45, 20, .25); backdrop-filter: none; }
+html[data-ui="atlas"] .pack-server-motd { padding: 1px 6px; border-radius: 4px; background: #2a2118; }
 html[data-ui="atlas"] .more-menu { background: var(--surface); border-color: rgba(70, 45, 20, .25); box-shadow: 0 10px 28px rgba(60, 40, 20, .18); }
 html[data-ui="atlas"] .more-item { font-family: var(--font-serif); font-size: 14px; }
 html[data-ui="atlas"] .more-item:hover, html[data-ui="atlas"] .more-item:focus-visible { background: rgba(70, 45, 20, .07); }

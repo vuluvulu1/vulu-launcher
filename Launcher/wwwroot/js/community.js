@@ -44,12 +44,13 @@ async function refreshPresence() {
     if (state.page === 'servers') renderFriends();
     if (state.page === 'servers') renderServers();
     if (state.page === 'friends') renderFriendsPage();
+    if (state.page === 'shots') renderShotsFriends();
 }
 
 /** Sunucular ve profil sayfası açıkken durumlar düzenli yenilenir. */
 function schedulePresence() {
     clearInterval(community.timer);
-    if (state.page === 'servers' || state.page === 'profile' || state.page === 'friends')
+    if (state.page === 'servers' || state.page === 'profile' || state.page === 'friends' || state.page === 'shots')
         community.timer = setInterval(() => {
             refreshPresence();
             if (state.page === 'servers') pingAll();
@@ -102,14 +103,20 @@ function serverCard(s) {
     const join = canInstallGames()
         ? el('button', { class: 'btn btn-sm btn-primary', onclick: () => joinServer(s) }, s.instanceId ? 'Bağlan' : 'Paketi kur ve bağlan')
         : desktopOnlyButton('Bilgisayardan bağlan');
+    // Oyundaki sunucu listesi gibi: solda sunucunun simgesi, yanında adı, oyuncu sayısı ve renkli MOTD
     return el('article', { class: 'server-card', 'data-id': s.id },
-        el('div', { class: 'server-head' },
-            el('div', {},
-                el('h2', { class: 'server-name' }, s.name),
-                el('button', { class: 'server-address', title: 'Adresi kopyala', onclick: () => copyText(s.address) }, s.address)),
-            el('span', { class: 'server-dot', 'data-state': 'checking', title: 'Denetleniyor' })),
-        s.description && el('p', { class: 'server-desc' }, s.description),
-        el('div', { class: 'server-status' }, 'Durum denetleniyor…'),
+        el('div', { class: 'server-top' },
+            el('div', { class: 'server-icon', 'aria-hidden': 'true' }, s.name.slice(0, 1).toLocaleUpperCase('tr')),
+            el('div', { class: 'server-main' },
+                el('div', { class: 'server-head' },
+                    el('h2', { class: 'server-name' }, s.name),
+                    el('span', { class: 'server-players' }),
+                    el('span', { class: 'server-dot', 'data-state': 'checking', title: 'Denetleniyor' })),
+                el('div', { class: 'server-motd' }, s.description || 'Durum denetleniyor…'))),
+        el('div', { class: 'server-meta' },
+            el('button', { class: 'server-address', title: 'Adresi kopyala', onclick: () => copyText(s.address) }, s.address),
+            el('span', { class: 'server-status' })),
+        s.description && el('p', { class: 'server-desc', hidden: true }, s.description),
         el('div', { class: 'pack-tags' },
             el('span', { class: 'tag' }, s.packId ? (pack ? pack.name : 'vulu paketi') : `Vanilla${s.mcVersion ? ' ' + s.mcVersion : ''}`),
             here.length > 0 && el('span', { class: 'tag tag-friends', title: here.map(p => p.username).join(', ') }, `${here.length} arkadaş burada`)),
@@ -125,15 +132,38 @@ function renderServerStatus(s) {
     const card = document.querySelector(`.server-card[data-id="${s.id}"]`);
     if (!card) return;
     const st = community.status[s.id];
-    const dot = card.querySelector('.server-dot'), line = card.querySelector('.server-status');
     if (!st) return;
+    const dot = card.querySelector('.server-dot');
     dot.dataset.state = st.online ? 'online' : 'offline';
     dot.title = st.online ? 'Açık' : 'Kapalı ya da ulaşılamıyor';
-    line.replaceChildren(st.online
-        ? el('span', { title: (st.sample || []).join(', ') || null },
-            [`${st.players}/${st.maxPlayers} oyuncu`, st.version, `${st.ping} ms`].filter(Boolean).join(' · '))
-        : el('span', { class: 'muted' }, 'Kapalı ya da ulaşılamıyor'));
-    if (st.online && st.motd) line.append(el('span', { class: 'server-motd' }, st.motd));
+    card.classList.toggle('offline', !st.online);
+    const players = card.querySelector('.server-players');
+    players.textContent = st.online ? `${st.players}/${st.maxPlayers}` : '';
+    players.title = (st.sample || []).join(', ');
+    card.querySelector('.server-status').textContent = st.online ? [st.version, `${st.ping} ms`].filter(Boolean).join(' · ') : 'Kapalı ya da ulaşılamıyor';
+
+    const icon = card.querySelector('.server-icon');
+    if (st.favicon && !icon.querySelector('img')) icon.replaceChildren(el('img', { src: st.favicon, alt: '' }));
+    const motd = card.querySelector('.server-motd');
+    if (st.online && st.motdParts && st.motdParts.length) {
+        motd.replaceChildren(...motdNodes(st.motdParts));
+        motd.classList.add('rich');
+        // Sunucunun kendi MOTD'si göründüğünde admin açıklaması altta ayrıca durur
+        const desc = card.querySelector('.server-desc');
+        if (desc) desc.hidden = false;
+    } else if (!st.online) {
+        motd.textContent = s.description || 'Sunucu şu an kapalı.';
+        motd.classList.remove('rich');
+    }
+}
+
+/** Renkli MOTD parçaları (C#'tan: t metin, c renk, b/i/u/s biçim) → span'ler. Renkler yalnızca #RRGGBB olarak gelir. */
+function motdNodes(parts) {
+    return parts.map(p => {
+        const style = [p.c && /^#[0-9A-Fa-f]{6}$/.test(p.c) ? `color:${p.c}` : '', p.b ? 'font-weight:700' : '', p.i ? 'font-style:italic' : '',
+            p.u || p.s ? `text-decoration:${[p.u && 'underline', p.s && 'line-through'].filter(Boolean).join(' ')}` : ''].filter(Boolean).join(';');
+        return style ? el('span', { style }, p.t) : document.createTextNode(p.t);
+    });
 }
 
 /** Bağlan: doğru instance seçilir (gerekirse paket kurulur) ve oyun doğrudan sunucuya girer. */

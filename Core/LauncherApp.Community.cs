@@ -138,7 +138,12 @@ namespace VuluLauncher
             if (!System.Text.RegularExpressions.Regex.IsMatch(host, @"^[A-Za-z0-9](?:[A-Za-z0-9.\-]{0,118}[A-Za-z0-9])?$"))
                 throw new InvalidOperationException("Geçersiz adres.");
             var status = await ServerPing.PingAsync(address!);
-            return new { online = status.Online, players = status.Players, maxPlayers = status.MaxPlayers, version = status.Version, motd = status.Motd, ping = status.PingMs, sample = status.Sample };
+            return new
+            {
+                online = status.Online, players = status.Players, maxPlayers = status.MaxPlayers, version = status.Version, motd = status.Motd,
+                ping = status.PingMs, sample = status.Sample, favicon = status.Favicon,
+                motdParts = status.MotdParts.Select(p => new { t = p.Text, c = p.Color, b = p.Bold, i = p.Italic, u = p.Underlined, s = p.Strikethrough }),
+            };
         }
 
         private async Task<object?> SaveServerAsync(JsonElement args)

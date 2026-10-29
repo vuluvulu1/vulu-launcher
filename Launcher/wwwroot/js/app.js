@@ -45,7 +45,11 @@ function showPage(name) {
     if (name === 'discover') name = store.get('discoverSource', 'packs');
     if (name === 'curseforge' || name === 'modrinth') { setContentSource(name); store.set('discoverSource', name); name = 'modrinth'; }
     else if (name === 'packs') store.set('discoverSource', 'packs');
-    if (name === 'social') { name = store.get('socialSource', 'shots'); if (!SOCIAL_PAGES.includes(name)) name = 'shots'; }
+    // Sosyal'e basınca bekleyen bir şey varsa oraya gidilir (okunmamış mesaj, arkadaşlık isteği); yoksa son açılan alt sekme
+    if (name === 'social') {
+        name = dm.unread > 0 ? 'messages' : friends.incoming.length > 0 ? 'friends' : store.get('socialSource', 'shots');
+        if (!SOCIAL_PAGES.includes(name)) name = 'shots';
+    }
     if (SOCIAL_PAGES.includes(name)) store.set('socialSource', name);
 
     state.page = name;
@@ -59,6 +63,7 @@ function showPage(name) {
     if (name === 'settings') openSettingsPage();
     if (name === 'admin') openAdminPage();
     if (name === 'packs') openPacksPage();
+    if (name === 'home' && state.selected) renderPackServer(state.selected);
     if (name === 'servers') openServersPage();
     if (name === 'messages') openMessagesPage();
     if (name === 'shots') openShotsPage();
@@ -618,6 +623,7 @@ function selectInstance(instance) {
             : `${LOADER_NAMES[instance.loader]} ${instance.loaderVersion || ''}`.trim()));
 
     renderPackActions(instance);
+    renderPackServer(instance);
 
     // Öncelik: bu paket için yapılmış seçim → ayarlardaki varsayılan → paketin önerdiği
     const saved = parseInt(store.get('ram_' + instance.id, ''), 10);
@@ -630,6 +636,45 @@ function selectInstance(instance) {
     renderDetails();
     loadDetails();
     updatePlayButton();
+}
+
+/**
+ * Seçili paketin vulu sunucusu (Sunucular listesinde bu paketle eklenmiş olan): açık mı, kaç kişi var, MOTD'si;
+ * "Sunucuya gir" oyunu açıp doğrudan sunucuya sokar. Sunucusu olmayan pakette kart görünmez.
+ */
+async function renderPackServer(instance) {
+    const box = $('pack-server');
+    let servers = [];
+    try { servers = await serversForCards(); } catch { }
+    const s = servers.find(x => x.instanceId === instance.id || (instance.sharedPackId && x.packId === instance.sharedPackId));
+    if (state.selected !== instance) return;
+    box.hidden = !s;
+    if (!s) { box.replaceChildren(); return; }
+
+    const draw = st => {
+        if (state.selected !== instance) return;
+        const online = st && st.online;
+        box.replaceChildren(
+            el('div', { class: 'server-icon pack-server-icon', 'aria-hidden': 'true' },
+                st && st.favicon ? el('img', { src: st.favicon, alt: '' }) : s.name.slice(0, 1).toLocaleUpperCase('tr')),
+            el('div', { class: 'pack-server-text' },
+                el('div', { class: 'pack-server-name' },
+                    el('span', { class: 'server-dot', 'data-state': !st ? 'checking' : online ? 'online' : 'offline' }),
+                    s.name,
+                    el('span', { class: 'pack-server-players', title: online ? (st.sample || []).join(', ') : '' },
+                        !st ? 'denetleniyor…' : online ? `${st.players}/${st.maxPlayers} oyuncu` : 'kapalı')),
+                online && st.motdParts && st.motdParts.length
+                    ? el('div', { class: 'pack-server-motd' }, ...motdNodes(st.motdParts))
+                    : el('div', { class: 'pack-server-motd plain' }, s.address)),
+            canInstallGames() && el('button', {
+                class: 'btn btn-sm' + (online ? ' btn-primary' : ''), title: `Oyunu açıp ${s.address} adresine bağlanır`,
+                onclick: () => play({ join: s.address }),
+            }, 'Sunucuya gir'));
+    };
+    draw(community.status[s.id]);
+    try { community.status[s.id] = await bridge.invoke('community.ping', { address: s.address }); }
+    catch { community.status[s.id] = { online: false }; }
+    draw(community.status[s.id]);
 }
 
 /**

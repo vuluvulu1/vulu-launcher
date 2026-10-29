@@ -329,7 +329,7 @@ html[data-ui="neon"] .stage {
     grid-template-rows: minmax(0, 1fr) auto;
     grid-template-areas: "hero launch" "console launch";
 }
-html[data-ui="neon"] .stage-body { grid-area: hero; padding: 0; align-items: flex-end; }
+html[data-ui="neon"] .stage-body { grid-area: hero; padding: 0; align-items: stretch; }
 html[data-ui="neon"] .stage > .dock { grid-area: launch; }
 html[data-ui="neon"] .stage > .console { grid-area: console; }
 

@@ -109,6 +109,8 @@ const mockBackend = (() => {
         { id: 's2', name: 'Vanilla Lobi', address: 'kapali.vulu.net:25570', description: '', packId: null, mcVersion: '1.21.1', instanceId: 'pack:vanilla' },
     ];
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+    // MiniMOTD gradyanı gibi harf başına renk (örnek MOTD için)
+    const mixHex = (a, b, f) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.substr(i, 2), 16) * (1 - f) + parseInt(b.substr(i, 2), 16) * f).toString(16).padStart(2, '0')).join('');
     const log = (text, level = 'info', replace = false) =>
         bridge._dispatch({ event: 'log', data: [{ time: new Date().toTimeString().slice(0, 8), text, level, replace }] });
 
@@ -389,6 +391,10 @@ const mockBackend = (() => {
             await wait(300);
             return {
                 name: 'Fabric 1.21', description: '', mcVersion: '1.21.1', loader: 'fabric', modrinthCount: 2, existing: null, recommendedRamGb: 8, ramOptionsGb: [4, 8, 12, 16],
+                check: [
+                    { kind: 'duplicate', title: 'BCLib iki kez var', detail: 'Aynı modun birden çok dosyası: bclib-26.3.3-fabric.jar, bclib-26.302.0.jar. Oyun açılmaz ya da yanlış sürümü yükler; eskisini sil.' },
+                    { kind: 'override', title: 'Geophilic + Terralith aynı dünya dosyalarını değiştiriyor', detail: '24 dosyada (birch_forest, cherry_grove, dark_forest, desert…) yalnızca birinin değişikliği geçerli olur; diğerinin o kısmı boşa gider. Birlikte çalışmak için yapılmamışlarsa birini kaldır.' },
+                ],
                 roles: mockRoles.map(r => ({ ...r })),
                 entries: [
                     { path: 'config', isDir: true, files: 184, sizeMb: 2.4, checkedByDefault: true, note: null },
@@ -475,7 +481,12 @@ const mockBackend = (() => {
             await wait(400 + Math.random() * 500);
             return args.address.startsWith('kapali')
                 ? { online: false }
-                : { online: true, players: 3, maxPlayers: 20, version: 'NeoForge 26.3', motd: 'AGLR SMP · Hoş geldin!', ping: 38, sample: ['Steve_TR', 'ardak', 'Notch'] };
+                : {
+                    online: true, players: 3, maxPlayers: 20, version: 'NeoForge 26.3', motd: 'vulu Launcher resmi sunucusu.' + String.fromCharCode(10) + 'vuluvulu.com.tr', ping: 38, sample: ['Steve_TR', 'ardak', 'Notch'],
+                    favicon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAABkUlEQVR4nO2aPWrDQBCFnwcdIoVBhYuQyoUNKlyEdO7szuA+rQ6j1idQlxukNuQCLnOSF4RALFlJ2IqTzVv2q4bVCI2087e7mh03C0hzVH6B42ZhJHQhYRDHCOEpIKg/AxCeAICNCwnDZgbEMYhjEdQBQhimIA6NiXsQkguFxiCOUbkQkMz80deXx04+vV8mjA9pnuuqk4tD2WuTrzN+Vwri0Jh6Hch8+10/dr3ZvfpPYAxpFOI+ZOrrgdl+nb99fA5pDGX0cc0hfTejuxRedvc1e+vGfp3L1wHsVjlk2a1y/SxECMMY0ijiayXG8dPlfTnd0qoQyH71AX+AiXsQ5GPA0glNYLIJ3WjvKvvKwXZkXL4e8vYs1FEcynNdnevKfaorj9g01JZOYHoM9NrXvlIrd5/2jub2nVLeNQsVh/LbhPh7O75amM3dXsvc793K05z7Shrjt8s5ZNku5/JrYpNvpwlhGEcvJAxj2FqkchoiI/hfiBCGKQYCwxQDgWGqxIFhDJu7VD8je356CG3Gj/gCJNrjBIDVUiQAAAAASUVORK5CYII=',
+                    motdParts: [...'vulu Launcher resmi sunucusu.'].map((ch, i, all) => ({ t: ch, c: mixHex('#654127', '#C9A992', i / (all.length - 1)) }))
+                        .concat([{ t: String.fromCharCode(10) }, { t: 'vuluvulu.com.tr', c: '#654127' }]),
+                };
         },
         'servers.save': async args => {
             const entry = { id: args.id || 's' + Date.now(), name: args.name, address: args.address, description: args.description, packId: args.packId || null, mcVersion: args.packId ? '' : args.mcVersion, instanceId: args.packId ? null : 'pack:vanilla' };

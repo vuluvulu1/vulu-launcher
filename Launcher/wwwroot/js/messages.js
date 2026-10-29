@@ -5,16 +5,21 @@ const DM_MAX = 2000;
 
 function setDmUnread(count) {
     dm.unread = count;
-    const badge = $('dm-badge');
-    badge.textContent = count > 99 ? '99+' : String(count);
-    badge.hidden = !count;
+    // Üst sekmedeki Sosyal rozeti ve Sosyal'in içindeki Mesajlar alt sekmesi
+    for (const badge of [$('dm-badge'), ...document.querySelectorAll('.social-dm-badge')]) {
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.hidden = !count;
+    }
 }
 
 async function openMessagesPage(user) {
     await loadConversations();
     // Avatarlar üye listesinden gelir; liste henüz yüklenmediyse yüklenince yeniden çizilir
     if (!profile.members.length) ensureMembers().then(() => { if (state.page === 'messages') renderConversations(); });
+    // Okunmamış mesajı olan konuşma varsa o açılır (rozete basıp gelen kullanıcı mesajı hemen görsün)
+    const unread = dm.conversations.find(c => c.unread > 0);
     if (user) openConversation(user);
+    else if (unread && dm.active !== unread.username) openConversation(unread.username);
     // Telefonda önce konuşma listesi görünür; masaüstünde son konuşma hemen açılır
     else if (!dm.active && dm.conversations.length && !isMobile()) openConversation(dm.conversations[0].username);
     else renderChat();

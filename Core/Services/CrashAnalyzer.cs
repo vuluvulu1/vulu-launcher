@@ -26,7 +26,17 @@ namespace VuluLauncher
             "minecraft", "neoforge", "forge", "fml", "java.base", "fabricloader", "mixin", "mixinextras", "loader", "javafml",
         };
 
-        public static CrashAnalysis Analyze(GameExit exit)
+        // Yığın izinde mod sayılmayan paketler (oyun, Java, yükleyici, ortak kütüphaneler)
+        private static readonly string[] NotModPackages =
+        {
+            "net.minecraft.", "com.mojang.", "java.", "javax.", "jdk.", "sun.", "org.spongepowered.", "net.fabricmc.",
+            "org.quiltmc.", "net.neoforged.", "net.minecraftforge.", "cpw.mods.", "org.lwjgl.", "io.netty.", "com.google.",
+            "it.unimi.", "org.apache.", "org.slf4j.", "org.objectweb.", "com.llamalad7.", "kotlin.", "org.joml.", "oshi.",
+        };
+
+        /// <param name="classOwner">Bir sınıf adını (com.ornek.mod.Sinif) içeren modun kimliğine çevirir. Fabric çökme raporları
+        /// suçlu modu yazmaz; yığın izindeki ilk mod sınıfı mod dosyalarında aranarak bulunur.</param>
+        public static CrashAnalysis Analyze(GameExit exit, Func<string, string?>? classOwner = null)
         {
             var (reportName, report) = LatestReport(exit.InstanceDir, exit.StartedUtc);
             string log = ReadTail(Path.Combine(exit.InstanceDir, "logs", "latest.log"), exit.StartedUtc);
@@ -113,6 +123,7 @@ namespace VuluLauncher
                 var suspected = Regex.Match(report, @"Suspected Mods?: ([^\n]{1,300})");
                 if (culprit == null && suspected.Success && !Regex.IsMatch(suspected.Groups[1].Value, "^(None|Unknown)", RegexOptions.IgnoreCase))
                     culprit = Regex.Match(suspected.Groups[1].Value, @"\((" + Id + @")\)") is { Success: true } sm ? sm.Groups[1].Value : null;
+                culprit ??= CulpritFromStack(head, classOwner);
                 if (culprit != null)
                     Add("modError", $"{culprit} modu çöktü",
                         "Çökme bu modun kodunda başladı. Genelde modun bir hatasıdır ya da başka bir modla/sürümle uyuşmazlıktır.",
@@ -139,6 +150,24 @@ namespace VuluLauncher
                     description != null ? $"Çökme raporu: \"{description}\"." : $"Çıkış kodu {exit.ExitCode}; bilinen bir neden bulunamadı.",
                     "Çökme raporunu aç; son eklediğin modu kapatıp tekrar dene.");
             return new CrashAnalysis(true, reportName, description, found);
+        }
+
+        /// <summary>
+        /// Fabric: yığın izinde modun kendi sınıfı (com.erikedits.justquests.client.QuestScreen) ya da oyun sınıfına eklenmiş
+        /// bir mixin yöntemi (net.minecraft.X.handler$abc000$justquests$render) aranır. İlk bulunan mod suçlu sayılır.
+        /// </summary>
+        internal static string? CulpritFromStack(string report, Func<string, string?>? classOwner)
+        {
+            foreach (Match frame in Regex.Matches(report, @"^\s*at ([\w$.]{3,300})\.([\w$<>]{1,200})\(", RegexOptions.Multiline).Take(60))
+            {
+                string cls = frame.Groups[1].Value, method = frame.Groups[2].Value;
+                if (Regex.Match(method, @"^(?:handler|redirect|wrapOperation|wrapWithCondition|modify\w*|localvar|inject)\$\w+?\$(" + Id + @")\$") is { Success: true } mixin
+                    && !NotMods.Contains(mixin.Groups[1].Value))
+                    return mixin.Groups[1].Value;
+                if (classOwner == null || NotModPackages.Any(p => cls.StartsWith(p, StringComparison.Ordinal))) continue;
+                if (classOwner(cls) is { } owner && !NotMods.Contains(owner)) return owner;
+            }
+            return null;
         }
 
         /// <summary>Bu oyun açıldıktan sonra yazılmış en yeni çökme raporu.</summary>

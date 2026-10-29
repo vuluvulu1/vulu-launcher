@@ -29,14 +29,15 @@ namespace VuluLauncher
             if (exit == null) return;
             try
             {
-                var analysis = await Task.Run(() => CrashAnalyzer.Analyze(exit));
+                var scan = exit.Target.Loader == "vanilla" ? null : ModScanner.Scan(exit.InstanceDir, exit.Target.Loader);
+                var analysis = await Task.Run(() => CrashAnalyzer.Analyze(exit,
+                    scan == null ? null : cls => ModScanner.OwnerOfClass(exit.InstanceDir, scan, cls)));
                 if (!analysis.Crashed) return;
 
                 string instanceId = InstanceStore.List().Any(m => m.Folder == exit.Target.Folder)
                     ? InstancePrefix + exit.Target.Folder
                     : PackPrefix + (PackCatalog.All.FirstOrDefault(p => p.FolderName == exit.Target.Folder)?.Id ?? "");
                 var meta = instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(exit.Target.Folder) : null;
-                var scan = exit.Target.Loader == "vanilla" ? null : ModScanner.Scan(exit.InstanceDir, exit.Target.Loader);
 
                 var findings = new List<object>();
                 foreach (var f in analysis.Findings)

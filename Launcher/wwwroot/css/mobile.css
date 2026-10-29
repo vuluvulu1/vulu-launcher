@@ -142,7 +142,7 @@
     }
     .stage-bg.side { background-size: cover; background-position: center top; }
     .announcement { max-width: none; margin: 0; }
-    .stage-body { flex: 1 0 auto; padding: 0; align-items: flex-end; min-height: 150px; }
+    .stage-body { flex: 1 0 auto; padding: 0; align-items: stretch; min-height: 150px; }
     .stage-hero { gap: 10px; }
     .pack-logo { max-width: 100%; max-height: 84px; }
     .pack-title { font-size: 34px; }
@@ -211,6 +211,9 @@
 
     /* Sunucular */
     .servers-layout { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    /* Telefonda ekran görüntülerinin yanındaki arkadaş listesi yer kaplar; arkadaşlar kendi alt sekmesinde */
+    .social-layout > aside { display: none; }
+    .server-icon { width: 52px; height: 52px; }
     .servers-grid { grid-template-columns: 1fr; }
     .server-foot .btn { flex: 1 1 auto; }
 

@@ -251,7 +251,11 @@
                         <div class="stat"><span class="stat-label">Oynama</span><span id="stat-play" class="stat-value">—</span></div>
                     </div>
                     <button id="pack-manual" class="pack-manual" type="button" hidden></button>
-                    <div id="pack-actions" class="pack-actions"></div>
+                    <!-- Paketin düğmeleri ve (varsa) sunucusu yan yana: alçak pencerede yer kazandırır -->
+                    <div class="hero-row">
+                        <div id="pack-actions" class="pack-actions"></div>
+                        <div id="pack-server" class="pack-server" hidden></div>
+                    </div>
                 </div>
             </div>
 
@@ -400,13 +404,15 @@
 
         <!-- Mesajlar: uçtan uca şifreli direkt mesajlar -->
         <div id="page-shots" class="page page-scroll" hidden>
+          <div class="servers-layout social-layout">
+           <section>
             <header class="page-head">
                 <div>
                     <h1>Sosyal</h1>
                     <div class="segmented social-switch" role="tablist" aria-label="Sosyal">
                         <button type="button" data-source="shots" class="active">Ekran görüntüleri</button>
-                        <button type="button" data-source="messages">Mesajlar</button>
-                        <button type="button" data-source="friends">Arkadaşlar</button>
+                        <button type="button" data-source="messages">Mesajlar <span class="tab-badge social-dm-badge" hidden></span></button>
+                        <button type="button" data-source="friends">Arkadaşlar <span class="tab-badge friend-badge social-friend-badge" hidden></span></button>
                     </div>
                     <p class="page-sub">Oyuncuların paylaştığı ekran görüntüleri. Yalnızca vulu üyeleri görebilir.</p>
                 </div>
@@ -421,6 +427,16 @@
             <p id="shots-status" class="page-note"></p>
             <div id="shots-grid" class="shots-grid"></div>
             <div class="shots-more"><button id="shots-more" class="btn btn-sm" hidden>Daha fazla</button></div>
+           </section>
+           <!-- Yan liste: arkadaşlar ve ne yaptıkları; oyundakilerin yanına tek tıkla katılınır -->
+           <aside class="members" aria-labelledby="shots-friends-title">
+               <div class="members-head">
+                   <h2 id="shots-friends-title">Arkadaşlar</h2>
+                   <span id="shots-friends-count" class="members-count"></span>
+               </div>
+               <div id="shots-friends" class="members-list"></div>
+           </aside>
+          </div>
         </div>
 
         <div id="page-friends" class="page page-scroll" hidden>
@@ -429,8 +445,8 @@
                     <h1>Sosyal</h1>
                     <div class="segmented social-switch" role="tablist" aria-label="Sosyal">
                         <button type="button" data-source="shots">Ekran görüntüleri</button>
-                        <button type="button" data-source="messages">Mesajlar</button>
-                        <button type="button" data-source="friends" class="active">Arkadaşlar</button>
+                        <button type="button" data-source="messages">Mesajlar <span class="tab-badge social-dm-badge" hidden></span></button>
+                        <button type="button" data-source="friends" class="active">Arkadaşlar <span class="tab-badge friend-badge social-friend-badge" hidden></span></button>
                     </div>
                     <p class="page-sub">Arkadaşların ve ne oynadıkları. Birini eklemek için adını ara.</p>
                 </div>
@@ -447,8 +463,8 @@
                     <h1>Sosyal</h1>
                     <div class="segmented social-switch" role="tablist" aria-label="Sosyal">
                         <button type="button" data-source="shots">Ekran görüntüleri</button>
-                        <button type="button" data-source="messages" class="active">Mesajlar</button>
-                        <button type="button" data-source="friends">Arkadaşlar</button>
+                        <button type="button" data-source="messages" class="active">Mesajlar <span class="tab-badge social-dm-badge" hidden></span></button>
+                        <button type="button" data-source="friends">Arkadaşlar <span class="tab-badge friend-badge social-friend-badge" hidden></span></button>
                     </div>
                 </div>
             </header>

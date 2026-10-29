@@ -37,6 +37,44 @@ namespace VuluLauncher
         private static readonly Dictionary<string, (long Size, DateTime Time, ModInfo Info)> Cache = new(StringComparer.OrdinalIgnoreCase);
         private static readonly object Gate = new();
 
+        /// <summary>
+        /// Sınıfı (com.ornek.mod.Sinif) içeren modun asıl kimliği; jar'ın içindeki gömülü jar'lara da bakar (sınıf bir
+        /// kütüphanedeyse onu taşıyan mod döner, kapatılabilecek dosya odur). Yalnızca çökme sonrası çağrılır.
+        /// </summary>
+        public static string? OwnerOfClass(string instanceDir, ModScan scan, string className)
+        {
+            int inner = className.IndexOf('$');
+            string entry = (inner > 0 ? className[..inner] : className).Replace('.', '/') + ".class";
+            foreach (var mod in scan.Mods)
+            {
+                try
+                {
+                    using var zip = ZipFile.OpenRead(Path.Combine(instanceDir, "mods", mod.File));
+                    if (zip.GetEntry(entry) != null || NestedHas(zip, entry))
+                        return mod.PrimaryIds.FirstOrDefault() ?? mod.Ids.FirstOrDefault();
+                }
+                catch (Exception) { /* okunamayan jar atlanır */ }
+            }
+            return null;
+        }
+
+        private static bool NestedHas(ZipArchive zip, string entry)
+        {
+            foreach (var nested in zip.Entries.Where(e => e.FullName.EndsWith(".jar", StringComparison.OrdinalIgnoreCase) && e.Length is > 0 and <= NestedMax))
+            {
+                try
+                {
+                    using var buffer = new MemoryStream();
+                    using (var stream = nested.Open()) stream.CopyTo(buffer);
+                    buffer.Position = 0;
+                    using var inner = new ZipArchive(buffer, ZipArchiveMode.Read);
+                    if (inner.GetEntry(entry) != null) return true;
+                }
+                catch (Exception) { }
+            }
+            return false;
+        }
+
         /// <param name="loader">Instance'ın yükleyicisi: birden çok yükleyiciye uyan jar'larda hangi tanımın okunacağını belirler.</param>
         public static ModScan Scan(string instanceDir, string loader)
         {

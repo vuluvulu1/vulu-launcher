@@ -484,6 +484,8 @@ namespace VuluLauncher
                 : new());
 
             SharedPack? existing = meta.SharedPackId == null ? null : await Packs.GetAsync(meta.SharedPackId);
+            // Paylaşmadan önce denetim: iki kez kurulu mod, eksik bağımlılık, birbirini ezen dünya modları
+            var check = await Task.Run(() => PackCheck.Run(dir, meta.Loader));
             // "Kimler erişebilir" için roller; rolleri bilmeyen eski sunucuda seçici gizlenir
             JsonElement? roles = null;
             try { roles = await _api.GetAsync<JsonElement>("/admin/roles"); } catch (ApiException) { }
@@ -501,6 +503,7 @@ namespace VuluLauncher
                 hasLogo = LogoFile(InstancePrefix + meta.Folder) != null,
                 existing = existing == null ? null : new { id = existing.Id, revision = existing.Revision, hasCover = existing.HasCover, roles = existing.Roles },
                 roles,
+                check = check.Select(i => new { kind = i.Kind, title = i.Title, detail = i.Detail }),
             };
         }
 

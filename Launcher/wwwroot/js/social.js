@@ -10,6 +10,8 @@ async function openShotsPage() {
     social.shots = [];
     social.more = false;
     renderShots();
+    renderShotsFriends();
+    Promise.all([refreshPresence(), refreshFriends(), serversForCards().catch(() => [])]).then(renderShotsFriends);
     if (!profile.members.length) ensureMembers().then(() => { if (state.page === 'shots') renderShots(); });
     await loadShots();
 }
@@ -335,10 +337,17 @@ async function refreshFriends() {
     try {
         Object.assign(friends, await bridge.invoke('friends.list'), { loaded: true });
     } catch { /* sunucuya ulaşılamazsa eski liste kalır */ }
-    const badge = $('friend-badge');
-    badge.textContent = friends.incoming.length || '';
-    badge.hidden = !friends.incoming.length;
+    setFriendBadges(friends.incoming.length);
     if (state.page === 'friends') renderFriendsPage();
+    if (state.page === 'shots') renderShotsFriends();
+}
+
+/** Bekleyen istek sayısı: üst sekmedeki Sosyal rozeti ve Sosyal'in içindeki Arkadaşlar alt sekmesi. */
+function setFriendBadges(count) {
+    for (const badge of [$('friend-badge'), ...document.querySelectorAll('.social-friend-badge')]) {
+        badge.textContent = count || '';
+        badge.hidden = !count;
+    }
 }
 
 /** Girişten sonra istekler düzenli sorulur (yeni istek rozet ve bildirim olur). */
@@ -351,7 +360,7 @@ function startFriendRequests() {
 function stopFriendRequests() {
     clearInterval(friends.timer);
     Object.assign(friends, { friends: [], incoming: [], outgoing: [], loaded: false });
-    $('friend-badge').hidden = true;
+    setFriendBadges(0);
 }
 
 /** İstek gönder / kabul et / reddet / geri al / çıkar; sonra liste yenilenir. */
@@ -387,7 +396,7 @@ function friendButtons(username, small = true) {
 
 async function openFriendsPage() {
     renderFriendsPage();
-    await Promise.all([refreshPresence(), ensureMembers(), refreshFriends()]);
+    await Promise.all([refreshPresence(), ensureMembers(), refreshFriends(), serversForCards().catch(() => [])]);
     renderFriendsPage();
 }
 
@@ -413,18 +422,53 @@ function renderFriendsPage() {
         cards.length ? el('div', { class: 'friends-grid' }, cards) : el('p', { class: 'hint' }, empty));
 
     const message = name => el('button', { class: 'btn btn-sm', onclick: () => { showPage('messages'); openMessagesPage(name); } }, 'Mesaj');
+    // Arkadaş bir vulu sunucusunda oynuyorsa yanına tek tıkla gidilir (doğru paket açılır, gerekirse kurulur)
+    const joinFriend = name => {
+        const p = presenceOf(name);
+        const server = p && p.state === 'playing' && p.server && community.servers.find(s => s.address === p.server);
+        return server && canInstallGames() && el('button', { class: 'btn btn-sm btn-primary', title: `${server.name} sunucusuna bağlan`, onclick: () => joinServer(server) }, 'Katıl');
+    };
     const known = new Set([...friends.friends, ...friends.incoming, ...friends.outgoing, state.username]);
     // Arama yapılınca arkadaş olmayan üyeler de çıkar, "Arkadaş ekle" ile istek gönderilir
     const others = query ? profile.members.map(m => m.username).filter(n => !known.has(n) && match(n)).sort((a, b) => a.localeCompare(b, 'tr')) : [];
 
     const parts = [
         section('İstekler', friends.incoming.filter(match).map(n => card(n, friendButtons(n), 'Seni arkadaş olarak eklemek istiyor'))),
-        section('Arkadaşların', byPresence(friends.friends).map(n => card(n, [message(n), ...friendButtons(n)])),
+        section('Arkadaşların', byPresence(friends.friends).map(n => card(n, [joinFriend(n), message(n), ...friendButtons(n)].filter(Boolean))),
             friends.loaded ? (query ? 'Bu adla bir arkadaşın yok.' : 'Henüz arkadaşın yok. Yukarıdan ara, ya da birinin profilinde "Arkadaş ekle"ye bas.') : 'Yükleniyor…'),
         section('Gönderdiğin istekler', friends.outgoing.filter(match).map(n => card(n, friendButtons(n), 'Yanıt bekleniyor'))),
         query && section('Topluluk', others.map(n => card(n, friendButtons(n))), 'Bu adla bir üye yok.'),
     ].filter(Boolean);
     $('friends-all').replaceChildren(...parts);
+}
+
+/** Ekran görüntülerinin yanındaki arkadaş listesi: önce oyundakiler, sonra çevrimiçiler; Katıl ve Mesaj düğmeleriyle. */
+function renderShotsFriends() {
+    const list = $('shots-friends');
+    if (!list) return;
+    const rank = name => { const p = presenceOf(name); return !p ? 2 : p.state === 'playing' ? 0 : 1; };
+    const names = [...friends.friends].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b, 'tr'));
+    const online = names.filter(n => presenceOf(n)).length;
+    $('shots-friends-count').textContent = online ? `${online} çevrimiçi` : '';
+    if (!names.length) {
+        list.replaceChildren(el('p', { class: 'hint side-hint' }, friends.loaded ? 'Henüz arkadaşın yok.' : 'Yükleniyor…'),
+            friends.loaded && el('button', { class: 'btn btn-sm side-btn', onclick: () => showPage('friends') }, 'Arkadaş bul'));
+        return;
+    }
+    list.replaceChildren(...names.map(name => {
+        const p = presenceOf(name);
+        const user = profile.members.find(m => m.username === name) || { username: name, avatarVersion: memberAvatarVersion(name) };
+        const server = p && p.state === 'playing' && p.server && community.servers.find(s => s.address === p.server);
+        return el('div', { class: 'side-friend' + (p ? '' : ' away') },
+            el('button', { class: 'member', onclick: () => openProfile(name) },
+                el('span', { class: 'presence-avatar' }, avatarEl(user, 'avatar-md'), p && el('span', { class: 'presence-dot', 'data-state': p.state })),
+                el('span', { class: 'member-text' },
+                    el('span', { class: 'member-name' }, name),
+                    el('span', { class: 'member-sub' }, presenceEl(p) || lastSeenText(user)))),
+            el('div', { class: 'side-friend-actions' },
+                server && canInstallGames() && el('button', { class: 'btn btn-xs btn-primary', title: `${server.name} sunucusuna bağlan`, onclick: () => joinServer(server) }, 'Katıl'),
+                el('button', { class: 'btn btn-xs', title: 'Mesaj gönder', onclick: () => { showPage('messages'); openMessagesPage(name); } }, 'Mesaj')));
+    }));
 }
 
 function setupSocial() {

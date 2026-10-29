@@ -368,6 +368,7 @@ async function openShareDialog(instance) {
                     info.roles && el('div', { class: 'role-picks share-access' }, everyone, rolePicks),
                     info.roles && accessHint),
                 el('div', { class: 'share-right' },
+                    packCheckBox(info.check),
                     el('div', { class: 'share-title' }, 'Pakete dahil edilecekler'),
                     el('p', { class: 'hint' }, 'Modrinth\'te bulunan modlar, kaynak paketleri ve shaderlar dosya yerine bağlantı olarak eklenir; '
                         + 'kuranlar Modrinth\'ten indirir. Açık kaynak paketleri ve seçili shader kuranlarda da açık gelir. '
@@ -385,6 +386,18 @@ async function openShareDialog(instance) {
         await reloadInstances(instance.id);
         appendLog({ text: `${instance.name} paylaşıldı. vulu Packs sekmesinde görünüyor.`, level: 'ok' });
     }
+}
+
+/** Paylaşmadan önceki denetim: sorun varsa uyarılar, yoksa kısa bir onay. Yayınlamayı engellemez. */
+function packCheckBox(issues) {
+    if (!issues) return null;
+    if (!issues.length) return el('div', { class: 'pack-check ok' }, el('span', { class: 'verify-mark ok', 'aria-hidden': 'true' }, '✓'),
+        'Paket denetlendi: iki kez kurulu mod, eksik bağımlılık ya da birbirini ezen dünya modu yok.');
+    return el('div', { class: 'pack-check' },
+        el('div', { class: 'share-title' }, `Paylaşmadan önce bak (${issues.length})`),
+        el('div', { class: 'health-list' }, issues.map(i => el('div', { class: 'health-item' },
+            el('span', { class: 'verify-mark warn', 'aria-hidden': 'true' }, '!'),
+            el('div', { class: 'health-text' }, el('b', {}, i.title), el('span', {}, i.detail))))));
 }
 
 function setupPacksPage() {
