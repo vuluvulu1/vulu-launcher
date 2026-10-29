@@ -213,6 +213,9 @@
 
     /* Sunucular */
     .servers-layout { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    .mr-searchbar { flex-direction: column; }
+    .mr-target { max-width: none; }
+    .mr-target select { max-width: none; flex: 1; }
     .notif-pop { position: fixed; top: calc(var(--titlebar-h, 52px) + 6px); left: 8px; right: 8px; width: auto; }
     /* Ayarlar: bölüm menüsü yatay, kaydırılabilir şerit olur */
     .settings-layout { grid-template-columns: minmax(0, 1fr); gap: 10px; }

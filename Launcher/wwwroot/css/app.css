@@ -625,7 +625,12 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 /* ── Modrinth ──────────────────────────────────────────────────────── */
 .mr-layout { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 20px; align-items: start; }
 .mr-main { min-width: 0; }
-.mr-search { height: 40px; padding: 0 14px !important; font-size: 14px; margin-bottom: 12px; }
+.mr-search { height: 40px; padding: 0 14px !important; font-size: 14px; flex: 1; min-width: 0; }
+.mr-searchbar { display: flex; gap: 8px; margin-bottom: 12px; }
+.mr-searchbar[hidden] { display: none; }
+.mr-target { display: flex; align-items: center; gap: 6px; flex: none; max-width: 46%; padding-left: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); font-size: 12.5px; color: var(--muted); }
+.mr-target[hidden] { display: none; }
+.mr-target select { height: 38px; border: 0; background: transparent; color: var(--text); font-weight: 600; max-width: 260px; min-width: 0; }
 .mr-side {
     position: sticky; top: 0; display: flex; flex-direction: column; gap: 14px; padding: 14px;
     max-height: calc(100vh - var(--titlebar-h) - 52px); overflow-y: auto;

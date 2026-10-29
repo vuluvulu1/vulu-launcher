@@ -138,6 +138,7 @@ function setupModrinthPage() {
             return;
         }
         modrinth.targetId = value;
+        modrinth.targetPicked = true;
         openModrinthPage();
     });
     $('mr-version').addEventListener('change', () => { modrinth.mcVersion = $('mr-version').value; searchModrinth(false); });
@@ -163,6 +164,8 @@ async function openModrinthPage() {
     const customs = customInstances();
     const isPack = modrinth.type === 'modpack';
     if (modrinth.targetId && !customs.some(i => i.id === modrinth.targetId)) modrinth.targetId = '';
+    // Hedef hiç seçilmediyse Oyna'da seçili kişisel instance önerilir: sonuçlar baştan ona uyanlarla sınırlı olur
+    if (!modrinth.targetId && !modrinth.targetPicked && state.selected && state.selected.kind === 'custom') modrinth.targetId = state.selected.id;
     const freeBrowse = isPack || !modrinth.targetId;
     $('mr-target-wrap').hidden = isPack;
     $('mr-version-wrap').hidden = !freeBrowse;
@@ -171,7 +174,7 @@ async function openModrinthPage() {
 
     if (!isPack) {
         $('mr-target').replaceChildren(
-            el('option', { value: '' }, customs.length ? 'Seçilmedi (her şeyi göster)' : 'Henüz instance yok'),
+            el('option', { value: '' }, customs.length ? 'Sonra seçerim (hepsini göster)' : 'Henüz instance yok'),
             ...customs.map(i => el('option', { value: i.id }, `${i.name} (${loaderLabel(i)})`)),
             el('option', { value: NEW_INSTANCE }, '+ Yeni instance oluştur…'));
         $('mr-target').value = modrinth.targetId;

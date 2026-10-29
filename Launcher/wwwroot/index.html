@@ -336,17 +336,20 @@
             </header>
             <div class="mr-layout">
                 <div class="mr-main">
-                    <input id="mr-query" class="mr-search" type="text" placeholder="Modrinth'te ara…" spellcheck="false" aria-label="Modrinth'te ara">
+                    <!-- Nereye kurulacağı arama kutusunun hemen yanında: seçilince yalnızca o instance'a uyanlar listelenir -->
+                    <div class="mr-searchbar">
+                        <label id="mr-target-wrap" class="mr-target" title="İçeriğin kurulacağı instance; seçilince yalnızca ona uyanlar görünür">
+                            <span>Kur:</span>
+                            <select id="mr-target"></select>
+                        </label>
+                        <input id="mr-query" class="mr-search" type="text" placeholder="Modrinth'te ara…" spellcheck="false" aria-label="Modrinth'te ara">
+                    </div>
                     <p id="mr-status" class="page-note"></p>
                     <div id="mr-results" class="mr-results"></div>
                     <button id="mr-more" class="btn btn-block" hidden>Daha fazla göster</button>
                 </div>
 
                 <aside class="mr-side" aria-label="Filtreler">
-                    <label id="mr-target-wrap" class="mr-field">
-                        <span>Kurulacak instance</span>
-                        <select id="mr-target"></select>
-                    </label>
                     <!-- Telefonda filtreler bu düğmeyle açılır; masaüstünde hep açık -->
                     <button id="mr-filter-toggle" type="button" class="btn btn-sm mr-filter-toggle" aria-expanded="false">Sıralama ve filtreler</button>
                     <label class="mr-field">
