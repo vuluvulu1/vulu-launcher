@@ -12,41 +12,28 @@ function setDmUnread(count) {
     }
 }
 
+/** Mesaj gönderilecek kişiyle sohbeti açar (profil, bildirim ve davet kartlarından çağrılır). */
 async function openMessagesPage(user) {
+    if (user) { openConversation(user); return; }
     await loadConversations();
-    // Avatarlar üye listesinden gelir; liste henüz yüklenmediyse yüklenince yeniden çizilir
-    if (!profile.members.length) ensureMembers().then(() => { if (state.page === 'messages') renderConversations(); });
-    // Okunmamış mesajı olan konuşma varsa o açılır (rozete basıp gelen kullanıcı mesajı hemen görsün)
-    const unread = dm.conversations.find(c => c.unread > 0);
-    if (user) openConversation(user);
-    else if (unread && dm.active !== unread.username) openConversation(unread.username);
-    // Telefonda önce konuşma listesi görünür; masaüstünde son konuşma hemen açılır
-    else if (!dm.active && dm.conversations.length && !isMobile()) openConversation(dm.conversations[0].username);
-    else renderChat();
 }
 
 async function loadConversations() {
     try { dm.conversations = await bridge.invoke('dm.conversations'); }
-    catch (err) { $('dm-list').replaceChildren(el('p', { class: 'form-error' }, err.message)); return; }
+    catch { return; }   // sunucuya ulaşılamazsa eski liste kalır
     renderConversations();
 }
 
+/** Konuşma listesi artık Sosyal'in sol listesinin parçası. */
 function renderConversations() {
-    const list = dm.conversations;
-    $('dm-list').replaceChildren(...(list.length ? list.map(c => {
-        const p = typeof presenceOf === 'function' ? presenceOf(c.username) : null;
-        const member = (profile.members || []).find(u => u.username === c.username) || { username: c.username };
-        return el('button', { class: 'member dm-conv' + (dm.active === c.username ? ' active' : ''), onclick: () => openConversation(c.username) },
-            el('span', { class: 'presence-avatar' }, avatarEl(member, 'avatar-md'), p && el('span', { class: 'presence-dot', 'data-state': p.state })),
-            el('span', { class: 'member-text' },
-                el('span', { class: 'member-name' }, c.username),
-                el('span', { class: 'member-sub' }, p ? presenceEl(p) : relativeDate(new Date(c.lastAt)))),
-            c.unread > 0 && el('span', { class: 'tab-badge' }, String(c.unread)));
-    }) : [el('p', { class: 'hint' }, 'Henüz mesaj yok. "Yeni mesaj" ile birine yaz.')]));
+    if (state.page === 'social') renderSocialList();
 }
 
 async function openConversation(user) {
     dm.active = user;
+    social.view = 'chat';                          // önce: Sosyal açılırken akışa dönmesin
+    if (state.page !== 'social') showPage('social');
+    setSocialView('chat');
     dm.messages = [];
     dm.reachedStart = false;
     renderConversations();
@@ -83,15 +70,11 @@ async function loadOlder() {
 
 /** Telefonda sohbetten konuşma listesine dönüş. */
 function closeConversation() {
-    dm.active = null;
-    dm.peer = null;
-    renderConversations();
-    renderChat();
+    backToSocialList();
 }
 
 function renderChat(loading) {
     const chat = $('dm-chat');
-    $('page-messages').classList.toggle('dm-open', !!dm.active);
     if (!dm.active) {
         chat.replaceChildren(el('div', { class: 'dm-empty' },
             el('p', {}, 'Bir yazışma seç ya da yeni bir mesaj başlat.'),
@@ -239,7 +222,7 @@ async function sendDm(user, text, card) {
         const conv = dm.conversations.find(c => c.username === user);
         if (conv) conv.lastAt = result.message.createdAt; else dm.conversations.unshift({ username: user, lastAt: result.message.createdAt, unread: 0 });
         dm.conversations.sort((a, b) => new Date(b.lastAt) - new Date(a.lastAt));
-        if (state.page === 'messages') renderConversations();
+        renderConversations();
         return true;
     } catch (err) {
         await alertDialog({ title: 'Mesaj gönderilemedi', message: err.message });
@@ -291,7 +274,7 @@ async function pickCard() {
 async function shareCardWith(card) {
     const user = await pickUser(card.type === 'pack' ? `${card.name} paketini gönder` : `${card.name} davetini gönder`);
     if (!user) return;
-    if (await sendDm(user, '', card)) { showPage('messages'); openMessagesPage(user); }
+    if (await sendDm(user, '', card)) openConversation(user);
 }
 
 function dmCard(card, mine) {
@@ -334,20 +317,20 @@ function onDmUpdate(update) {
     if (!update.messages.length) return;
     for (const m of update.messages) {
         const conv = dm.conversations.find(c => c.username === m.peer);
-        if (conv) { conv.lastAt = m.createdAt; if (!(state.page === 'messages' && dm.active === m.peer)) conv.unread++; }
-        else dm.conversations.unshift({ username: m.peer, lastAt: m.createdAt, unread: state.page === 'messages' && dm.active === m.peer ? 0 : 1 });
-        if (state.page === 'messages' && dm.active === m.peer && !dm.messages.some(x => x.id === m.id)) {
+        if (conv) { conv.lastAt = m.createdAt; if (!inChat(m.peer)) conv.unread++; }
+        else dm.conversations.unshift({ username: m.peer, lastAt: m.createdAt, unread: inChat(m.peer) ? 0 : 1 });
+        if (inChat(m.peer) && !dm.messages.some(x => x.id === m.id)) {
             dm.messages.push(m);
             renderMessages();
             scrollChatToEnd();
             bridge.invoke('dm.read', { user: m.peer }).catch(() => {});
-        } else if (state.page !== 'messages') {
+        } else if (state.page !== 'social') {
             const preview = m.text ? m.text.slice(0, 80) : m.card ? (m.card.type === 'pack' ? `📦 ${m.card.name}` : `🎮 ${m.card.name} daveti`) : 'yeni mesaj';
             appendLog({ text: `💬 ${m.peer}: ${preview}`, level: 'accent' });
         }
     }
     dm.conversations.sort((a, b) => new Date(b.lastAt) - new Date(a.lastAt));
-    if (state.page === 'messages') renderConversations();
+    renderConversations();
 }
 
 function setupMessagesPage() {

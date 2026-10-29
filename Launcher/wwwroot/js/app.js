@@ -37,26 +37,21 @@ function showView(id) {
 
 // Keşfet sekmesi iki sayfayı (vulu Packs, Modrinth) kapsar; son açılan hatırlanır
 const DISCOVER_PAGES = ['packs', 'modrinth'];
-// Sosyal sekmesi: ekran görüntüleri, mesajlar, arkadaşlar
-const SOCIAL_PAGES = ['shots', 'messages', 'friends'];
+// Sosyal tek sayfa; eski alt sekme adları ('shots', 'messages', 'friends') hâlâ Sosyal'i açar
+const SOCIAL_PAGES = ['social', 'shots', 'messages', 'friends'];
 
 function showPage(name) {
     // Keşfet: vulu Packs, CurseForge ya da Modrinth (son açılan hatırlanır). CurseForge ve Modrinth aynı sayfayı kullanır.
     if (name === 'discover') name = store.get('discoverSource', 'packs');
     if (name === 'curseforge' || name === 'modrinth') { setContentSource(name); store.set('discoverSource', name); name = 'modrinth'; }
     else if (name === 'packs') store.set('discoverSource', 'packs');
-    // Sosyal'e basınca bekleyen bir şey varsa oraya gidilir (okunmamış mesaj, arkadaşlık isteği); yoksa son açılan alt sekme
-    if (name === 'social') {
-        name = dm.unread > 0 ? 'messages' : friends.incoming.length > 0 ? 'friends' : store.get('socialSource', 'shots');
-        if (!SOCIAL_PAGES.includes(name)) name = 'shots';
-    }
-    if (SOCIAL_PAGES.includes(name)) store.set('socialSource', name);
+    let socialFrom = null;
+    if (SOCIAL_PAGES.includes(name)) { socialFrom = name; name = 'social'; }
 
     state.page = name;
     for (const page of document.querySelectorAll('.page')) page.hidden = page.id !== 'page-' + name;
     for (const button of document.querySelectorAll('#page-tabs button'))
-        button.classList.toggle('active', button.dataset.page === name || (button.dataset.page === 'discover' && DISCOVER_PAGES.includes(name))
-            || (button.dataset.page === 'social' && SOCIAL_PAGES.includes(name)));
+        button.classList.toggle('active', button.dataset.page === name || (button.dataset.page === 'discover' && DISCOVER_PAGES.includes(name)));
     $('btn-user').classList.toggle('active', name === 'profile');
 
     if (name === 'modrinth') openModrinthPage();
@@ -65,9 +60,7 @@ function showPage(name) {
     if (name === 'packs') openPacksPage();
     if (name === 'home' && state.selected) renderPackServer(state.selected);
     if (name === 'servers') openServersPage();
-    if (name === 'messages') openMessagesPage();
-    if (name === 'shots') openShotsPage();
-    if (name === 'friends') openFriendsPage();
+    if (name === 'social') openSocialPage(socialFrom);
     if (name === 'profile') refreshPresence();
     schedulePresence();
     refreshActivity();
@@ -149,7 +142,7 @@ function setupTitlebar() {
             || POPOVERS.some(([popoverId]) => !$(popoverId).hidden)
             || ($('pack-menu') && !$('pack-menu').hidden);
         if (open) document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-        else if (isMobile() && state.page === 'messages' && dm.active) closeConversation();
+        else if (isMobile() && state.page === 'social' && $('page-social').classList.contains('main-open')) backToSocialList();
         else if (!$('view-main').hidden && state.page !== 'home') showPage('home');
         else bridge.send('window.minimize');
     });
@@ -1090,7 +1083,7 @@ async function saveSettings(patch) {
  */
 function showToast(n) {
     if (!n || !n.title) return;
-    if (n.tag && n.tag.startsWith('dm:') && state.page === 'messages' && typeof dm !== 'undefined' && dm.active === n.tag.slice(3)) return;
+    if (n.tag && n.tag.startsWith('dm:') && inChat(n.tag.slice(3))) return;
     let stack = $('toasts');
     if (!stack) stack = document.body.appendChild(el('div', { id: 'toasts', class: 'toasts', 'aria-live': 'polite' }));
 

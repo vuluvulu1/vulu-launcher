@@ -1,7 +1,7 @@
 // Sosyal: paylaşılan ekran görüntüleri ve bütün üyelerin listesi. Mesajlar messages.js'te.
 // Paylaşırken görüntü burada (tarayıcının kodlayıcısıyla) WebP'ye çevrilip küçültülür; vulu sunucusunun alanı sınırlı.
 
-const social = { shots: [], more: false, filter: 'all', loading: false, requestId: 0 };
+const social = { shots: [], more: false, filter: 'all', loading: false, requestId: 0, view: 'feed', loadedOnce: false };
 const SHOT_MAX_SIDE = 1920, THUMB_MAX_SIDE = 480;
 const SHOT_MAX_BYTES = 1100 * 1024, THUMB_MAX_BYTES = 150 * 1024;
 
@@ -10,9 +10,7 @@ async function openShotsPage() {
     social.shots = [];
     social.more = false;
     renderShots();
-    renderShotsFriends();
-    Promise.all([refreshPresence(), refreshFriends(), serversForCards().catch(() => [])]).then(renderShotsFriends);
-    if (!profile.members.length) ensureMembers().then(() => { if (state.page === 'shots') renderShots(); });
+    if (!profile.members.length) ensureMembers().then(() => { if (state.page === 'social') renderShots(); });
     await loadShots();
 }
 
@@ -279,7 +277,6 @@ async function shareScreenshot(instance, name) {
         ];
     });
     if (!shared) return false;
-    store.set('socialSource', 'shots');
     showPage('shots');
     return true;
 }
@@ -338,8 +335,7 @@ async function refreshFriends() {
         Object.assign(friends, await bridge.invoke('friends.list'), { loaded: true });
     } catch { /* sunucuya ulaşılamazsa eski liste kalır */ }
     setFriendBadges(friends.incoming.length);
-    if (state.page === 'friends') renderFriendsPage();
-    if (state.page === 'shots') renderShotsFriends();
+    if (state.page === 'social') renderSocialList();
 }
 
 /** Bekleyen istek sayısı: üst sekmedeki Sosyal rozeti ve Sosyal'in içindeki Arkadaşlar alt sekmesi. */
@@ -394,86 +390,128 @@ function friendButtons(username, small = true) {
     }
 }
 
-async function openFriendsPage() {
-    renderFriendsPage();
-    await Promise.all([refreshPresence(), ensureMembers(), refreshFriends(), serversForCards().catch(() => [])]);
-    renderFriendsPage();
+// ── Sosyal ekranı: solda kişiler, ortada akış ya da sohbet ─────────────
+// social.view: 'feed' (ekran görüntüleri) | 'chat' (dm.active ile sohbet). Telefonda liste ve içerik ayrı ekranlardır
+// (.main-open içerik açıkken).
+
+/** Sohbet şu an bu kişiyle açık mı (kişi verilmezse: herhangi biriyle). */
+function inChat(user) {
+    return state.page === 'social' && social.view === 'chat' && !!dm.active && (!user || dm.active === user);
 }
 
-function renderFriendsPage() {
-    const query = $('friends-search').value.trim().toLocaleLowerCase('tr');
-    const match = name => !query || name.toLocaleLowerCase('tr').includes(query);
-    const member = name => profile.members.find(m => m.username === name) || { username: name, avatarVersion: 0 };
-    const rank = name => { const p = presenceOf(name); return !p ? 2 : p.state === 'playing' ? 0 : 1; };
-    const byPresence = names => names.filter(match).sort((a, b) => rank(a) - rank(b) || a.localeCompare(b, 'tr'));
-
-    const card = (name, actions, sub) => {
-        const user = member(name), p = presenceOf(name);
-        return el('div', { class: 'friend-card' },
-            el('button', { class: 'member', onclick: () => openProfile(name) },
-                el('span', { class: 'presence-avatar' }, avatarEl(user, 'avatar-md'), p && el('span', { class: 'presence-dot', 'data-state': p.state })),
-                el('span', { class: 'member-text' },
-                    el('span', { class: 'member-name' }, name, user.isAdmin && adminMark()),
-                    el('span', { class: 'member-sub' }, sub || presenceEl(p) || lastSeenText(user)))),
-            el('div', { class: 'friend-actions' }, actions));
-    };
-    const section = (title, cards, empty) => (cards.length || empty) && el('section', { class: 'friends-section' },
-        el('h2', { class: 'friends-title' }, title, cards.length > 0 && el('span', { class: 'friends-count' }, cards.length)),
-        cards.length ? el('div', { class: 'friends-grid' }, cards) : el('p', { class: 'hint' }, empty));
-
-    const message = name => el('button', { class: 'btn btn-sm', onclick: () => { showPage('messages'); openMessagesPage(name); } }, 'Mesaj');
-    // Arkadaş bir vulu sunucusunda oynuyorsa yanına tek tıkla gidilir (doğru paket açılır, gerekirse kurulur)
-    const joinFriend = name => {
-        const p = presenceOf(name);
-        const server = p && p.state === 'playing' && p.server && community.servers.find(s => s.address === p.server);
-        return server && canInstallGames() && el('button', { class: 'btn btn-sm btn-primary', title: `${server.name} sunucusuna bağlan`, onclick: () => joinServer(server) }, 'Katıl');
-    };
-    const known = new Set([...friends.friends, ...friends.incoming, ...friends.outgoing, state.username]);
-    // Arama yapılınca arkadaş olmayan üyeler de çıkar, "Arkadaş ekle" ile istek gönderilir
-    const others = query ? profile.members.map(m => m.username).filter(n => !known.has(n) && match(n)).sort((a, b) => a.localeCompare(b, 'tr')) : [];
-
-    const parts = [
-        section('İstekler', friends.incoming.filter(match).map(n => card(n, friendButtons(n), 'Seni arkadaş olarak eklemek istiyor'))),
-        section('Arkadaşların', byPresence(friends.friends).map(n => card(n, [joinFriend(n), message(n), ...friendButtons(n)].filter(Boolean))),
-            friends.loaded ? (query ? 'Bu adla bir arkadaşın yok.' : 'Henüz arkadaşın yok. Yukarıdan ara, ya da birinin profilinde "Arkadaş ekle"ye bas.') : 'Yükleniyor…'),
-        section('Gönderdiğin istekler', friends.outgoing.filter(match).map(n => card(n, friendButtons(n), 'Yanıt bekleniyor'))),
-        query && section('Topluluk', others.map(n => card(n, friendButtons(n))), 'Bu adla bir üye yok.'),
-    ].filter(Boolean);
-    $('friends-all').replaceChildren(...parts);
+/**
+ * Sosyal'e girildiğinde: okunmamış mesaj varsa o konuşma açılır; istek varsa liste zaten en üstte gösterir;
+ * yoksa akış (ya da açık kalan sohbet). from: eski alt sekme adları ('messages', 'friends', 'shots') de gelebilir.
+ */
+async function openSocialPage(from) {
+    renderSocialList();
+    const ready = Promise.all([loadConversations(), refreshFriends(), refreshPresence(), ensureMembers(), serversForCards().catch(() => [])]);
+    if (from === 'shots') showSocialFeed();
+    else if (!inChat()) { showSocialFeed(); $('page-social').classList.toggle('main-open', false); }
+    await ready;
+    renderSocialList();
+    const unread = dm.conversations.find(c => c.unread > 0);
+    if ((from === 'social' || from === 'messages') && unread && !inChat()) openConversation(unread.username);
+    if (from === 'friends') $('social-search').focus();
 }
 
-/** Ekran görüntülerinin yanındaki arkadaş listesi: önce oyundakiler, sonra çevrimiçiler; Katıl ve Mesaj düğmeleriyle. */
-function renderShotsFriends() {
-    const list = $('shots-friends');
+function setSocialView(view) {
+    social.view = view;
+    $('social-feed').hidden = view !== 'feed';
+    $('dm-chat').hidden = view !== 'chat';
+    $('page-social').classList.add('main-open');
+    renderSocialList();
+}
+
+function showSocialFeed() {
+    dm.active = null;
+    dm.peer = null;
+    setSocialView('feed');
+    if (!social.loadedOnce) { social.loadedOnce = true; openShotsPage(); }
+}
+
+/** Telefonda içerikten (akış ya da sohbet) kişi listesine dönüş. */
+function backToSocialList() {
+    $('page-social').classList.remove('main-open');
+}
+
+/**
+ * Soldaki liste: Akış, bekleyen istekler, kişiler (konuşmalar ve arkadaşlar tek listede: okunmamışlar, oyundakiler,
+ * çevrimiçiler önce), gönderilen istekler; arama yapılınca diğer üyeler de "Ekle" düğmesiyle çıkar.
+ */
+function renderSocialList() {
+    const list = $('social-list');
     if (!list) return;
-    const rank = name => { const p = presenceOf(name); return !p ? 2 : p.state === 'playing' ? 0 : 1; };
-    const names = [...friends.friends].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b, 'tr'));
-    const online = names.filter(n => presenceOf(n)).length;
-    $('shots-friends-count').textContent = online ? `${online} çevrimiçi` : '';
-    if (!names.length) {
-        list.replaceChildren(el('p', { class: 'hint side-hint' }, friends.loaded ? 'Henüz arkadaşın yok.' : 'Yükleniyor…'),
-            friends.loaded && el('button', { class: 'btn btn-sm side-btn', onclick: () => showPage('friends') }, 'Arkadaş bul'));
-        return;
-    }
-    list.replaceChildren(...names.map(name => {
+    const query = $('social-search').value.trim().toLocaleLowerCase('tr');
+    const match = name => !query || name.toLocaleLowerCase('tr').includes(query);
+    const member = name => profile.members.find(m => m.username === name) || { username: name, avatarVersion: memberAvatarVersion(name) };
+    const conv = name => dm.conversations.find(c => c.username === name);
+    const group = (title, count) => el('div', { class: 'social-group' }, title, count > 0 && el('span', { class: 'friends-count' }, count));
+    const btn = (label, onclick, primary) => el('button', {
+        class: 'btn btn-xs' + (primary ? ' btn-primary' : ''),
+        onclick: event => { event.stopPropagation(); onclick(); },
+    }, label);
+    const row = (name, { sub, actions = [], onclick, active = false, badge = 0 }) => {
         const p = presenceOf(name);
-        const user = profile.members.find(m => m.username === name) || { username: name, avatarVersion: memberAvatarVersion(name) };
-        const server = p && p.state === 'playing' && p.server && community.servers.find(s => s.address === p.server);
-        return el('div', { class: 'side-friend' + (p ? '' : ' away') },
-            el('button', { class: 'member', onclick: () => openProfile(name) },
-                el('span', { class: 'presence-avatar' }, avatarEl(user, 'avatar-md'), p && el('span', { class: 'presence-dot', 'data-state': p.state })),
+        return el('div', { class: 'social-row' + (active ? ' active' : '') + (p ? '' : ' away') },
+            el('button', { class: 'member', onclick },
+                el('span', { class: 'presence-avatar' }, avatarEl(member(name), 'avatar-md'), p && el('span', { class: 'presence-dot', 'data-state': p.state })),
                 el('span', { class: 'member-text' },
-                    el('span', { class: 'member-name' }, name),
-                    el('span', { class: 'member-sub' }, presenceEl(p) || lastSeenText(user)))),
-            el('div', { class: 'side-friend-actions' },
-                server && canInstallGames() && el('button', { class: 'btn btn-xs btn-primary', title: `${server.name} sunucusuna bağlan`, onclick: () => joinServer(server) }, 'Katıl'),
-                el('button', { class: 'btn btn-xs', title: 'Mesaj gönder', onclick: () => { showPage('messages'); openMessagesPage(name); } }, 'Mesaj')));
-    }));
+                    el('span', { class: 'member-name' }, name, member(name).isAdmin && adminMark()),
+                    el('span', { class: 'member-sub' }, sub || presenceEl(p) || (conv(name) ? relativeDate(new Date(conv(name).lastAt)) : lastSeenText(member(name)))))),
+            badge > 0 && el('span', { class: 'tab-badge' }, String(badge)),
+            actions.filter(Boolean).length > 0 && el('div', { class: 'social-row-actions' }, actions.filter(Boolean)));
+    };
+    // Arkadaş bir vulu sunucusunda oynuyorsa yanına tek tıkla gidilir (doğru paket açılır, gerekirse kurulur)
+    const join = name => {
+        const p = presenceOf(name);
+        const server = p && p.state === 'playing' && p.server && community.servers.find(s => s.address === p.server);
+        return server && canInstallGames() && btn('Katıl', () => joinServer(server), true);
+    };
+
+    const parts = [];
+    if (!query) parts.push(el('button', { class: 'social-feed-link' + (social.view === 'feed' ? ' active' : ''), onclick: showSocialFeed },
+        el('span', { class: 'social-feed-icon', 'aria-hidden': 'true' }, '▦'),
+        el('span', { class: 'member-text' }, el('span', { class: 'member-name' }, 'Akış'), el('span', { class: 'member-sub' }, 'Paylaşılan ekran görüntüleri'))));
+
+    const incoming = friends.incoming.filter(match);
+    if (incoming.length) parts.push(group('İstekler', incoming.length), ...incoming.map(name => row(name, {
+        sub: 'Arkadaş olmak istiyor', onclick: () => openProfile(name),
+        actions: [btn('Kabul et', () => friendAction('accept', name), true), btn('Reddet', () => friendAction('decline', name))],
+    })));
+
+    const known = new Set([...dm.conversations.map(c => c.username), ...friends.friends]);
+    known.delete(state.username);
+    const rank = name => {
+        const c = conv(name), p = presenceOf(name);
+        return (c && c.unread ? 0 : 10) + (!p ? 2 : p.state === 'playing' ? 0 : 1);
+    };
+    const people = [...known].filter(match).sort((a, b) => rank(a) - rank(b)
+        || new Date((conv(b) || {}).lastAt || 0) - new Date((conv(a) || {}).lastAt || 0) || a.localeCompare(b, 'tr'));
+    parts.push(group('Kişiler', 0));
+    parts.push(...(people.length
+        ? people.map(name => row(name, {
+            onclick: () => openConversation(name), active: inChat(name), badge: (conv(name) || {}).unread || 0, actions: [join(name)],
+        }))
+        : [el('p', { class: 'hint side-hint' }, !friends.loaded ? 'Yükleniyor…' : query ? 'Bu adla bir arkadaşın ya da konuşman yok.' : 'Henüz kimse yok. Yukarıdan birini ara ve arkadaş ekle.')]));
+
+    const outgoing = friends.outgoing.filter(match);
+    if (outgoing.length) parts.push(group('Gönderdiğin istekler', outgoing.length), ...outgoing.map(name => row(name, {
+        sub: 'Yanıt bekleniyor', onclick: () => openProfile(name), actions: [btn('Geri al', () => friendAction('decline', name))],
+    })));
+
+    if (query) {
+        const others = profile.members.map(m => m.username)
+            .filter(name => name !== state.username && !known.has(name) && !friends.incoming.includes(name) && !friends.outgoing.includes(name) && match(name))
+            .sort((a, b) => a.localeCompare(b, 'tr')).slice(0, 30);
+        parts.push(group('Topluluk', others.length), ...(others.length
+            ? others.map(name => row(name, { onclick: () => openConversation(name), actions: [btn('+ Ekle', () => friendAction('request', name))] }))
+            : [el('p', { class: 'hint side-hint' }, 'Bu adla bir üye yok.')]));
+    }
+    list.replaceChildren(...parts);
 }
 
 function setupSocial() {
-    for (const button of document.querySelectorAll('.social-switch button'))
-        button.addEventListener('click', () => showPage(button.dataset.source));
     for (const button of document.querySelectorAll('#shots-filter button'))
         button.addEventListener('click', () => {
             social.filter = button.dataset.filter;
@@ -482,5 +520,7 @@ function setupSocial() {
         });
     $('shots-more').addEventListener('click', loadShots);
     $('shots-share').addEventListener('click', startShareFlow);
-    $('friends-search').addEventListener('input', renderFriendsPage);
+    $('social-search').addEventListener('input', renderSocialList);
+    $('social-search').addEventListener('keydown', e => { if (e.key === 'Escape') { e.target.value = ''; renderSocialList(); } });
+    for (const back of document.querySelectorAll('.social-back')) back.addEventListener('click', backToSocialList);
 }

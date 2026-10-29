@@ -402,81 +402,42 @@
             </div>
         </div>
 
-        <!-- Mesajlar: uçtan uca şifreli direkt mesajlar -->
-        <div id="page-shots" class="page page-scroll" hidden>
-          <div class="servers-layout social-layout">
-           <section>
-            <header class="page-head">
-                <div>
-                    <h1>Sosyal</h1>
-                    <div class="segmented social-switch" role="tablist" aria-label="Sosyal">
-                        <button type="button" data-source="shots" class="active">Ekran görüntüleri</button>
-                        <button type="button" data-source="messages">Mesajlar <span class="tab-badge social-dm-badge" hidden></span></button>
-                        <button type="button" data-source="friends">Arkadaşlar <span class="tab-badge friend-badge social-friend-badge" hidden></span></button>
+        <!-- Sosyal: solda kişiler (istekler, konuşmalar, arkadaşlar), ortada akış ya da seçilen kişiyle sohbet.
+             Sekme yok: birine tıklayınca sohbet, "Akış"a tıklayınca ekran görüntüleri açılır. -->
+        <div id="page-social" class="page" hidden>
+            <div class="social-hub">
+                <aside class="members social-side" aria-labelledby="social-title">
+                    <div class="social-side-head">
+                        <div class="social-side-top">
+                            <h1 id="social-title">Sosyal</h1>
+                            <button id="dm-new" class="btn btn-sm" title="Birine yeni mesaj yaz">Yeni mesaj</button>
+                        </div>
+                        <input id="social-search" type="text" placeholder="Arkadaş ya da üye ara…" spellcheck="false" />
                     </div>
-                    <p class="page-sub">Oyuncuların paylaştığı ekran görüntüleri. Yalnızca vulu üyeleri görebilir.</p>
-                </div>
-                <div class="page-head-actions">
-                    <div id="shots-filter" class="segmented">
-                        <button type="button" data-filter="all" class="active">Herkes</button>
-                        <button type="button" data-filter="mine">Benimkiler</button>
-                    </div>
-                    <button id="shots-share" class="btn btn-sm btn-primary">+ Paylaş</button>
-                </div>
-            </header>
-            <p id="shots-status" class="page-note"></p>
-            <div id="shots-grid" class="shots-grid"></div>
-            <div class="shots-more"><button id="shots-more" class="btn btn-sm" hidden>Daha fazla</button></div>
-           </section>
-           <!-- Yan liste: arkadaşlar ve ne yaptıkları; oyundakilerin yanına tek tıkla katılınır -->
-           <aside class="members" aria-labelledby="shots-friends-title">
-               <div class="members-head">
-                   <h2 id="shots-friends-title">Arkadaşlar</h2>
-                   <span id="shots-friends-count" class="members-count"></span>
-               </div>
-               <div id="shots-friends" class="members-list"></div>
-           </aside>
-          </div>
-        </div>
-
-        <div id="page-friends" class="page page-scroll" hidden>
-            <header class="page-head">
-                <div>
-                    <h1>Sosyal</h1>
-                    <div class="segmented social-switch" role="tablist" aria-label="Sosyal">
-                        <button type="button" data-source="shots">Ekran görüntüleri</button>
-                        <button type="button" data-source="messages">Mesajlar <span class="tab-badge social-dm-badge" hidden></span></button>
-                        <button type="button" data-source="friends" class="active">Arkadaşlar <span class="tab-badge friend-badge social-friend-badge" hidden></span></button>
-                    </div>
-                    <p class="page-sub">Arkadaşların ve ne oynadıkları. Birini eklemek için adını ara.</p>
-                </div>
-                <div class="page-head-actions">
-                    <input id="friends-search" type="text" placeholder="Arkadaş ya da üye ara…" spellcheck="false" />
-                </div>
-            </header>
-            <div id="friends-all" class="friends-page"></div>
-        </div>
-
-        <div id="page-messages" class="page" hidden>
-            <header class="page-head dm-page-head">
-                <div>
-                    <h1>Sosyal</h1>
-                    <div class="segmented social-switch" role="tablist" aria-label="Sosyal">
-                        <button type="button" data-source="shots">Ekran görüntüleri</button>
-                        <button type="button" data-source="messages" class="active">Mesajlar <span class="tab-badge social-dm-badge" hidden></span></button>
-                        <button type="button" data-source="friends">Arkadaşlar <span class="tab-badge friend-badge social-friend-badge" hidden></span></button>
-                    </div>
-                </div>
-            </header>
-            <div class="dm-layout">
-                <aside class="members dm-side" aria-labelledby="dm-title">
-                    <div class="members-head">
-                        <h2 id="dm-title">Mesajlar</h2>
-                        <button id="dm-new" class="btn btn-sm btn-primary">Yeni mesaj</button>
-                    </div>
-                    <div id="dm-list" class="members-list"></div>
+                    <div id="social-list" class="members-list social-list"></div>
                 </aside>
-                <section id="dm-chat" class="dm-chat" aria-live="polite"></section>
+
+                <section id="social-feed" class="social-main social-feed">
+                    <header class="page-head">
+                        <div>
+                            <button class="dm-back social-back" type="button" aria-label="Kişilere dön">‹</button>
+                            <h2 class="social-feed-title">Akış</h2>
+                            <p class="page-sub">Oyuncuların paylaştığı ekran görüntüleri. Yalnızca vulu üyeleri görebilir.</p>
+                        </div>
+                        <div class="page-head-actions">
+                            <div id="shots-filter" class="segmented">
+                                <button type="button" data-filter="all" class="active">Herkes</button>
+                                <button type="button" data-filter="mine">Benimkiler</button>
+                            </div>
+                            <button id="shots-share" class="btn btn-sm btn-primary">+ Paylaş</button>
+                        </div>
+                    </header>
+                    <p id="shots-status" class="page-note"></p>
+                    <div id="shots-grid" class="shots-grid"></div>
+                    <div class="shots-more"><button id="shots-more" class="btn btn-sm" hidden>Daha fazla</button></div>
+                </section>
+
+                <section id="dm-chat" class="social-main dm-chat" aria-live="polite" hidden></section>
             </div>
         </div>
 

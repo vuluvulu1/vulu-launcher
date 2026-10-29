@@ -1157,13 +1157,30 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .world-backup span { flex: 1; }
 
 /* ── Mesajlar ───────────────────────────────────────────────────────── */
-#page-messages:not([hidden]) { padding: 26px 32px 20px; display: flex; flex-direction: column; min-height: 0; }
-.dm-page-head { margin-bottom: 16px; }
-.dm-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 16px; flex: 1; min-height: 0; }
-.dm-side { position: static; max-height: none; min-height: 0; }
-.dm-side .members-head { align-items: center; }
-.dm-conv .tab-badge { margin-left: auto; }
-.dm-conv.active { background: var(--hover); }
+/* Sosyal: solda kişiler, sağda akış ya da sohbet (tek sayfa, sekme yok) */
+#page-social:not([hidden]) { display: flex; min-height: 0; padding: 20px 24px 18px; }
+.social-hub { flex: 1; min-height: 0; display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 16px; }
+.social-side { position: static; max-height: none; min-height: 0; }
+.social-side-head { display: flex; flex-direction: column; gap: 10px; padding: 14px 12px 12px; border-bottom: 1px solid var(--line); }
+.social-side-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.social-side-top h1 { margin: 0; font: 700 20px var(--font); }
+#social-search { width: 100%; }
+.social-list { padding-top: 6px; }
+.social-group { display: flex; align-items: center; gap: 6px; margin: 12px 8px 4px; font: 600 11px var(--font); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.social-row { display: flex; align-items: center; gap: 4px; padding-right: 6px; border-radius: var(--r-md); }
+.social-row:hover, .social-row.active, .social-feed-link:hover, .social-feed-link.active { background: var(--hover); }
+.social-row .member { flex: 1; min-width: 0; background: none; }
+.social-row.away .presence-avatar { opacity: .6; }
+.social-row .tab-badge { flex: none; }
+.social-row-actions { display: flex; gap: 4px; flex: none; }
+.social-feed-link { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px; border: 0; border-radius: var(--r-md); background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.social-feed-icon { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--accent-soft); color: var(--accent-hi); font-size: 17px; }
+.social-main { min-height: 0; min-width: 0; }
+.social-main[hidden] { display: none; }
+.social-feed { overflow-y: auto; padding-right: 4px; scrollbar-width: thin; }
+.social-feed .page-head { flex-wrap: wrap; }
+.social-feed-title { margin: 0; font: 700 18px var(--font); }
+.side-hint { padding: 0 8px; }
 .dm-chat { min-height: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); overflow: hidden; }
 .dm-empty { margin: auto; text-align: center; color: var(--muted); padding: 24px; max-width: 420px; }
 .dm-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
@@ -1228,9 +1245,6 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .shot-summary { margin-right: auto; align-self: center; }
 
 /* ── Sosyal ─────────────────────────────────────────────────────────── */
-.social-switch { margin-top: 10px; }
-.social-switch button { height: 30px; padding: 0 16px; font-size: 13px; }
-.page-head .social-switch + .page-sub { margin-top: 10px; }
 #shots-filter button { height: 26px; padding: 0 12px; font-size: 12.5px; }
 .shots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
 .shot-tile { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); overflow: hidden; }
@@ -1258,9 +1272,6 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .friends-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
 .friend-card { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 4px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); }
 .friend-card .member { flex: 1; min-width: 0; }
-#friends-search { width: 200px; }
-.social-switch button { white-space: nowrap; }
-#page-shots .page-head, #page-friends .page-head { flex-wrap: wrap; }
 
 /* ── Paket değişiklikleri ───────────────────────────────────────────── */
 .changelog { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
@@ -1487,14 +1498,4 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .pack-check { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--warn, #d9a441) 45%, var(--line)); border-radius: var(--r-md); background: color-mix(in srgb, var(--warn, #d9a441) 7%, transparent); }
 .pack-check.ok { flex-direction: row; align-items: center; gap: 8px; border-color: var(--line); background: none; font-size: 12.5px; color: var(--muted); }
 
-/* Sosyal: ekran görüntülerinin yanındaki arkadaş listesi */
-.social-layout { max-width: none; }
-.side-friend { display: flex; align-items: center; gap: 4px; padding-right: 6px; border-radius: var(--r-md); }
-.side-friend:hover { background: var(--hover, rgba(255, 255, 255, .04)); }
-.side-friend .member { flex: 1; min-width: 0; }
-.side-friend.away .member { opacity: .6; }
-.side-friend-actions { display: flex; gap: 4px; flex: none; opacity: 0; transition: opacity .12s; }
-.side-friend:hover .side-friend-actions, .side-friend:focus-within .side-friend-actions, .side-friend-actions .btn-primary { opacity: 1; }
 .btn.btn-xs { height: 24px; padding: 0 8px; font-size: 11.5px; }
-.side-hint { padding: 0 8px; }
-.side-btn { margin: 4px 8px 0; align-self: flex-start; }

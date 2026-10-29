@@ -43,14 +43,13 @@ async function refreshPresence() {
     if (state.page === 'profile' && typeof renderMembers === 'function' && profile.members) renderMembers();
     if (state.page === 'servers') renderFriends();
     if (state.page === 'servers') renderServers();
-    if (state.page === 'friends') renderFriendsPage();
-    if (state.page === 'shots') renderShotsFriends();
+    if (state.page === 'social') renderSocialList();
 }
 
 /** Sunucular ve profil sayfası açıkken durumlar düzenli yenilenir. */
 function schedulePresence() {
     clearInterval(community.timer);
-    if (state.page === 'servers' || state.page === 'profile' || state.page === 'friends' || state.page === 'shots')
+    if (state.page === 'servers' || state.page === 'profile' || state.page === 'social')
         community.timer = setInterval(() => {
             refreshPresence();
             if (state.page === 'servers') pingAll();
