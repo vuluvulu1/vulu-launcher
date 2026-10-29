@@ -5,7 +5,7 @@ let adminTab = null;
 /** Admin sekmesi her açıldığında yeniden çizilir. */
 async function openAdminPage() {
     await refreshRegistrations();
-    if (!adminTab) adminTab = pendingRegistrations.length ? 'registrations' : 'users';
+    if (!adminTab) adminTab = 'overview';
     renderAdminTabs();
 }
 
@@ -22,6 +22,7 @@ function renderAdminTabs() {
 
     $('admin-body').replaceChildren(
         el('div', { class: 'tabs admin-tabs' },
+            tab('overview', 'Özet'),
             tab('users', 'Kullanıcılar'),
             tab('roles', 'Roller'),
             tab('registrations', 'Kayıt istekleri', pendingRegistrations.length),
@@ -35,7 +36,71 @@ function renderAdminTabs() {
     else if (adminTab === 'storage') renderStorageTab(content);
     else if (adminTab === 'radio') renderRadioTab(content);
     else if (adminTab === 'roles') renderRolesTab(content);
-    else renderUsersTab(content);
+    else if (adminTab === 'users') renderUsersTab(content);
+    else renderOverviewTab(content);
+}
+
+// ── Özet ──────────────────────────────────────────────────────────────
+/** Bekleyen işler tek bakışta: kayıt istekleri, açık geri bildirimler, duyuru, çevrimiçiler, sunucular. */
+async function renderOverviewTab(body) {
+    const go = key => () => { adminTab = key; renderAdminTabs(); };
+    const card = ({ title, value, sub, action, tone }) => el('section', { class: 'admin-card' + (tone ? ' ' + tone : '') },
+        el('div', { class: 'admin-card-title' }, title),
+        el('div', { class: 'admin-card-value' }, value),
+        sub && el('div', { class: 'admin-card-sub' }, sub),
+        action && el('div', { class: 'admin-card-action' }, action));
+    body.replaceChildren(el('div', { class: 'admin-cards' }, [0, 1, 2, 3].map(() => el('div', { class: 'admin-card skeleton' }))));
+
+    const [counts, packs, announcement, servers] = await Promise.all([
+        bridge.invoke('feedback.counts').catch(() => ({})),
+        state.packsCache ? Promise.resolve(state.packsCache) : bridge.invoke('packs.list').then(r => (state.packsCache = r.packs)).catch(() => []),
+        bridge.invoke('announcement.get').then(r => r.announcement).catch(() => null),
+        serversForCards().catch(() => []),
+        refreshPresence(),
+        ensureMembers(),
+    ]);
+    if (adminTab !== 'overview') return;
+
+    const pending = pendingRegistrations;
+    const launcherFeedback = (counts || {}).launcher || 0;
+    const packFeedback = (packs || []).reduce((sum, p) => sum + (p.openFeedback || 0), 0);
+    const online = (community.presence || []).filter(p => p.username !== state.username);
+    const playing = online.filter(p => p.state === 'playing');
+    const statuses = servers.map(s => community.status[s.id]).filter(Boolean);
+
+    body.replaceChildren(el('div', { class: 'admin-cards' },
+        card({
+            title: 'Kayıt istekleri', value: String(pending.length), tone: pending.length ? 'attention' : '',
+            sub: pending.length ? pending.slice(0, 3).map(r => r.username).join(', ') + (pending.length > 3 ? '…' : '') : 'Bekleyen istek yok.',
+            action: pending.length > 0 && el('button', { class: 'btn btn-sm btn-primary', onclick: go('registrations') }, 'İncele'),
+        }),
+        card({
+            title: 'Launcher geri bildirimleri', value: String(launcherFeedback), tone: launcherFeedback ? 'attention' : '',
+            sub: launcherFeedback ? 'Açık hata bildirimi ya da öneri var.' : 'Açık bildirim yok.',
+            action: el('button', { class: 'btn btn-sm', onclick: () => openFeedback('launcher', true) }, 'Aç'),
+        }),
+        card({
+            title: 'Paket geri bildirimleri', value: String(packFeedback), tone: packFeedback ? 'attention' : '',
+            sub: packFeedback ? (packs || []).filter(p => p.openFeedback).map(p => `${p.name} (${p.openFeedback})`).join(', ') : 'Açık bildirim yok.',
+            action: el('button', { class: 'btn btn-sm', onclick: () => showPage('packs') }, 'Paketlere git'),
+        }),
+        card({
+            title: 'Çevrimiçi', value: String(online.length),
+            sub: online.length ? `${playing.length} kişi oyunda · ${profile.members.length} üye` : `${profile.members.length} üye, şu an kimse çevrimiçi değil.`,
+            action: el('button', { class: 'btn btn-sm', onclick: go('users') }, 'Kullanıcılar'),
+        }),
+        card({
+            title: 'Duyuru', value: announcement ? 'Yayında' : 'Yok',
+            sub: announcement ? announcement.text : 'Oyna sayfasının üstünde herkese bir mesaj gösterebilirsin.',
+            action: el('button', { class: 'btn btn-sm', onclick: go('announcement') }, announcement ? 'Düzenle' : 'Duyuru yaz'),
+        }),
+        card({
+            title: 'Sunucular', value: String(servers.length),
+            sub: servers.length
+                ? (statuses.length ? `${statuses.filter(s => s.online).length} açık · ${statuses.reduce((n, s) => n + (s.players || 0), 0)} oyuncu` : servers.map(s => s.name).join(', '))
+                : 'Henüz sunucu eklenmemiş.',
+            action: el('button', { class: 'btn btn-sm', onclick: () => showPage('servers') }, 'Sunuculara git'),
+        })));
 }
 
 // ── Kullanıcılar ──────────────────────────────────────────────────────
