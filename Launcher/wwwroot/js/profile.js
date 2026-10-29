@@ -39,6 +39,9 @@ async function loadMyProfile() {
 }
 
 async function openProfile(username) {
+    // Kendi profilin önce başkalarının gördüğü gibi açılır; "Profili düzenle" ile düzenlemeye geçilir.
+    // Düzenlerken yapılan değişiklik profili yeniden açtığında düzenleme modu kalır.
+    if (username !== profile.viewing) profile.editing = false;
     profile.viewing = username;
     showPage('profile');
     loadMembers();
@@ -60,8 +63,14 @@ function lastSeenText(user) {
     return seen ? 'Son görülme: ' + relativeDate(seen).toLowerCase() : 'Henüz giriş yapmadı';
 }
 
+function setProfileEditing(editing) {
+    profile.editing = editing;
+    openProfile(state.username);
+}
+
 function renderProfile(user) {
     const own = user.username === state.username;
+    const editing = own && !!profile.editing;
     const joined = parseDate(user.createdAt);
 
     const head = el('div', { class: 'profile-head' },
@@ -71,15 +80,19 @@ function renderProfile(user) {
             el('div', { class: 'profile-meta' },
                 [joined && 'Katıldı: ' + formatDate(joined), lastSeenText(user)].filter(Boolean).join(' · ')),
             roleChips(user.roles)),
-        own && el('div', { class: 'profile-head-actions' },
+        editing && el('div', { class: 'profile-head-actions' },
             el('button', { class: 'btn btn-sm', onclick: changeAvatar }, 'Resmi değiştir'),
-            user.avatarVersion > 0 && el('button', { class: 'btn btn-sm', onclick: removeAvatar }, 'Kaldır')),
+            user.avatarVersion > 0 && el('button', { class: 'btn btn-sm', onclick: removeAvatar }, 'Kaldır'),
+            el('button', { class: 'btn btn-sm btn-primary', onclick: () => setProfileEditing(false) }, 'Bitti')),
+        own && !editing && el('div', { class: 'profile-head-actions' },
+            el('button', { class: 'btn btn-sm', onclick: () => showPage('settings') }, 'Ayarlar'),
+            el('button', { class: 'btn btn-sm btn-primary', onclick: () => setProfileEditing(true) }, 'Profili düzenle')),
         !own && el('div', { class: 'profile-head-actions' },
             ...friendButtons(user.username),
             el('button', { class: 'btn btn-sm btn-primary', onclick: () => { showPage('messages'); openMessagesPage(user.username); } }, 'Mesaj gönder')));
 
     const banner = el('div', { class: 'profile-banner' + (user.bannerVersion ? ' has-image' : '') },
-        own && el('div', { class: 'profile-banner-actions' },
+        editing && el('div', { class: 'profile-banner-actions' },
             el('button', { class: 'btn btn-sm', onclick: changeBanner }, user.bannerVersion ? 'Bannerı değiştir' : 'Banner ekle'),
             user.bannerVersion > 0 && el('button', { class: 'btn btn-sm', onclick: removeBanner }, 'Kaldır')));
     const url = bannerUrl(user);
@@ -94,10 +107,11 @@ function renderProfile(user) {
     const sections = [
         banner,
         head,
-        own ? bioEditor(user) : el('section', { class: 'profile-section' },
+        editing ? bioEditor(user) : el('section', { class: 'profile-section' },
             el('h2', {}, 'Hakkında'),
-            el('p', { class: 'profile-bio' + (user.bio ? '' : ' empty') }, user.bio || 'Henüz bir şey yazmamış.')),
-        skinSection(user, own),
+            el('p', { class: 'profile-bio' + (user.bio ? '' : ' empty') },
+                user.bio || (own ? 'Henüz bir şey yazmadın. "Profili düzenle" ile kendinden bahset.' : 'Henüz bir şey yazmamış.'))),
+        skinSection(user, editing),
         playtimeSection(user, own),
     ].filter(Boolean);
 
@@ -110,12 +124,9 @@ function renderProfile(user) {
                     el('span', { class: 'meta' }, `${pack.mcVersion} · ${LOADER_NAMES[pack.loader] || pack.loader} · rev ${pack.revision}`))))));
     }
 
-    if (own) {
-        sections.push(passwordForm());
-        sections.push(el('div', { class: 'profile-foot' },
-            el('button', { class: 'btn btn-sm', onclick: () => showPage('settings') }, 'Ayarlar'),
-            el('button', { class: 'btn btn-sm btn-danger', onclick: logout }, 'Çıkış yap')));
-    }
+    if (editing) sections.push(passwordForm());
+    if (own) sections.push(el('div', { class: 'profile-foot' },
+        el('button', { class: 'btn btn-sm btn-danger', onclick: logout }, 'Çıkış yap')));
 
     $('profile-view').replaceChildren(el('div', { class: 'profile-card' }, sections));
     markActiveMember();
@@ -363,13 +374,20 @@ async function loadMembers(force) {
     }
 }
 
+/** Profilin yanındaki liste: arkadaşların (çevrimiçiler önce). Bütün üyeleri aramak Sosyal'de. */
 function renderMembers() {
     const query = $('members-search').value.trim().toLocaleLowerCase('tr');
     // Çevrimiçi olanlar (önce oynayanlar) üstte
     const rank = u => { const p = presenceOf(u.username); return !p ? 2 : p.state === 'playing' ? 0 : 1; };
-    const list = profile.members.filter(u => !query || u.username.toLocaleLowerCase('tr').includes(query))
-        .slice().sort((a, b) => rank(a) - rank(b));
-    $('members-count').textContent = `${profile.members.length} kişi`;
+    const mine = new Set([...friends.friends, state.username]);
+    const list = profile.members.filter(u => mine.has(u.username) && (!query || u.username.toLocaleLowerCase('tr').includes(query)))
+        .slice().sort((a, b) => rank(a) - rank(b) || a.username.localeCompare(b.username, 'tr'));
+    $('members-count').textContent = friends.friends.length ? `${friends.friends.length} arkadaş` : '';
+    if (list.length <= 1 && !query) {
+        $('members-list').replaceChildren(el('p', { class: 'hint side-hint' }, 'Henüz arkadaşın yok.'),
+            el('button', { class: 'btn btn-sm members-find', onclick: () => showPage('friends') }, 'Sosyal\'de arkadaş bul'));
+        return;
+    }
 
     $('members-list').replaceChildren(...(list.length ? list.map(user =>
         el('button', { class: 'member', 'data-username': user.username, onclick: () => openProfile(user.username) },
