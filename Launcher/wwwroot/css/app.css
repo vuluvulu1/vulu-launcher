@@ -432,7 +432,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 .stage > .dock { z-index: 3; }
 
 /* Paket bilgisi alta yaslanır; pencere alçaksa yukarı taşıp duyurunun altına girmez, kaydırılır */
-.stage-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 22px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.stage-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 22px; overflow-y: auto; }
 /* Alçak pencerede (ör. 1280x720) paket bilgisi sıkışmasın: logo ve boşluklar küçülür */
 @media (max-height: 760px) {
     .stage { padding-top: 20px; }
@@ -1190,7 +1190,7 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .social-feed-icon { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--accent-soft); color: var(--accent-hi); font-size: 17px; }
 .social-main { min-height: 0; min-width: 0; }
 .social-main[hidden] { display: none; }
-.social-feed { overflow-y: auto; padding-right: 4px; scrollbar-width: thin; }
+.social-feed { overflow-y: auto; padding-right: 4px; }
 .social-feed .page-head { flex-wrap: wrap; }
 .social-feed-title { margin: 0; font: 700 18px var(--font); }
 .side-hint { padding: 0 8px; }
@@ -1522,7 +1522,7 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .log-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--error); }
 .log-dot[hidden] { display: none; }
 .console-head { padding-left: 4px; }
-.info-body { flex: 1; min-height: 0; overflow: auto; padding: 8px 10px; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.info-body { flex: 1; min-height: 0; overflow: auto; padding: 8px 10px; }
 .info-body[hidden], .console-body[hidden] { display: none; }
 .info-strip { display: flex; align-items: center; gap: 8px; height: 100%; }
 .info-world { display: flex; align-items: center; gap: 10px; flex: none; width: 210px; padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--raised); color: var(--text); text-align: left; font: inherit; cursor: pointer; }
@@ -1681,6 +1681,7 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
     html:not([data-ui="neon"]) .tb-tabs button .tab-badge { margin-left: 4px; }
 }
 
+/* Not: scrollbar-width / scrollbar-color yazılan öğede yukarıdaki ::-webkit-scrollbar stili geçersiz kalır (beyaz çubuk çıkar) */
 /* ── Sosyal: canlı akış ── */
 .feed-section-title { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; font: 600 12px var(--font); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
 .live-feed:empty + .feed-section-title { margin-top: 4px; }
