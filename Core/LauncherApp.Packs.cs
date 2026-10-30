@@ -426,6 +426,7 @@ namespace VuluLauncher
                         string? path = Downloader.ResolveInside(dir, entry.FullName);
                         if (path == null) continue;
                         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                        Downloader.MakeWritable(path);
                         entry.ExtractToFile(path, overwrite: true);
                     }
                 });
@@ -473,6 +474,8 @@ namespace VuluLauncher
         {
             string? path = Downloader.ResolveInside(dir, relative);
             if (path == null) return;
+            Downloader.MakeWritable(path);
+            Downloader.MakeWritable(path + DisabledSuffix);
             if (File.Exists(path)) File.Delete(path);
             if (File.Exists(path + DisabledSuffix)) File.Delete(path + DisabledSuffix);   // kapatılmış hâli
         }

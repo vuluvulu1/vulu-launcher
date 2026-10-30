@@ -91,6 +91,7 @@ namespace VuluLauncher
                 if (!string.IsNullOrEmpty(sha512)) Verify(partPath, sha512, SHA512.HashData);
                 else if (!string.IsNullOrEmpty(sha1)) Verify(partPath, sha1, SHA1.HashData);
 
+                MakeWritable(path);
                 File.Move(partPath, path, overwrite: true);
                 if (cacheKey != null) ModCache.Remember(cacheKey, path);
             }
@@ -125,6 +126,21 @@ namespace VuluLauncher
         {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             return Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(stream)).ToLowerInvariant();
+        }
+
+        /// <summary>
+        /// Var olan dosyanın gizli, salt okunur ya da sistem işaretini kaldırır: Windows bu dosyaların üstüne yazmayı
+        /// "erişim engellendi" diye reddeder (ör. Euphoria Patcher config/euphoria_patcher/.data.json'u gizli yapar).
+        /// </summary>
+        public static void MakeWritable(string path)
+        {
+            try
+            {
+                var info = new FileInfo(path);
+                if (info.Exists && (info.Attributes & (FileAttributes.Hidden | FileAttributes.ReadOnly | FileAttributes.System)) != 0)
+                    info.Attributes = FileAttributes.Normal;
+            }
+            catch (Exception) { /* yazma yine denenir; asıl hata orada görünür */ }
         }
 
         public static string? ResolveInside(string root, string relativePath)

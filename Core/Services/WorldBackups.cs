@@ -59,6 +59,7 @@ namespace VuluLauncher
                         string? path = Downloader.ResolveInside(staging, entry.FullName);
                         if (path == null) continue;                       // klasör dışına çıkan yol atlanır
                         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                        Downloader.MakeWritable(path);
                         entry.ExtractToFile(path, overwrite: true);
                     }
                 if (!File.Exists(Path.Combine(staging, "level.dat"))) throw new InvalidDataException("Yedekte level.dat yok; bu bir dünya yedeği değil.");

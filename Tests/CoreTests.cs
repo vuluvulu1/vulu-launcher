@@ -249,3 +249,38 @@ namespace VuluLauncher.Tests
         }
     }
 }
+
+namespace VuluLauncher.Tests
+{
+    /// <summary>Paket güncellemesi gizli ya da salt okunur dosyaların üstüne yazabilmeli (Euphoria Patcher .data.json).</summary>
+    public class OverwriteProtectedFileTests : IDisposable
+    {
+        private readonly string _dir = Path.Combine(Path.GetTempPath(), "vulu-tests-" + Guid.NewGuid().ToString("N"));
+
+        public OverwriteProtectedFileTests() => Directory.CreateDirectory(_dir);
+        public void Dispose() { try { Directory.Delete(_dir, true); } catch { } }
+
+        [Theory]
+        [InlineData(FileAttributes.Hidden)]
+        [InlineData(FileAttributes.ReadOnly)]
+        [InlineData(FileAttributes.Hidden | FileAttributes.ReadOnly)]
+        public void ExtractOverProtectedFile(FileAttributes attributes)
+        {
+            string zipPath = Path.Combine(_dir, "a.zip"), target = Path.Combine(_dir, ".data.json");
+            using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            using (var writer = new StreamWriter(zip.CreateEntry("x").Open())) writer.Write("yeni");
+            File.WriteAllText(target, "eski");
+            File.SetAttributes(target, attributes);
+
+            using var read = ZipFile.OpenRead(zipPath);
+            Assert.Throws<UnauthorizedAccessException>(() => read.Entries[0].ExtractToFile(target, overwrite: true));   // düzeltmesiz hâl
+
+            Downloader.MakeWritable(target);
+            read.Entries[0].ExtractToFile(target, overwrite: true);
+            Assert.Equal("yeni", File.ReadAllText(target));
+        }
+
+        [Fact]
+        public void MissingFileIsIgnored() => Downloader.MakeWritable(Path.Combine(_dir, "yok.json"));
+    }
+}

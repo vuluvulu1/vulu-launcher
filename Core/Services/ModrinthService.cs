@@ -510,6 +510,7 @@ namespace VuluLauncher
                 if (path == null) continue;
 
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                Downloader.MakeWritable(path);
                 entry.ExtractToFile(path, overwrite: true);
             }
         }
