@@ -23,6 +23,8 @@ namespace VuluLauncher
 
         /// <summary>Launcher penceresinin boyutu (Ayarlar → Launcher boyutu): "" otomatik, yoksa "1280x720".</summary>
         void ApplyWindowSize(string size) { }
+        /// <summary>Bilgisayar açılınca launcher'ı başlatma kaydını açar ya da kapatır (masaüstünde).</summary>
+        void SetStartWithSystem(bool enabled) { }
 
         /// <summary>Ekranın kullanılabilir alanı (piksel); bilinmiyorsa null. Ekrana sığmayan boyutlar listelenmez.</summary>
         (int Width, int Height)? ScreenWorkArea => null;

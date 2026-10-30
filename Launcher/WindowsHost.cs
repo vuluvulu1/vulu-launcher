@@ -44,8 +44,16 @@ namespace VuluLauncher
         /// bildirim denetimleri) ve simge kalır. Simgeye, bildirime tıklanınca ya da launcher yeniden açılınca pencere
         /// baştan kurulur; arayüz oturumu C# tarafından alıp kaldığı yerden sürer.
         /// </summary>
-        public void Run(Action<PhotinoWindow> attach)
+        public void Run(Action<PhotinoWindow> attach, bool startInTray = false)
         {
+            // Bilgisayar açılışında: pencere hiç açılmadan bildirim alanında beklenir; simgeye tıklanınca açılır
+            if (startInTray && CanHideToTray)
+            {
+                _tray.ShowIcon();
+                // Sağ altta kısa bir kart: launcher'ın arka planda çalıştığı belli olsun; tıklanınca pencere açılır
+                _toast.Show("vulu Launcher çalışıyor", "Simge durumunda başladı; mesajlar ve bildirimler gelecek. Açmak için tıkla.", null);
+                if (!WaitInTray()) return;
+            }
             while (true)
             {
                 // Photino ileti döngüsünü yalnızca ilk pencerede çalıştırır (statik bayrak); yeniden kurulan pencerede
@@ -128,6 +136,25 @@ namespace VuluLauncher
             Interlocked.Exchange(ref _exitRequested, 1);
             if (_window is { } w) w.Invoke(w.Close);
             else _wake.Set();
+        }
+
+        private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run", RunValue = "vulu Launcher";
+
+        /// <summary>Kullanıcının başlangıç programlarına (HKCU\...\Run) "--tray" ile eklenir ya da çıkarılır.</summary>
+        public void SetStartWithSystem(bool enabled)
+        {
+            // Geliştirme derlemesi başlangıç kaydını değiştirmez (kayıt dağıtılan launcher'ı göstermeli)
+#if !DEBUG
+            try
+            {
+                using var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(RunKey, writable: true);
+                if (enabled && Environment.ProcessPath is { } exe)
+                    key.SetValue(RunValue, $"\"{exe}\" --tray");
+                else if (key.GetValue(RunValue) != null)
+                    key.DeleteValue(RunValue, throwOnMissingValue: false);
+            }
+            catch { /* kayıt yazılamazsa launcher yine çalışır */ }
+#endif
         }
 
         public void ApplyWindowSize(string size)

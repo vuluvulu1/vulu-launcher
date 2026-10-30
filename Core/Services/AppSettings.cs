@@ -32,6 +32,8 @@ namespace VuluLauncher
         public bool SkipSplash { get; set; }
         /// <summary>Kapat tuşu launcher'ı bildirim alanına küçültür (mesaj ve oyun bildirimleri gelmeye devam eder).</summary>
         public bool CloseToTray { get; set; } = true;
+        /// <summary>Bilgisayar açılınca launcher pencere açmadan bildirim alanında başlar (mesaj ve bildirimler gelir).</summary>
+        public bool StartWithSystem { get; set; } = true;
         /// <summary>Biri oyuna girince bildirim: "friends" (arkadaşlarım) | "all" (herkes) | "off".</summary>
         public string PlayingNotifications { get; set; } = "friends";
         public bool ConsoleExpanded { get; set; }

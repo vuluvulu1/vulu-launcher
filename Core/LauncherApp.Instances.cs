@@ -577,9 +577,11 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Seçilen Java dosyası bulunamadı. Otomatik moda dönün ya da geçerli bir java.exe seçin.");
 
             bool playtimeChanged = settings.ShowPlaytimeOnProfile != AppSettings.Current.ShowPlaytimeOnProfile;
+            bool startChanged = settings.StartWithSystem != AppSettings.Current.StartWithSystem;
             bool sizeChanged = settings.WindowSize != AppSettings.Current.WindowSize || settings.UiScale != AppSettings.Current.UiScale;
             AppSettings.Save(settings);
             if (sizeChanged) _host.ApplyWindowSize(AppSettings.Current.WindowSize);
+            if (startChanged) ApplyStartWithSystem();
             _discord.SetEnabled(_host.IsDesktop && settings.DiscordPresence);
             if (playtimeChanged) _ = SyncPlaytimeAsync();
             SignalPresence();   // "görünmez" seçilince arkadaş listesinden hemen düşülür

@@ -11,7 +11,12 @@ namespace VuluLauncher
     /// </summary>
     internal sealed class SingleInstance : IDisposable
     {
-        private static readonly string Key = "vuluLauncher-" + string.Concat(Environment.UserName.Where(char.IsLetterOrDigit));
+        private static readonly string Key = "vuluLauncher-" + string.Concat(Environment.UserName.Where(char.IsLetterOrDigit))
+#if DEBUG
+            // Geliştirmede ayrı veri klasörüyle açılan test kopyası, açık olan gerçek launcher'a takılmasın
+            + (Environment.GetEnvironmentVariable("VULU_APP_DATA") is { Length: > 0 } test ? "-test" + (uint)test.GetHashCode() : "")
+#endif
+            ;
         private Mutex? _mutex;
         private CancellationTokenSource? _stop;
 

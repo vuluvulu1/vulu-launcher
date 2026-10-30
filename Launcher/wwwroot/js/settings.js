@@ -156,6 +156,8 @@ async function openSettingsPage() {
         isDesktopApp() && settingRow('Launcher boyutu', 'Pencerenin boyutu; arayüz pencereyle birlikte ölçeklenir. Ekrana sığmayan boyutlar gösterilmez.',
             segmentedControl(windowSizeOptions(info.screen, s.windowSize || ''), s.windowSize || '',
                 value => changeSetting({ windowSize: value }))),
+        isDesktopApp() && info.canHideToTray && settingRow('Bilgisayar açılınca başlat', 'Pencere açılmaz; launcher simge durumunda başlar, mesaj ve bildirimler gelir. Simgeye tıklayınca açılır.',
+            toggleControl(s.startWithSystem !== false, value => changeSetting({ startWithSystem: value }))),
         isDesktopApp() && info.canHideToTray && settingRow('Kapat tuşu', 'Bildirim alanına küçülünce mesaj ve oyun bildirimleri gelmeye devam eder; launcher az kaynak kullanır. Tamamen kapatmak için simgeye sağ tıkla → Çıkış.',
             segmentedControl([[true, 'Bildirim alanına küçült'], [false, 'Kapat']], s.closeToTray !== false,
                 value => changeSetting({ closeToTray: value }))),

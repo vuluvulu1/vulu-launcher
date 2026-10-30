@@ -18,6 +18,8 @@ namespace VuluLauncher
         {
             // Masaüstü kısayolu: "--play <paket>" / "--join <sunucu>"
             var action = StartupAction.Parse(args);
+            // Bilgisayar açılışı (başlangıç kaydı): pencere açılmadan bildirim alanında başlar
+            bool startInTray = args.Contains("--tray");
 #if DEBUG
             // Yalnızca geliştirme derlemesinde: testler gerçek kullanıcı verisine (kayıtlı şifre, ayarlar) dokunmasın
             if (Environment.GetEnvironmentVariable("VULU_APP_DATA") is { Length: > 0 } testData)
@@ -28,7 +30,8 @@ namespace VuluLauncher
             using var single = new SingleInstance();
             if (!single.TryAcquire())
             {
-                SingleInstance.Forward(action);
+                // Zaten açıksa açılış kaydı bir şey yapmaz (açık launcher öne gelmesin)
+                if (!startInTray) SingleInstance.Forward(action);
                 return;
             }
 
@@ -36,7 +39,7 @@ namespace VuluLauncher
             // Discord tarzı açılış: önce Updater sürümü denetler, sonra launcher'ı "--from-updater" ile açar.
             // Updater yoksa ya da açılamazsa launcher normal şekilde devam eder. Kısayoldan açılışta beklemeden
             // doğrudan açılır (güncelleme varsa launcher içinde sorulur).
-            if (action == null && !args.Contains("--from-updater"))
+            if (action == null && !startInTray && !args.Contains("--from-updater"))
             {
                 single.Release();   // Updater'ın açacağı launcher kilidi alabilsin
                 if (StartUpdater()) return;
@@ -63,9 +66,11 @@ namespace VuluLauncher
             app.RegisterCommands();
             app.SetStartupAction(action);
             single.Listen(app.OnRemoteCommand);
+            app.ApplyStartWithSystem();
+            if (startInTray && host.CanHideToTray) app.StartInBackground();
 
             // Pencere bildirim alanına küçülünce kapatılıp açılınca yeniden kurulur; her yeni pencere köprüye bağlanır
-            host.Run(window => window.RegisterWebMessageReceivedHandler((_, message) => bridge.HandleMessage(message)));
+            host.Run(window => window.RegisterWebMessageReceivedHandler((_, message) => bridge.HandleMessage(message)), startInTray);
 
             app.Shutdown();
         }

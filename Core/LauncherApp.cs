@@ -250,6 +250,34 @@ namespace VuluLauncher
             }
         }
 
+        /// <summary>
+        /// Bilgisayar açılışında pencere açılmadan başlandığında: kayıtlı hesapla arka planda giriş yapılır ki mesaj ve
+        /// bildirim denetimleri çalışsın. Pencere sonra açılınca arayüz bu oturumdan sürer. Kayıtlı şifre yoksa bir şey yapılmaz.
+        /// </summary>
+        public void StartInBackground()
+        {
+            _discord.SetHidden(true);
+            var (username, password) = CredentialManager.Load();
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) return;
+            _ = Task.Run(async () =>
+            {
+                for (int attempt = 0; attempt < 6 && string.IsNullOrEmpty(_login.Token); attempt++)
+                {
+                    try
+                    {
+                        var args = JsonSerializer.SerializeToElement(new { username, password = "", useSaved = true, remember = true });
+                        if (await LoginAsync(args) is { } r && JsonSerializer.SerializeToElement(r).GetProperty("success").GetBoolean()) return;
+                    }
+                    catch { }
+                    // Açılışta ağ henüz hazır olmayabilir: biraz bekleyip yeniden denenir
+                    await Task.Delay(TimeSpan.FromSeconds(20 * (attempt + 1)));
+                }
+            });
+        }
+
+        /// <summary>Başlangıç kaydını ayarla eşitler (ayar değişince ve her açılışta; kurulum klasörü değişmişse yolu düzelir).</summary>
+        public void ApplyStartWithSystem() => _host.SetStartWithSystem(AppSettings.Current.StartWithSystem);
+
         private async Task<object?> LoginAsync(JsonElement args)
         {
             string username = args.Str("username").Trim();
