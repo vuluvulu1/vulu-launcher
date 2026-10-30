@@ -25,6 +25,8 @@ namespace VuluLauncher
     internal static class ServerPing
     {
         private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(4);
+        // 1.21.4'ün protokol numarası; yalnızca "renkli metin anlayan bir istemci" olduğumuzu bildirmek için (oyuna girilmez)
+        private const int ModernProtocol = 769;
         private const int MaxResponse = 512 * 1024, MaxFavicon = 64 * 1024, MaxMotdParts = 400, MaxMotdChars = 300;
 
         // Oyunun adlı renkleri; sırası § kodlarıyla (0-9, a-f) aynı
@@ -54,11 +56,12 @@ namespace VuluLauncher
                 await client.ConnectAsync(host, port, cancel.Token);
                 var stream = client.GetStream();
 
-                // El sıkışma: protokol -1 (yalnızca durum), adres, port, sonraki durum 1 (status)
+                // El sıkışma: protokol, adres, port, sonraki durum 1 (status). Protokol eski (ör. -1) bildirilirse sunucular
+                // (MiniMOTD vb.) MOTD'nin #RRGGBB renklerini eski 16 renge indirir; 1.16+ bir sürüm söylenince gerçek renkler gelir.
                 var hostBytes = Encoding.UTF8.GetBytes(host);
                 using var handshake = new MemoryStream();
                 WriteVarInt(handshake, 0x00);
-                WriteVarInt(handshake, -1);
+                WriteVarInt(handshake, ModernProtocol);
                 WriteVarInt(handshake, hostBytes.Length);
                 handshake.Write(hostBytes);
                 handshake.WriteByte((byte)(port >> 8));

@@ -424,6 +424,7 @@ async function openSocialPage(from) {
 
 function setSocialView(view) {
     social.view = view;
+    if (view !== 'feed') clearTimeout(live.timer);
     $('social-feed').hidden = view !== 'feed';
     $('dm-chat').hidden = view !== 'chat';
     $('page-social').classList.add('main-open');
@@ -435,6 +436,81 @@ function showSocialFeed() {
     dm.peer = null;
     setSocialView('feed');
     if (!social.loadedOnce) { social.loadedOnce = true; openShotsPage(); }
+    refreshLiveFeed();
+}
+
+// ── Canlı akış ────────────────────────────────────────────────────────
+// Akış açıkken dakikada bir yenilenir: sunucuların anlık durumu (oyuncu adlarıyla), oyundaki arkadaşlar, yayındaki
+// duyuru ve bildirim merkezindeki son olaylar (oyuna girenler, paket güncellemeleri, beğeniler).
+const live = { announcement: null, timer: null };
+const LIVE_REFRESH_MS = 60000;
+
+async function refreshLiveFeed() {
+    clearTimeout(live.timer);
+    if (state.page !== 'social' || social.view !== 'feed') return;
+    renderLiveFeed();
+    const servers = await serversForCards().catch(() => []);
+    await Promise.all([
+        refreshPresence(),
+        bridge.invoke('announcement.get').then(r => { live.announcement = r.announcement; }).catch(() => { }),
+        ...servers.map(async s => {
+            try { community.status[s.id] = await bridge.invoke('community.ping', { address: s.address }); }
+            catch { community.status[s.id] = { online: false }; }
+        }),
+    ]);
+    renderLiveFeed();
+    live.timer = setTimeout(refreshLiveFeed, LIVE_REFRESH_MS);
+}
+
+function renderLiveFeed() {
+    const box = $('live-feed');
+    if (!box) return;
+    const cards = [];
+
+    if (live.announcement) cards.push(el('article', { class: 'live-card live-announce' },
+        el('div', { class: 'live-kind' }, '📣 Duyuru'),
+        el('p', { class: 'live-text' }, live.announcement.text),
+        el('div', { class: 'live-meta' }, [live.announcement.author, parseDate(live.announcement.createdAt) && relativeTime(parseDate(live.announcement.createdAt))].filter(Boolean).join(' · '))));
+
+    // Sunucular: açık olanlar ve içerideki oyuncular (sunucu adları gönderiyorsa)
+    for (const s of community.servers) {
+        const st = community.status[s.id];
+        if (!st || !st.online) continue;
+        const names = st.sample || [];
+        cards.push(el('article', { class: 'live-card live-server' },
+            el('div', { class: 'live-server-head' },
+                el('div', { class: 'server-icon live-icon', 'aria-hidden': 'true' },
+                    st.favicon ? el('img', { src: st.favicon, alt: '' }) : s.name.slice(0, 1).toLocaleUpperCase('tr')),
+                el('div', { class: 'live-server-text' },
+                    el('b', {}, s.name),
+                    el('span', { class: 'live-meta' }, st.players ? `${st.players} kişi oyunda` : 'Şu an kimse yok · ilk giren sen ol'))),
+            names.length > 0 && el('div', { class: 'live-avatars' }, names.slice(0, 8).map(n =>
+                el('button', { class: 'live-avatar', title: n, onclick: () => openProfile(n) }, avatarEl({ username: n, avatarVersion: memberAvatarVersion(n) }, 'avatar-sm')))),
+            canInstallGames() && el('button', { class: 'btn btn-sm btn-primary live-action', onclick: () => joinServer(s) }, 'Bağlan')));
+    }
+
+    // Oyundaki arkadaşlar (sunucu kartında görünmeyen tek oyunculu ya da başka paketlerde olanlar dahil)
+    const playing = (community.presence || []).filter(p => p.username !== state.username && p.state === 'playing' && friends.friends.includes(p.username));
+    if (playing.length) cards.push(el('article', { class: 'live-card live-friends' },
+        el('div', { class: 'live-kind' }, `🎮 Oyundaki arkadaşların (${playing.length})`),
+        el('div', { class: 'live-list' }, playing.slice(0, 6).map(p => {
+            const server = p.server && community.servers.find(s => s.address === p.server);
+            return el('div', { class: 'live-row' },
+                el('button', { class: 'member', onclick: () => openConversation(p.username) },
+                    avatarEl({ username: p.username, avatarVersion: memberAvatarVersion(p.username) }, 'avatar-sm'),
+                    el('span', { class: 'member-text' }, el('span', { class: 'member-name' }, p.username), el('span', { class: 'member-sub' }, presenceEl(p)))),
+                server && canInstallGames() && el('button', { class: 'btn btn-xs btn-primary', onclick: () => joinServer(server) }, 'Katıl'));
+        }))));
+
+    // Son olaylar: bildirim merkezinden oyuna girenler, paket güncellemeleri, beğeni ve yorumlar
+    const events = (typeof notifs !== 'undefined' ? notifs.items : []).filter(n => /^(profile|pack|shot):/.test(n.tag || '')).slice(0, 6);
+    if (events.length) cards.push(el('article', { class: 'live-card live-events' },
+        el('div', { class: 'live-kind' }, '⚡ Son olaylar'),
+        el('div', { class: 'live-list' }, events.map(n => el('button', { class: 'live-event', onclick: () => routeNotification(n.tag) },
+            el('span', { class: 'live-event-text' }, el('b', {}, n.title), n.body && ' · ' + n.body),
+            el('span', { class: 'live-meta' }, relativeTime(new Date(n.at))))))));
+
+    box.replaceChildren(...(cards.length ? [el('h3', { class: 'feed-section-title' }, el('span', { class: 'live-dot', 'aria-hidden': 'true' }), 'Şimdi'), el('div', { class: 'live-grid' }, cards)] : []));
 }
 
 /** Telefonda içerikten (akış ya da sohbet) kişi listesine dönüş. */
