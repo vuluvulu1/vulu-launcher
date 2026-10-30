@@ -44,7 +44,11 @@ namespace VuluLauncher
             string text = report + "\n" + log + "\n" + output;
 
             bool loadError = Regex.IsMatch(text, @"Error loading mods|ModLoadingException|LoadingFailedException|Missing or unsupported mandatory dependencies|Incompatible mods? found|which is missing!");
-            bool crashed = exit.ExitCode != 0 || report.Length > 0 || loadError;
+            // Oyun tam açıldıktan sonra kanıtsız sıfırdan farklı çıkış çökme sayılmaz: oyuncu pencereyi kapatmış ya da süreci
+            // sonlandırmıştır (bazı modlar kapanırken de çıkış kodunu bozar). Gerçek çökme rapor ya da hs_err dosyası bırakır.
+            bool started = Regex.IsMatch(text, @"Stopping!|Created: \d+x\d+x\d+ minecraft:textures/atlas/");
+            bool evidence = report.Length > 0 || loadError || JvmCrashed(exit.InstanceDir, exit.StartedUtc) || text.Contains("java.lang.OutOfMemoryError");
+            bool crashed = evidence || (exit.ExitCode != 0 && !started);
             if (!crashed) return new CrashAnalysis(false, null, null, Array.Empty<CrashFinding>());
 
             var found = new List<CrashFinding>();
@@ -168,6 +172,16 @@ namespace VuluLauncher
                 if (classOwner(cls) is { } owner && !NotMods.Contains(owner)) return owner;
             }
             return null;
+        }
+
+        /// <summary>Java'nın kendisi çöktüyse oyun klasörüne hs_err_pid*.log yazar.</summary>
+        private static bool JvmCrashed(string instanceDir, DateTime startedUtc)
+        {
+            try
+            {
+                return new DirectoryInfo(instanceDir).EnumerateFiles("hs_err_pid*.log").Any(f => f.LastWriteTimeUtc >= startedUtc.AddSeconds(-5));
+            }
+            catch (Exception) { return false; }
         }
 
         /// <summary>Bu oyun açıldıktan sonra yazılmış en yeni çökme raporu.</summary>

@@ -284,3 +284,47 @@ namespace VuluLauncher.Tests
         public void MissingFileIsIgnored() => Downloader.MakeWritable(Path.Combine(_dir, "yok.json"));
     }
 }
+
+namespace VuluLauncher.Tests
+{
+    /// <summary>Elle kapatılan oyun çökme sayılmamalı; gerçek çökmeler yine yakalanmalı (CrashAnalyzer.Analyze).</summary>
+    public class ManualCloseTests : IDisposable
+    {
+        private readonly string _dir = Path.Combine(Path.GetTempPath(), "vulu-tests-" + Guid.NewGuid().ToString("N"));
+
+        public ManualCloseTests() => Directory.CreateDirectory(Path.Combine(_dir, "logs"));
+        public void Dispose() { try { Directory.Delete(_dir, true); } catch { } }
+
+        private CrashAnalysis Run(int exitCode, string log)
+        {
+            File.WriteAllText(Path.Combine(_dir, "logs", "latest.log"), log);
+            var target = new LaunchTarget("Test", "test", "26.3", "fabric", null);
+            return CrashAnalyzer.Analyze(new GameExit(target, _dir, exitCode, DateTime.UtcNow.AddMinutes(-1), Array.Empty<string>()));
+        }
+
+        private const string Atlas = "[Render thread/INFO]: Created: 512x512x0 minecraft:textures/atlas/shulker_boxes.png-atlas\n";
+
+        [Fact] public void CleanShutdownWithBadExitCode() => Assert.False(Run(-1, Atlas + "[Render thread/INFO]: Stopping!\n").Crashed);
+
+        [Fact] public void KilledAfterStartup() => Assert.False(Run(1, Atlas).Crashed);
+
+        [Fact] public void FailureBeforeStartupIsACrash() => Assert.True(Run(1, "[main/INFO]: Loading 132 mods\n").Crashed);
+
+        [Fact] public void OutOfMemoryAfterStartupIsACrash() => Assert.True(Run(1, Atlas + "java.lang.OutOfMemoryError: Java heap space\n").Crashed);
+
+        [Fact]
+        public void CrashReportIsACrashEvenWithExitZero()
+        {
+            Directory.CreateDirectory(Path.Combine(_dir, "crash-reports"));
+            File.WriteAllText(Path.Combine(_dir, "crash-reports", "crash-1-client.txt"), "Description: Rendering\n");
+            Assert.True(Run(0, Atlas + "Stopping!\n").Crashed);
+        }
+
+        [Fact]
+        public void JvmCrashFileIsACrash()
+        {
+            File.WriteAllText(Path.Combine(_dir, "hs_err_pid123.log"), "fatal");
+            Assert.True(Run(1, Atlas).Crashed);
+        }
+    }
+}
