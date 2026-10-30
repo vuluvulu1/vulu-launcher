@@ -33,6 +33,10 @@ namespace VuluLauncher
         public Task DownloadCoverAsync(SharedPack pack, string path) =>
             _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/cover?v={pack.Revision}", path);
 
+        /// <summary>Paket dosyasının vulu sunucusundaki kopyasının adresi (SHA-1'e göre); hash geçersizse null.</summary>
+        public static string? BlobUrl(string? sha1) =>
+            sha1 is { Length: 40 } && sha1.All(Uri.IsHexDigit) ? $"{ApiConfig.BaseUrl}/packs/blob/{sha1.ToLowerInvariant()}" : null;
+
         /// <summary>Kapak resminin herkese açık adresi; revizyon değişince tarayıcı önbelleği yenilenir.</summary>
         public static string? CoverUrl(SharedPack pack) =>
             pack.HasCover ? $"{ApiConfig.BaseUrl}/packs/{Uri.EscapeDataString(pack.Id)}/cover?v={pack.Revision}" : null;
@@ -152,5 +156,8 @@ namespace VuluLauncher
         public string? Sha1 { get; set; }
         public string? Sha512 { get; set; }
         public long Size { get; set; }
+        /// <summary>Dosyanın kopyası vulu sunucusunda var (sunucu bildirir; yayınlarken gönderilmez).</summary>
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+        public bool Mirrored { get; set; }
     }
 }

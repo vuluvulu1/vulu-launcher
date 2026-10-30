@@ -16,7 +16,8 @@ namespace VuluLauncher
         private static readonly TimeSpan OrphanLifetime = TimeSpan.FromDays(14);
         // Yetim olduğu fark edilen dosya bu öznitelikle işaretlenir ve o andan itibaren süresi işler
         private const FileAttributes OrphanMark = FileAttributes.NotContentIndexed;
-        private static readonly string[] Hosts = { "cdn.modrinth.com", "edge.forgecdn.net", "mediafilez.forgecdn.net" };
+        // vulu API: paket aynasındaki dosyalar da CDN'dekilerin aynısıdır
+        private static readonly string[] Hosts = { "cdn.modrinth.com", "edge.forgecdn.net", "mediafilez.forgecdn.net", new Uri(ApiConfig.BaseUrl).Host };
         private static int _pruning;
 
         private static string Root => Path.Combine(AppPaths.Base, "cache", "mods");

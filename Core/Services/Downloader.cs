@@ -27,10 +27,11 @@ namespace VuluLauncher
 
         /// <summary>
         /// Dosyayı önce ".part" olarak indirir, verilen hash'leri doğrular, sonra hedefe taşır.
-        /// Yalnızca https adresleri kabul edilir.
+        /// Yalnızca https adresleri kabul edilir. <paramref name="bearer"/> verilirse istek oturum anahtarıyla gider (vulu API).
         /// </summary>
         public static async Task DownloadAsync(string url, string path, IProgress<long>? bytesRead = null,
-            string? sha1 = null, string? sha512 = null, CancellationToken cancellation = default, Action<long>? contentLength = null)
+            string? sha1 = null, string? sha512 = null, CancellationToken cancellation = default, Action<long>? contentLength = null,
+            string? bearer = null)
         {
             if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !(uri.Scheme == Uri.UriSchemeHttps || IsLocalTestServer(uri)))
                 throw new InvalidOperationException($"Geçersiz indirme adresi: {url}");
@@ -61,7 +62,9 @@ namespace VuluLauncher
                     long written = 0;
                     try
                     {
-                        using var response = await Http.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
+                        using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                        if (!string.IsNullOrEmpty(bearer)) request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearer);
+                        using var response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
                         response.EnsureSuccessStatusCode();
                         if (response.Content.Headers.ContentLength is long length) contentLength?.Invoke(length);
                         using var stream = await response.Content.ReadAsStreamAsync(token);

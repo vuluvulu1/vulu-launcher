@@ -370,7 +370,7 @@ namespace VuluLauncher
                     || !(uri.Host == "cdn.modrinth.com" || CurseForgeService.IsCurseForgeCdn(mod.Url)))
                     throw new InvalidDataException($"Paket izin verilmeyen bir adresten indirme istiyor: {mod.Title}");
 
-                await items[mod].DownloadAsync(mod.Url, path, mod.Sha1, mod.Sha512, cancel);
+                await DownloadPackFileAsync(items[mod], mod.Sha1, mod.Sha512, mod.Mirrored, mod.Url, path, cancel);
                 int current = Interlocked.Increment(ref done);
                 Log($"Modlar indiriliyor... {current}/{missing.Count}", "replace");
             });
@@ -443,6 +443,30 @@ namespace VuluLauncher
             meta.SharedPackId = pack.Id;
             meta.SharedPackRevision = pack.Revision;
             InstanceStore.Save(meta);
+        }
+
+        /// <summary>
+        /// Paket dosyasını indirir: kopyası vulu sunucusundaysa önce oradan, inmezse asıl kaynağından (Modrinth, CurseForge).
+        /// <paramref name="sourceUrl"/> yoksa yalnızca sunucu denenir.
+        /// </summary>
+        private async Task DownloadPackFileAsync(DownloadItem item, string? sha1, string? sha512, bool mirrored, string? sourceUrl,
+            string path, CancellationToken cancel)
+        {
+            if (mirrored && PackStore.BlobUrl(sha1) is { } blob)
+            {
+                try
+                {
+                    await item.DownloadAsync(blob, path, sha1, sha512, cancel, _api.Token);
+                    return;
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException && sourceUrl != null)
+                {
+                    item.Reset();
+                    Log($"{item.Name}: vulu sunucusundan inmedi ({ex.Message}), asıl kaynağından deneniyor.", "muted");
+                }
+            }
+            if (sourceUrl == null) throw new InvalidOperationException($"{item.Name}: dosyanın indirilebileceği bir adres yok.");
+            await item.DownloadAsync(sourceUrl, path, sha1, sha512, cancel);
         }
 
         private static void DeleteContentFile(string dir, string relative)

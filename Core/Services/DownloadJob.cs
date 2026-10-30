@@ -273,12 +273,13 @@ namespace VuluLauncher
         public void Reset() { Interlocked.Exchange(ref _done, 0); State = "active"; _job.Touch(); }
 
         /// <summary>İndirir; ilerleme ve sonuç bu öğeye yazılır.</summary>
-        public async Task DownloadAsync(string url, string path, string? sha1 = null, string? sha512 = null, CancellationToken cancellation = default)
+        public async Task DownloadAsync(string url, string path, string? sha1 = null, string? sha512 = null, CancellationToken cancellation = default,
+            string? bearer = null)
         {
             Start();
             try
             {
-                await Downloader.DownloadAsync(url, path, this, sha1, sha512, cancellation, SetSize);
+                await Downloader.DownloadAsync(url, path, this, sha1, sha512, cancellation, SetSize, bearer);
                 Complete();
             }
             catch (Exception ex)

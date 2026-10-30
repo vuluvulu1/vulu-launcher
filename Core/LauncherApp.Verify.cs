@@ -49,6 +49,18 @@ namespace VuluLauncher
                         string actual = File.Exists(path) ? path : File.Exists(path + ".disabled") ? path + ".disabled" : path;
                         if (File.Exists(actual) && Matches(actual, check)) continue;
 
+                        // Paketten gelen dosya önce vulu sunucusundaki kopyasından onarılır; kaynağında artık olmasa da
+                        if (check.Content.FromPack && PackStore.BlobUrl(check.Sha1) != null && !check.ManualOnly)
+                        {
+                            try
+                            {
+                                await DownloadPackFileAsync(job.Add(check.Content.Title, check.Size), check.Sha1, null, true, check.Url, actual, default);
+                                repaired.Add(check.Content.Title);
+                                continue;
+                            }
+                            catch (Exception) when (check.Url == null) { /* sunucuda da yok: aşağıda bildirilir */ }
+                        }
+
                         if (check.ManualOnly || check.Url == null)
                         {
                             if (check.ManualOnly && check.Content.Source == CurseForgeService.Source) manualChecks.Add(check);

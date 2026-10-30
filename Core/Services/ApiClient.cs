@@ -23,6 +23,9 @@ namespace VuluLauncher
             _token = token;
         }
 
+        /// <summary>Oturum anahtarı; API'den doğrudan dosya indirirken (paket aynası) başlığa konur.</summary>
+        public string? Token => _token();
+
         public Task<T> GetAsync<T>(string path) => SendAsync<T>(HttpMethod.Get, path, null);
 
         public Task<T> PostAsync<T>(string path, object body) =>
