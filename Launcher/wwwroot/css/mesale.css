@@ -46,7 +46,9 @@ html[data-ui="mesale"] ::selection { background: rgba(242, 163, 58, .32); }
 html[data-ui="mesale"] ::-webkit-scrollbar-thumb { background: rgba(255, 216, 160, .17); }
 html[data-ui="mesale"] ::-webkit-scrollbar-thumb:hover { background: rgba(255, 216, 160, .3); }
 
-/* Düğmeler */
+/* Düğmeler: ikincil düğmeler de zeminden ayrılsın */
+html[data-ui="mesale"] .btn:not(.btn-primary):not(.btn-danger):not(.btn-play) { border-color: rgba(255, 216, 160, .3); background: rgba(38, 30, 23, .92); }
+html[data-ui="mesale"] .btn:not(.btn-primary):not(.btn-danger):not(.btn-play):hover:not(:disabled) { border-color: var(--accent); color: var(--accent-hi); }
 html[data-ui="mesale"] .btn-primary, html[data-ui="mesale"] .btn-play:not(:disabled) {
     border: 0;
     background: linear-gradient(180deg, #ffbe62, #f2a33a 55%, #de8a22);
@@ -91,11 +93,6 @@ html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"]
         display: flex; align-items: center; gap: 16px; min-width: 0; padding: 0 18px;
         background: linear-gradient(0deg, #0c0a08, rgba(16, 13, 10, .97));
         box-shadow: 0 -1px 0 rgba(255, 216, 160, .1);
-    }
-    html[data-ui="mesale"] #m-torch {
-        position: fixed; left: 0; top: 0; z-index: 7; width: 680px; height: 680px; pointer-events: none;
-        background: radial-gradient(circle closest-side, rgba(242, 163, 58, .1), transparent);
-        will-change: transform;
     }
 
     /* ── Başlık çubuğu ───────────────────────────────────────────── */
@@ -151,8 +148,6 @@ html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"]
     html[data-ui="mesale"] .stats { gap: 6px; }
     html[data-ui="mesale"] .stat { border: 0; background: rgba(12, 10, 8, .58); }
     html[data-ui="mesale"] .pack-server { border: 0; background: var(--m-card); box-shadow: var(--m-edge); text-shadow: none; }
-    html[data-ui="mesale"] .pack-actions .btn { border-color: transparent; background: rgba(12, 10, 8, .62); text-shadow: none; }
-    html[data-ui="mesale"] .pack-actions .btn:hover:not(:disabled) { background: rgba(44, 34, 26, .9); }
 
     /* Sağ sütun: dünyalar, görüntüler, içerik ve konsol */
     html[data-ui="mesale"] #console, html[data-ui="mesale"] #console.expanded {
@@ -182,11 +177,11 @@ html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"]
     html[data-ui="mesale"] .m-heads .avatar { box-shadow: 0 0 0 2px #0c0a08, 0 0 0 3px var(--accent), 0 0 14px 2px rgba(242, 163, 58, .46); }
     html[data-ui="mesale"] .m-heads-text { margin-left: 2px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
 
-    html[data-ui="mesale"] #m-bar .music { flex: 0 1 226px; min-width: 120px; margin: 0; padding: 0; flex-direction: row; align-items: center; gap: 8px; border: 0; background: none; }
+    html[data-ui="mesale"] #m-bar .music { flex: 0 1 306px; min-width: 120px; margin: 0; padding: 0; flex-direction: row; align-items: center; gap: 8px; border: 0; background: none; }
     html[data-ui="mesale"] #m-bar .music-top { flex: 1; min-width: 0; }
     html[data-ui="mesale"] #m-bar .music-art, html[data-ui="mesale"] #m-bar .music-live,
-    html[data-ui="mesale"] #m-bar #music-prev, html[data-ui="mesale"] #m-bar #music-next,
-    html[data-ui="mesale"] #m-bar #music-volume { display: none; }
+    html[data-ui="mesale"] #m-bar #music-prev, html[data-ui="mesale"] #m-bar #music-next { display: none; }
+    html[data-ui="mesale"] #m-bar .music-controls input[type=range] { flex: none; width: 76px; margin: 0 4px 0 2px; }
     html[data-ui="mesale"] #m-bar .music-controls { order: -1; flex: none; }
     html[data-ui="mesale"] #m-bar .mc-play { width: 32px; height: 32px; }
 
@@ -199,6 +194,29 @@ html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"]
     html[data-ui="mesale"] #m-bar.has-join .dock .btn-play { min-width: 76px; height: 40px; padding: 0 12px; background: rgba(255, 226, 186, .09); color: var(--text); box-shadow: none; font-size: 13.5px; }
     html[data-ui="mesale"] #m-bar .m-join { flex: none; height: 52px; padding: 0 24px; font-size: 15.5px; white-space: nowrap; }
     html[data-ui="mesale"] #m-bar .ram-pop { bottom: calc(100% + 16px); }
+
+    /* Küçük düğmeler resmin üstünde de kaybolmasın */
+    html[data-ui="mesale"] .tb-btn { width: 38px; height: 34px; }
+    html[data-ui="mesale"] .tb-btn svg { width: 13px; height: 13px; stroke: var(--text); stroke-width: 1.7; }
+    html[data-ui="mesale"] #btn-search svg, html[data-ui="mesale"] #btn-notif svg, html[data-ui="mesale"] #btn-feedback svg { width: 19px; height: 19px; stroke-width: 2; }
+    html[data-ui="mesale"] .tb-btn:hover { background: rgba(255, 226, 186, .14); }
+    html[data-ui="mesale"] .tb-close:hover { background: #b33a2b; }
+    html[data-ui="mesale"] .user-chip { border-color: rgba(255, 216, 160, .3); background: rgba(20, 16, 12, .8); }
+
+    html[data-ui="mesale"] #page-home .pack-actions .btn {
+        min-height: 36px; padding: 0 14px; border: 1px solid rgba(255, 216, 160, .38);
+        background: rgba(20, 16, 12, .9); color: var(--text); font-size: 13.5px; font-weight: 600;
+    }
+    html[data-ui="mesale"] #page-home .pack-actions .btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(58, 42, 26, .96); color: var(--accent-hi); }
+    html[data-ui="mesale"] .console-head .link-btn { color: var(--text); font-size: 13px; }
+    html[data-ui="mesale"] .console-head .link-btn:hover { color: var(--accent-hi); }
+    html[data-ui="mesale"] .info-tabs button { color: var(--text); }
+    html[data-ui="mesale"] .announcement-close { color: var(--text); font-size: 22px; }
+
+    html[data-ui="mesale"] #m-bar .mc-btn { width: 32px; height: 32px; }
+    html[data-ui="mesale"] #m-bar .mc-btn svg { width: 19px; height: 19px; stroke: var(--text); }
+    html[data-ui="mesale"] #m-bar .ram-btn { box-shadow: inset 0 0 0 1px rgba(255, 216, 160, .26); }
+    html[data-ui="mesale"] #m-bar.has-join .dock .btn-play { box-shadow: inset 0 0 0 1px rgba(255, 216, 160, .38); }
 
     /* Süren işlem çubukta görünür; ayrı rozet gerekmez. İndirme paneli çubuğun üstünde durur. */
     html[data-ui="mesale"] #activity { display: none; }
@@ -213,7 +231,7 @@ html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"]
 
     /* Dar pencerede önce yan bilgiler çekilir */
     @media (max-width: 1180px) {
-        html[data-ui="mesale"] #m-bar #music-mute { display: none; }
+        html[data-ui="mesale"] #m-bar .music-controls input[type=range] { width: 54px; }
         html[data-ui="mesale"] .tb-tag { display: none; }
         html[data-ui="mesale"] .m-heads-text { display: none; }
         html[data-ui="mesale"] #m-bar { gap: 12px; }

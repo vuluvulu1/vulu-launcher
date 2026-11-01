@@ -1,6 +1,6 @@
 // Meşale teması: masaüstünde oyun çubuğu her sayfada görünür. Yeni düğme yazılmaz; Oyna sayfasındaki alt çubuk ve radyo
 // tema seçiliyken aynı öğeler olarak #m-bar'a taşınır, tema değişince yerlerine döner (id'ler ve dinleyiciler korunur).
-const mesale = { bar: null, torch: null, frame: 0, x: 0, y: 0 };
+const mesale = { bar: null };
 
 /** Telefon yerleşimi (css/mobile.css) yalnızca renkleri alır; çubuk 900 px'ten geniş pencerelerde kurulur. */
 function mesaleLayoutActive() {
@@ -16,7 +16,6 @@ function buildMesaleBar() {
                 el('b', { id: 'm-name' }))),
         el('div', { id: 'm-heads', class: 'm-heads' }),
         el('button', { id: 'm-join', class: 'btn btn-play m-join', type: 'button', hidden: true, onclick: mesaleJoin }, 'Sunucuya bağlan'));
-    mesale.torch = el('div', { id: 'm-torch', 'aria-hidden': 'true' });
     return mesale.bar;
 }
 
@@ -30,13 +29,13 @@ function applyMesaleLayout() {
     if (!main || !dock || !music) return;
     if (mesaleLayoutActive()) {
         const bar = buildMesaleBar();
-        if (bar.parentElement !== main) main.append(mesale.torch, bar);
+        if (bar.parentElement !== main) main.append(bar);
         const join = $('m-join');
         if (dock.parentElement !== bar) { bar.insertBefore(music, join); bar.insertBefore(dock, join); }
     } else {
         if (dock.parentElement !== $('page-home')) $('page-home').insertBefore(dock, $('console'));
         if (music.parentElement !== main.querySelector('.rail')) main.querySelector('.rail').append(music);
-        if (mesale.bar) { mesale.bar.remove(); mesale.torch.remove(); }
+        if (mesale.bar) mesale.bar.remove();
     }
 }
 
@@ -61,17 +60,6 @@ function syncMesaleBar() {
     $('m-join').hidden = !canJoin;
     mesale.bar.classList.toggle('has-join', canJoin);
 }
-
-// İmleci izleyen hafif ışık: boyama yerine yalnızca transform değişir
-addEventListener('mousemove', e => {
-    if (!mesale.torch || !mesale.torch.isConnected) return;
-    mesale.x = e.clientX; mesale.y = e.clientY;
-    if (mesale.frame) return;
-    mesale.frame = requestAnimationFrame(() => {
-        mesale.frame = 0;
-        mesale.torch.style.transform = `translate(${mesale.x - 340}px, ${mesale.y - 340}px)`;
-    });
-}, { passive: true });
 
 addEventListener('resize', applyMesaleLayout);
 applyMesaleLayout();
