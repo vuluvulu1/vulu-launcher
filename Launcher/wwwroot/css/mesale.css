@@ -172,10 +172,11 @@ html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"]
     html[data-ui="mesale"] .m-cover { flex: none; width: 52px; height: 52px; display: grid; place-items: center; background: var(--raised) center / cover no-repeat; color: var(--muted); font-weight: 700; box-shadow: var(--m-glow); }
     html[data-ui="mesale"] .m-current-text { min-width: 0; display: flex; flex-direction: column; }
     html[data-ui="mesale"] .m-current-text b { font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    html[data-ui="mesale"] .m-heads { flex: none; display: flex; align-items: center; gap: 7px; }
+    html[data-ui="mesale"] .stage-hero .hero-row { width: 100%; }
+    html[data-ui="mesale"] .m-heads { flex: none; display: flex; align-items: center; gap: 8px; min-height: 60px; padding: 8px 14px; background: var(--m-card); box-shadow: var(--m-edge); text-shadow: none; }
     html[data-ui="mesale"] .m-heads:empty { display: none; }
     html[data-ui="mesale"] .m-heads .avatar { box-shadow: 0 0 0 2px #0c0a08, 0 0 0 3px var(--accent), 0 0 14px 2px rgba(242, 163, 58, .46); }
-    html[data-ui="mesale"] .m-heads-text { margin-left: 2px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+    html[data-ui="mesale"] .m-heads-text { margin-left: 4px; font-size: 13px; color: var(--text); white-space: nowrap; }
 
     html[data-ui="mesale"] #m-bar .music { flex: 0 1 306px; min-width: 120px; margin: 0; padding: 0; flex-direction: row; align-items: center; gap: 8px; border: 0; background: none; }
     html[data-ui="mesale"] #m-bar .music-top { flex: 1; min-width: 0; }

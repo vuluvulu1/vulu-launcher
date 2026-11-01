@@ -44,6 +44,7 @@ async function refreshPresence() {
     if (state.page === 'servers') renderFriends();
     if (state.page === 'servers') renderServers();
     if (state.page === 'social') renderSocialList();
+    syncMesaleBar();
 }
 
 /** Sunucular ve profil sayfası açıkken durumlar düzenli yenilenir. */

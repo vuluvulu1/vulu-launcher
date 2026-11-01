@@ -1,6 +1,6 @@
 // Meşale teması: masaüstünde oyun çubuğu her sayfada görünür. Yeni düğme yazılmaz; Oyna sayfasındaki alt çubuk ve radyo
 // tema seçiliyken aynı öğeler olarak #m-bar'a taşınır, tema değişince yerlerine döner (id'ler ve dinleyiciler korunur).
-const mesale = { bar: null };
+const mesale = { bar: null, heads: null, membersLoaded: false };
 
 /** Telefon yerleşimi (css/mobile.css) yalnızca renkleri alır; çubuk 900 px'ten geniş pencerelerde kurulur. */
 function mesaleLayoutActive() {
@@ -14,8 +14,8 @@ function buildMesaleBar() {
             el('div', { id: 'm-cover', class: 'm-cover', 'aria-hidden': 'true' }),
             el('div', { class: 'm-current-text' },
                 el('b', { id: 'm-name' }))),
-        el('div', { id: 'm-heads', class: 'm-heads' }),
         el('button', { id: 'm-join', class: 'btn btn-play m-join', type: 'button', hidden: true, onclick: mesaleJoin }, 'Sunucuya bağlan'));
+    mesale.heads = el('div', { id: 'm-heads', class: 'm-heads' });
     return mesale.bar;
 }
 
@@ -29,13 +29,13 @@ function applyMesaleLayout() {
     if (!main || !dock || !music) return;
     if (mesaleLayoutActive()) {
         const bar = buildMesaleBar();
-        if (bar.parentElement !== main) main.append(bar);
+        if (bar.parentElement !== main) { main.append(bar); main.querySelector('.hero-row').append(mesale.heads); }
         const join = $('m-join');
         if (dock.parentElement !== bar) { bar.insertBefore(music, join); bar.insertBefore(dock, join); }
     } else {
         if (dock.parentElement !== $('page-home')) $('page-home').insertBefore(dock, $('console'));
         if (music.parentElement !== main.querySelector('.rail')) main.querySelector('.rail').append(music);
-        if (mesale.bar) mesale.bar.remove();
+        if (mesale.bar) { mesale.bar.remove(); mesale.heads.remove(); }
     }
 }
 
@@ -52,8 +52,14 @@ function syncMesaleBar() {
     $('view-main').style.setProperty('--m-art', art ? `url("${new URL(art, location.href).href}")` : 'none');
 
     const here = instance ? playingHere(instance) : [];
-    $('m-heads').replaceChildren(...here.slice(0, 3).map(p => avatarEl(p, 30)));
-    if (here.length) $('m-heads').append(el('span', { class: 'm-heads-text' }, `${here.length} kişi burada oynuyor`));
+    mesale.heads.title = here.map(p => p.username).join(', ');
+    mesale.heads.replaceChildren(...here.slice(0, 3).map(p => avatarEl({ username: p.username, avatarVersion: memberAvatarVersion(p.username) }, 'avatar-md')));
+    if (here.length) mesale.heads.append(el('span', { class: 'm-heads-text' }, `${here.length} kişi burada oynuyor`));
+    // Çevrimiçi listesinde resim bilgisi yok; üye listesi gelince fotoğraflar çizilir
+    if (here.length && !mesale.membersLoaded) {
+        mesale.membersLoaded = true;
+        ensureMembers().then(syncMesaleBar).catch(() => { mesale.membersLoaded = false; });
+    }
 
     const idle = !launching && state.busy === 0 && !state.gameRunning && state.canLaunchGame;
     const canJoin = !!(instance && state.packServer && idle);
