@@ -160,6 +160,31 @@ namespace VuluLauncher
         private static readonly string[] ModpackIconHosts = { "media.forgecdn.net", "cdn.modrinth.com" };
 
         /// <summary>
+        /// Paketin simgesi ve "arka planı simge yap" seçimi instance'a geçer (güncellemede de). Seçeneği bilmeyen eski
+        /// pakette yerel simgeye dokunulmaz. Simge alınamazsa sessizce geçilir.
+        /// </summary>
+        private async Task UsePackIconAsync(PackStore store, SharedPack pack, InstanceMeta meta)
+        {
+            if (pack.BackgroundAsIcon == null && !pack.HasIcon) return;
+            meta.BackgroundAsIcon = pack.BackgroundAsIcon;
+            InstanceStore.Save(meta);
+            string id = InstancePrefix + meta.Folder;
+            if (!pack.HasIcon) { DeleteIconFiles(id); return; }
+
+            string ext = CoverExtensions.Contains(pack.IconExt) ? pack.IconExt! : ".png";
+            string temp = Path.Combine(Path.GetTempPath(), $"vulu-icon-{Guid.NewGuid():N}{ext}");
+            try
+            {
+                Directory.CreateDirectory(AppPaths.Icons);
+                await store.DownloadIconAsync(pack, temp);
+                DeleteIconFiles(id);
+                File.Move(temp, Path.Combine(AppPaths.Icons, BackgroundKey(id) + ext), overwrite: true);
+            }
+            catch { /* simge olmadan da paket çalışır */ }
+            finally { if (File.Exists(temp)) File.Delete(temp); }
+        }
+
+        /// <summary>
         /// CurseForge/Modrinth modpack'inin simgesini instance'ın logosu yapar (ana ekranda adın yerine görünür).
         /// Bir kez yapılır: kullanıcı logoyu sonradan kaldırırsa geri gelmez.
         /// </summary>
@@ -282,6 +307,7 @@ namespace VuluLauncher
                 await ApplyPackAsync(store, pack, meta, job);
                 await UseCoverAsBackgroundAsync(store, pack, meta);
                 await UsePackLogoAsync(store, pack, meta);
+                await UsePackIconAsync(store, pack, meta);
 
                 Log($"{pack.Name} kuruldu.", "ok");
                 job.Complete($"{pack.Name} kuruldu");
@@ -314,6 +340,7 @@ namespace VuluLauncher
             {
                 await ApplyPackAsync(store, pack, meta, job);
                 await UsePackLogoAsync(store, pack, meta);
+                await UsePackIconAsync(store, pack, meta);
             }
             catch (Exception ex)
             {
@@ -528,6 +555,8 @@ namespace VuluLauncher
                 ramOptionsGb = PackCatalog.RamOptionsGb,
                 entries,
                 hasLogo = LogoFile(InstancePrefix + meta.Folder) != null,
+                // Eski paket şu ana kadarki gibi kalsın; yeni paylaşımda kullanıcı işaretler
+                backgroundAsIcon = meta.BackgroundAsIcon ?? existing != null,
                 existing = existing == null ? null : new { id = existing.Id, revision = existing.Revision, hasCover = existing.HasCover, roles = existing.Roles },
                 roles,
                 check = check.Select(i => new { kind = i.Kind, title = i.Title, detail = i.Detail }),
@@ -624,11 +653,14 @@ namespace VuluLauncher
                 // Instance'a logo atandıysa paketle paylaşılır; logo seçilmediyse paketin logosu da kalkar
                 string? logo = LogoFile(InstancePrefix + meta.Folder);
                 if (logo != null && !CoverExtensions.Contains(Path.GetExtension(logo).ToLowerInvariant())) logo = null;
-                pack = await store.PublishAsync(pack, zipPath, cover, logo);
+                string? icon = CustomIconFile(InstancePrefix + meta.Folder);
+                pack.BackgroundAsIcon = args.Bool("backgroundAsIcon");
+                pack = await store.PublishAsync(pack, zipPath, cover, logo, icon);
 
                 meta.SharedPackId = pack.Id;
                 meta.SharedPackRevision = pack.Revision;
                 meta.Description = description;
+                meta.BackgroundAsIcon = pack.BackgroundAsIcon ?? args.Bool("backgroundAsIcon");
                 foreach (var content in meta.Content) content.FromPack = true;
                 InstanceStore.Save(meta);
 

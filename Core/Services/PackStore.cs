@@ -30,6 +30,9 @@ namespace VuluLauncher
         public Task DownloadLogoAsync(SharedPack pack, string path) =>
             _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/logo?v={pack.Revision}", path);
 
+        public Task DownloadIconAsync(SharedPack pack, string path) =>
+            _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/icon?v={pack.Revision}", path);
+
         public Task DownloadCoverAsync(SharedPack pack, string path) =>
             _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/cover?v={pack.Revision}", path);
 
@@ -43,9 +46,9 @@ namespace VuluLauncher
 
         /// <summary>
         /// Dosyaları yükler ve paketi yayınlar. pack.Id doluysa o paketin yeni revizyonu olur.
-        /// logoPath null ise paketin logosu kaldırılır (instance'ta logo yok demektir).
+        /// logoPath ya da iconPath null ise paketin logosu ya da simgesi kaldırılır (instance'ta yok demektir).
         /// </summary>
-        public async Task<SharedPack> PublishAsync(SharedPack pack, string overridesZip, string? coverPath, string? logoPath)
+        public async Task<SharedPack> PublishAsync(SharedPack pack, string overridesZip, string? coverPath, string? logoPath, string? iconPath)
         {
             var overrides = await _api.UploadFileAsync<UploadResult>("/packs/files?kind=overrides", overridesZip);
             UploadResult? cover = coverPath == null ? null : await _api.UploadFileAsync<UploadResult>("/packs/files?kind=cover", coverPath);
@@ -57,6 +60,14 @@ namespace VuluLauncher
             {
                 try { logo = await _api.UploadFileAsync<UploadResult>("/packs/files?kind=logo", logoPath); }
                 catch (ApiException ex) when (ex.Status == HttpStatusCode.BadRequest) { logoSupported = false; }
+            }
+
+            UploadResult? icon = null;
+            bool iconSupported = true;
+            if (iconPath != null)
+            {
+                try { icon = await _api.UploadFileAsync<UploadResult>("/packs/files?kind=icon", iconPath); }
+                catch (ApiException ex) when (ex.Status == HttpStatusCode.BadRequest) { iconSupported = false; }
             }
 
             return await _api.PostAsync<SharedPack>("/packs", new
@@ -77,6 +88,10 @@ namespace VuluLauncher
                 logoFileId = logo?.FileId,
                 logoExt = logo == null ? null : Path.GetExtension(logoPath!).ToLowerInvariant(),
                 clearLogo = logoPath == null && logoSupported,
+                iconFileId = icon?.FileId,
+                iconExt = icon == null ? null : Path.GetExtension(iconPath!).ToLowerInvariant(),
+                clearIcon = iconPath == null && iconSupported,
+                backgroundAsIcon = pack.BackgroundAsIcon,
                 roles = pack.Roles,
             });
         }
@@ -111,6 +126,10 @@ namespace VuluLauncher
         public string? CoverExt { get; set; }
         public bool HasLogo { get; set; }
         public string? LogoExt { get; set; }
+        public bool HasIcon { get; set; }
+        public string? IconExt { get; set; }
+        /// <summary>null: bu seçenek gelmeden önce yayınlanmış paket.</summary>
+        public bool? BackgroundAsIcon { get; set; }
         /// <summary>Revizyon başına değişiklikler (sunucu hesaplar); eskiden yeniye.</summary>
         public List<PackChange> Changelog { get; set; } = new();
         /// <summary>Paketi görebilen roller (boş: herkes). Sunucu yalnızca adminlere gönderir; null: bilinmiyor.</summary>

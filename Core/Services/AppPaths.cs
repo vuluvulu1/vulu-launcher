@@ -16,6 +16,9 @@ namespace VuluLauncher
         /// <summary>Ana ekranda paket adının yerine gösterilen logolar.</summary>
         public static string Logos => Path.Combine(AppData, "logos");
 
+        /// <summary>Kurulum listesinin küçük karelerinde görünen simgeler.</summary>
+        public static string Icons => Path.Combine(AppData, "icons");
+
         /// <summary>Oyun dosyaları (java, minecraft_core, instances) Windows'ta exe'nin yanında durur.</summary>
         public static string Base { get; private set; } = AppContext.BaseDirectory;
         public static string Instances => Path.Combine(Base, "instances");

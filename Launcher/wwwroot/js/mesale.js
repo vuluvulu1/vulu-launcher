@@ -42,6 +42,7 @@ function applyMesaleLayout() {
 
 /** Çubuktaki paket adı, resmi, durum ve oyundaki kişiler; sayfa arka planı da seçili paketten gelir. */
 function syncMesaleBar() {
+    syncHeroInset();
     if (!mesaleLayoutActive() || !mesale.bar) return;
     const instance = state.selected, cover = $('m-cover');
     const picture = instance && (instance.thumbnail || instance.iconUrl || instance.background);
@@ -68,8 +69,21 @@ function syncMesaleBar() {
     mesale.bar.classList.toggle('has-join', canJoin);
 }
 
+/** Meşale'de kurulum rafı paket bilgisine ulaşmıyorsa bilgi sola yaslanır; raf uzayınca ya da pencere alçalınca geri çekilir. */
+function syncHeroInset() {
+    const page = $('page-home'), hero = page && page.querySelector('.stage-hero'), last = document.querySelector('.rail .new-instance');
+    if (!hero || !last) return;
+    const free = document.documentElement.dataset.ui === 'mesale' && mesaleLayoutActive() && hero.offsetHeight > 0
+        && last.getBoundingClientRect().bottom + 14 < hero.getBoundingClientRect().top;
+    page.classList.toggle('m-hero-left', free);
+}
+
 addEventListener('resize', applyMesaleLayout);
 applyMesaleLayout();
+if ('ResizeObserver' in window) {
+    const watcher = new ResizeObserver(syncHeroInset);
+    for (const part of document.querySelectorAll('.stage-hero, .rail-scroll, #instance-list')) watcher.observe(part);
+}
 
 // ── Açılış: yanma ─────────────────────────────────────────────────────
 // Karanlık bir WebGL katmanıdır: gürültülü bir yanma cephesi yazıdan dışa yürür, geçtiği yer saydamlaşır ve launcher görünür.

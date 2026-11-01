@@ -41,6 +41,8 @@ namespace VuluLauncher
         public bool PackLogoSynced { get; set; }
         /// <summary>Modpack'in ekran görüntüsü arka plan olarak bir kez indirildi mi (kaldırılırsa geri getirilmez).</summary>
         public bool PackBackgroundSynced { get; set; }
+        /// <summary>Simge yoksa arka plan küçük karede gösterilsin mi; null: seçenek gelmeden önceki kurulum, gösterilir.</summary>
+        public bool? BackgroundAsIcon { get; set; }
         public string? Description { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public List<InstalledContent> Content { get; set; } = new();

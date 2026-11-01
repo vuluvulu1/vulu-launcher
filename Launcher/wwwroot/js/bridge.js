@@ -561,6 +561,9 @@ Bu paket **teknoloji** ve *büyü* modlarını bir araya getirir. [Discord](http
             instances = instances.map(i => i.id === args.id ? { ...i, background: 'assets/launchervanillabg.jpg', backgroundStyle: 'cover', hasCustomBackground: true, thumbnail: i.kind === 'custom' ? 'assets/launchervanillabg.jpg' : i.thumbnail } : i);
             return { changed: true };
         },
+        'instances.pickIcon': async () => ({ changed: false }),
+        'instances.clearIcon': async () => ({ changed: true }),
+        'instances.setBackgroundAsIcon': async () => ({ changed: true }),
         'instances.pickLogo': async args => {
             instances = instances.map(i => i.id === args.id ? { ...i, logo: 'assets/minecraftlogo.png', hasCustomLogo: true } : i);
             return { changed: true };

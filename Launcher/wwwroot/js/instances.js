@@ -259,13 +259,14 @@ function openAppearanceDialog(instance) {
             }
         }
 
-        function slot({ title, hint, preview, hasCustom, pick, clear, resetHint }) {
+        function slot({ title, hint, preview, hasCustom, pick, clear, resetHint, extra }) {
             return el('section', { class: 'look-slot' },
                 preview,
                 el('div', { class: 'look-info' },
                     el('b', {}, title),
                     el('p', { class: 'hint' }, hint),
                     hasCustom && resetHint && el('p', { class: 'hint' }, resetHint),
+                    extra,
                     el('div', { class: 'look-actions' },
                         el('button', { class: 'btn btn-sm btn-primary', onclick: () => run(pick) }, hasCustom ? 'Değiştir' : 'Resim seç'),
                         hasCustom && el('button', { class: 'btn btn-sm btn-danger', onclick: () => run(clear) }, 'Kaldır'))));
@@ -280,7 +281,25 @@ function openAppearanceDialog(instance) {
             const logo = el('div', { class: 'look-preview logo' },
                 current.logo ? el('img', { src: current.logo, alt: '' }) : el('span', { class: 'look-name' }, current.name));
 
-            slots.replaceChildren(
+            const icon = el('div', { class: 'look-preview icon' + (current.customIcon ? '' : ' empty') });
+            if (current.customIcon) icon.style.backgroundImage = `url("${current.customIcon}")`;
+            else icon.append(el('span', {}, current.name.slice(0, 1).toLocaleUpperCase('tr')));
+            const useBackground = el('input', {
+                type: 'checkbox', checked: current.backgroundAsIcon,
+                onchange: async event => {
+                    await bridge.invoke('instances.setBackgroundAsIcon', { id: current.id, value: event.target.checked }).catch(err => { error.textContent = err.message; });
+                    await reloadInstances(current.id);
+                    current = state.instances.find(i => i.id === current.id) || current;
+                },
+            });
+
+            slots.replaceChildren(...[
+                current.kind === 'custom' && slot({
+                    title: 'Simge', preview: icon, hasCustom: !!current.customIcon,
+                    hint: 'Soldaki küçük karede görünür. Kare resimler en iyisi; en çok 4 MB.',
+                    extra: el('label', { class: 'check' }, useBackground, 'Simge yoksa arka planı simge olarak kullan'),
+                    pick: 'instances.pickIcon', clear: 'instances.clearIcon',
+                }),
                 slot({
                     title: 'Logo', preview: logo, hasCustom: current.hasCustomLogo,
                     hint: 'Ana ekranda paket adının yerine görünür. Saydam arka planlı PNG en iyisi; en çok 4 MB.',
@@ -292,7 +311,7 @@ function openAppearanceDialog(instance) {
                     hint: 'Ana ekranda arkada görünür. PNG, JPG, WEBP ya da GIF; geniş (16:9) resimler en iyisi.',
                     resetHint: current.kind === 'server' ? 'Kaldırırsan paketin kendi arka planına dönülür.' : null,
                     pick: 'instances.pickBackground', clear: 'instances.clearBackground',
-                }));
+                })].filter(Boolean));
         }
 
         render();

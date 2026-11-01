@@ -302,6 +302,7 @@ async function openShareDialog(instance) {
             placeholder: 'Bu güncellemede ne değişti? (isteğe bağlı) Mod değişiklikleri zaten otomatik listelenir.',
         });
 
+        const error = el('div', { class: 'form-error' });
         const coverBox = el('button', { type: 'button', class: 'share-cover', title: 'Kapak resmi seç' },
             el('span', {}, info.existing && info.existing.hasCover ? 'Mevcut kapak kalacak · değiştirmek için tıkla' : 'Kapak resmi seç'));
         coverBox.addEventListener('click', async () => {
@@ -313,6 +314,23 @@ async function openShareDialog(instance) {
                 coverBox.classList.add('has-image');
             } catch (err) { error.textContent = err.message; }
         });
+
+        // Simge hemen instance'a kaydedilir (Görünüm penceresindekiyle aynı dosya), yayınlanınca pakete gider
+        const iconBox = el('button', { type: 'button', class: 'share-icon', title: 'Simge seç' });
+        function paintIcon() {
+            const url = (state.instances.find(i => i.id === instance.id) || instance).customIcon;
+            iconBox.style.backgroundImage = url ? `url("${url}")` : '';
+            iconBox.textContent = url ? '' : 'Simge';
+        }
+        iconBox.addEventListener('click', async () => {
+            try {
+                const result = await bridge.invoke('instances.pickIcon', { id: instance.id });
+                if (!result.changed) return;
+                await reloadInstances(instance.id);
+                paintIcon();
+            } catch (err) { error.textContent = err.message; }
+        });
+        const backgroundAsIcon = el('input', { type: 'checkbox', checked: !!info.backgroundAsIcon });
 
         const checks = info.entries.map(entry => {
             const box = el('input', { type: 'checkbox', checked: entry.checkedByDefault, value: entry.path });
@@ -358,7 +376,6 @@ async function openShareDialog(instance) {
         }
         paintAccess();
 
-        const error = el('div', { class: 'form-error' });
         const submit = el('button', { class: 'btn btn-primary', type: 'submit' },
             info.existing ? `Güncelle (rev ${info.existing.revision + 1})` : 'Yayınla');
 
@@ -375,6 +392,7 @@ async function openShareDialog(instance) {
                     includes: checks.filter(c => c.box.checked).map(c => c.box.value),
                     ramGb,
                     coverPath,
+                    backgroundAsIcon: backgroundAsIcon.checked,
                     update: !!info.existing,
                     // Rol listesi gelmediyse gönderilmez: sunucuda paketin erişimi olduğu gibi kalır
                     ...(info.roles ? { roles: [...chosen].filter(id => info.roles.some(r => r.id === id)) } : {}),
@@ -387,11 +405,16 @@ async function openShareDialog(instance) {
             }
         }
 
+        paintIcon();
         return el('form', { onsubmit: publish, style: 'display:contents' },
             el('div', { class: 'modal-head' }, info.existing ? `${info.name} paketini güncelle` : 'vulu Packs\'te paylaş'),
             el('div', { class: 'modal-body share-body' },
                 el('div', { class: 'share-left' },
                     coverBox,
+                    el('div', { class: 'share-icon-row' }, iconBox,
+                        el('div', {},
+                            el('label', { class: 'check' }, backgroundAsIcon, 'Arka planı simge olarak kullan'),
+                            el('p', { class: 'hint' }, 'Simge seçilmez ve bu işaretlenmezse paket adının baş harfi görünür.'))),
                     el('label', {}, 'Paket adı'), name,
                     el('label', {}, 'Açıklama'), description,
                     info.existing && el('label', {}, 'Güncelleme notu'), info.existing && changeNote,

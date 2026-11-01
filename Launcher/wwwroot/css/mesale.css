@@ -200,6 +200,8 @@ html[data-ui="mesale"] .stage-status { color: #c9bdaf; }
         display: grid; grid-template-columns: minmax(0, 1fr) clamp(290px, 27vw, 372px); grid-template-rows: auto minmax(0, 1fr);
         column-gap: 20px; padding: calc(var(--titlebar-h) + 8px) 18px 16px 100px;
     }
+    html[data-ui="mesale"] #page-home.m-hero-left { padding-left: 18px; }
+    html[data-ui="mesale"] .m-hero-left #announcement { margin-left: 82px; }
     html[data-ui="mesale"] .stage-bg { position: absolute; }
     html[data-ui="mesale"] .stage-bg::after {
         background:

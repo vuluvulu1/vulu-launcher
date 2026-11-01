@@ -37,6 +37,9 @@ namespace VuluLauncher
             _bridge.On("instances.clearBackground", args => Task.FromResult<object?>(ClearBackground(args.Str("id"))));
             _bridge.On("instances.pickLogo", async args => await PickLogoAsync(args.Str("id")));
             _bridge.On("instances.clearLogo", args => Task.FromResult<object?>(ClearLogo(args.Str("id"))));
+            _bridge.On("instances.pickIcon", async args => await PickIconAsync(args.Str("id")));
+            _bridge.On("instances.clearIcon", args => Task.FromResult<object?>(ClearIcon(args.Str("id"))));
+            _bridge.On("instances.setBackgroundAsIcon", args => Task.FromResult<object?>(SetBackgroundAsIcon(args.Str("id"), args.Bool("value"))));
 
             _bridge.On("settings.get", _ => Task.FromResult<object?>(GetSettings()));
             _bridge.On("settings.save", args => Task.FromResult<object?>(SaveSettings(args)));
@@ -90,6 +93,7 @@ namespace VuluLauncher
             {
                 string? background = BackgroundUrl(InstancePrefix + m.Folder);
                 string? logo = LogoUrl(InstancePrefix + m.Folder);
+                string? icon = CustomIconUrl(InstancePrefix + m.Folder);
                 return (object)new
             {
                 id = InstancePrefix + m.Folder,
@@ -108,7 +112,9 @@ namespace VuluLauncher
                 background,
                 backgroundStyle = "cover",
                 hasCustomBackground = background != null,
-                thumbnail = background,
+                customIcon = icon,
+                backgroundAsIcon = m.BackgroundAsIcon != false,
+                thumbnail = icon ?? (m.BackgroundAsIcon != false ? background : null),
                 iconUrl = m.IconUrl
             };
             });
@@ -239,6 +245,7 @@ namespace VuluLauncher
             InstanceStore.Delete(meta.Folder);
             DeleteBackgroundFiles(id);
             DeleteLogoFiles(id);
+            DeleteIconFiles(id);
             PlayTimeStore.Remove(id);
             Log($"{meta.Name} silindi.", "muted");
             return new { success = true };
@@ -506,6 +513,10 @@ namespace VuluLauncher
         private static string? LogoUrl(string id) => ImageUrl(AppPaths.Logos, id);
         private static void DeleteLogoFiles(string id) => DeleteImageFiles(AppPaths.Logos, id);
 
+        private static string? CustomIconFile(string id) => ImageFile(AppPaths.Icons, id);
+        private static string? CustomIconUrl(string id) => ImageUrl(AppPaths.Icons, id);
+        private static void DeleteIconFiles(string id) => DeleteImageFiles(AppPaths.Icons, id);
+
         private async Task<object?> PickImageAsync(string folder, string id, string title, string[] extensions, long maxBytes)
         {
             _ = ResolveTarget(id); // kimlik geçerli ve kullanıcıya açık mı
@@ -531,6 +542,27 @@ namespace VuluLauncher
 
         private Task<object?> PickLogoAsync(string id) =>
             PickImageAsync(AppPaths.Logos, id, "Logo resmi seçin (saydam PNG önerilir)", LogoExtensions, 4L * 1024 * 1024);
+
+        private Task<object?> PickIconAsync(string id)
+        {
+            _ = RequireCustomInstance(id);
+            return PickImageAsync(AppPaths.Icons, id, "Simge resmi seçin (kare resimler en iyisi)", LogoExtensions, 4L * 1024 * 1024);
+        }
+
+        private object ClearIcon(string id)
+        {
+            _ = RequireCustomInstance(id);
+            DeleteIconFiles(id);
+            return new { changed = true };
+        }
+
+        private object SetBackgroundAsIcon(string id, bool value)
+        {
+            var meta = RequireCustomInstance(id);
+            meta.BackgroundAsIcon = value;
+            InstanceStore.Save(meta);
+            return new { changed = true };
+        }
 
         private object ClearBackground(string id)
         {
