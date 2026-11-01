@@ -330,6 +330,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px;
 #pack-list:not(:empty) + .rail-head { margin-top: 2px; border-top: 1px solid var(--line); padding-top: 14px; }
 .mini-btn { border: 0; border-radius: var(--r-sm); background: var(--accent-soft); color: var(--accent-hi); padding: 2px 8px; font: 600 11px var(--font); }
 .mini-btn:hover { background: color-mix(in srgb, var(--accent) 26%, transparent); }
+/* Listenin devamı gibi durur: son instance'ın altında, kartlarla aynı genişlikte */
+.new-instance { display: block; width: 100%; height: 34px; margin-top: 6px; padding: 0 12px; border: 1px dashed var(--line-strong); border-radius: var(--r); background: transparent; color: var(--muted); font-size: 12.5px; text-align: left; }
+.new-instance:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-hi); }
 
 .pack-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
 .pack-empty { margin: 0; padding: 6px 8px 10px; color: var(--dim); font-size: 12.5px; line-height: 1.45; }

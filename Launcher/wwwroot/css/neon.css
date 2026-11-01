@@ -274,6 +274,7 @@ html[data-ui="neon"] .rail h2.rail-head {
     flex: none; align-self: center; height: 66px; margin: 0; padding: 0 0 0 12px;
     display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; border-left: 1px solid var(--line);
 }
+html[data-ui="neon"] .new-instance { flex: none; align-self: center; width: 92px; height: 66px; margin: 0; text-align: center; clip-path: var(--notch-sm); }
 html[data-ui="neon"] .pack-empty { white-space: nowrap; padding: 0 6px; font-family: var(--font-hud); font-size: 11.5px; }
 
 html[data-ui="neon"] .pack-card {

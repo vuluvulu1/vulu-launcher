@@ -114,6 +114,7 @@ html[data-ui="atlas"] .btn-accent:hover:not(:disabled) { background: rgba(46, 10
 html[data-ui="atlas"] .link-btn:hover { color: var(--ink); }
 html[data-ui="atlas"] .mini-btn { background: transparent; color: var(--accent); border: 1px dashed rgba(168, 55, 45, .5); font: italic 600 12px var(--font-serif); }
 html[data-ui="atlas"] .mini-btn:hover { background: var(--accent-soft); }
+html[data-ui="atlas"] .new-instance { border-radius: 0; }
 
 html[data-ui="atlas"] input[type=text], html[data-ui="atlas"] input[type=password], html[data-ui="atlas"] input[type=url],
 html[data-ui="atlas"] input[type=number], html[data-ui="atlas"] select, html[data-ui="atlas"] .textarea {
