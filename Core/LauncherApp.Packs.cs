@@ -630,7 +630,8 @@ namespace VuluLauncher
             {
                 // Kaynak paketleri paylaşılıyorsa hangilerinin açık olduğu da gider (kuranda da açık gelsin)
                 var resourcePacks = includes.Contains("resourcepacks", StringComparer.OrdinalIgnoreCase) ? PackOptions.ReadResourcePacks(dir) : null;
-                int fileCount = await Task.Run(() => BuildOverridesZip(zipPath, dir, includes, tracked, fallbackFiles, resourcePacks));
+                var incompatiblePacks = resourcePacks == null ? null : PackOptions.ReadIncompatiblePacks(dir);
+                int fileCount = await Task.Run(() => BuildOverridesZip(zipPath, dir, includes, tracked, fallbackFiles, resourcePacks, incompatiblePacks));
                 if (new FileInfo(zipPath).Length > MaxOverridesBytes)
                     throw new InvalidOperationException("Paket dosyaları 200 MB'ı aşıyor. Büyük klasörleri (ör. resourcepacks) çıkarmayı dene.");
 
@@ -817,7 +818,7 @@ namespace VuluLauncher
 
         /// <summary>Seçilen klasör/dosyaları zip'ler. Modrinth'ten bağlantı olarak gidecek içerikler hariç tutulur.</summary>
         private static int BuildOverridesZip(string zipPath, string dir, List<string> includes, HashSet<string> tracked, List<string> fallbackFiles,
-            List<string>? resourcePacks)
+            List<string>? resourcePacks, List<string>? incompatiblePacks)
         {
             int count = 0;
             using var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create);
@@ -844,7 +845,7 @@ namespace VuluLauncher
             if (resourcePacks is { Count: > 0 })
             {
                 using var stream = zip.CreateEntry(PackOptions.FileName).Open();
-                stream.Write(PackOptions.Serialize(resourcePacks));
+                stream.Write(PackOptions.Serialize(resourcePacks, incompatiblePacks));
             }
             return count;
         }

@@ -327,4 +327,37 @@ namespace VuluLauncher.Tests
             Assert.True(Run(1, Atlas).Crashed);
         }
     }
+
+    /// <summary>Paylaşanın onayladığı uyumsuz kaynak paketleri kuranda da açık kalsın.</summary>
+    public class PackOptionsTests : IDisposable
+    {
+        private readonly string _dir = Path.Combine(Path.GetTempPath(), "vulu-tests-" + Guid.NewGuid().ToString("N"));
+
+        public PackOptionsTests() => Directory.CreateDirectory(_dir);
+        public void Dispose() { try { Directory.Delete(_dir, true); } catch { } }
+
+        [Fact]
+        public void Apply_CarriesIncompatiblePacksAndKeepsUsersOwn()
+        {
+            File.WriteAllText(Path.Combine(_dir, "options.txt"), "fov:0.5\nresourcePacks:[\"file/kendi.zip\"]\nincompatibleResourcePacks:[\"file/eski.zip\"]\n");
+            using var json = new MemoryStream(PackOptions.Serialize(new List<string> { "vanilla", "file/rehber" }, new List<string> { "file/rehber" }));
+
+            PackOptions.Apply(_dir, json);
+
+            Assert.Equal(new[] { "vanilla", "file/rehber", "file/kendi.zip" }, PackOptions.ReadResourcePacks(_dir));
+            Assert.Equal(new[] { "file/rehber", "file/eski.zip" }, PackOptions.ReadIncompatiblePacks(_dir));
+            Assert.Contains("fov:0.5", File.ReadAllText(Path.Combine(_dir, "options.txt")));
+        }
+
+        [Fact]
+        public void Apply_OldPackWithoutIncompatibleList_LeavesItAlone()
+        {
+            File.WriteAllText(Path.Combine(_dir, "options.txt"), "incompatibleResourcePacks:[\"file/eski.zip\"]\n");
+            using var json = new MemoryStream(Encoding.UTF8.GetBytes("{\"resourcePacks\":[\"vanilla\"]}"));
+
+            PackOptions.Apply(_dir, json);
+
+            Assert.Equal(new[] { "file/eski.zip" }, PackOptions.ReadIncompatiblePacks(_dir));
+        }
+    }
 }
