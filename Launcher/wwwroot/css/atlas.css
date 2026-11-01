@@ -39,7 +39,7 @@ html[data-ui="atlas"] {
     --r-lg: 10px;
     --shadow-pop: 0 0 0 1px rgba(205, 232, 224, .12), 0 18px 44px rgba(0, 0, 0, .55);
 
-    --titlebar-h: 56px;
+    --titlebar-h: 52px;
     --font-serif: Georgia, Cambria, "Times New Roman", serif;
     --font-pixel: Georgia, Cambria, serif;
     /* Enlem ve boylam çizgileri */
