@@ -32,7 +32,8 @@
             addEventListener('resize', fit);
         })();
     </script>
-    <script>try { const t = localStorage.getItem('uiTheme'); document.documentElement.dataset.ui = ['classic', 'neon', 'atlas'].includes(t) ? t : 'mesale'; } catch { document.documentElement.dataset.ui = 'mesale'; }</script>
+    <!-- Meşale çıkınca herkes bir kez ona geçer; sonra başka tema seçen kullanıcının seçimi korunur -->
+    <script>try { if (!localStorage.getItem('themeMesaleMoved')) { if (localStorage.getItem('uiTheme')) localStorage.setItem('uiTheme', 'mesale'); localStorage.setItem('themeMesaleMoved', '1'); } const t = localStorage.getItem('uiTheme'); document.documentElement.dataset.ui = ['classic', 'neon', 'atlas'].includes(t) ? t : 'mesale'; } catch { document.documentElement.dataset.ui = 'mesale'; }</script>
 </head>
 <body>
     <!-- ── Başlık çubuğu (pencere çerçevesiz; sürükleme buradan) ───────── -->
