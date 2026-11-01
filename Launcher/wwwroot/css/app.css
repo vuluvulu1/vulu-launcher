@@ -1435,25 +1435,46 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .mr-hit .mr-text.clickable:hover .mr-title { color: var(--accent-hi); }
 .chip.static.mc { color: var(--text); }
 .chip.static.loading { opacity: .55; }
-.modal-wide:has(.pd-body) { width: min(920px, calc(100vw - 48px)); height: min(820px, calc(100vh - 48px)); }
-.modal-head.pd-head { height: auto; align-items: flex-start; gap: 14px; padding: 16px 18px 12px; border-bottom: 0; }
-.pd-icon { width: 64px; height: 64px; flex: none; border-radius: var(--r); object-fit: cover; background: var(--surface); }
+/* Neredeyse tüm pencere: solda açıklama, sağda kurma düğmesi ve bilgiler kaydırılsa da görünür kalır */
+.modal-wide:has(.pd-body) { width: min(1280px, calc(100vw - 40px)); height: calc(100vh - var(--titlebar-h) - 32px); max-height: none; }
+.modal-head.pd-head { height: auto; align-items: center; gap: 14px; padding: 14px 18px; }
+.pd-icon { width: 52px; height: 52px; flex: none; border-radius: var(--r); object-fit: cover; background: var(--surface); }
 .pd-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .pd-title b { font: 600 18px var(--font); display: flex; align-items: center; gap: 8px; }
-.pd-title .hint { font-weight: 400; }
-.pd-summary { font-weight: 400; }
-.pd-summary { font-size: 13px; color: var(--muted); }
-.pd-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 0 20px 12px; }
+.pd-summary { font-size: 13px; font-weight: 400; color: var(--muted); }
+.pd-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 280px; }
+.pd-main { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.pd-tabbar { flex: none; padding: 10px 20px; border-bottom: 1px solid var(--line); }
+.pd-body { flex: 1; padding: 18px 22px; white-space: normal; }
+.pd-content { max-width: 900px; margin: 0 auto; }
+.pd-side { min-height: 0; display: flex; flex-direction: column; gap: 18px; padding: 16px; overflow-y: auto; border-left: 1px solid var(--line); }
+.pd-install { display: flex; flex-direction: column; gap: 8px; }
+.pd-install .btn { width: 100%; }
+.pd-section { display: flex; flex-direction: column; gap: 8px; }
+.pd-section h4 { margin: 0; font: 600 12px var(--font); color: var(--muted); }
+.pd-facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; margin: 0; font-size: 13px; }
+.pd-facts dt { color: var(--muted); }
+.pd-facts dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
 .pd-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-.pd-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.pd-links { display: flex; gap: 10px; }
-.pd-tabbar { padding: 0 20px 10px; border-bottom: 1px solid var(--line); }
-.pd-body { flex: 1; overflow-y: auto; }
+.pd-links { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+@media (max-width: 980px) {
+    .pd-layout { display: flex; flex-direction: column; overflow-y: auto; }
+    .pd-main { order: 1; flex: none; }
+    .pd-body { overflow: visible; }
+    .pd-side { display: contents; } /* kurma düğmesi üstte, bilgiler açıklamanın altında */
+    .pd-install { flex-direction: row; flex-wrap: wrap; align-items: center; flex: none; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+    .pd-section { order: 2; flex: none; padding: 12px 16px 0; }
+    .pd-install .btn { width: auto; }
+}
 .pd-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
 .pd-gallery figure { margin: 0; }
 .pd-gallery img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r); cursor: zoom-in; background: var(--surface); }
 .pd-gallery figcaption { margin-top: 4px; font-size: 12px; color: var(--muted); }
+.pd-version-filter { width: 240px; margin-bottom: 10px; }
 .pd-versions { display: flex; flex-direction: column; }
+.pd-version { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+.pd-version-text { min-width: 0; }
+.pd-version .btn { flex: none; }
 .pd-viewer { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px; cursor: zoom-out; }
 .pd-viewer img { max-width: 100%; max-height: calc(100vh - 140px); object-fit: contain; border-radius: var(--r); }
 .modal-wide:has(.pd-viewer) { height: auto; width: min(1200px, calc(100vw - 48px)); }
@@ -1463,6 +1484,7 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .md h1, .md h2, .md h3, .md h4 { margin: 18px 0 8px; font-family: var(--font); line-height: 1.3; }
 .md h1 { font-size: 20px; } .md h2 { font-size: 17px; } .md h3 { font-size: 15px; } .md h4 { font-size: 14px; }
 .md p { margin: 0 0 10px; }
+.md p:empty { display: none; }
 .md a[data-href] { color: var(--accent-hi); text-decoration: underline; cursor: pointer; }
 .md ul, .md ol { margin: 0 0 10px; padding-left: 22px; }
 .md blockquote { margin: 0 0 10px; padding: 4px 12px; border-left: 3px solid var(--line-strong); color: var(--muted); }

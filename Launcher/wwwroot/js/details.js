@@ -169,26 +169,34 @@ async function openProjectDetails(hit) {
     await openModal(close => {
         const body = el('div', { class: 'pd-content' }, el('p', { class: 'hint' }, 'Yükleniyor…'));
         const tabs = el('div', { class: 'segmented pd-tabs' });
-        let details = null, versions = null, tab = 'about';
+        let details = null, versions = null, tab = 'about', mcFilter = '';
 
         const install = canInstallGames()
             ? el('button', { class: 'btn btn-primary' }, isPack ? 'Instance olarak kur' : hit.installed ? 'Güncelle' : 'Kur')
             : desktopOnlyButton();
         if (canInstallGames()) install.addEventListener('click', () => installModrinthHit(hit, install, ''));
         const page = el('button', {
-            class: 'btn', onclick: () => (source === 'curseforge'
+            class: 'link-btn', onclick: () => (source === 'curseforge'
                 ? bridge.invoke('cf.openPage', { url: hit.pageUrl })
                 : bridge.invoke('modrinth.openPage', { type: hit.type, slug: hit.slug })).catch(() => { }),
         }, `${CONTENT_SOURCES[source].label} ↗`);
         const links = el('div', { class: 'pd-links' });
 
         const info = hit.packInfo;
-        const chips = [
-            mcVersionLabel(info && info.mcVersion ? [info.mcVersion] : hit.gameVersions),
-            info && `${info.modCount} mod`,
-            ...(hit.loaders || []).map(l => LOADER_NAMES[l] || l),
-            ...(hit.categories || []).map(categoryLabel),
-        ].filter(Boolean).map(text => el('span', { class: 'chip static' }, text));
+        const mcRange = mcVersionLabel(info && info.mcVersion ? [info.mcVersion] : hit.gameVersions);
+        const staticChips = texts => texts.map(text => el('span', { class: 'chip static' }, text));
+        const facts = [
+            ['Yapımcı', hit.author],
+            ['İndirme', formatCount(hit.downloads)],
+            hit.follows > 0 && [source === 'curseforge' ? 'Beğeni' : 'Takipçi', formatCount(hit.follows)],
+            hit.updated && ['Güncelleme', formatAgo(hit.updated)],
+            mcRange && ['Sürüm', mcRange.replace('Minecraft ', '')],
+            info && ['Mod sayısı', String(info.modCount)],
+        ].filter(Boolean);
+        const target = !isPack && state.instances.find(i => i.id === modrinth.targetId);
+        const pickVersion = el('button', { class: 'btn', type: 'button', onclick: () => { tab = 'versions'; render(); } }, 'Sürüm seç');
+        const section = (title, ...children) => el('section', { class: 'pd-section' }, el('h4', {}, title), ...children);
+        const loaders = (hit.loaders || []).map(l => LOADER_NAMES[l] || l), categories = (hit.categories || []).map(categoryLabel);
 
         function renderTabs() {
             const gallery = details ? details.gallery.length : 0;
@@ -215,16 +223,21 @@ async function openProjectDetails(hit) {
             } else {
                 if (!versions) { body.replaceChildren(el('p', { class: 'hint' }, 'Sürümler yükleniyor…')); loadVersions(); return; }
                 const TYPE_NAMES = { release: 'Kararlı', beta: 'Beta', alpha: 'Alfa' };
-                body.replaceChildren(versions.length ? el('div', { class: 'pd-versions' }, versions.map(v => el('div', { class: 'user-row' },
-                    el('div', {},
+                const mcVersions = [...new Set(versions.flatMap(v => v.gameVersions))].filter(v => /^\d+\.\d+/.test(v))
+                    .sort((x, y) => y.localeCompare(x, undefined, { numeric: true }));
+                const shown = mcFilter ? versions.filter(v => v.gameVersions.includes(mcFilter)) : versions;
+                const filter = mcVersions.length > 1 && el('select', {
+                    class: 'pd-version-filter', 'aria-label': 'Minecraft sürümü', onchange: event => { mcFilter = event.target.value; render(); },
+                }, el('option', { value: '' }, 'Tüm Minecraft sürümleri'), mcVersions.map(v => el('option', { value: v, selected: v === mcFilter }, v)));
+                body.replaceChildren(...[filter, shown.length ? el('div', { class: 'pd-versions' }, shown.map(v => el('div', { class: 'pd-version' },
+                    el('div', { class: 'pd-version-text' },
                         el('div', { class: 'uname' }, v.name || v.number,
                             v.type !== 'release' && el('span', { class: 'badge' }, TYPE_NAMES[v.type] || v.type),
                             v.manualOnly && el('span', { class: 'badge' }, 'Elle indirilir')),
                         el('div', { class: 'meta' }, [v.gameVersions.slice(-3).join(', '), v.loaders.map(l => LOADER_NAMES[l] || l).join(', '), formatAgo(v.published)]
                             .filter(Boolean).join(' · '))),
-                    el('span', {}),
                     canInstallGames() && el('button', { class: 'btn btn-sm', onclick: () => installModrinthHit(hit, install, v.id) }, 'Bu sürümü kur'))))
-                    : el('p', { class: 'hint' }, 'Uyumlu sürüm bulunamadı.'));
+                    : el('p', { class: 'hint' }, 'Uyumlu sürüm bulunamadı.')].filter(Boolean));
             }
         }
 
@@ -247,12 +260,19 @@ async function openProjectDetails(hit) {
                 hit.iconUrl ? el('img', { class: 'pd-icon', src: hit.iconUrl, alt: '' }) : el('div', { class: 'pd-icon plain' }),
                 el('div', { class: 'pd-title' },
                     el('b', {}, hit.title, hit.manualOnly && el('span', { class: 'badge' }, 'Elle indirilir')),
-                    el('span', { class: 'hint' }, [hit.author, `↓ ${formatCount(hit.downloads)}`, hit.updated && `Güncelleme: ${formatAgo(hit.updated)}`].filter(Boolean).join(' · ')),
                     el('span', { class: 'pd-summary' }, hit.description)),
                 el('button', { class: 'icon-close', type: 'button', 'aria-label': 'Kapat', onclick: () => close() }, '✕')),
-            el('div', { class: 'pd-bar' }, el('div', { class: 'pd-chips' }, chips), el('div', { class: 'pd-actions' }, links, page, install)),
-            el('div', { class: 'pd-tabbar' }, tabs),
-            el('div', { class: 'modal-body pd-body' }, body),
+            el('div', { class: 'pd-layout' },
+                el('div', { class: 'pd-main' },
+                    el('div', { class: 'pd-tabbar' }, tabs),
+                    el('div', { class: 'modal-body pd-body' }, body)),
+                el('aside', { class: 'pd-side' },
+                    el('div', { class: 'pd-install' }, install, canInstallGames() && pickVersion,
+                        target && el('span', { class: 'hint' }, `Kurulacak yer: ${target.name}`)),
+                    section('Bilgiler', el('dl', { class: 'pd-facts' }, facts.flatMap(([k, v]) => [el('dt', {}, k), el('dd', {}, v)]))),
+                    loaders.length > 0 && section('Yükleyiciler', el('div', { class: 'pd-chips' }, staticChips(loaders))),
+                    categories.length > 0 && section('Kategoriler', el('div', { class: 'pd-chips' }, staticChips(categories))),
+                    section('Bağlantılar', el('div', { class: 'pd-links' }, page, links)))),
         ];
     }, { wide: true });
 }
