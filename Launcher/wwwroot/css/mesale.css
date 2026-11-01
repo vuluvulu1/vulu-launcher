@@ -100,6 +100,32 @@ html[data-ui="mesale"] .stage-status { color: #c9bdaf; }
 @keyframes m-light { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
 @keyframes m-line { from { width: 0; opacity: 0; } to { width: 150px; opacity: 1; } }
 
+/* → Meşale: ekran kararır, ortada bir kor yanar, tema karanlıkta değişir ve ışık kordan dışa yayılır.
+   Katman eski temanın üstünde de durur; bu yüzden seçiciler data-ui'ye bağlı değil. */
+@property --m-fx { syntax: "<length>"; inherits: false; initial-value: -240px; }
+#theme-fx.ember {
+    background: radial-gradient(circle at 50% 50%,
+        transparent var(--m-fx),
+        rgba(242, 163, 58, .22) calc(var(--m-fx) + 34px),
+        rgba(60, 36, 14, .9) calc(var(--m-fx) + 120px),
+        #080706 calc(var(--m-fx) + 240px));
+    animation: fx-ember-dim 1.4s linear forwards, fx-ember-open 1.4s cubic-bezier(.5, 0, .25, 1) forwards;
+}
+#theme-fx.ember::after {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%;
+    background: #ffc873; opacity: 0;
+    box-shadow: 0 0 12px 3px rgba(242, 163, 58, .85), 0 0 46px 14px rgba(242, 163, 58, .32);
+    animation: fx-ember-spark 1.4s ease-out forwards;
+}
+@keyframes fx-ember-dim { 0% { opacity: 0; } 32%, 100% { opacity: 1; } }
+@keyframes fx-ember-open { 0%, 54% { --m-fx: -240px; } 100% { --m-fx: 80vmax; } }
+@keyframes fx-ember-spark {
+    0%, 26% { opacity: 0; transform: scale(.4); }
+    42% { opacity: 1; transform: scale(1.3); }
+    54% { opacity: 1; transform: scale(1); }
+    70%, 100% { opacity: 0; transform: scale(3.5); }
+}
+
 /* Tema seçim kartı */
 .tp-mesale { background: radial-gradient(ellipse 42% 46% at 64% 46%, rgba(242, 163, 58, .55), transparent), linear-gradient(180deg, #3a2a22, #0b0a09 74%); }
 .tp-mesale .p-cover { left: 4%; top: 6%; width: 8%; height: 13%; background: #f2a33a; box-shadow: 0 0 8px #f2a33a; }

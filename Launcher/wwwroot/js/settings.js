@@ -350,7 +350,7 @@ const THEME_FX = {
     neon: { className: 'glitch', rootClass: 'fx-glitch', swapAt: 340, duration: 760 },   // → neon: sinyal bozulması
     classic: { className: 'iris', rootClass: null, swapAt: 550, duration: 1100 },        // → klasik: altın iris
     atlas: { className: 'page', rootClass: null, swapAt: 500, duration: 1000 },          // → atlas: sayfa çevrilir
-    mesale: { className: 'iris', rootClass: null, swapAt: 550, duration: 1100 },         // → meşale: altın iris
+    mesale: { className: 'ember', rootClass: null, swapAt: 520, duration: 1400 },        // → meşale: karanlıkta kor yanar
 };
 let themeFxRunning = false;
 
