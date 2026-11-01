@@ -4,7 +4,7 @@ const THEMES = [
     { key: 'mesale', name: 'Meşale', text: 'Karanlıkta tek ışık: ekranı dünyan doldurur, seçtiğin şey yanar.' },
     { key: 'classic', name: 'Klasik', text: 'Koyu ve sıcak; bakır tonları, sade ve dengeli.' },
     { key: 'neon', name: 'Neon', text: 'Siberpunk: parlak neon renkler, farklı bir yerleşim.' },
-    { key: 'atlas', name: 'Atlas', text: 'Kâşif defteri: açık renkli kâğıt, mürekkep ve harita.' },
+    { key: 'atlas', name: 'Atlas', text: 'Gece haritası: koyu mürekkep, soluk parşömen yazı ve deniz yeşili.' },
 ];
 
 /** Hiç tema seçilmemiş mi? (yeni kurulum ya da tema seçiminin olmadığı eski sürümden gelen) */

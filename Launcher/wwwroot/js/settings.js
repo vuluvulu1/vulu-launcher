@@ -198,7 +198,7 @@ async function openSettingsPage() {
         el('h2', {}, 'Ses ve görünüm'),
         isDesktopApp() && settingRow('Yazı ve arayüz boyutu', 'Pencere aynı kalır, içindeki bütün yazılar ve düğmeler büyür ya da küçülür. Büyük ekranlarda "Büyük" daha rahat okunur.',
             segmentedControl(UI_SCALES, String(s.uiScale || 100), value => changeSetting({ uiScale: Number(value) }))),
-        settingRow('Tema', 'Neon: siberpunk, koyu ve parlak. Atlas: kâşif defteri, açık renkli. Meşale: karanlıkta sıcak bir ışık. ' + (isDesktopApp() ? 'Bu bilgisayar' : 'Bu cihaz') + ' için hatırlanır.',
+        settingRow('Tema', 'Neon: siberpunk, koyu ve parlak. Atlas: gece haritası, koyu ve sakin. Meşale: karanlıkta sıcak bir ışık. ' + (isDesktopApp() ? 'Bu bilgisayar' : 'Bu cihaz') + ' için hatırlanır.',
             segmentedControl([['mesale', 'Meşale'], ['classic', 'Klasik'], ['neon', 'Neon'], ['atlas', 'Atlas']], theme, async value => {
                 // Vurgu rengi satırı yalnızca klasik temada var; sayfa, tema değiştiği anda yenilenir
                 await setUiTheme(value, () => openSettingsPage());

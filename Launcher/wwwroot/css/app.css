@@ -989,20 +989,22 @@ html.fx-glitch .view:not(#view-splash) { animation: fx-jitter .76s steps(1); }
     100% { --iris: 120vmax; }
 }
 
-/* → Atlas: bir kâğıt sayfa sağdan sola çevrilir; sayfa ekranı kapatınca tema değişir */
+/* → Atlas: bir harita sayfası sağdan sola çevrilir; sayfa ekranı kapatınca tema değişir */
 #theme-fx.page { overflow: hidden; }
 #theme-fx.page::before {
     content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 100%;
     background:
-        linear-gradient(90deg, rgba(70, 45, 20, .35), rgba(70, 45, 20, 0) 60px),
-        radial-gradient(ellipse at 50% 45%, #f3ebda, #e3d4b5 95%);
-    box-shadow: -40px 0 60px rgba(40, 25, 10, .35);
+        linear-gradient(90deg, rgba(0, 0, 0, .45), transparent 60px),
+        repeating-linear-gradient(90deg, rgba(143, 224, 205, .06) 0 1px, transparent 1px 72px),
+        repeating-linear-gradient(0deg, rgba(143, 224, 205, .06) 0 1px, transparent 1px 72px),
+        radial-gradient(ellipse at 50% 45%, #17262a, #0d1416 95%);
+    box-shadow: -40px 0 60px rgba(0, 0, 0, .5);
     animation: fx-page 1s cubic-bezier(.55, 0, .35, 1) forwards;
 }
 /* Sayfanın kıvrılan kenarı */
 #theme-fx.page::after {
     content: ""; position: absolute; top: 0; bottom: 0; width: 90px;
-    background: linear-gradient(90deg, rgba(255, 252, 240, .9), rgba(220, 200, 165, .6) 60%, rgba(70, 45, 20, .25));
+    background: linear-gradient(90deg, rgba(143, 224, 205, .55), rgba(92, 194, 173, .2) 60%, rgba(0, 0, 0, .3));
     animation: fx-page-edge 1s cubic-bezier(.55, 0, .35, 1) forwards;
 }
 @keyframes fx-page { 0% { transform: translateX(100%); } 45%, 55% { transform: translateX(0); } 100% { transform: translateX(-105%); } }
@@ -1077,15 +1079,15 @@ h1 .admin-mark { width: 21px; height: 21px; margin-left: 8px; vertical-align: -2
 .tp-neon .p-panel { right: 4%; top: 30%; bottom: 6%; width: 26%; border: 1px solid rgba(0, 234, 255, .45); background: rgba(10, 10, 22, .9); }
 .tp-neon .p-play { right: 6%; bottom: 10%; width: 22%; height: 12%; background: #00eaff; box-shadow: 0 0 10px #00eaff; clip-path: polygon(0 0, 88% 0, 100% 30%, 100% 100%, 12% 100%, 0 70%); }
 
-.tp-atlas { background: radial-gradient(ellipse at 50% 40%, #f3ebda, #e2d2b2 95%); }
-.tp-atlas .p-tabs { left: 0; right: 0; top: 0; height: 9%; background: #dccbaa; border-bottom: 1px solid rgba(70, 45, 20, .3); }
-.tp-atlas .p-toc { left: 4%; top: 20%; width: 20%; height: 0; border-bottom: 2px dotted rgba(70, 45, 20, .45); }
-.tp-atlas .p-toc.p-two { top: 30%; }
-.tp-atlas .p-toc.p-three { top: 40%; border-color: #a8372d; }
-.tp-atlas .p-title { left: 30%; top: 22%; width: 30%; height: 9%; background: #2b1d12; border-radius: 2px; }
-.tp-atlas .p-line { left: 30%; top: 36%; width: 26%; height: 3%; background: rgba(43, 29, 18, .45); }
-.tp-atlas .p-photo { right: 7%; top: 17%; width: 30%; height: 38%; background: #8fb37a; border: 4px solid #fbf8f0; border-bottom-width: 10px; transform: rotate(3deg); box-shadow: 0 3px 8px rgba(70, 45, 20, .3); }
-.tp-atlas .p-seal { right: 8%; bottom: 9%; width: 15%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #c84d40, #82241c); box-shadow: 0 0 0 2px #a8372d; }
+.tp-atlas { background: repeating-linear-gradient(90deg, rgba(143, 224, 205, .1) 0 1px, transparent 1px 22px), repeating-linear-gradient(0deg, rgba(143, 224, 205, .1) 0 1px, transparent 1px 22px), radial-gradient(ellipse at 60% 45%, #24463f, #0f1719 78%); }
+.tp-atlas .p-tabs { left: 0; right: 0; top: 0; height: 9%; background: #0d1416; }
+.tp-atlas .p-toc { left: 3%; top: 15%; width: 9%; height: 14%; background: #5cc2ad; border-radius: 2px; }
+.tp-atlas .p-toc.p-two { top: 33%; background: #233236; }
+.tp-atlas .p-toc.p-three { top: 51%; background: #233236; }
+.tp-atlas .p-title { left: 17%; top: 56%; width: 36%; height: 9%; background: #eef0e6; border-radius: 2px; }
+.tp-atlas .p-line { left: 17%; top: 69%; width: 26%; height: 3%; background: rgba(238, 240, 230, .5); }
+.tp-atlas .p-photo { right: 3%; top: 14%; bottom: 18%; width: 24%; background: rgba(20, 30, 33, .9); border-radius: 2px; }
+.tp-atlas .p-seal { left: 0; right: 0; bottom: 0; height: 13%; background: linear-gradient(90deg, #0d1416 74%, #5cc2ad 74% 97%, #0d1416 97%); }
 
 
 /* Keşfet: kaynak seçimi (vulu Packs / Modrinth) başlığın altında */

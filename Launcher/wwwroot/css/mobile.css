@@ -8,7 +8,7 @@
  *   - Oyna'da instance'lar üstte kaydırılan bir şerit, OYNA ve RAM/sürüm altta tek kart,
  *   - mesajlarda önce konuşma listesi, dokununca sohbet (‹ ile geri),
  *   - pencereler alttan açılan tam genişlik paneller olur.
- * Temaların (Neon, Atlas) masaüstündeki özel yerleşimleri dosyanın sonunda telefona uyarlanır.
+ * Neon'un masaüstündeki özel yerleşimi dosyanın sonunda telefona uyarlanır.
  */
 
 /* Sohbetten listeye dönüş ve filtre aç/kapa düğmeleri yalnızca telefonda */
@@ -372,56 +372,6 @@
     html[data-ui="neon"] .modal { clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%); border-radius: 0; }
 }
 
-/* ── Atlas: klasör sekmeleri ve fotoğraflı sayfa telefonda ──────────── */
-@media (max-width: 900px) {
-    html[data-ui="atlas"] .tb-tabs {
-        position: fixed; left: 0; right: 0; top: auto; bottom: 0; height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
-        margin: 0; align-self: auto; align-items: stretch; gap: 0; padding: 0 4px env(safe-area-inset-bottom);
-        background: var(--paper-noise), linear-gradient(180deg, #e3d5b8, #dccbaa); border-top: 1px solid rgba(70, 45, 20, .3);
-    }
-    html[data-ui="atlas"] .tb-tabs button {
-        height: auto; padding: 8px 2px 6px; border: 0; border-radius: 0; background: transparent; color: #5c4b36;
-        font: 500 12px/1.1 var(--font-serif);
-    }
-    html[data-ui="atlas"] .tb-tabs button svg { width: 21px; height: 21px; }
-    html[data-ui="atlas"] .tb-tabs button:hover { background: transparent; }
-    html[data-ui="atlas"] .tb-tabs button.active { height: auto; background: rgba(250, 246, 236, .55); box-shadow: none; color: var(--ink); }
-
-    html[data-ui="atlas"] #view-main { display: flex; grid-template-columns: none; }
-    html[data-ui="atlas"] .rail { box-shadow: none; border-right: 0; border-bottom: 1px solid rgba(70, 45, 20, .25); background: var(--paper-noise), linear-gradient(180deg, #e9dec7, #e4d6bb); }
-    html[data-ui="atlas"] .rail-scroll { padding: 10px var(--gutter); }
-    html[data-ui="atlas"] #pack-list::before { display: none; }
-    /* İçindekiler satırları şeritte küçük kâğıt etiketler olur */
-    html[data-ui="atlas"] .pack-card { width: auto; min-width: 130px; max-width: 200px; height: 46px; padding: 0 12px; border: 1px solid rgba(70, 45, 20, .2); border-radius: 3px; background: var(--surface); box-shadow: 0 1px 2px rgba(70, 45, 20, .1); }
-    html[data-ui="atlas"] .pack-card .info { position: static; height: 100%; padding: 0; flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; }
-    html[data-ui="atlas"] .pack-card .info::after { display: none; }
-    html[data-ui="atlas"] .pack-card .name { max-width: 100%; font-size: 15px; }
-    html[data-ui="atlas"] .pack-card.selected { border-color: var(--accent); background: #fffcf5; }
-    html[data-ui="atlas"] .pack-card.selected::before { display: none; }
-    html[data-ui="atlas"] .rail h2 { padding: 0 0 0 10px; }
-
-    html[data-ui="atlas"] .stage { padding: 16px var(--gutter) 12px; }
-    /* Fotoğraf sayfanın üstünde, tam genişliğe yakın ve hafif eğik */
-    html[data-ui="atlas"] .stage-bg {
-        position: relative; inset: auto; flex: none; order: -1; width: calc(100% - 24px); margin: 18px auto 30px; aspect-ratio: 16 / 9;
-        transform: rotate(1.2deg);
-    }
-    html[data-ui="atlas"] .stage-body { flex: none; min-height: 0; align-items: flex-start; }
-    html[data-ui="atlas"] .stage-hero { max-width: 100%; }
-    html[data-ui="atlas"] .pack-title { font-size: 34px; }
-    html[data-ui="atlas"] .stats { width: 100%; display: flex; }
-    html[data-ui="atlas"] .stat { padding: 7px 0; }
-    /* Mühür sağda kalır, sürüm ve RAM solunda */
-    html[data-ui="atlas"] .dock {
-        min-height: 0; padding: 12px; grid-template-columns: minmax(0, 1fr) auto auto;
-        grid-template-areas: "ver ram play" "status status play";
-    }
-    html[data-ui="atlas"] .btn-play { width: 84px; height: 84px; align-self: center; }
-    html[data-ui="atlas"] .page-scroll { padding: 18px var(--gutter) 28px; }
-    html[data-ui="atlas"] .page-head h1 { font-size: 28px; }
-    html[data-ui="atlas"] .pack-tile:nth-child(n) { transform: none; }
-}
-
 /* ── Telefonda akıcılık ─────────────────────────────────────────────────
    Telefon GPU'su tam ekran filter, blend, backdrop-filter ve her karede yeniden boyanan gradyanlarda kare kaçırır.
    Animasyonlar yalnızca transform ve opaklıkla yapılır; süs efektleri sadeleşir. */
@@ -462,9 +412,6 @@
         background: linear-gradient(90deg, rgba(255, 252, 240, .9), rgba(220, 200, 165, .6) 60%, rgba(70, 45, 20, .25));
     }
 
-    /* Atlas'ın kâğıt dokusu bir SVG gürültü filtresi; onlarca öğede ayrı ayrı çizilir ve telefonda tema değişimini,
-       kaydırmayı yavaşlatır. Telefonda düz kâğıt rengi kalır. */
-    html[data-ui="atlas"] { --paper-noise: none; }
 
     /* Bulanık zeminler yerine yarı saydam düz renk */
     .announcement { backdrop-filter: none; background: color-mix(in srgb, var(--panel) 94%, transparent); }
@@ -482,7 +429,6 @@
 
     /* Sabit sahne resmi kendi katmanında: sayfa kayarken yeniden boyanmaz */
     .stage-bg { will-change: transform; transform: translateZ(0); }
-    html[data-ui="atlas"] .stage-bg { will-change: auto; transform: rotate(1.2deg); }
 }
 
 /* Sistem "animasyonları azalt" diyorsa tema geçişi ve süslü döngüler kısalır (açılış perdeleri hariç, bkz. app.css) */

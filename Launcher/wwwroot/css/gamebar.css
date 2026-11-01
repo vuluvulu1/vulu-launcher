@@ -76,30 +76,34 @@
         html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .music { display: none; }
     }
 
-    /* ── Klasik ve Neon: konsol sağ sütunda, dünya görünür kalır ─── */
-    html:is([data-ui="classic"], [data-ui="neon"]) #view-main::before {
+    /* ── Konsol sağ sütunda, dünya görünür kalır ──────────────────── */
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #view-main::before {
         content: ""; position: absolute; inset: -40px; z-index: 0; pointer-events: none;
         background: var(--m-art, none) center / cover no-repeat;
         filter: blur(26px) brightness(.16) saturate(1.3);
     }
-    html:is([data-ui="classic"], [data-ui="neon"]) .page-scroll { background: transparent; }
-    html:is([data-ui="classic"], [data-ui="neon"]) #page-home {
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .page-scroll { background: transparent; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #page-home {
         display: grid; grid-template-columns: minmax(0, 1fr) clamp(290px, 27vw, 360px); grid-template-rows: auto minmax(0, 1fr);
         grid-template-areas: "notice console" "hero console"; gap: 0 20px; padding: 20px;
     }
-    html:is([data-ui="classic"], [data-ui="neon"]) #announcement { grid-area: notice; margin-bottom: 8px; }
-    html:is([data-ui="classic"], [data-ui="neon"]) .stage-body { grid-area: hero; padding: 0 0 2px; }
-    html:is([data-ui="classic"], [data-ui="neon"]) #console,
-    html:is([data-ui="classic"], [data-ui="neon"]) #console.expanded { grid-area: console; align-self: end; height: 100%; max-height: 520px; min-height: 0; background: var(--glass); }
-    html:is([data-ui="classic"], [data-ui="neon"]) #console.expanded { max-height: none; }
-    html:is([data-ui="classic"], [data-ui="neon"]) .console-head { height: auto; min-height: 42px; flex-wrap: wrap; gap: 0 4px; padding: 0 6px; }
-    html:is([data-ui="classic"], [data-ui="neon"]) .console-head > div:last-child { margin-left: auto; }
-    html:is([data-ui="classic"], [data-ui="neon"]) .info-tabs { flex-wrap: wrap; height: auto; }
-    html:is([data-ui="classic"], [data-ui="neon"]) .info-tabs button { height: 40px; padding: 0 6px; font-size: 12.5px; }
-    html:is([data-ui="classic"], [data-ui="neon"]) .info-strip { flex-direction: column; align-items: stretch; height: auto; }
-    html:is([data-ui="classic"], [data-ui="neon"]) .info-world { width: auto; }
-    html:is([data-ui="classic"], [data-ui="neon"]) .info-shot { width: 100%; height: auto; }
-    html:is([data-ui="classic"], [data-ui="neon"]) .info-more { align-self: flex-start; padding: 4px 0; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #announcement { grid-area: notice; margin-bottom: 8px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .stage-body { grid-area: hero; padding: 0 0 2px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #console,
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #console.expanded { grid-area: console; align-self: end; height: 100%; max-height: 520px; min-height: 0; background: var(--glass); }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #console.expanded { max-height: none; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .console-head { height: auto; min-height: 42px; flex-wrap: wrap; gap: 0 4px; padding: 0 6px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .console-head > div:last-child { margin-left: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .info-tabs { flex-wrap: wrap; height: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .info-tabs button { height: 40px; padding: 0 6px; font-size: 12.5px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .info-strip { flex-direction: column; align-items: stretch; height: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .info-world { width: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .info-shot { width: 100%; height: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .info-more { align-self: flex-start; padding: 4px 0; }
+
+    /* Kurulum listesi yalnızca Oyna'da gerekli; diğer sayfalar tam genişlik */
+    html:is([data-ui="classic"], [data-ui="atlas"]) #view-main:not(:has(#page-home:not([hidden]))) > .rail { display: none; }
+    html:is([data-ui="classic"], [data-ui="atlas"]) #view-main:not(:has(#page-home:not([hidden]))) > .page { grid-column: 1 / -1; }
 
     /* ── Klasik: bakır ───────────────────────────────────────────── */
     html[data-ui="classic"] #m-bar { background: linear-gradient(0deg, #0f0c09, var(--panel)); border-top: 1px solid var(--line-strong); }
@@ -137,31 +141,9 @@
     html[data-ui="neon"] #view-main > .dl.at-top { right: 16px; }
     html[data-ui="neon"] #console, html[data-ui="neon"] #console.expanded { background: rgba(8, 8, 20, .88); }
 
-    /* ── Atlas: kâğıt şerit ve mühür ─────────────────────────────── */
-    html[data-ui="atlas"] #m-bar { background: var(--paper-noise), var(--surface); border-top: 1px solid rgba(70, 45, 20, .22); box-shadow: 0 -4px 14px rgba(70, 45, 20, .12); }
-    html[data-ui="atlas"] .m-cover { padding: 0; border: 3px solid #fbf8f0; box-shadow: 0 1px 3px rgba(70, 45, 20, .35); transform: rotate(-2deg); }
-    html[data-ui="atlas"] .m-current-text b { font: italic 700 15px var(--font-serif); color: var(--ink); }
-    html[data-ui="atlas"] #m-bar .btn-play:not(.m-join) { width: 56px; min-width: 56px; height: 56px; padding: 2px; font-size: 12px; }
-    html[data-ui="atlas"] #m-bar .btn-play:not(.m-join)::before { inset: 4px; }
-    html[data-ui="atlas"] #m-bar .btn-play:disabled:not(.m-join) { font-size: 10.5px; }
-    html[data-ui="atlas"] #m-bar .m-join { border-radius: var(--r); width: auto; font: 700 15px var(--font-serif); box-shadow: 0 2px 6px rgba(110, 30, 20, .35); }
-    html[data-ui="atlas"] #m-bar .m-join::before { display: none; }
-    html[data-ui="atlas"] #m-bar .mc-play { background: var(--accent); color: #fbe9dc; }
-    html[data-ui="atlas"] #m-bar.has-join .dock .btn-play { width: 56px; min-width: 56px; height: 56px; padding: 2px; font-size: 12px; }
-    html[data-ui="atlas"] .m-heads { background: var(--surface); border-color: rgba(70, 45, 20, .25); }
-    html[data-ui="atlas"] .m-heads .avatar { box-shadow: 0 0 0 2px #fbf8f0, 0 1px 3px 2px rgba(70, 45, 20, .3); }
-    html[data-ui="atlas"] .m-heads-text { font: italic 14px var(--font-serif); color: var(--ink); }
-    html[data-ui="atlas"] .tb-btn svg { stroke: var(--ink); }
-    html[data-ui="atlas"] .tb-btn:hover { background: rgba(70, 45, 20, .1); }
-    html[data-ui="atlas"] .tb-close:hover { background: #b33a2b; }
-    html[data-ui="atlas"] .tb-close:hover svg { stroke: #fff; }
-    html[data-ui="atlas"] .btn:not(.btn-primary):not(.btn-danger):not(.btn-play) { border-color: rgba(70, 45, 20, .35); }
-    html[data-ui="atlas"] .stage-hero .hero-row { flex-wrap: wrap; }
-    html[data-ui="atlas"] .stage-hero .pack-server { max-width: none; }
-    @media (max-width: 1040px) {
-        html[data-ui="atlas"] .tb-brand span { display: none; }
-        html[data-ui="atlas"] .tb-tabs button { font-size: 0; gap: 0; padding: 0 11px; }
-        html[data-ui="atlas"] .tb-tabs button svg { width: 16px; height: 16px; }
-        html[data-ui="atlas"] .set-row { flex-wrap: wrap; }
-    }
+    /* ── Atlas: gece haritası (renkleri css/atlas.css'te) ─────────── */
+    html[data-ui="atlas"] #m-bar { background: linear-gradient(0deg, #0c1315, var(--panel)); border-top: 1px solid var(--line-strong); }
+    html[data-ui="atlas"] .m-cover { border-radius: var(--r); box-shadow: 0 0 0 1px var(--accent), 0 0 12px rgba(92, 194, 173, .3); }
+    html[data-ui="atlas"] .m-current-text b { font-family: var(--font-serif); font-style: italic; }
+    html[data-ui="atlas"] #m-bar.has-join .dock .btn-play { border: 1px solid var(--line-strong); background: var(--raised); color: var(--text); box-shadow: none; }
 }
