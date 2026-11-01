@@ -51,13 +51,13 @@ html[data-ui="mesale"] .btn:not(.btn-primary):not(.btn-danger):not(.btn-play) { 
 html[data-ui="mesale"] .btn:not(.btn-primary):not(.btn-danger):not(.btn-play):hover:not(:disabled) { border-color: var(--accent); color: var(--accent-hi); }
 html[data-ui="mesale"] .btn-primary, html[data-ui="mesale"] .btn-play:not(:disabled) {
     border: 0;
-    background: #c98f45;
+    background: linear-gradient(180deg, #eda23a, #d9852a);
     color: var(--accent-ink);
-    box-shadow: none;
+    box-shadow: inset 0 1px 0 rgba(255, 236, 200, .3);
 }
 html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"] .btn-play:hover:not(:disabled) {
-    background: #dba256;
-    box-shadow: none;
+    background: linear-gradient(180deg, #f5b04c, #e39236);
+    box-shadow: inset 0 1px 0 rgba(255, 236, 200, .36);
 }
 /* Sunucu kartındaki düğme alt çubuktaki ana düğmeyle yarışmasın */
 html[data-ui="mesale"] .pack-server .btn-primary { border: 1px solid rgba(255, 216, 160, .38); background: rgba(38, 30, 23, .92); color: var(--text); }
@@ -175,7 +175,12 @@ html[data-ui="mesale"] .pack-server .btn-primary:hover:not(:disabled) { border-c
     html[data-ui="mesale"] .m-cover { flex: none; width: 52px; height: 52px; display: grid; place-items: center; background: var(--raised) center / cover no-repeat; color: var(--muted); font-weight: 700; box-shadow: var(--m-glow); }
     html[data-ui="mesale"] .m-current-text { min-width: 0; display: flex; flex-direction: column; }
     html[data-ui="mesale"] .m-current-text b { font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    html[data-ui="mesale"] .stage-hero .hero-row { width: 100%; }
+    html[data-ui="mesale"] .stage-hero .hero-row { width: 100%; flex-wrap: nowrap; }
+    html[data-ui="mesale"] .stage-hero .pack-actions { flex: none; }
+    html[data-ui="mesale"] .stage-hero .pack-server-name { white-space: nowrap; }
+    /* Üç düğmeli pakette yer sunucu kartına kalsın */
+    html[data-ui="mesale"] .hero-row:has(.pack-actions > :nth-child(3)) .m-heads-text { display: none; }
+    html[data-ui="mesale"] .stage-hero .pack-server { flex: 1 1 300px; min-width: 240px; max-width: 460px; }
     html[data-ui="mesale"] .m-heads { flex: none; display: flex; align-items: center; gap: 8px; min-height: 60px; padding: 8px 14px; background: var(--m-card); box-shadow: var(--m-edge); text-shadow: none; }
     html[data-ui="mesale"] .m-heads:empty { display: none; }
     html[data-ui="mesale"] .m-heads .avatar { box-shadow: 0 0 0 2px #0c0a08, 0 0 0 3px var(--accent), 0 0 14px 2px rgba(242, 163, 58, .46); }
@@ -187,7 +192,7 @@ html[data-ui="mesale"] .pack-server .btn-primary:hover:not(:disabled) { border-c
     html[data-ui="mesale"] #m-bar #music-prev, html[data-ui="mesale"] #m-bar #music-next { display: none; }
     html[data-ui="mesale"] #m-bar .music-controls input[type=range] { flex: none; width: 76px; margin: 0 4px 0 2px; }
     html[data-ui="mesale"] #m-bar .music-controls { order: -1; flex: none; }
-    html[data-ui="mesale"] #m-bar .mc-play { width: 32px; height: 32px; background: #c98f45; box-shadow: none; }
+    html[data-ui="mesale"] #m-bar .mc-play { width: 32px; height: 32px; background: linear-gradient(180deg, #eda23a, #d9852a); box-shadow: none; }
 
     html[data-ui="mesale"] #m-bar .dock { flex: 1 1 0; min-width: 0; height: auto; margin: 0; padding: 0; gap: 10px; border: 0; background: none; box-shadow: none; }
     html[data-ui="mesale"] #m-bar .dock-ver { flex: 0 1 112px; width: auto; min-width: 74px; padding: 0; }
@@ -196,7 +201,7 @@ html[data-ui="mesale"] .pack-server .btn-primary:hover:not(:disabled) { border-c
     html[data-ui="mesale"] #m-bar .btn-play { flex: none; width: auto; min-width: 132px; height: 52px; padding: 0 28px; font-size: 15.5px; }
     html[data-ui="mesale"] #m-bar .btn-play:disabled { min-width: 132px; height: 52px; }
     html[data-ui="mesale"] #m-bar.has-join .dock .btn-play { min-width: 76px; height: 40px; padding: 0 12px; background: rgba(255, 226, 186, .09); color: var(--text); box-shadow: none; font-size: 13.5px; }
-    html[data-ui="mesale"] #m-bar .m-join { flex: none; height: 52px; padding: 0 24px; font-size: 15.5px; white-space: nowrap; }
+    html[data-ui="mesale"] #m-bar .m-join { flex: none; height: 52px; padding: 0 24px; font-size: 15px; font-weight: 700; letter-spacing: .01em; white-space: nowrap; }
     html[data-ui="mesale"] #m-bar .ram-pop { bottom: calc(100% + 16px); }
 
     /* Küçük düğmeler resmin üstünde de kaybolmasın */
@@ -235,12 +240,16 @@ html[data-ui="mesale"] .pack-server .btn-primary:hover:not(:disabled) { border-c
 
     /* Dar pencerede önce yan bilgiler çekilir */
     @media (max-width: 1180px) {
-        html[data-ui="mesale"] #m-bar .music-controls input[type=range] { width: 54px; }
+        html[data-ui="mesale"] #m-bar .music { flex: none; min-width: 0; }
+        html[data-ui="mesale"] .hero-row:has(.pack-actions > :nth-child(3)) .pack-server-icon { display: none; }
+        html[data-ui="mesale"] .hero-row:has(.pack-actions > :nth-child(3)) .pack-server-players { display: none; }
+        html[data-ui="mesale"] #m-bar .music-top { display: none; }
         html[data-ui="mesale"] .tb-tag { display: none; }
         html[data-ui="mesale"] .m-heads-text { display: none; }
         html[data-ui="mesale"] #m-bar { gap: 12px; }
     }
     @media (max-width: 1040px) {
+        html[data-ui="mesale"] .stage-hero .hero-row { flex-wrap: wrap; }
         html[data-ui="mesale"] .tb-brand span { display: none; }
         html[data-ui="mesale"] .tb-tabs { margin-left: 12px; }
         html[data-ui="mesale"] .tb-tabs button { padding: 0 8px; }
