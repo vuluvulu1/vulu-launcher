@@ -351,6 +351,7 @@ function beginSplash(username) {
     $('view-login').hidden = true;
     void splash.offsetWidth; // animasyon her seferinde baştan oynasın
     splash.classList.add('play');
+    startMesaleSplash();
     splashStartedAt = performance.now();
 }
 
@@ -402,6 +403,7 @@ async function openCurtainsTo(viewId) {
             resolve();
         });
     });
+    openMesaleSplash();
     splash.classList.add('open');
     await opened;
     hideSplash();
