@@ -31,7 +31,7 @@
             addEventListener('resize', fit);
         })();
     </script>
-    <script>try { const t = localStorage.getItem('uiTheme'); document.documentElement.dataset.ui = ['neon', 'atlas', 'mesale'].includes(t) ? t : 'classic'; } catch { }</script>
+    <script>try { const t = localStorage.getItem('uiTheme'); document.documentElement.dataset.ui = ['classic', 'neon', 'atlas'].includes(t) ? t : 'mesale'; } catch { document.documentElement.dataset.ui = 'mesale'; }</script>
 </head>
 <body>
     <!-- ── Başlık çubuğu (pencere çerçevesiz; sürükleme buradan) ───────── -->

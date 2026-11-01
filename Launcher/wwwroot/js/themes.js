@@ -1,10 +1,10 @@
 // İlk açılışta tema seçimi. Daha önce tema seçilmemişse girişten önce gösterilir; bir karta tıklamak temayı
 // geçiş efektiyle hemen uygular, "Devam et" seçimi kaydeder. Sonradan Ayarlar'dan değiştirilebilir.
 const THEMES = [
+    { key: 'mesale', name: 'Meşale', text: 'Karanlıkta tek ışık: ekranı dünyan doldurur, seçtiğin şey yanar.' },
     { key: 'classic', name: 'Klasik', text: 'Koyu ve sıcak; bakır tonları, sade ve dengeli.' },
     { key: 'neon', name: 'Neon', text: 'Siberpunk: parlak neon renkler, farklı bir yerleşim.' },
     { key: 'atlas', name: 'Atlas', text: 'Kâşif defteri: açık renkli kâğıt, mürekkep ve harita.' },
-    { key: 'mesale', name: 'Meşale', text: 'Karanlıkta tek ışık: ekranı dünyan doldurur, seçtiğin şey yanar.' },
 ];
 
 /** Hiç tema seçilmemiş mi? (yeni kurulum ya da tema seçiminin olmadığı eski sürümden gelen) */
@@ -27,7 +27,7 @@ function themePreview(key) {
 
 function pickThemeFirstRun() {
     return new Promise(resolve => {
-        let current = ['neon', 'atlas', 'mesale'].includes(document.documentElement.dataset.ui) ? document.documentElement.dataset.ui : 'classic';
+        let current = document.documentElement.dataset.ui;
         const cards = el('div', { class: 'tp-cards' });
 
         function render() {

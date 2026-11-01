@@ -58,7 +58,7 @@ function syncMesaleBar() {
     // Çevrimiçi listesinde resim bilgisi yok; üye listesi gelince fotoğraflar çizilir
     if (here.length && !mesale.membersLoaded) {
         mesale.membersLoaded = true;
-        ensureMembers().then(syncMesaleBar).catch(() => { mesale.membersLoaded = false; });
+        ensureMembers().then(() => { mesale.membersLoaded = profile.members.length > 0; syncMesaleBar(); });
     }
 
     const idle = !launching && state.busy === 0 && !state.gameRunning && state.canLaunchGame;

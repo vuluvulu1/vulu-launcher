@@ -193,13 +193,13 @@ async function openSettingsPage() {
     })));
     renderSwatches(s.accentColor);
 
-    const theme = ['neon', 'atlas', 'mesale'].includes(document.documentElement.dataset.ui) ? document.documentElement.dataset.ui : 'classic';
+    const theme = document.documentElement.dataset.ui;
     const look = el('section', { class: 'set-section' },
         el('h2', {}, 'Ses ve görünüm'),
         isDesktopApp() && settingRow('Yazı ve arayüz boyutu', 'Pencere aynı kalır, içindeki bütün yazılar ve düğmeler büyür ya da küçülür. Büyük ekranlarda "Büyük" daha rahat okunur.',
             segmentedControl(UI_SCALES, String(s.uiScale || 100), value => changeSetting({ uiScale: Number(value) }))),
         settingRow('Tema', 'Neon: siberpunk, koyu ve parlak. Atlas: kâşif defteri, açık renkli. Meşale: karanlıkta sıcak bir ışık. ' + (isDesktopApp() ? 'Bu bilgisayar' : 'Bu cihaz') + ' için hatırlanır.',
-            segmentedControl([['classic', 'Klasik'], ['neon', 'Neon'], ['atlas', 'Atlas'], ['mesale', 'Meşale']], theme, async value => {
+            segmentedControl([['mesale', 'Meşale'], ['classic', 'Klasik'], ['neon', 'Neon'], ['atlas', 'Atlas']], theme, async value => {
                 // Vurgu rengi satırı yalnızca klasik temada var; sayfa, tema değiştiği anda yenilenir
                 await setUiTheme(value, () => openSettingsPage());
                 return true;
