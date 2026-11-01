@@ -51,14 +51,17 @@ html[data-ui="mesale"] .btn:not(.btn-primary):not(.btn-danger):not(.btn-play) { 
 html[data-ui="mesale"] .btn:not(.btn-primary):not(.btn-danger):not(.btn-play):hover:not(:disabled) { border-color: var(--accent); color: var(--accent-hi); }
 html[data-ui="mesale"] .btn-primary, html[data-ui="mesale"] .btn-play:not(:disabled) {
     border: 0;
-    background: linear-gradient(180deg, #ffbe62, #f2a33a 55%, #de8a22);
+    background: #c98f45;
     color: var(--accent-ink);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .42), 0 0 22px rgba(242, 163, 58, .32);
+    box-shadow: none;
 }
 html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"] .btn-play:hover:not(:disabled) {
-    background: linear-gradient(180deg, #ffd18a, #ffb551 55%, #e99a33);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 0 34px rgba(242, 163, 58, .56);
+    background: #dba256;
+    box-shadow: none;
 }
+/* Sunucu kartındaki düğme alt çubuktaki ana düğmeyle yarışmasın */
+html[data-ui="mesale"] .pack-server .btn-primary { border: 1px solid rgba(255, 216, 160, .38); background: rgba(38, 30, 23, .92); color: var(--text); }
+html[data-ui="mesale"] .pack-server .btn-primary:hover:not(:disabled) { border-color: var(--accent); background: rgba(58, 42, 26, .96); color: var(--accent-hi); }
 
 /* Tema seçim kartı */
 .tp-mesale { background: radial-gradient(ellipse 42% 46% at 64% 46%, rgba(242, 163, 58, .55), transparent), linear-gradient(180deg, #3a2a22, #0b0a09 74%); }
@@ -184,7 +187,7 @@ html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"]
     html[data-ui="mesale"] #m-bar #music-prev, html[data-ui="mesale"] #m-bar #music-next { display: none; }
     html[data-ui="mesale"] #m-bar .music-controls input[type=range] { flex: none; width: 76px; margin: 0 4px 0 2px; }
     html[data-ui="mesale"] #m-bar .music-controls { order: -1; flex: none; }
-    html[data-ui="mesale"] #m-bar .mc-play { width: 32px; height: 32px; }
+    html[data-ui="mesale"] #m-bar .mc-play { width: 32px; height: 32px; background: #c98f45; box-shadow: none; }
 
     html[data-ui="mesale"] #m-bar .dock { flex: 1 1 0; min-width: 0; height: auto; margin: 0; padding: 0; gap: 10px; border: 0; background: none; box-shadow: none; }
     html[data-ui="mesale"] #m-bar .dock-ver { flex: 0 1 112px; width: auto; min-width: 74px; padding: 0; }
