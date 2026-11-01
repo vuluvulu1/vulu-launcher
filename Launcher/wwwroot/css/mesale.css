@@ -73,7 +73,7 @@ html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"]
         inset: 0;
         grid-template-columns: 94px minmax(0, 1fr);
         grid-template-rows: minmax(0, 1fr) 78px;
-        overflow: hidden;
+        overflow: clip;   /* hidden olsa taşan bulanık zemin yüzünden odaklanınca bütün ekran kayar */
         background: var(--bg);
     }
     /* Oyna dışındaki sayfaların zemini: seçili paketin dünyası, bulanık ve karartılmış */
