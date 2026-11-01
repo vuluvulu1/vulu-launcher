@@ -56,7 +56,7 @@ async function renderRadioTab(body) {
     };
 
     const ratio = data.capBytes ? data.usedBytes / data.capBytes : 0;
-    body.replaceChildren(
+    body.replaceChildren(...[
         el('div', { class: 'admin-toolbar' },
             el('span', {}, `${data.songs.length} şarkı · ${mb(data.usedBytes)} / ${mb(data.capBytes)}`),
             uploadButton),
@@ -69,5 +69,5 @@ async function renderRadioTab(body) {
             ' — buradaki şarkılar bütün üyelere dağıtılır.'),
         data.songs.length
             ? el('div', {}, data.songs.map(row))
-            : el('p', { class: 'hint' }, 'Henüz şarkı yok. İlk şarkıyı yükleyince vulu Radyo herkesin çalarında ilk tür olarak görünür.'));
+            : el('p', { class: 'hint' }, 'Henüz şarkı yok. İlk şarkıyı yükleyince vulu Radyo herkesin çalarında ilk tür olarak görünür.')].filter(Boolean));
 }

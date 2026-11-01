@@ -683,6 +683,7 @@ function wireCardDrag(node) {
 function markSelectedCard() {
     for (const card of document.querySelectorAll('.pack-card'))
         card.classList.toggle('selected', !!state.selected && card.dataset.id === state.selected.id);
+    syncMesaleBar();
 }
 
 function clearSelection() {
@@ -736,6 +737,7 @@ function selectInstance(instance) {
             : `${LOADER_NAMES[instance.loader]} ${instance.loaderVersion || ''}`.trim()));
 
     renderPackActions(instance);
+    state.packServer = null;    // önceki paketin sunucusu yenisi denetlenene kadar kalmasın
     renderPackServer(instance);
     refreshInfo();
 
@@ -763,12 +765,15 @@ async function renderPackServer(instance) {
     const s = servers.find(x => x.instanceId === instance.id || (instance.sharedPackId && x.packId === instance.sharedPackId));
     if (state.selected !== instance) return;
     box.hidden = !s;
-    if (!s) { box.replaceChildren(); return; }
+    state.packServer = null;
+    if (!s) { box.replaceChildren(); syncMesaleBar(); return; }
 
     const draw = st => {
         if (state.selected !== instance) return;
         const online = st && st.online;
-        box.replaceChildren(
+        state.packServer = online && canInstallGames() ? s.address : null;
+        syncMesaleBar();
+        box.replaceChildren(...[
             el('div', { class: 'server-icon pack-server-icon', 'aria-hidden': 'true' },
                 st && st.favicon ? el('img', { src: st.favicon, alt: '' }) : s.name.slice(0, 1).toLocaleUpperCase('tr')),
             el('div', { class: 'pack-server-text' },
@@ -783,7 +788,7 @@ async function renderPackServer(instance) {
             canInstallGames() && el('button', {
                 class: 'btn btn-sm' + (online ? ' btn-primary' : ''), title: `Oyunu açıp ${s.address} adresine bağlanır`,
                 onclick: () => play({ join: s.address }),
-            }, 'Sunucuya gir'));
+            }, 'Sunucuya gir')].filter(Boolean));
     };
     draw(community.status[s.id]);
     try { community.status[s.id] = await bridge.invoke('community.ping', { address: s.address }); }
@@ -1078,6 +1083,7 @@ function updatePlayButton() {
     else if (!state.canLaunchGame) { button.disabled = true; label.textContent = 'Telefonda oyun yakında'; }
     else { button.disabled = !state.selected; label.textContent = 'OYNA'; }
     refreshStatus();
+    syncMesaleBar();
 }
 
 /** Log satırındaki ilerlemeyi yüzdeye çevirir: "%45", "45%" ya da "12/120". Bulunamazsa null. */
@@ -1626,7 +1632,7 @@ async function openRadioMenu() {
                 : [el('div', { class: 'radio-note' }, q ? 'Bu adla istasyon yok.' : radio.genre === 'vulu' ? 'vulu Radyo\'da henüz şarkı yok.' : 'Bu türde istasyon bulunamadı.')]));
         };
         renderList();
-        menu.replaceChildren(
+        menu.replaceChildren(...[
             favs.length > 0 && el('div', { class: 'radio-favs' },
                 el('div', { class: 'radio-section' }, 'Favoriler'),
                 favs.map(f => el('button', {
@@ -1643,7 +1649,7 @@ async function openRadioMenu() {
                 },
             }, g.label))),
             radio.stations.length > 8 && search,
-            list);
+            list].filter(Boolean));
         positionMenu(menu, $('music-station'));
     };
     menu.replaceChildren(el('div', { class: 'radio-note' }, 'Yükleniyor…'));

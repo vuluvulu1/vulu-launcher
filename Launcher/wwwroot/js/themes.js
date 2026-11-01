@@ -4,6 +4,7 @@ const THEMES = [
     { key: 'classic', name: 'Klasik', text: 'Koyu ve sıcak; bakır tonları, sade ve dengeli.' },
     { key: 'neon', name: 'Neon', text: 'Siberpunk: parlak neon renkler, farklı bir yerleşim.' },
     { key: 'atlas', name: 'Atlas', text: 'Kâşif defteri: açık renkli kâğıt, mürekkep ve harita.' },
+    { key: 'mesale', name: 'Meşale', text: 'Karanlıkta tek ışık: ekranı dünyan doldurur, seçtiğin şey yanar.' },
 ];
 
 /** Hiç tema seçilmemiş mi? (yeni kurulum ya da tema seçiminin olmadığı eski sürümden gelen) */
@@ -17,6 +18,7 @@ function themePreview(key) {
         classic: ['rail', 'title', 'line', 'line short', 'dock', 'play'],
         neon: ['nav', 'strip', 'card', 'card two', 'title', 'line', 'panel', 'play'],
         atlas: ['tabs', 'toc', 'toc two', 'toc three', 'title', 'line', 'photo', 'seal'],
+        mesale: ['cover', 'cover two', 'title', 'side', 'bar', 'play'],
     }[key];
     // Parçaların sınıfları önekli: uygulamanın .rail, .dock gibi sınıflarıyla çakışıp tema stillerini almasınlar
     return el('div', { class: `tp-preview tp-${key}`, 'aria-hidden': 'true' },
@@ -25,7 +27,7 @@ function themePreview(key) {
 
 function pickThemeFirstRun() {
     return new Promise(resolve => {
-        let current = ['neon', 'atlas'].includes(document.documentElement.dataset.ui) ? document.documentElement.dataset.ui : 'classic';
+        let current = ['neon', 'atlas', 'mesale'].includes(document.documentElement.dataset.ui) ? document.documentElement.dataset.ui : 'classic';
         const cards = el('div', { class: 'tp-cards' });
 
         function render() {
@@ -53,7 +55,7 @@ function pickThemeFirstRun() {
         render();
         $('view-theme').replaceChildren(el('div', { class: 'tp-wrap' },
             el('h1', {}, 'Görünümünü seç'),
-            el('p', { class: 'tp-sub' }, 'Üç temanın her birinin kendi renkleri, yerleşimi ve açılış animasyonu var. Sonradan Ayarlar\'dan değiştirebilirsin.'),
+            el('p', { class: 'tp-sub' }, 'Her temanın kendi renkleri, yerleşimi ve açılış animasyonu var. Sonradan Ayarlar\'dan değiştirebilirsin.'),
             cards,
             done));
 

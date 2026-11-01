@@ -1,0 +1,232 @@
+/*
+ * vulu Launcher — Meşale teması
+ *
+ * <html data-ui="mesale"> iken geçerlidir; diğer temalara dokunmaz. Işık süs değil, durum dilidir:
+ *   - seçili olan yanar, seçili olmayan kararır,
+ *   - amber eylem, soğuk mavi bilgi, kor turuncu uyarı demektir,
+ *   - oyun çubuğu her sayfada altta durur (js/mesale.js), Oyna'da ekranın tamamı paketin dünyasıdır.
+ * Yerleşim masaüstüne özeldir; 900 px altında yalnızca renkler uygulanır.
+ */
+
+html[data-ui="mesale"] {
+    --bg: #0b0a09;
+    --panel: #14100c;
+    --surface: #1b1510;
+    --raised: #281f17;
+    --hover: rgba(255, 226, 186, .07);
+    --line: rgba(255, 216, 160, .1);
+    --line-strong: rgba(255, 216, 160, .2);
+
+    --text: #f3ece2;
+    --muted: #c9bdaf;
+    --dim: #a1958a;
+
+    /* Ayarlardaki vurgu rengi bu temada kullanılmaz */
+    --accent: #f2a33a !important;
+    --accent-hi: #ffc873;
+    --accent-soft: rgba(242, 163, 58, .16);
+    --accent-ink: #1a0e02;
+
+    --ok: #9cc3de;
+    --warn: #ffc873;
+    --error: #e8693a;
+
+    --glass: rgba(20, 16, 12, .86);
+    --r-sm: 0px;
+    --r: 0px;
+    --r-md: 0px;
+    --r-lg: 0px;
+    --shadow-pop: 0 0 0 1px rgba(255, 216, 160, .14), 0 18px 44px rgba(0, 0, 0, .62);
+    --titlebar-h: 50px;
+    --m-glow: 0 0 0 1px rgba(255, 200, 115, .72), 0 0 24px 1px rgba(242, 163, 58, .38);
+    --m-edge: inset 0 1px 0 rgba(255, 216, 160, .09);
+    --m-card: rgba(26, 20, 15, .84);
+}
+html[data-ui="mesale"] ::selection { background: rgba(242, 163, 58, .32); }
+html[data-ui="mesale"] ::-webkit-scrollbar-thumb { background: rgba(255, 216, 160, .17); }
+html[data-ui="mesale"] ::-webkit-scrollbar-thumb:hover { background: rgba(255, 216, 160, .3); }
+
+/* Düğmeler */
+html[data-ui="mesale"] .btn-primary, html[data-ui="mesale"] .btn-play:not(:disabled) {
+    border: 0;
+    background: linear-gradient(180deg, #ffbe62, #f2a33a 55%, #de8a22);
+    color: var(--accent-ink);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .42), 0 0 22px rgba(242, 163, 58, .32);
+}
+html[data-ui="mesale"] .btn-primary:hover:not(:disabled), html[data-ui="mesale"] .btn-play:hover:not(:disabled) {
+    background: linear-gradient(180deg, #ffd18a, #ffb551 55%, #e99a33);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 0 34px rgba(242, 163, 58, .56);
+}
+
+/* Tema seçim kartı */
+.tp-mesale { background: radial-gradient(ellipse 42% 46% at 64% 46%, rgba(242, 163, 58, .55), transparent), linear-gradient(180deg, #3a2a22, #0b0a09 74%); }
+.tp-mesale .p-cover { left: 4%; top: 6%; width: 8%; height: 13%; background: #f2a33a; box-shadow: 0 0 8px #f2a33a; }
+.tp-mesale .p-cover.p-two { top: 23%; background: #43362b; box-shadow: none; }
+.tp-mesale .p-title { left: 16%; top: 60%; width: 38%; height: 9%; background: #f3ece2; }
+.tp-mesale .p-side { right: 3%; top: 8%; bottom: 20%; width: 25%; background: rgba(26, 20, 15, .88); }
+.tp-mesale .p-bar { left: 0; right: 0; bottom: 0; height: 14%; background: #0c0a08; }
+.tp-mesale .p-play { right: 3%; bottom: 3%; width: 20%; height: 8%; background: #f2a33a; box-shadow: 0 0 8px #f2a33a; }
+
+@media (min-width: 901px) {
+    /* ── İskelet ─────────────────────────────────────────────────── */
+    html[data-ui="mesale"] #view-main {
+        inset: 0;
+        grid-template-columns: 94px minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) 78px;
+        overflow: hidden;
+        background: var(--bg);
+    }
+    /* Oyna dışındaki sayfaların zemini: seçili paketin dünyası, bulanık ve karartılmış */
+    html[data-ui="mesale"] #view-main::before {
+        content: ""; position: absolute; inset: -40px; z-index: 0; pointer-events: none;
+        background: var(--m-art, none) center / cover no-repeat;
+        filter: blur(26px) brightness(.15) saturate(1.3);
+    }
+    html[data-ui="mesale"] #view-main > .page { position: relative; z-index: 1; grid-row: 1; grid-column: 1 / -1; min-height: 0; margin-top: var(--titlebar-h); }
+    html[data-ui="mesale"] #view-main > #page-home { margin-top: 0; }
+    html[data-ui="mesale"] .page-scroll { background: transparent; padding: 14px 24px 30px; }
+
+    html[data-ui="mesale"] #m-bar {
+        position: relative; z-index: 6; grid-row: 2; grid-column: 1 / -1;
+        display: flex; align-items: center; gap: 16px; min-width: 0; padding: 0 18px;
+        background: linear-gradient(0deg, #0c0a08, rgba(16, 13, 10, .97));
+        box-shadow: 0 -1px 0 rgba(255, 216, 160, .1);
+    }
+    html[data-ui="mesale"] #m-torch {
+        position: fixed; left: 0; top: 0; z-index: 7; width: 680px; height: 680px; pointer-events: none;
+        background: radial-gradient(circle closest-side, rgba(242, 163, 58, .1), transparent);
+        will-change: transform;
+    }
+
+    /* ── Başlık çubuğu ───────────────────────────────────────────── */
+    html[data-ui="mesale"] #titlebar { background: rgba(11, 10, 9, .9); border-bottom-color: transparent; box-shadow: 0 1px 0 rgba(255, 216, 160, .07); }
+    html[data-ui="mesale"] body:has(#view-main:not([hidden]) #page-home:not([hidden])) #titlebar { background: linear-gradient(180deg, rgba(8, 7, 6, .78), transparent); box-shadow: none; }
+    html[data-ui="mesale"] .tb-tabs { position: relative; left: auto; transform: none; margin: 0 auto 0 26px; height: 100%; gap: 2px; }
+    html[data-ui="mesale"] .tb-tabs button { position: relative; height: 100%; padding: 0 12px; gap: 6px; border: 0; border-radius: 0; background: none; color: var(--muted); font-size: 13.5px; }
+    html[data-ui="mesale"] .tb-tabs button svg { display: none; }
+    html[data-ui="mesale"] .tb-tabs button:hover { color: var(--text); background: none; }
+    html[data-ui="mesale"] .tb-tabs button.active { color: var(--accent-hi); background: radial-gradient(ellipse 62% 90% at 50% 0, rgba(242, 163, 58, .2), transparent); }
+    html[data-ui="mesale"] .tb-tabs button.active::after {
+        content: ""; position: absolute; left: 8px; right: 8px; top: 0; height: 2px;
+        background: var(--accent); box-shadow: 0 0 15px 3px rgba(242, 163, 58, .72);
+    }
+
+    /* ── Kurulum rafı ────────────────────────────────────────────── */
+    html[data-ui="mesale"] #view-main > .rail { position: relative; z-index: 3; grid-row: 1; grid-column: 1; margin-top: var(--titlebar-h); border: 0; background: none; }
+    html[data-ui="mesale"] #view-main:not(:has(#page-home:not([hidden]))) > .rail { display: none; }
+    html[data-ui="mesale"] .rail-scroll { padding: 10px 0 10px 18px; scrollbar-gutter: auto; }
+    html[data-ui="mesale"] .rail-scroll::-webkit-scrollbar { width: 0; }
+    html[data-ui="mesale"] #pack-list:not(:empty) + .rail-head { margin: 8px 0 0; padding: 0; border: 0; }
+    html[data-ui="mesale"] .rail h2 { padding: 0; }
+    html[data-ui="mesale"] .rail-head > span, html[data-ui="mesale"] .pack-empty { display: none; }
+    html[data-ui="mesale"] #btn-new-instance { order: 2; width: 58px; height: 26px; padding: 0; background: var(--m-card); }
+    html[data-ui="mesale"] .rail-head { justify-content: flex-start; }
+    html[data-ui="mesale"] .pack-card { position: relative; display: block; width: 58px; height: 76px; margin: 0 0 8px; padding: 0; border: 0; background: none; }
+    html[data-ui="mesale"] .pack-card .thumb { position: absolute; inset: 0 0 auto 0; width: 58px; height: 58px; border-radius: 0; filter: brightness(.68) saturate(.8); background-size: cover; background-position: center; transition: filter .15s; }
+    html[data-ui="mesale"] .pack-card .thumb.plain { background-color: rgba(38, 30, 23, .92); filter: none; color: var(--muted); }
+    html[data-ui="mesale"] .pack-card:hover .thumb { filter: none; }
+    html[data-ui="mesale"] .pack-card.selected { background: none; }
+    html[data-ui="mesale"] .pack-card.selected::before { display: none; }
+    html[data-ui="mesale"] .pack-card.selected .thumb { filter: none; box-shadow: var(--m-glow); }
+    html[data-ui="mesale"] .pack-card .info { inset: 60px -6px 0 -6px; justify-content: flex-start; text-align: center; text-shadow: 0 1px 6px #000; }
+    html[data-ui="mesale"] .pack-card .name { font: 500 11px/1.25 var(--font); }
+    html[data-ui="mesale"] .pack-card .ver, html[data-ui="mesale"] .pack-card .card-icon { display: none; }
+
+    /* ── Oyna ────────────────────────────────────────────────────── */
+    html[data-ui="mesale"] #page-home {
+        display: grid; grid-template-columns: minmax(0, 1fr) clamp(290px, 27vw, 372px); grid-template-rows: auto minmax(0, 1fr);
+        column-gap: 20px; padding: calc(var(--titlebar-h) + 8px) 18px 16px 100px;
+    }
+    html[data-ui="mesale"] .stage-bg { position: absolute; }
+    html[data-ui="mesale"] .stage-bg::after {
+        background:
+            linear-gradient(90deg, rgba(8, 7, 6, .62), transparent 22%, transparent 60%, rgba(8, 7, 6, .68)),
+            linear-gradient(180deg, rgba(8, 7, 6, .58), transparent 15%, transparent 52%, rgba(8, 7, 6, .9));
+    }
+    html[data-ui="mesale"] .stage-bg.plain { background: radial-gradient(ellipse 46% 52% at 58% 58%, rgba(242, 163, 58, .2), transparent), linear-gradient(180deg, #241a14, #0b0a09 78%); }
+    html[data-ui="mesale"] #announcement { grid-column: 1; grid-row: 1; margin-bottom: 8px; background: var(--m-card); border-color: transparent; box-shadow: inset 3px 0 0 var(--accent); }
+    html[data-ui="mesale"] .stage-body { grid-column: 1; grid-row: 2; padding: 0 0 2px; }
+    html[data-ui="mesale"] .stage-hero { gap: 10px; text-shadow: 0 1px 14px rgba(0, 0, 0, .7); }
+    html[data-ui="mesale"] .pack-title { font: 300 clamp(46px, 7.4vw, 104px)/1 var(--font); letter-spacing: -.045em; text-shadow: 0 2px 34px rgba(0, 0, 0, .62); }
+    html[data-ui="mesale"] .pack-logo { max-height: 130px; max-width: min(480px, 100%); }
+    html[data-ui="mesale"] .pack-desc { color: var(--text); font-size: 15.5px; }
+    html[data-ui="mesale"] .pack-tags .tag { border: 0; background: rgba(12, 10, 8, .58); color: var(--text); }
+    html[data-ui="mesale"] .stats { gap: 6px; }
+    html[data-ui="mesale"] .stat { border: 0; background: rgba(12, 10, 8, .58); }
+    html[data-ui="mesale"] .pack-server { border: 0; background: var(--m-card); box-shadow: var(--m-edge); text-shadow: none; }
+    html[data-ui="mesale"] .pack-actions .btn { border-color: transparent; background: rgba(12, 10, 8, .62); text-shadow: none; }
+    html[data-ui="mesale"] .pack-actions .btn:hover:not(:disabled) { background: rgba(44, 34, 26, .9); }
+
+    /* Sağ sütun: dünyalar, görüntüler, içerik ve konsol */
+    html[data-ui="mesale"] #console, html[data-ui="mesale"] #console.expanded {
+        grid-column: 2; grid-row: 1 / -1; align-self: end; height: 100%; max-height: 560px; min-height: 0;
+        border: 0; background: var(--m-card); box-shadow: var(--m-edge), 0 14px 34px rgba(0, 0, 0, .36);
+    }
+    html[data-ui="mesale"] #console.expanded { max-height: none; }
+    html[data-ui="mesale"] .console-head { height: auto; min-height: 42px; flex-wrap: wrap; gap: 0 4px; padding: 0 6px; }
+    html[data-ui="mesale"] .console-head > div:last-child { margin-left: auto; }
+    html[data-ui="mesale"] .info-tabs { flex-wrap: wrap; height: auto; }
+    html[data-ui="mesale"] .info-tabs button { height: 40px; padding: 0 6px; font-size: 12.5px; color: var(--muted); }
+    html[data-ui="mesale"] .info-tabs button.active { color: var(--accent-hi); }
+    html[data-ui="mesale"] .info-strip { flex-direction: column; align-items: stretch; height: auto; }
+    html[data-ui="mesale"] .info-world { width: auto; border-color: transparent; background: rgba(255, 226, 186, .05); }
+    html[data-ui="mesale"] .info-shot { width: 100%; height: auto; border: 0; }
+    html[data-ui="mesale"] .info-more { align-self: flex-start; padding: 4px 0; }
+    html[data-ui="mesale"] .info-empty { min-height: 120px; }
+    html[data-ui="mesale"] .console-body { color: var(--muted); }
+
+    /* ── Oyun çubuğu ─────────────────────────────────────────────── */
+    html[data-ui="mesale"] .m-current { flex: 0 1 210px; min-width: 130px; display: flex; align-items: center; gap: 12px; }
+    html[data-ui="mesale"] .m-cover { flex: none; width: 52px; height: 52px; display: grid; place-items: center; background: var(--raised) center / cover no-repeat; color: var(--muted); font-weight: 700; box-shadow: var(--m-glow); }
+    html[data-ui="mesale"] .m-current-text { min-width: 0; display: flex; flex-direction: column; }
+    html[data-ui="mesale"] .m-current-text b { font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    html[data-ui="mesale"] .m-heads { flex: none; display: flex; align-items: center; gap: 7px; }
+    html[data-ui="mesale"] .m-heads:empty { display: none; }
+    html[data-ui="mesale"] .m-heads .avatar { box-shadow: 0 0 0 2px #0c0a08, 0 0 0 3px var(--accent), 0 0 14px 2px rgba(242, 163, 58, .46); }
+    html[data-ui="mesale"] .m-heads-text { margin-left: 2px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+
+    html[data-ui="mesale"] #m-bar .music { flex: 0 1 226px; min-width: 120px; margin: 0; padding: 0; flex-direction: row; align-items: center; gap: 8px; border: 0; background: none; }
+    html[data-ui="mesale"] #m-bar .music-top { flex: 1; min-width: 0; }
+    html[data-ui="mesale"] #m-bar .music-art, html[data-ui="mesale"] #m-bar .music-live,
+    html[data-ui="mesale"] #m-bar #music-prev, html[data-ui="mesale"] #m-bar #music-next,
+    html[data-ui="mesale"] #m-bar #music-volume { display: none; }
+    html[data-ui="mesale"] #m-bar .music-controls { order: -1; flex: none; }
+    html[data-ui="mesale"] #m-bar .mc-play { width: 32px; height: 32px; }
+
+    html[data-ui="mesale"] #m-bar .dock { flex: 1 1 0; min-width: 0; height: auto; margin: 0; padding: 0; gap: 10px; border: 0; background: none; box-shadow: none; }
+    html[data-ui="mesale"] #m-bar .dock-ver { flex: 0 1 112px; width: auto; min-width: 74px; padding: 0; }
+    html[data-ui="mesale"] #m-bar .dock-status { padding: 0; border: 0; gap: 6px; }
+    html[data-ui="mesale"] #m-bar .ram-btn { border: 0; background: rgba(255, 226, 186, .07); }
+    html[data-ui="mesale"] #m-bar .btn-play { flex: none; width: auto; min-width: 132px; height: 52px; padding: 0 28px; font-size: 15.5px; }
+    html[data-ui="mesale"] #m-bar .btn-play:disabled { min-width: 132px; height: 52px; }
+    html[data-ui="mesale"] #m-bar.has-join .dock .btn-play { min-width: 76px; height: 40px; padding: 0 12px; background: rgba(255, 226, 186, .09); color: var(--text); box-shadow: none; font-size: 13.5px; }
+    html[data-ui="mesale"] #m-bar .m-join { flex: none; height: 52px; padding: 0 24px; font-size: 15.5px; white-space: nowrap; }
+    html[data-ui="mesale"] #m-bar .ram-pop { bottom: calc(100% + 16px); }
+
+    /* Süren işlem çubukta görünür; ayrı rozet gerekmez. İndirme paneli çubuğun üstünde durur. */
+    html[data-ui="mesale"] #activity { display: none; }
+    html[data-ui="mesale"] #view-main > .dl { bottom: 90px; z-index: 8; }
+    html[data-ui="mesale"] #view-main > .dl.at-top { top: calc(var(--titlebar-h) + 14px); bottom: auto; }
+
+    /* ── Sayfalar ────────────────────────────────────────────────── */
+    html[data-ui="mesale"] .page-head h1 { font-weight: 300; font-size: 34px; letter-spacing: -.03em; }
+    html[data-ui="mesale"] .mr-layout { grid-template-columns: 208px minmax(0, 1fr); gap: 16px; }
+    html[data-ui="mesale"] .mr-side { order: -1; }
+    html[data-ui="mesale"] .mr-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(430px, 1fr)); gap: 9px; }
+
+    /* Dar pencerede önce yan bilgiler çekilir */
+    @media (max-width: 1180px) {
+        html[data-ui="mesale"] #m-bar #music-mute { display: none; }
+        html[data-ui="mesale"] .tb-tag { display: none; }
+        html[data-ui="mesale"] .m-heads-text { display: none; }
+        html[data-ui="mesale"] #m-bar { gap: 12px; }
+    }
+    @media (max-width: 1040px) {
+        html[data-ui="mesale"] .tb-brand span { display: none; }
+        html[data-ui="mesale"] .tb-tabs { margin-left: 12px; }
+        html[data-ui="mesale"] .tb-tabs button { padding: 0 8px; }
+        html[data-ui="mesale"] .stats { display: none; }
+        html[data-ui="mesale"] #m-bar .music { display: none; }
+        html[data-ui="mesale"] .mr-layout { grid-template-columns: 180px minmax(0, 1fr); }
+    }
+}

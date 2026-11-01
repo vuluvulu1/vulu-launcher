@@ -193,13 +193,13 @@ async function openSettingsPage() {
     })));
     renderSwatches(s.accentColor);
 
-    const theme = ['neon', 'atlas'].includes(document.documentElement.dataset.ui) ? document.documentElement.dataset.ui : 'classic';
+    const theme = ['neon', 'atlas', 'mesale'].includes(document.documentElement.dataset.ui) ? document.documentElement.dataset.ui : 'classic';
     const look = el('section', { class: 'set-section' },
         el('h2', {}, 'Ses ve görünüm'),
         isDesktopApp() && settingRow('Yazı ve arayüz boyutu', 'Pencere aynı kalır, içindeki bütün yazılar ve düğmeler büyür ya da küçülür. Büyük ekranlarda "Büyük" daha rahat okunur.',
             segmentedControl(UI_SCALES, String(s.uiScale || 100), value => changeSetting({ uiScale: Number(value) }))),
-        settingRow('Tema', 'Neon: siberpunk, koyu ve parlak. Atlas: kâşif defteri, açık renkli. ' + (isDesktopApp() ? 'Bu bilgisayar' : 'Bu cihaz') + ' için hatırlanır.',
-            segmentedControl([['classic', 'Klasik'], ['neon', 'Neon'], ['atlas', 'Atlas']], theme, async value => {
+        settingRow('Tema', 'Neon: siberpunk, koyu ve parlak. Atlas: kâşif defteri, açık renkli. Meşale: karanlıkta sıcak bir ışık. ' + (isDesktopApp() ? 'Bu bilgisayar' : 'Bu cihaz') + ' için hatırlanır.',
+            segmentedControl([['classic', 'Klasik'], ['neon', 'Neon'], ['atlas', 'Atlas'], ['mesale', 'Meşale']], theme, async value => {
                 // Vurgu rengi satırı yalnızca klasik temada var; sayfa, tema değiştiği anda yenilenir
                 await setUiTheme(value, () => openSettingsPage());
                 return true;
@@ -350,6 +350,7 @@ const THEME_FX = {
     neon: { className: 'glitch', rootClass: 'fx-glitch', swapAt: 340, duration: 760 },   // → neon: sinyal bozulması
     classic: { className: 'iris', rootClass: null, swapAt: 550, duration: 1100 },        // → klasik: altın iris
     atlas: { className: 'page', rootClass: null, swapAt: 500, duration: 1000 },          // → atlas: sayfa çevrilir
+    mesale: { className: 'iris', rootClass: null, swapAt: 550, duration: 1100 },         // → meşale: altın iris
 };
 let themeFxRunning = false;
 
@@ -362,13 +363,15 @@ async function setUiTheme(theme, onSwap) {
     const apply = () => {
         root.dataset.ui = theme;
         store.set('uiTheme', theme);
+        applyMesaleLayout();
+        syncMesaleBar();
         if (typeof renderDownloads === 'function') renderDownloads();
         if (onSwap) onSwap();
     };
 
     const fx = THEME_FX[theme];
     if (root.dataset.ui === theme || !fx || themeFxRunning) { apply(); return; }
-    if (isMobile()) { await liteThemeFx(theme, apply); return; }
+    if (isMobile()) { if (LITE_FX[theme]) await liteThemeFx(theme, apply); else apply(); return; }
 
     themeFxRunning = true;
     const layer = el('div', { id: 'theme-fx', class: fx.className, 'aria-hidden': 'true' });

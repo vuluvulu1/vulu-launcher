@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="css/neon.css">
     <link rel="stylesheet" href="css/atlas.css">
+    <link rel="stylesheet" href="css/mesale.css">
     <link rel="stylesheet" href="css/mobile.css">
     <!-- Tema, ilk çizimden önce seçilir ki açılış animasyonu da doğru temada başlasın -->
     <!--
@@ -30,7 +31,7 @@
             addEventListener('resize', fit);
         })();
     </script>
-    <script>try { const t = localStorage.getItem('uiTheme'); document.documentElement.dataset.ui = t === 'neon' || t === 'atlas' ? t : 'classic'; } catch { }</script>
+    <script>try { const t = localStorage.getItem('uiTheme'); document.documentElement.dataset.ui = ['neon', 'atlas', 'mesale'].includes(t) ? t : 'classic'; } catch { }</script>
 </head>
 <body>
     <!-- ── Başlık çubuğu (pencere çerçevesiz; sürükleme buradan) ───────── -->
@@ -539,6 +540,7 @@
     <script src="js/announcements.js"></script>
     <script src="js/radioadmin.js"></script>
     <script src="js/settings.js"></script>
+    <script src="js/mesale.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
