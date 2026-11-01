@@ -1,10 +1,11 @@
-// Meşale teması: masaüstünde oyun çubuğu her sayfada görünür. Yeni düğme yazılmaz; Oyna sayfasındaki alt çubuk ve radyo
-// tema seçiliyken aynı öğeler olarak #m-bar'a taşınır, tema değişince yerlerine döner (id'ler ve dinleyiciler korunur).
+// Oyun çubuğu: masaüstünde her temada, her sayfada görünür. Yeni düğme yazılmaz; Oyna sayfasındaki alt çubuk ve radyo
+// aynı öğeler olarak #m-bar'a taşınır, dar pencerede yerlerine döner (id'ler ve dinleyiciler korunur). Görünümü temanın
+// kendi CSS'inde (css/mesale.css, css/gamebar.css). Dosyanın sonundaki yanarak açılış yalnızca Meşale'nindir.
 const mesale = { bar: null, heads: null, membersLoaded: false };
 
-/** Telefon yerleşimi (css/mobile.css) yalnızca renkleri alır; çubuk 900 px'ten geniş pencerelerde kurulur. */
+/** Telefon yerleşiminde (css/mobile.css) çubuk yoktur; 900 px'ten geniş pencerelerde kurulur. */
 function mesaleLayoutActive() {
-    return document.documentElement.dataset.ui === 'mesale' && innerWidth > 900;
+    return innerWidth > 900;
 }
 
 function buildMesaleBar() {

@@ -1,0 +1,167 @@
+/*
+ * vulu Launcher — Klasik, Neon ve Atlas için oyun çubuğu ve Meşale'den gelen ortak yerleşim
+ *
+ * Çubuk her sayfada altta durur; öğeleri js/mesale.js taşır. Bu dosya iskelettir, her temanın rengi ve biçimi
+ * aşağıdaki kendi bölümünde. Meşale'nin kuralları css/mesale.css'te. 900 px altında hiçbir şey uygulanmaz.
+ */
+@media (min-width: 901px) {
+    /* ── İskelet ─────────────────────────────────────────────────── */
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #view-main { grid-template-rows: minmax(0, 1fr) 76px; overflow: clip; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #view-main > .page { position: relative; z-index: 1; grid-row: 1; grid-column: 2; min-height: 0; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #view-main > .rail { position: relative; z-index: 2; grid-row: 1; grid-column: 1; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar {
+        position: relative; z-index: 6; grid-row: 2; grid-column: 1 / -1;
+        display: flex; align-items: center; gap: 16px; min-width: 0; padding: 0 18px;
+    }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .m-current { flex: 0 1 210px; min-width: 130px; display: flex; align-items: center; gap: 12px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .m-cover { flex: none; width: 50px; height: 50px; display: grid; place-items: center; background: var(--raised) center / cover no-repeat; color: var(--muted); font-weight: 700; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .m-current-text { min-width: 0; display: flex; flex-direction: column; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .m-current-text b { font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .music { flex: 0 1 306px; min-width: 120px; width: auto; height: auto; margin: 0; padding: 0; display: flex; flex-direction: row; align-items: center; gap: 8px; border: 0; background: none; box-shadow: none; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .music-top { flex: 1; min-width: 0; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .music-art, html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .music-live, html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar #music-prev, html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar #music-next { display: none; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .music-controls { order: -1; flex: none; margin: 0; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .music-controls input[type=range] { flex: none; width: 76px; height: auto; margin: 0 4px 0 2px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .mc-btn { width: 32px; height: 32px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .mc-btn svg { width: 19px; height: 19px; stroke: var(--text); }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .mc-play { width: 32px; height: 32px; }
+
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .dock { flex: 1 1 0; min-width: 0; min-height: 0; height: auto; margin: 0; padding: 0; align-self: center; flex-direction: row; align-items: center; gap: 10px; border: 0; background: none; box-shadow: none; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .dock::before, html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .dock::after { display: none; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .dock-ver { flex: 0 1 112px; width: auto; min-width: 74px; padding: 0; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .dock-status { padding: 0; border: 0; gap: 6px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .ram-wrap { width: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .ram-btn { width: auto; height: 38px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .ram-pop { left: auto; right: 0; width: 220px; bottom: calc(100% + 16px); }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .btn-play { flex: none; width: auto; min-width: 132px; height: 50px; padding: 0 28px; font-size: 15.5px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .m-join { flex: none; height: 50px; padding: 0 24px; font-size: 15px; font-weight: 700; white-space: nowrap; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar.has-join .dock .btn-play { min-width: 76px; height: 40px; padding: 0 12px; font-size: 13.5px; }
+
+    /* Süren işlem çubukta görünür; indirme paneli çubuğun üstünde durur */
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #activity { display: none; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #view-main > .dl { bottom: 88px; z-index: 8; }
+
+    /* ── Oyna: sunucu kartı ve oyuncular yan yana ────────────────── */
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .stage-hero .hero-row { width: 100%; flex-wrap: nowrap; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .stage-hero .pack-actions { flex: none; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .stage-hero .pack-server { flex: 1 1 300px; min-width: 240px; max-width: 460px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .stage-hero .pack-server-name { white-space: nowrap; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .hero-row:has(.pack-actions > :nth-child(3)) .m-heads-text { display: none; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .m-heads { flex: none; display: flex; align-items: center; gap: 8px; min-height: 60px; padding: 8px 14px; background: var(--glass); border: 1px solid var(--line); text-shadow: none; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .m-heads:empty { display: none; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .m-heads .avatar { box-shadow: 0 0 0 2px var(--panel), 0 0 0 3px var(--accent); }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .m-heads-text { margin-left: 4px; font-size: 13px; color: var(--text); white-space: nowrap; }
+
+    /* ── Küçük düğmeler görünsün ─────────────────────────────────── */
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .tb-btn { width: 38px; height: 34px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .tb-btn svg { width: 13px; height: 13px; stroke: var(--text); stroke-width: 1.7; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #btn-search svg, html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #btn-notif svg, html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #btn-feedback svg { width: 19px; height: 19px; stroke-width: 2; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .tb-close:hover { background: #b33a2b; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .tb-close:hover svg { stroke: #fff; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .console-head .link-btn, html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .info-tabs button { color: var(--text); font-size: 13px; }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .console-head .link-btn:hover, html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .info-tabs button.active { color: var(--accent-hi); }
+    html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .announcement-close { color: var(--text); font-size: 22px; }
+
+    /* Dar pencerede önce yan bilgiler çekilir */
+    @media (max-width: 1180px) {
+        html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar { gap: 12px; }
+        html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .music { flex: none; min-width: 0; }
+        html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .music-top, html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .m-heads-text { display: none; }
+        html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .hero-row:has(.pack-actions > :nth-child(3)) .pack-server-icon,
+        html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .hero-row:has(.pack-actions > :nth-child(3)) .pack-server-players { display: none; }
+    }
+    @media (max-width: 1040px) {
+        html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) .stage-hero .hero-row { flex-wrap: wrap; }
+        html:is([data-ui="classic"], [data-ui="neon"], [data-ui="atlas"]) #m-bar .music { display: none; }
+    }
+
+    /* ── Klasik ve Neon: konsol sağ sütunda, dünya görünür kalır ─── */
+    html:is([data-ui="classic"], [data-ui="neon"]) #view-main::before {
+        content: ""; position: absolute; inset: -40px; z-index: 0; pointer-events: none;
+        background: var(--m-art, none) center / cover no-repeat;
+        filter: blur(26px) brightness(.16) saturate(1.3);
+    }
+    html:is([data-ui="classic"], [data-ui="neon"]) .page-scroll { background: transparent; }
+    html:is([data-ui="classic"], [data-ui="neon"]) #page-home {
+        display: grid; grid-template-columns: minmax(0, 1fr) clamp(290px, 27vw, 360px); grid-template-rows: auto minmax(0, 1fr);
+        grid-template-areas: "notice console" "hero console"; gap: 0 20px; padding: 20px;
+    }
+    html:is([data-ui="classic"], [data-ui="neon"]) #announcement { grid-area: notice; margin-bottom: 8px; }
+    html:is([data-ui="classic"], [data-ui="neon"]) .stage-body { grid-area: hero; padding: 0 0 2px; }
+    html:is([data-ui="classic"], [data-ui="neon"]) #console,
+    html:is([data-ui="classic"], [data-ui="neon"]) #console.expanded { grid-area: console; align-self: end; height: 100%; max-height: 520px; min-height: 0; background: var(--glass); }
+    html:is([data-ui="classic"], [data-ui="neon"]) #console.expanded { max-height: none; }
+    html:is([data-ui="classic"], [data-ui="neon"]) .console-head { height: auto; min-height: 42px; flex-wrap: wrap; gap: 0 4px; padding: 0 6px; }
+    html:is([data-ui="classic"], [data-ui="neon"]) .console-head > div:last-child { margin-left: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"]) .info-tabs { flex-wrap: wrap; height: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"]) .info-tabs button { height: 40px; padding: 0 6px; font-size: 12.5px; }
+    html:is([data-ui="classic"], [data-ui="neon"]) .info-strip { flex-direction: column; align-items: stretch; height: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"]) .info-world { width: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"]) .info-shot { width: 100%; height: auto; }
+    html:is([data-ui="classic"], [data-ui="neon"]) .info-more { align-self: flex-start; padding: 4px 0; }
+
+    /* ── Klasik: bakır ───────────────────────────────────────────── */
+    html[data-ui="classic"] #m-bar { background: linear-gradient(0deg, #0f0c09, var(--panel)); border-top: 1px solid var(--line-strong); }
+    html[data-ui="classic"] .m-cover { border-radius: var(--r); box-shadow: 0 0 0 1px var(--line-strong); }
+    html[data-ui="classic"] .btn-primary, html[data-ui="classic"] .btn-play:not(:disabled), html[data-ui="classic"] #m-bar .mc-play {
+        border: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 86%, #fff), var(--accent)); color: var(--accent-ink);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .24);
+    }
+    html[data-ui="classic"] .btn-primary:hover:not(:disabled), html[data-ui="classic"] .btn-play:hover:not(:disabled) { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 74%, #fff), color-mix(in srgb, var(--accent) 90%, #fff)); }
+    html[data-ui="classic"] .pack-server .btn-primary { border: 1px solid var(--line-strong); background: var(--raised); color: var(--text); box-shadow: none; }
+    html[data-ui="classic"] #m-bar.has-join .dock .btn-play { border: 1px solid var(--line-strong); background: var(--raised); color: var(--text); box-shadow: none; }
+    html[data-ui="classic"] .btn:not(.btn-primary):not(.btn-danger):not(.btn-play) { border-color: var(--line-strong); background: var(--raised); }
+    html[data-ui="classic"] .tb-tabs button.active { background: var(--accent-soft); color: var(--accent-hi); }
+    /* Dünya görünsün: karartma yalnızca yazının ve sütunun altında */
+    html[data-ui="classic"] .stage-bg::after { background: linear-gradient(90deg, rgba(10, 8, 6, .5), transparent 24%, transparent 60%, rgba(10, 8, 6, .6)), linear-gradient(180deg, rgba(10, 8, 6, .4), transparent 18%, transparent 50%, rgba(10, 8, 6, .86)); }
+    html[data-ui="classic"] .stage-hero { text-shadow: 0 1px 14px rgba(0, 0, 0, .7); }
+    html[data-ui="classic"] .pack-desc { color: var(--text); }
+
+    /* ── Neon: HUD ───────────────────────────────────────────────── */
+    html[data-ui="neon"] #view-main { grid-template-rows: auto minmax(0, 1fr) 76px; grid-template-areas: "strip" "page" "bar"; }
+    html[data-ui="neon"] #view-main:not(:has(#page-home:not([hidden]))) { grid-template-rows: minmax(0, 1fr) 76px; grid-template-areas: "page" "bar"; }
+    html[data-ui="neon"] #view-main > .page { grid-area: page; }
+    html[data-ui="neon"] #view-main > .rail { grid-area: strip; }
+    html[data-ui="neon"] #m-bar { grid-area: bar; background: linear-gradient(180deg, #0a0a18, #06060e); border-top: 1px solid rgba(0, 234, 255, .3); box-shadow: 0 -8px 24px rgba(0, 234, 255, .07); }
+    html[data-ui="neon"] .stage-bg::after { background: linear-gradient(180deg, rgba(6, 6, 12, .3), transparent 26%, rgba(6, 6, 14, .4) 56%, rgba(6, 6, 12, .9)), linear-gradient(90deg, rgba(6, 6, 12, .6), transparent 40%, rgba(6, 6, 12, .5)), linear-gradient(135deg, rgba(255, 43, 214, .1), rgba(0, 234, 255, .07)); }
+    html[data-ui="neon"] .m-cover { box-shadow: 0 0 0 1px var(--accent), 0 0 14px rgba(0, 234, 255, .4); clip-path: var(--notch-sm); }
+    html[data-ui="neon"] .m-current-text b { font-family: var(--font-hud); letter-spacing: .03em; }
+    html[data-ui="neon"] #m-bar .btn-play { letter-spacing: .2em; font-size: 15px; }
+    html[data-ui="neon"] #m-bar .m-join { letter-spacing: .04em; font-size: 14px; }
+    html[data-ui="neon"] #m-bar.has-join .dock .btn-play { background: rgba(4, 4, 12, .9); color: var(--accent); box-shadow: inset 0 0 0 1px rgba(0, 234, 255, .45); letter-spacing: .06em; }
+    html[data-ui="neon"] #m-bar.has-join .dock .btn-play::after { display: none; }
+    html[data-ui="neon"] .m-heads { border-color: rgba(0, 234, 255, .3); }
+    html[data-ui="neon"] .m-heads .avatar { box-shadow: 0 0 0 2px #06060e, 0 0 0 3px var(--accent), 0 0 12px rgba(0, 234, 255, .55); }
+    html[data-ui="neon"] .m-heads-text { font-family: var(--font-hud); }
+    html[data-ui="neon"] #view-main > .dl.at-top { right: 16px; }
+    html[data-ui="neon"] #console, html[data-ui="neon"] #console.expanded { background: rgba(8, 8, 20, .88); }
+
+    /* ── Atlas: kâğıt şerit ve mühür ─────────────────────────────── */
+    html[data-ui="atlas"] #m-bar { background: var(--paper-noise), var(--surface); border-top: 1px solid rgba(70, 45, 20, .22); box-shadow: 0 -4px 14px rgba(70, 45, 20, .12); }
+    html[data-ui="atlas"] .m-cover { padding: 0; border: 3px solid #fbf8f0; box-shadow: 0 1px 3px rgba(70, 45, 20, .35); transform: rotate(-2deg); }
+    html[data-ui="atlas"] .m-current-text b { font: italic 700 15px var(--font-serif); color: var(--ink); }
+    html[data-ui="atlas"] #m-bar .btn-play:not(.m-join) { width: 56px; min-width: 56px; height: 56px; padding: 2px; font-size: 12px; }
+    html[data-ui="atlas"] #m-bar .btn-play:not(.m-join)::before { inset: 4px; }
+    html[data-ui="atlas"] #m-bar .btn-play:disabled:not(.m-join) { font-size: 10.5px; }
+    html[data-ui="atlas"] #m-bar .m-join { border-radius: var(--r); width: auto; font: 700 15px var(--font-serif); box-shadow: 0 2px 6px rgba(110, 30, 20, .35); }
+    html[data-ui="atlas"] #m-bar .m-join::before { display: none; }
+    html[data-ui="atlas"] #m-bar .mc-play { background: var(--accent); color: #fbe9dc; }
+    html[data-ui="atlas"] #m-bar.has-join .dock .btn-play { width: 56px; min-width: 56px; height: 56px; padding: 2px; font-size: 12px; }
+    html[data-ui="atlas"] .m-heads { background: var(--surface); border-color: rgba(70, 45, 20, .25); }
+    html[data-ui="atlas"] .m-heads .avatar { box-shadow: 0 0 0 2px #fbf8f0, 0 1px 3px 2px rgba(70, 45, 20, .3); }
+    html[data-ui="atlas"] .m-heads-text { font: italic 14px var(--font-serif); color: var(--ink); }
+    html[data-ui="atlas"] .tb-btn svg { stroke: var(--ink); }
+    html[data-ui="atlas"] .tb-btn:hover { background: rgba(70, 45, 20, .1); }
+    html[data-ui="atlas"] .tb-close:hover { background: #b33a2b; }
+    html[data-ui="atlas"] .tb-close:hover svg { stroke: #fff; }
+    html[data-ui="atlas"] .btn:not(.btn-primary):not(.btn-danger):not(.btn-play) { border-color: rgba(70, 45, 20, .35); }
+    html[data-ui="atlas"] .stage-hero .hero-row { flex-wrap: wrap; }
+    html[data-ui="atlas"] .stage-hero .pack-server { max-width: none; }
+    @media (max-width: 1040px) {
+        html[data-ui="atlas"] .tb-brand span { display: none; }
+        html[data-ui="atlas"] .tb-tabs button { font-size: 0; gap: 0; padding: 0 11px; }
+        html[data-ui="atlas"] .tb-tabs button svg { width: 16px; height: 16px; }
+        html[data-ui="atlas"] .set-row { flex-wrap: wrap; }
+    }
+}
