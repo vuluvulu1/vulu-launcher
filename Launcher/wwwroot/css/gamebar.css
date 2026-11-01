@@ -146,4 +146,59 @@
     html[data-ui="atlas"] .m-cover { border-radius: var(--r); box-shadow: 0 0 0 1px var(--accent), 0 0 12px rgba(92, 194, 173, .3); }
     html[data-ui="atlas"] .m-current-text b { font-family: var(--font-serif); font-style: italic; }
     html[data-ui="atlas"] #m-bar.has-join .dock .btn-play { border: 1px solid var(--line-strong); background: var(--raised); color: var(--text); box-shadow: none; }
+
+    /* Yerleşim: solda boydan boya pafta, ortada dünya, sağda seyir paneli; paketler altta çekmece gibi dizilir */
+    html[data-ui="atlas"] #view-main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto 76px; }
+    html[data-ui="atlas"] #view-main:not(:has(#page-home:not([hidden]))) { grid-template-rows: minmax(0, 1fr) 76px; }
+    html[data-ui="atlas"] #view-main > .page { grid-column: 1; grid-row: 1; }
+    html[data-ui="atlas"] #view-main > .rail { grid-column: 1; grid-row: 2; border-right: 0; border-top: 1px solid var(--line); }
+    html[data-ui="atlas"] #view-main:not(:has(#page-home:not([hidden]))) #m-bar { grid-row: 2; }
+    html[data-ui="atlas"] #m-bar { grid-row: 3; }
+    html[data-ui="atlas"] .rail-scroll { display: flex; align-items: center; gap: 8px; min-width: 0; overflow-x: auto; overflow-y: hidden; padding: 8px 16px; }
+    html[data-ui="atlas"] .pack-list { flex-direction: row; gap: 8px; margin: 0; padding: 0; }
+    html[data-ui="atlas"] #pack-list { padding: 0; }
+    html[data-ui="atlas"] .rail h2.rail-head, html[data-ui="atlas"] .pack-empty { display: none; }
+    html[data-ui="atlas"] .pack-card { flex: none; width: 200px; margin: 0; }
+    html[data-ui="atlas"] .new-instance { flex: none; width: 84px; height: 56px; margin: 0; text-align: center; }
+
+    html[data-ui="atlas"] #page-home {
+        grid-template-columns: clamp(320px, 29vw, 400px) minmax(0, 1fr) clamp(280px, 24vw, 330px); grid-template-rows: auto minmax(0, 1fr);
+        grid-template-areas: "hero notice console" "hero . console"; gap: 0 16px; padding: 16px;
+    }
+    html[data-ui="atlas"] .stage-body {
+        align-self: stretch; padding: 18px; border: 1px solid var(--line-strong); border-radius: var(--r-lg);
+        background: var(--chart-grid), rgba(14, 22, 25, .9); box-shadow: 0 14px 34px rgba(0, 0, 0, .36);
+    }
+    html[data-ui="atlas"] .stage-hero { margin-top: 0; min-height: 100%; }
+    html[data-ui="atlas"] .pack-title { font-size: clamp(34px, 3.4vw, 48px); text-shadow: none; }
+    html[data-ui="atlas"] .pack-logo { max-width: 100%; max-height: 120px; }
+    html[data-ui="atlas"] .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+    html[data-ui="atlas"] .stat { min-width: 0; }
+    html[data-ui="atlas"] .stage-hero .hero-row { margin-top: auto; flex-direction: column; align-items: stretch; }
+    html[data-ui="atlas"] .stage-hero .pack-server { flex: none; min-width: 0; max-width: none; }
+    html[data-ui="atlas"] .stage-hero .pack-server-text { min-width: 0; }
+    html[data-ui="atlas"] .m-heads { align-self: stretch; }
+    html[data-ui="atlas"] .m-heads-text { display: inline; }
+    html[data-ui="atlas"] #console, html[data-ui="atlas"] #console.expanded { align-self: stretch; max-height: none; }
+    html[data-ui="atlas"] #announcement { align-self: start; }
+
+    /* Sekmeler markanın ardında; seçili olan noktalı rota çizgisiyle işaretlenir */
+    html[data-ui="atlas"] .tb-tabs { position: relative; left: auto; transform: none; margin: 0 auto 0 22px; height: 100%; gap: 2px; }
+    html[data-ui="atlas"] .tb-tabs button { position: relative; height: 100%; border: 0; border-radius: 0; background: none; }
+    html[data-ui="atlas"] .tb-tabs button:hover { background: none; }
+    html[data-ui="atlas"] .tb-tabs button.active { background: none; color: var(--accent-hi); }
+    html[data-ui="atlas"] .tb-tabs button.active::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: 7px; border-bottom: 2px dotted var(--accent); }
+
+    /* vulu Packs: resim solda, bilgiler sağda */
+    html[data-ui="atlas"] .packs-grid { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+    html[data-ui="atlas"] .pack-tile { flex-direction: row; }
+    html[data-ui="atlas"] .pack-cover { flex: 0 0 42%; width: auto; height: auto; aspect-ratio: auto; }
+
+    @media (max-width: 1100px) {
+        html[data-ui="atlas"] #page-home { grid-template-columns: clamp(280px, 40vw, 340px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "hero notice" "hero console"; }
+        html[data-ui="atlas"] #announcement { margin-bottom: 8px; }
+        html[data-ui="atlas"] .stage-hero .pack-server { flex-wrap: wrap; }
+        html[data-ui="atlas"] .stage-hero .pack-server-icon { display: none; }
+        html[data-ui="atlas"] .packs-grid { grid-template-columns: minmax(0, 1fr); }
+    }
 }
