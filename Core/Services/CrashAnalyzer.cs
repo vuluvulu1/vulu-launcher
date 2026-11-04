@@ -43,14 +43,16 @@ namespace VuluLauncher
             string output = string.Join("\n", exit.Output);
             string text = report + "\n" + log + "\n" + output;
 
-            bool loadError = Regex.IsMatch(text, @"Error loading mods|ModLoadingException|LoadingFailedException|Missing or unsupported mandatory dependencies|Incompatible mods? found|which is missing!");
+            bool loadError = Regex.IsMatch(text, @"Error loading mods|ModLoadingException|LoadingFailedException|Missing or unsupported mandatory dependencies|Incompatible mods? found|requires [^\n]{0,200}which is missing!");   // "recommends ... which is missing!" yalnızca öneridir
             // Oyun tam açıldıktan sonra kanıtsız sıfırdan farklı çıkış çökme sayılmaz: oyuncu pencereyi kapatmış ya da süreci
             // sonlandırmıştır (bazı modlar kapanırken de çıkış kodunu bozar). Gerçek çökme rapor ya da hs_err dosyası bırakır.
             bool started = Regex.IsMatch(text, @"Stopping!|Created: \d+x\d+x\d+ minecraft:textures/atlas/");
+            if (started) loadError = false;   // oyun açıldıysa yükleme sırasında öldürücü bir hata olmamıştır
             bool evidence = report.Length > 0 || loadError || JvmCrashed(exit.InstanceDir, exit.StartedUtc) || text.Contains("java.lang.OutOfMemoryError");
             // Oyuncu oyundan çıkmış ve dünya kaydedilmişse kapanış sırasındaki çöküş (ör. Java'nın son anda belleği bitmesi)
             // çökme penceresiyle gösterilmez: oyuncu için oyun düzgün kapanmıştır. Minecraft'ın kendi çökme raporu yine sayılır.
-            bool quitting = Regex.IsMatch(log, @"Stopping!|Stopping worker threads|All dimensions are saved");
+            // Yalnızca oyunun kendisi kapanırken yazılan satırlar ("dünya kaydedildi" ana menüye dönünce de yazılır)
+            bool quitting = Regex.IsMatch(log, @"Stopping!|Stopping worker threads");
             if (quitting && report.Length == 0 && !loadError) evidence = false;
             bool crashed = evidence || (exit.ExitCode != 0 && !started && !quitting);
             if (!crashed) return new CrashAnalysis(false, null, null, Array.Empty<CrashFinding>());

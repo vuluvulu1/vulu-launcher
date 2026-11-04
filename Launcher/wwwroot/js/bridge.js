@@ -291,6 +291,7 @@ const mockBackend = (() => {
             { key: 'images', label: 'Avatar, banner ve skinler', bytes: 9 * 1048576 }, { key: 'messages', label: 'Mesajlar', bytes: 2 * 1048576 }] }; },
         'app.takeAction': async () => null,
         'app.takeNotification': async () => null,
+        'crash.takePending': async () => null,
         'shortcuts.icon': async () => null,
         'shortcuts.create': async () => ({ path: 'C:\\Users\\vulu\\Desktop\\x.lnk' }),
         'social.shot': async args => mockFeed.find(s => s.id === args.id),

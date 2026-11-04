@@ -461,6 +461,9 @@ async function enterLauncher(session, { resume = false } = {}) {
 
     await runStartupAction();   // masaüstü kısayolundan açıldıysa
     await onNotificationClicked();   // kapalıyken ya da giriş ekranındayken bildirime dokunulduysa
+    // Launcher simge durumundayken oyun çöktüyse özeti şimdi göster
+    const pendingCrash = await bridge.invoke('crash.takePending').catch(() => null);
+    if (pendingCrash) showCrashDialog(pendingCrash);
     if (!resume && !store.get('tourDone', false)) await startTour();
     await offerLauncherUpdate();
 }

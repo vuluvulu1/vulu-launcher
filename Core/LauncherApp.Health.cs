@@ -13,8 +13,17 @@ namespace VuluLauncher
         private const string DisabledSuffix = ".disabled";
         private static readonly Regex ReportName = new(@"^crash-[A-Za-z0-9_.\-]{1,80}\.txt$", RegexOptions.Compiled);
 
+        // Arayüz kapalıyken olan son çökmenin özeti (pencere açılınca bir kez gösterilir)
+        private object? _pendingCrash;
+
         private void RegisterHealthCommands()
         {
+            _bridge.On("crash.takePending", _ =>
+            {
+                object? crash;
+                lock (_actionGate) { crash = _pendingCrash; _pendingCrash = null; }
+                return Task.FromResult(crash);
+            });
             _bridge.On("crash.openReport", args => Task.FromResult<object?>(OpenCrashReport(args.Str("instanceId"), args.Str("file"))));
             _bridge.On("instances.setContentEnabled", args => Task.FromResult<object?>(SetContentEnabled(args.Str("id"), args.Str("file"), args.Bool("enabled"))));
             _bridge.On("instances.checkUpdates", async args => await CheckUpdatesAsync(args.Str("id")));
@@ -44,7 +53,7 @@ namespace VuluLauncher
                     findings.Add(new { kind = f.Kind, title = f.Title, detail = f.Detail, fix = f.Fix, actions = await CrashActionsAsync(f, meta, scan, exit) });
 
                 Log($"Oyun çöktü: {string.Join(" · ", analysis.Findings.Select(f => f.Title))}", "error");
-                _bridge.Emit("gameCrashed", new
+                var crash = new
                 {
                     instanceId,
                     name = exit.Target.Name,
@@ -52,7 +61,14 @@ namespace VuluLauncher
                     description = analysis.Description,
                     exitCode = exit.ExitCode,
                     findings,
-                });
+                };
+                // Launcher simge durumundaysa (arayüz kapalı) özet saklanır; pencere açılınca arayüz "crash.takePending" ile alır
+                if (_host.IsWindowOpen) _bridge.Emit("gameCrashed", crash);
+                else
+                {
+                    lock (_actionGate) _pendingCrash = crash;
+                    ShowNotification($"{exit.Target.Name} çöktü", "Nedenini görmek için tıkla.", "crash");
+                }
             }
             catch (Exception ex) { Log("Çökme raporu okunamadı: " + ex.Message, "muted"); }
         }

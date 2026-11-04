@@ -358,6 +358,10 @@ namespace VuluLauncher.Tests
         }
 
         [Fact]
+        public void RecommendedModMissingIsNotALoadError() =>
+            Assert.False(Run(1, "[main/INFO]:  - Mod 'Debugify' (debugify) 1.20.1+2.0 recommends any 3.x version of yet-another-config-lib, which is missing!" + Environment.NewLine + Atlas).Crashed);
+
+        [Fact]
         public void JvmCrashFileIsACrash()
         {
             File.WriteAllText(Path.Combine(_dir, "hs_err_pid123.log"), "fatal");

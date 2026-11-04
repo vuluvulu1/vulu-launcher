@@ -214,6 +214,9 @@ async function routeNotification(tag) {
         showPage('friends');
     } else if (tag.startsWith('shot:')) {
         openSharedShot(tag.slice(5));
+    } else if (tag === 'crash') {
+        const crash = await bridge.invoke('crash.takePending').catch(() => null);
+        if (crash) showCrashDialog(crash);
     } else if (tag.startsWith('pack:')) {
         const instance = state.instances.find(i => i.id === tag.slice(5));
         if (!instance) return;
