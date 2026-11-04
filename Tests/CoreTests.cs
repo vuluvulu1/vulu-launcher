@@ -80,6 +80,26 @@ namespace VuluLauncher.Tests
         }
 
         [Fact]
+        public void BigPackCountsItsNativeMemory()
+        {
+            // Homestead (632 mod): 7,6 GB boş commit. Eskiden 6 GB seçilirdi; sürecin toplamı ~10 GB olur ve çöker.
+            var result = MemoryCheck.Fit(8, modded: true, new MemoryCheck.Status(TotalGb: 15.9, AvailCommitGb: 7.6), systemDriveFreeGb: 1.3, modCount: 632);
+            Assert.Equal(3, result.RamGb);
+            Assert.True(result.Tight);
+            Assert.Contains("632 mod", result.Warning);
+            Assert.Contains("en az 6 GB", result.Warning);
+        }
+
+        [Fact]
+        public void BigPackWithRoomIsNotTight()
+        {
+            var result = MemoryCheck.Fit(8, modded: true, new MemoryCheck.Status(TotalGb: 32, AvailCommitGb: 20), systemDriveFreeGb: 100, modCount: 632);
+            Assert.Equal(8, result.RamGb);
+            Assert.False(result.Tight);
+            Assert.Null(result.Warning);
+        }
+
+        [Fact]
         public void AlmostNoMemoryStillTriesMinimum()
         {
             var result = MemoryCheck.Fit(4, modded: false, new MemoryCheck.Status(TotalGb: 8, AvailCommitGb: 1.5), systemDriveFreeGb: 50);

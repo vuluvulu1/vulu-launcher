@@ -36,7 +36,12 @@ namespace VuluLauncher
             _modrinth = new ModrinthService(Log);
             _curseforge = new CurseForgeService(_api, Log);
             _game = new GameLauncher(Log, _java, host.GameRunner);
-            _game.Exited += () => { StopPlayTime(); _bridge.Emit("gameExited"); _discord.ShowIdle(); PresenceIdle(); _ = ReportCrashIfAnyAsync(); };
+            _game.Exited += () =>
+            {
+                StopPlayTime(); _bridge.Emit("gameExited"); _discord.ShowIdle(); PresenceIdle(); _ = ReportCrashIfAnyAsync();
+                // Bellek için simge durumuna alındıysa oyun kapanınca launcher geri gelir
+                if (Interlocked.Exchange(ref _hidForMemory, 0) == 1) _host.BringToFront();
+            };
             // Arayüz hangi sayfada olunduğunu (ve Oyna'da seçili instance'ı) bildirir
             _bridge.On("discord.page", args =>
             {
@@ -125,6 +130,9 @@ namespace VuluLauncher
         /// Bütün bildirimler buradan geçer: launcher öndeyse arayüzün içinde sağ altta kart olarak, değilse
         /// (arkada, bildirim alanında, oyundayken) masaüstünde Steam'deki gibi kart olarak gösterilir.
         /// </summary>
+        // Oyun bellek yetmesin diye launcher simge durumuna alındıysa 1 (oyun kapanınca pencere geri açılır)
+        private int _hidForMemory;
+
         // Bildirim merkezi: son bildirimler bellekte tutulur. Launcher simge durumundayken (arayüz kapalı) gelenler de
         // kaybolmaz; pencere açılınca arayüz "notifications.list" ile alır.
         private const int NotificationHistory = 50;
@@ -516,8 +524,17 @@ namespace VuluLauncher
                 PresencePlaying(target, packId, join);
                 _discord.ShowPlaying(target.Name, target.McVersion, target.Loader, await PackImageUrlAsync(instanceId), await ServerNameAsync(join), join != null);
 
+                // Bellek sıkışıksa launcher kendi tarayıcı süreçlerini kapatıp simge durumuna geçer (oyuna ~0,5 GB kalır)
+                var memory = _game.LastMemory;
+                if (memory != null) emitMemoryWarning(memory);
+                if (memory is { Tight: true } && AppSettings.Current.OnGameStart != "close" && _host.CanHideToTray)
+                {
+                    Interlocked.Exchange(ref _hidForMemory, 1);
+                    Log("Bellek az olduğu için launcher oyun süresince simge durumuna geçiyor; oyun kapanınca geri gelir.", "muted");
+                    _ = Task.Delay(1500).ContinueWith(_ => _host.HideToTray());
+                }
                 // Ayarlardaki "oyun açılınca" davranışı
-                switch (AppSettings.Current.OnGameStart)
+                else switch (AppSettings.Current.OnGameStart)
                 {
                     case "minimize":
                         _host.Minimize();
@@ -528,6 +545,12 @@ namespace VuluLauncher
                 }
 
                 return new { started = true, error = (string?)null };
+
+                void emitMemoryWarning(MemoryCheck.Result m)
+                {
+                    if (m.Warning == null) return;
+                    ShowNotification(m.Tight ? "Bellek yetmeyebilir" : "RAM düşürüldü", m.Warning, "memory");
+                }
             }
             catch (Exception ex)
             {

@@ -47,6 +47,8 @@ namespace VuluLauncher
         }
 
         public bool IsRunning => _running == 1;
+        /// <summary>Son açılıştaki bellek denetimi (uyarı ve bellek sıkışık mı).</summary>
+        public MemoryCheck.Result? LastMemory { get; private set; }
         private volatile bool _downloadingGameFiles;   // CmlLib bayt bildirdiyse dosya inmekte demektir
 
         /// <summary>Oyun kapandığında çağrılır.</summary>
@@ -187,8 +189,10 @@ namespace VuluLauncher
                 job.Phase = "Oyun dosyaları kontrol ediliyor";
 
                 // Seçilen RAM bilgisayara sığmazsa oyun "bellek yok" diye çökmesin: sığan en yüksek değerle açılır
-                var memory = MemoryCheck.Fit(ramGb, target.Loader != "vanilla");
+                int modCount = Directory.Exists(Path.Combine(instanceDir, "mods")) ? Directory.EnumerateFiles(Path.Combine(instanceDir, "mods"), "*.jar").Count() : 0;
+                var memory = MemoryCheck.Fit(ramGb, target.Loader != "vanilla", modCount);
                 if (memory.Warning != null) _log(memory.Warning, "warn");
+                LastMemory = memory;
                 ramGb = memory.RamGb;
 
                 var option = new MLaunchOption

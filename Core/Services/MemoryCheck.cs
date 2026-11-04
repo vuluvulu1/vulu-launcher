@@ -10,24 +10,35 @@ namespace VuluLauncher
     /// </summary>
     internal static class MemoryCheck
     {
-        /// <summary>Java'nın heap dışında kullandığı bellek (sınıflar, derlenmiş kod, GC); modlu oyunda daha fazla.</summary>
-        private const double ModdedOverheadGb = 1.5, VanillaOverheadGb = 0.75;
+        /// <summary>
+        /// Java'nın heap dışında kullandığı bellek (sınıflar, derlenmiş kod, GC, mod kütüphaneleri). Mod sayısıyla büyür:
+        /// 632 modlu bir pakette ölçülen ~4 GB (heap 8 GB, sürecin toplamı 12,1 GB).
+        /// </summary>
+        private const double ModdedOverheadGb = 1.5, PerModOverheadGb = 2.75 / 650, MaxModdedOverheadGb = 4.5, VanillaOverheadGb = 0.75;
         /// <summary>Windows ve diğer programlar için RAM'de bırakılan pay.</summary>
         private const double SystemReserveGb = 2.5;
         private const int MinimumGb = 2;
 
-        public sealed record Result(int RamGb, string? Warning);
+        /// <param name="Tight">Sığan RAM paketin rahat açılması için gerekenden az: oyun bellek yetmeyip kapanabilir.</param>
+        public sealed record Result(int RamGb, string? Warning, bool Tight = false);
 
-        public static Result Fit(int requestedGb, bool modded)
+        public static Result Fit(int requestedGb, bool modded, int modCount = 0)
         {
             if (!OperatingSystem.IsWindows() || Read() is not { } status) return new(requestedGb, null);
-            return Fit(requestedGb, modded, status, SystemDriveFreeGb());
+            return Fit(requestedGb, modded, status, SystemDriveFreeGb(), modCount);
         }
 
+        public static double OverheadGb(bool modded, int modCount) =>
+            modded ? Math.Min(MaxModdedOverheadGb, ModdedOverheadGb + PerModOverheadGb * Math.Max(0, modCount)) : VanillaOverheadGb;
+
+        /// <summary>Paketin rahat açılması için gereken en az heap (büyük paketler 3 GB ile yükleme sırasında boğulur).</summary>
+        public static int MinimumHeapGb(bool modded, int modCount) =>
+            !modded ? MinimumGb : modCount >= 400 ? 6 : modCount >= 200 ? 5 : modCount >= 100 ? 4 : 3;
+
         /// <summary>Hesabın kendisi (ölçülen değerlerle; testlerde de kullanılır).</summary>
-        internal static Result Fit(int requestedGb, bool modded, Status status, double? systemDriveFreeGb)
+        internal static Result Fit(int requestedGb, bool modded, Status status, double? systemDriveFreeGb, int modCount = 0)
         {
-            double overhead = modded ? ModdedOverheadGb : VanillaOverheadGb;
+            double overhead = OverheadGb(modded, modCount);
             int byCommit = (int)Math.Floor(status.AvailCommitGb - overhead);
             int byPhysical = (int)Math.Floor(status.TotalGb - SystemReserveGb);
             int limit = Math.Min(byCommit, byPhysical);
@@ -40,9 +51,16 @@ namespace VuluLauncher
             if (byCommit < byPhysical && systemDriveFreeGb is < 5 and var free)
                 hint += $" Sistem diskinde yalnızca {free:0.#} GB yer kaldığı için Windows sanal belleği büyütemiyor; orada yer açmak da işe yarar.";
 
-            if (limit >= MinimumGb)
-                return new(limit, $"{requestedGb} GB yerine {limit} GB ile açılıyor: {reason}.{hint}");
-            return new(MinimumGb, $"Bellek çok az: {reason}. Oyun {MinimumGb} GB ile deneniyor ama açılmayabilir.{hint}");
+            if (limit < MinimumGb)
+                return new(MinimumGb, $"Bellek çok az: {reason}. Oyun {MinimumGb} GB ile deneniyor ama açılmayabilir.{hint}", Tight: true);
+            int need = Math.Min(requestedGb, MinimumHeapGb(modded, modCount));
+            int ram = limit;
+            if (ram < need)
+            {
+                string pack = modCount > 0 ? $"Bu paket ({modCount} mod) en az {need} GB ister" : $"Oyun en az {need} GB ister";
+                return new(ram, $"{pack}, ama {reason}. {ram} GB ile deneniyor; açılırken ya da oynarken bellek yetmeyip kapanabilir.{hint}", Tight: true);
+            }
+            return new(ram, $"{requestedGb} GB yerine {ram} GB ile açılıyor: {reason}.{hint}");
         }
 
         public sealed record Status(double TotalGb, double AvailCommitGb);
