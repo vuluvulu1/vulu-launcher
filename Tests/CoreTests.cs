@@ -341,6 +341,23 @@ namespace VuluLauncher.Tests
         }
 
         [Fact]
+        public void JvmOutOfMemoryWhileQuittingIsNotShown()
+        {
+            // Homestead: oyuncu çıktı, dünya kaydedildi, sonra Java kapanırken belleği bitti (hs_err)
+            File.WriteAllText(Path.Combine(_dir, "hs_err_pid5720.log"), "insufficient memory");
+            Assert.False(Run(1, Atlas + "[Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved\n[Render thread/INFO]: Stopping worker threads\n").Crashed);
+        }
+
+        [Fact]
+        public void OptionalMixinFailureAfterStartupIsNotBlamed()
+        {
+            var result = Run(1, "[main/WARN]: Mixin apply for mod necronomicon failed ... InvalidInjectionException\n" + Atlas
+                + "java.lang.OutOfMemoryError: Java heap space\n");
+            Assert.True(result.Crashed);
+            Assert.DoesNotContain(result.Findings, f => f.Kind == "mixin");
+        }
+
+        [Fact]
         public void JvmCrashFileIsACrash()
         {
             File.WriteAllText(Path.Combine(_dir, "hs_err_pid123.log"), "fatal");

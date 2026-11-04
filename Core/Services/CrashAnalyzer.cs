@@ -48,7 +48,11 @@ namespace VuluLauncher
             // sonlandırmıştır (bazı modlar kapanırken de çıkış kodunu bozar). Gerçek çökme rapor ya da hs_err dosyası bırakır.
             bool started = Regex.IsMatch(text, @"Stopping!|Created: \d+x\d+x\d+ minecraft:textures/atlas/");
             bool evidence = report.Length > 0 || loadError || JvmCrashed(exit.InstanceDir, exit.StartedUtc) || text.Contains("java.lang.OutOfMemoryError");
-            bool crashed = evidence || (exit.ExitCode != 0 && !started);
+            // Oyuncu oyundan çıkmış ve dünya kaydedilmişse kapanış sırasındaki çöküş (ör. Java'nın son anda belleği bitmesi)
+            // çökme penceresiyle gösterilmez: oyuncu için oyun düzgün kapanmıştır. Minecraft'ın kendi çökme raporu yine sayılır.
+            bool quitting = Regex.IsMatch(log, @"Stopping!|Stopping worker threads|All dimensions are saved");
+            if (quitting && report.Length == 0 && !loadError) evidence = false;
+            bool crashed = evidence || (exit.ExitCode != 0 && !started && !quitting);
             if (!crashed) return new CrashAnalysis(false, null, null, Array.Empty<CrashFinding>());
 
             var found = new List<CrashFinding>();
@@ -107,7 +111,8 @@ namespace VuluLauncher
                     "Oyna'daki RAM ayarını artır ya da oyunda görüş mesafesini düşür.");
 
             // ── Mixin: bir modun kodu oyunla uyuşmuyor ────────────────────
-            if (Regex.IsMatch(text, @"MixinApplyError|InvalidInjectionException|MixinTransformerError|Mixin apply failed|InvalidMixinException"))
+            // Oyun açıldıysa logdaki Mixin hataları zorunlu olmayan eklemelerdir (oyun onlarla açıldı); suçlu sayılmaz
+            if (!started && Regex.IsMatch(text, @"MixinApplyError|InvalidInjectionException|MixinTransformerError|Mixin apply failed|InvalidMixinException"))
             {
                 var mods = Regex.Matches(text, @"Mixin \[[^\]\n]{1,200} from mod (" + Id + @")\][^\n]{0,120}(?:FAILED|failed)")
                     .Select(x => x.Groups[1].Value)

@@ -150,7 +150,9 @@ namespace VuluLauncher
                 sizeMb = Math.Round(sizeBytes / 1024.0 / 1024.0, 1),
                 updatedAt = modsChanged?.ToString("o"),
                 playTime = PlayTimeOf(id),
-                manual = isServer ? null : ManualList(RequireCustomInstance(id).PendingManual),
+                // Saklı liste yalnızca yerleştirme akışında temizlenir; dosya başka yoldan yerine konduysa uyarı hemen kalksın
+                manual = isServer ? null : ManualList(RequireCustomInstance(id).PendingManual
+                    .Where(m => Downloader.ResolveInside(path, $"{m.Folder}/{m.FileName}") is not { } p || !File.Exists(p)).ToList()),
             };
         }
 

@@ -44,10 +44,16 @@ function missingDepsDialog(missing, instance) {
  * indirilecekler. 'retry' (düzeltildi, yeniden dene), 'ignore' (yine de oyna) ya da undefined döner.
  */
 function fileProblemsDialog(files, instance) {
-    const bad = [...files.broken.map(b => ({ file: b.file, text: b.reason })),
-        ...files.duplicates.map(d => ({ file: d.file, text: d.reason === 'version'
-            ? `${d.copyOf} ile aynı mod; aynı modun iki sürümü birlikte yüklenemez.`
+    // Fabric ve Quilt aynı kimlikteki iki dosyadan yalnızca yenisini yükler (oyun açılır, eskisi boşa durur);
+    // Forge ve NeoForge ise açılmaz
+    const picksOne = instance.loader === 'fabric' || instance.loader === 'quilt';
+    const bad = [...files.broken.map(b => ({ file: b.file, text: b.reason, severe: true })),
+        ...files.duplicates.map(d => ({ file: d.file, severe: !picksOne, text: d.reason === 'version'
+            ? (picksOne
+                ? `${d.copyOf} ile aynı mod (ikisi de aynı kimliği kullanıyor). Oyun yalnızca yeni sürümü yükler; bu dosya boşuna duruyor.`
+                : `${d.copyOf} ile aynı mod; aynı modun iki sürümü birlikte yüklenemez.`)
             : `${d.copyOf} dosyasının kopyası; aynı mod iki kez yüklenir.` }))];
+    const severe = bad.some(b => b.severe) || files.manual.length > 0;
     const canFix = instance.kind === 'custom';
     return openModal(close => {
         const sections = [];
@@ -76,9 +82,10 @@ function fileProblemsDialog(files, instance) {
                     el('div', { class: 'health-text' }, el('b', {}, m.title), el('span', {}, m.fileName)))))));
         }
         return [
-            el('div', { class: 'modal-head' }, 'Mod dosyalarında sorun var'),
+            el('div', { class: 'modal-head' }, severe ? 'Mod dosyalarında sorun var' : 'Gereksiz mod dosyası var'),
             el('div', { class: 'modal-body health-body' },
-                el('p', { class: 'hint' }, 'Oyun bu dosyalarla büyük ihtimalle açılmaz. Sorunlu dosyalar silinmez, instance klasöründeki mods-yedek klasörüne taşınır.'),
+                el('p', { class: 'hint' }, (severe ? 'Oyun bu dosyalarla büyük ihtimalle açılmaz.' : 'Oyun açılır, ama bu dosyalar boşuna yükleniyor.')
+                    + ' Sorunlu dosyalar silinmez, instance klasöründeki mods-yedek klasörüne taşınır.'),
                 ...sections),
             el('div', { class: 'modal-foot' },
                 el('button', { class: 'btn', onclick: () => close(undefined) }, 'Vazgeç'),
