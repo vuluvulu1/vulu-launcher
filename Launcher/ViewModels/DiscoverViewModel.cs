@@ -102,10 +102,16 @@ namespace VuluLauncher.ViewModels
         [RelayCommand]
         private Task SelectSource(Choice choice)
         {
-            Source = choice.Key;
-            foreach (var s in Sources) s.IsSelected = s == choice;
-            UiState.Set("discoverSource", choice.Key);
+            SetSource(choice.Key);
             return OpenAsync();
+        }
+
+        /// <summary>Kaynağı seçer (yüklemeden; sekme açılınca yüklenir).</summary>
+        public void SetSource(string key)
+        {
+            Source = key;
+            foreach (var s in Sources) s.IsSelected = s.Key == key;
+            UiState.Set("discoverSource", key);
         }
     }
 
@@ -246,7 +252,16 @@ namespace VuluLauncher.ViewModels
             finally { _loading = false; }
         }
 
-        public async Task ActAsync(PackCard card)
+        /// <summary>Oyna sayfasından "Paketi güncelle": paket listesi alınıp değişikliklerle birlikte güncellenir.</summary>
+        public async Task UpdateByIdAsync(string packId)
+        {
+            await LoadAsync();
+            if (Cards.FirstOrDefault(c => c.Id == packId) is { IsOutdated: true } card) await ActAsync(card, stayOnPage: false);
+        }
+
+        public Task ActAsync(PackCard card) => ActAsync(card, stayOnPage: true);
+
+        private async Task ActAsync(PackCard card, bool stayOnPage)
         {
             if (card.IsInstalled && !card.IsOutdated) { await main.ShowHomeAsync(card.InstalledId); return; }
             if (card.IsOutdated)
@@ -265,7 +280,7 @@ namespace VuluLauncher.ViewModels
                 await main.AlertAsync(card.IsOutdated ? "Güncellenemedi" : "Kurulamadı", ex.Message);
             }
             finally { card.Busy = false; }
-            await LoadAsync();
+            if (stayOnPage) await LoadAsync();
         }
 
         public async Task ShowDetailsAsync(PackCard card)
@@ -448,6 +463,16 @@ namespace VuluLauncher.ViewModels
         partial void OnLoaderChanged(Option? value) { if (!_suppress) _ = SearchAsync(false); }
         partial void OnOpenSourceChanged(bool value) { if (!_suppress) { UpdateClear(); _ = SearchAsync(false); } }
 
+        private string? _presetTarget;
+
+        /// <summary>Oyna'daki "Mod ekle": Keşfet bu instance hedef seçili açılır, modlar listelenir.</summary>
+        public void PresetTarget(string instanceId)
+        {
+            _presetTarget = instanceId;
+            _targetPicked = true;
+            if (Type == "modpack") SelectTypeCommand.Execute(Types[0]);
+        }
+
         partial void OnTargetChanged(Option? value)
         {
             if (_suppress) return;
@@ -474,7 +499,8 @@ namespace VuluLauncher.ViewModels
 
             _suppress = true;
             // Hedef seçenekleri: kişisel instance'lar. Hiç seçilmediyse Oyna'da seçili kişisel instance önerilir.
-            string? keep = Target?.Key;
+            string? keep = _presetTarget ?? Target?.Key;
+            _presetTarget = null;
             if (!_targetPicked && _main.Home.Selected is { Kind: "custom" } selected) keep = selected.Id;
             Targets.Clear();
             Targets.Add(new Option("", Customs.Any() ? "Sonra seçerim (hepsini göster)" : "Henüz instance yok"));

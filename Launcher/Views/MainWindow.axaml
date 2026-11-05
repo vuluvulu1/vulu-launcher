@@ -39,6 +39,11 @@
                                     <StackPanel Orientation="Horizontal" Spacing="7">
                                         <Path Classes="icon" Data="{Binding Icon}" />
                                         <TextBlock Text="{Binding Title}" />
+                                        <Border IsVisible="{Binding HasBadge}" Background="{StaticResource Accent}" MinWidth="16" Height="16" Padding="4,0"
+                                                CornerRadius="8" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentInk}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
                                     </StackPanel>
                                 </Button>
                             </DataTemplate>

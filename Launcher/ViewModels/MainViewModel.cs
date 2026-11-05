@@ -17,7 +17,10 @@ namespace VuluLauncher.ViewModels
         public object Page { get; } = page;
         [ObservableProperty] private bool _isVisible = true;
         [ObservableProperty] private bool _isActive;
-        [ObservableProperty] private int _badge;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasBadge))]
+        private int _badge;
+        public bool HasBadge => Badge > 0;
     }
 
     /// <summary>Sağ altta birkaç saniye görünen bildirim kartı (launcher içinde).</summary>
@@ -47,6 +50,12 @@ namespace VuluLauncher.ViewModels
         {
             Login = new LoginViewModel(EnterAsync);
             Home = new HomeViewModel();
+            Home.Main = this;
+            // Güncellemesi olan paketler Keşfet sekmesinde rozet olur
+            Home.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(HomeViewModel.PackUpdateCount)) Tabs[1].Badge = Home.PackUpdateCount;
+            };
             Settings = new SettingsViewModel(this);
             Discover = new DiscoverViewModel(this);
             Tabs.Add(new PageTab("home", "Oyna", "M7 4l13 8-13 8z", Home));
@@ -130,6 +139,16 @@ namespace VuluLauncher.ViewModels
         public async Task<bool> ConfirmAsync(string title, string message, string okText, string? cancelText = "Vazgeç", bool danger = false) =>
             await ShowAsync(new DialogViewModel(title, message, okText, cancelText, danger)) is true;
 
+        /// <summary>Keşfet'i bu instance'a içerik kurmak için açar (son kullanılan kaynak: CurseForge ya da Modrinth).</summary>
+        public async Task OpenDiscoverForAsync(InstanceItem instance)
+        {
+            Discover.Content.PresetTarget(instance.Id);
+            string source = UiState.Get("discoverSource") == "modrinth" ? "modrinth" : "curseforge";
+            Discover.SetSource(source);
+            SelectedTab = Tabs[1];
+            await Task.CompletedTask;
+        }
+
         /// <summary>Oyna sekmesine geçer; verilen paket seçili olur (kurulumdan sonra).</summary>
         public async Task ShowHomeAsync(string? selectId)
         {
@@ -151,6 +170,8 @@ namespace VuluLauncher.ViewModels
             // Ayarlar her açılışta baştan okunur (başka yerden değişen ayarlar da görünsün)
             if (value?.Page is SettingsViewModel settings) _ = settings.LoadAsync();
             if (value?.Page is DiscoverViewModel discover) _ = discover.OpenAsync();
+            // Başka sayfada mod kurulduysa ya da kaldırıldıysa Oyna'daki sayılar güncel olsun
+            if (value?.Page is HomeViewModel && LoggedIn) Home.RefreshDetails();
         }
 
         public void ShowToast(string title, string body)

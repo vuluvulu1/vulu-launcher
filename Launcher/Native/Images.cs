@@ -55,6 +55,12 @@ namespace VuluLauncher.Native
 
         private static async Task<Stream?> OpenAsync(string url)
         {
+            // Küçük gömülü görseller (dünya simgeleri): data:image/png;base64,...
+            if (url.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            {
+                int comma = url.IndexOf(',');
+                return comma < 0 ? null : new MemoryStream(Convert.FromBase64String(url[(comma + 1)..]));
+            }
             if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
                 var response = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
