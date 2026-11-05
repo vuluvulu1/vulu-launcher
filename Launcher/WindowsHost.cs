@@ -1,32 +1,36 @@
 using System.Diagnostics;
-using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using Photino.NET;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
+using VuluLauncher.Native;
+using VuluLauncher.ViewModels;
+using VuluLauncher.Views;
 
 namespace VuluLauncher
 {
-    /// <summary>Windows: Photino penceresi, bildirim alanı simgesi, DPAPI ve Gezgin.</summary>
+    /// <summary>Windows: Avalonia penceresi, bildirim alanı simgesi, DPAPI ve Gezgin.</summary>
     internal sealed class WindowsHost : IPlatformHost, IDisposable
     {
-        private readonly Func<PhotinoWindow> _createWindow;
-        private readonly string _page;
+        private readonly ClassicDesktopStyleApplicationLifetime _lifetime;
         private readonly TrayNotifier _tray = new(Path.Combine(AppContext.BaseDirectory, "logo.ico"));
         private readonly ToastWindow _toast = new(Path.Combine(AppContext.BaseDirectory, "logo.ico"));
 
-        // Açık pencere; launcher bildirim alanındayken null (pencere ve tarayıcı tamamen kapatılır)
-        private volatile PhotinoWindow? _window;
-        private int _hideRequested, _exitRequested;
-        private readonly AutoResetEvent _wake = new(false);
+        private MainWindow? _window;
+        private MainViewModel? _viewModel;
+        // Pencere durumu başka iş parçacıklarından da okunur (Core'un arka plan denetimleri)
+        private volatile bool _visible, _active;
+        private IntPtr _hwnd;
+        private int _exitRequested;
+        // Bildirim alanındayken beş dakikada bir bellek boşaltılır
+        private DispatcherTimer? _trimTimer;
 
-        // Pencere sürükleme: başlangıçtaki pencere ve imleç konumu
-        private Point _dragWindowStart;
-        private POINT _dragCursorStart;
-
-        public WindowsHost(Func<PhotinoWindow> createWindow, string page)
+        public WindowsHost(ClassicDesktopStyleApplicationLifetime lifetime)
         {
-            _createWindow = createWindow;
-            _page = page;
+            _lifetime = lifetime;
             _tray.IconClicked += BringToFront;
             _tray.ExitRequested += Exit;
         }
@@ -39,54 +43,55 @@ namespace VuluLauncher
         }
 
         /// <summary>
-        /// Ana döngü (ana iş parçacığında): pencereyi açar ve kapanmasını bekler. Kapat tuşu bildirim alanına
-        /// küçültüyorsa pencere ve onu çizen WebView2 süreçleri tamamen kapatılır; geriye yalnızca bu süreç (mesaj ve
-        /// bildirim denetimleri) ve simge kalır. Simgeye, bildirime tıklanınca ya da launcher yeniden açılınca pencere
-        /// baştan kurulur; arayüz oturumu C# tarafından alıp kaldığı yerden sürer.
+        /// Pencereyi kurar (arayüz iş parçacığında, ileti döngüsünden önce). Bilgisayar açılışında pencere gösterilmez:
+        /// bildirim alanında beklenir, simgeye tıklanınca açılır.
         /// </summary>
-        public void Run(Action<PhotinoWindow> attach, bool startInTray = false)
+        public void Start(bool startInTray)
         {
-            // Bilgisayar açılışında: pencere hiç açılmadan bildirim alanında beklenir; simgeye tıklanınca açılır
-            if (startInTray && CanHideToTray)
+            _viewModel = new MainViewModel();
+            _window = new MainWindow { DataContext = _viewModel };
+            ApplyLayout(AppSettings.Current.WindowSize);
+            _window.Opened += (_, _) =>
+            {
+                _hwnd = _window.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+                RoundCorners(_hwnd);
+            };
+            _window.Activated += (_, _) => _active = true;
+            _window.Deactivated += (_, _) => _active = false;
+            // Alt+F4 ya da görev çubuğundan kapatma, kapat düğmesiyle aynı yoldan gider (ayara göre bildirim alanı)
+            _window.Closing += (_, e) =>
+            {
+                if (Volatile.Read(ref _exitRequested) == 1) return;
+                e.Cancel = true;
+                CoreClient.Instance.Send("window.close");
+            };
+            _ = _viewModel.StartAsync();
+
+            if (startInTray)
             {
                 _tray.ShowIcon();
                 // Sağ altta kısa bir kart: launcher'ın arka planda çalıştığı belli olsun; tıklanınca pencere açılır
                 _toast.Show("vulu Launcher çalışıyor", "Simge durumunda başladı; mesajlar ve bildirimler gelecek. Açmak için tıkla.", null);
-                if (!WaitInTray()) return;
+                EnterTray();
             }
-            while (true)
+            else
             {
-                // Photino ileti döngüsünü yalnızca ilk pencerede çalıştırır (statik bayrak); yeniden kurulan pencerede
-                // de çalışsın diye bayrak sıfırlanır
-                MessageLoopStarted?.SetValue(null, false);
-                var window = _createWindow();
-                attach(window);
-                Interlocked.Exchange(ref _hideRequested, 0);
-                _window = window;
-                window.Load(_page);
-                window.WaitForClose();
-                _window = null;
-
-                if (Volatile.Read(ref _exitRequested) == 1 || Volatile.Read(ref _hideRequested) == 0) return;
-                if (!WaitInTray()) return;
+                _window.Show();
+                _visible = true;
             }
         }
 
-        /// <summary>Bildirim alanında bekler: verimlilik modu, beş dakikada bir bellek boşaltma. Açılacaksa true.</summary>
-        private bool WaitInTray()
+        private void EnterTray()
         {
             Efficiency.Enter();
-            try
-            {
-                while (true)
-                {
-                    bool woke = _wake.WaitOne(TimeSpan.FromMinutes(5));
-                    if (Volatile.Read(ref _exitRequested) == 1) return false;
-                    if (woke) return true;
-                    Efficiency.Trim();
-                }
-            }
-            finally { Efficiency.Leave(); }
+            _trimTimer ??= new DispatcherTimer(TimeSpan.FromMinutes(5), DispatcherPriority.Background, (_, _) => Efficiency.Trim());
+            _trimTimer.Start();
+        }
+
+        private void LeaveTray()
+        {
+            _trimTimer?.Stop();
+            Efficiency.Leave();
         }
 
         public string Platform => "windows";
@@ -94,48 +99,46 @@ namespace VuluLauncher
         public bool CanSelfUpdate => true;
         public bool IsDesktop => true;
 
-        public void SendToUi(string json)
+        public void SendToUi(string json) => CoreClient.Instance.Receive(json);
+
+        public bool IsForeground => _visible && _active;
+        public bool IsWindowOpen => _visible;
+
+        public void BringToFront() => Dispatcher.UIThread.Post(() =>
         {
-            // Pencere yokken (bildirim alanında) arayüze giden olaylar düşer; arayüz açılınca durumu baştan alır
-            try { _window?.SendWebMessage(json); } catch { }
-        }
+            if (_window == null) return;
+            if (!_visible) { LeaveTray(); _window.Show(); _visible = true; }
+            if (_window.WindowState == WindowState.Minimized) _window.WindowState = WindowState.Normal;
+            _window.Activate();
+            if (_hwnd != IntPtr.Zero) TrayNotifier.BringToFront(_hwnd);
+        });
 
-        public bool IsForeground => _window is { } w && TrayNotifier.IsActive(w.WindowHandle);
-        public bool IsWindowOpen => _window != null;
-
-        public void BringToFront()
-        {
-            if (_window is { } w) TrayNotifier.BringToFront(w.WindowHandle);
-            else _wake.Set();   // bildirim alanındaysa pencere yeniden kurulur
-        }
-
-        public void Minimize() => _window?.SetMinimized(true);
+        public void Minimize() => Dispatcher.UIThread.Post(() => { if (_window != null) _window.WindowState = WindowState.Minimized; });
 
         public (int Width, int Height)? ScreenWorkArea => Program.WorkArea();
 
-        /// <summary>
-        /// Photino'nun "ileti döngüsü başladı" bayrağı. Bulunamazsa (Photino sürümü değişti) pencere yeniden
-        /// kurulamaz: bildirim alanına küçültme kapanır, kapat tuşu launcher'ı kapatır.
-        /// </summary>
-        private static readonly System.Reflection.FieldInfo? MessageLoopStarted =
-            typeof(PhotinoWindow).GetField("_messageLoopIsStarted", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        public bool CanHideToTray => true;
 
-        public bool CanHideToTray => MessageLoopStarted?.FieldType == typeof(bool);
-
-        public void HideToTray()
+        /// <summary>Pencere gizlenir, bildirim alanında simge kalır; simgeye ya da bildirime tıklanınca geri gelir.</summary>
+        public void HideToTray() => Dispatcher.UIThread.Post(() =>
         {
-            if (_window is not { } w) return;
+            if (_window == null || !_visible) return;
             _tray.ShowIcon();
-            Interlocked.Exchange(ref _hideRequested, 1);
-            w.Invoke(w.Close);
-        }
+            _window.Hide();
+            _visible = false;
+            _active = false;
+            EnterTray();
+        });
 
         /// <summary>Launcher'ı tamamen kapatır (simgenin "Çıkış"ı ya da ayarda kapat tuşu "Kapat" ise).</summary>
         private void Exit()
         {
             Interlocked.Exchange(ref _exitRequested, 1);
-            if (_window is { } w) w.Invoke(w.Close);
-            else _wake.Set();
+            Dispatcher.UIThread.Post(() =>
+            {
+                _window?.Close();
+                _lifetime.Shutdown();
+            });
         }
 
         private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run", RunValue = "vulu Launcher";
@@ -157,16 +160,19 @@ namespace VuluLauncher
 #endif
         }
 
-        public void ApplyWindowSize(string size)
+        public void ApplyWindowSize(string size) => Dispatcher.UIThread.Post(() => ApplyLayout(size));
+
+        private void ApplyLayout(string size)
         {
-            if (_window is not { } w) return;
-            var (width, height, zoom) = Program.WindowLayout(size);
-            w.Invoke(() =>
+            if (_window == null) return;
+            var (width, height, scale) = Program.WindowLayoutDip(size);
+            _window.ApplyLayout(width, height, scale);
+            if (_visible && _window.Screens.ScreenFromWindow(_window) is { } screen)
             {
-                w.SetSize(width, height);
-                w.Zoom = zoom;
-                w.Center();
-            });
+                var area = screen.WorkingArea;
+                double dpi = screen.Scaling;
+                _window.Position = new PixelPoint(area.X + (int)((area.Width - width * dpi) / 2), area.Y + (int)((area.Height - height * dpi) / 2));
+            }
         }
 
         public void Close() => Exit();
@@ -179,25 +185,23 @@ namespace VuluLauncher
 
         public void Notify(string title, string body, string? tag, string? imagePath) => _toast.Show(title, body, tag, imagePath);
 
-        public void BeginWindowDrag()
-        {
-            if (_window is not { } w) return;
-            _dragWindowStart = w.Location;
-            GetCursorPos(out _dragCursorStart);
-        }
+        // Pencere sürükleme native başlık çubuğunda yapılır (MainWindow)
+        public void BeginWindowDrag() { }
+        public void MoveWindowDrag() { }
 
-        public void MoveWindowDrag()
+        public async Task<string?> PickFileAsync(string title, string filterName, string[] extensions)
         {
-            if (_window is not { } w || !GetCursorPos(out var cursor)) return;
-            w.Location = new Point(
-                _dragWindowStart.X + cursor.X - _dragCursorStart.X,
-                _dragWindowStart.Y + cursor.Y - _dragCursorStart.Y);
-        }
-
-        public Task<string?> PickFileAsync(string title, string filterName, string[] extensions)
-        {
-            var files = _window?.ShowOpenFile(title, null, false, new[] { (filterName, extensions) });
-            return Task.FromResult(files is { Length: > 0 } ? files[0] : null);
+            return await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                if (_window == null) return null;
+                var files = await _window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = title,
+                    AllowMultiple = false,
+                    FileTypeFilter = new[] { new FilePickerFileType(filterName) { Patterns = extensions.Select(e => "*." + e.TrimStart('.', '*')).ToArray() } },
+                });
+                return files.Count > 0 ? files[0].TryGetLocalPath() : null;
+            });
         }
 
         public void OpenUrl(string url) => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
@@ -275,12 +279,20 @@ namespace VuluLauncher
         {
             _tray.Dispose();
             _toast.Dispose();
-            _wake.Dispose();
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT { public int X; public int Y; }
+        /// <summary>Windows 11'de çerçevesiz pencerenin köşelerini yuvarlatır; eski sürümlerde etkisizdir.</summary>
+        private static void RoundCorners(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero) return;
+            try
+            {
+                int preference = 2; // DWMWCP_ROUND
+                _ = DwmSetWindowAttribute(hwnd, 33 /* DWMWA_WINDOW_CORNER_PREFERENCE */, ref preference, sizeof(int));
+            }
+            catch { }
+        }
 
-        [DllImport("user32.dll")] private static extern bool GetCursorPos(out POINT point);
+        [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     }
 }

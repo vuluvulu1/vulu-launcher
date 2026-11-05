@@ -1,0 +1,171 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
+             x:Class="VuluLauncher.App"
+             RequestedThemeVariant="Dark">
+
+    <!-- Sayfa modelinden görünüme: sekme içeriği ContentControl'e model olarak verilir -->
+    <Application.DataTemplates>
+        <DataTemplate DataType="vm:HomeViewModel"><v:HomeView /></DataTemplate>
+        <DataTemplate DataType="vm:PlaceholderViewModel"><v:PlaceholderView /></DataTemplate>
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- ── Meşale renkleri (css/mesale.css ile aynı) ─────────────── -->
+            <Color x:Key="BgColor">#0B0A09</Color>
+            <Color x:Key="AccentColor">#F2A33A</Color>
+            <SolidColorBrush x:Key="Bg" Color="#0B0A09" />
+            <SolidColorBrush x:Key="Panel" Color="#14100C" />
+            <SolidColorBrush x:Key="Surface" Color="#1B1510" />
+            <SolidColorBrush x:Key="Raised" Color="#281F17" />
+            <SolidColorBrush x:Key="Card" Color="#D61A140F" />
+            <SolidColorBrush x:Key="Glass" Color="#DB14100C" />
+            <SolidColorBrush x:Key="Hover" Color="#12FFE2BA" />
+            <SolidColorBrush x:Key="Line" Color="#1AFFD8A0" />
+            <SolidColorBrush x:Key="LineStrong" Color="#33FFD8A0" />
+            <SolidColorBrush x:Key="ButtonBg" Color="#EB261E17" />
+            <SolidColorBrush x:Key="ButtonLine" Color="#4DFFD8A0" />
+            <SolidColorBrush x:Key="Text" Color="#F3ECE2" />
+            <SolidColorBrush x:Key="Muted" Color="#C9BDAF" />
+            <SolidColorBrush x:Key="Dim" Color="#A1958A" />
+            <SolidColorBrush x:Key="Accent" Color="#F2A33A" />
+            <SolidColorBrush x:Key="AccentHi" Color="#FFC873" />
+            <SolidColorBrush x:Key="AccentSoft" Color="#29F2A33A" />
+            <SolidColorBrush x:Key="AccentInk" Color="#1A0E02" />
+            <SolidColorBrush x:Key="Ok" Color="#9CC3DE" />
+            <SolidColorBrush x:Key="Warn" Color="#FFC873" />
+            <SolidColorBrush x:Key="Error" Color="#E8693A" />
+
+            <FontFamily x:Key="Sans">avares://vulu Launcher/Assets/Fonts#IBM Plex Sans</FontFamily>
+            <FontFamily x:Key="Mono">avares://vulu Launcher/Assets/Fonts#IBM Plex Mono</FontFamily>
+            <FontFamily x:Key="Script">avares://vulu Launcher/Assets/Fonts#Great Vibes</FontFamily>
+            <FontFamily x:Key="Pixel">avares://vulu Launcher/Assets/Fonts#Silkscreen</FontFamily>
+
+            <!-- Fluent temasının vurgu rengi (seçim, odak, kaydırma çubuğu) Meşale'ye çekilir -->
+            <Color x:Key="SystemAccentColor">#F2A33A</Color>
+            <Color x:Key="SystemAccentColorLight1">#FFC873</Color>
+            <Color x:Key="SystemAccentColorDark1">#C27E3E</Color>
+            <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+            <CornerRadius x:Key="OverlayCornerRadius">0</CornerRadius>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <Style Selector=":is(TopLevel)">
+            <Setter Property="FontFamily" Value="{StaticResource Sans}" />
+            <!-- Yazı rengi pencereden miras alınır; düğme içindeki yazı düğmenin rengini (üstüne gelince de) alır -->
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="FontSize" Value="13.5" />
+        </Style>
+        <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{StaticResource Muted}" /></Style>
+        <Style Selector="TextBlock.dim"><Setter Property="Foreground" Value="{StaticResource Dim}" /></Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="{StaticResource Dim}" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+
+        <!-- ── Düğmeler ─────────────────────────────────────────────── -->
+        <Style Selector="Button">
+            <Setter Property="Background" Value="{StaticResource ButtonBg}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ButtonLine}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="14,7" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource ButtonBg}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Raised}" />
+        </Style>
+        <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="Foreground" Value="{StaticResource Dim}" />
+        </Style>
+
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{StaticResource Accent}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentHi}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentHi}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+        </Style>
+
+        <!-- Düz düğme: yalnızca simge ya da metin (başlık çubuğu, bağlantılar) -->
+        <Style Selector="Button.flat">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+        </Style>
+        <Style Selector="Button.flat:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+        </Style>
+        <Style Selector="Button.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#C42B1C" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <!-- Simgeler: 24×24 SVG yolları, çizgi olarak çizilir -->
+        <Style Selector="PathIcon">
+            <Setter Property="Width" Value="16" />
+            <Setter Property="Height" Value="16" />
+        </Style>
+        <Style Selector="Path.icon">
+            <Setter Property="Stroke" Value="{StaticResource Muted}" />
+            <Setter Property="StrokeThickness" Value="1.8" />
+            <Setter Property="StrokeLineCap" Value="Round" />
+            <Setter Property="StrokeJoin" Value="Round" />
+            <Setter Property="Stretch" Value="Uniform" />
+            <Setter Property="Width" Value="15" />
+            <Setter Property="Height" Value="15" />
+        </Style>
+
+        <Style Selector="Button:pointerover Path.icon"><Setter Property="Stroke" Value="{StaticResource Text}" /></Style>
+        <Style Selector="Button.close:pointerover Path.icon"><Setter Property="Stroke" Value="White" /></Style>
+        <Style Selector="Button.tab.active Path.icon"><Setter Property="Stroke" Value="{StaticResource AccentHi}" /></Style>
+
+        <!-- ── Metin kutuları ───────────────────────────────────────── -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="10,8" />
+        </Style>
+        <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ButtonLine}" />
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+        </Style>
+
+        <Style Selector="ProgressBar">
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
+            <Setter Property="Background" Value="{StaticResource Raised}" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="MinHeight" Value="4" />
+            <Setter Property="Height" Value="4" />
+        </Style>
+    </Application.Styles>
+</Application>

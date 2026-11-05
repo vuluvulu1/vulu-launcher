@@ -1,17 +1,16 @@
 using System.Runtime.InteropServices;
-using Microsoft.Win32;
-using Photino.NET;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using VuluLauncher.Native;
 
 namespace VuluLauncher
 {
     internal static class Program
     {
-        // Arayüzün tasarlandığı alan (CSS piksel). Pencere ekrana göre bunun katı olur; küçük ekranda sığdırılır.
+        // Arayüzün tasarlandığı alan (DIP). Pencere ekrana göre bunun katı olur; küçük ekranda sığdırılır.
         private const int BaseWidth = 1320;
         private const int BaseHeight = 820;
-
-        private const string WebView2Key = @"Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}";
-        private const string WebView2DownloadUrl = "https://go.microsoft.com/fwlink/p/?LinkId=2124703";
 
         [STAThread]
         private static void Main(string[] args)
@@ -47,75 +46,36 @@ namespace VuluLauncher
             }
 #endif
 
-            if (!WebView2Installed())
-            {
-                MessageBox(IntPtr.Zero,
-                    "vulu Launcher için Microsoft Edge WebView2 Runtime gerekli, ancak bu bilgisayarda kurulu değil.\n\n" +
-                    $"Şu adresten ücretsiz kurabilirsiniz:\n{WebView2DownloadUrl}",
-                    "vulu Launcher", 0x10);
-                return;
-            }
-
-            // Tarayıcı önbelleği, WebView2 dosyaları kilitlemeden önce temizlenebilir
+            // Önbellek temizliği ve eski güncelleme dosyaları
             Storage.CleanUpAtStartup();
 
-            using var host = new WindowsHost(CreateWindow, Path.Combine(AppContext.BaseDirectory, "wwwroot", "index.html"));
+            // Avalonia: ana iş parçacığı arayüz iş parçacığı olur; pencere kapatılsa da (bildirim alanı) uygulama sürer
+            var lifetime = new ClassicDesktopStyleApplicationLifetime { Args = args, ShutdownMode = ShutdownMode.OnExplicitShutdown };
+            AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace().SetupWithLifetime(lifetime);
+
+            using var host = new WindowsHost(lifetime);
             var bridge = new Bridge(host.SendToUi);
+            CoreClient.Instance.Attach(bridge);
             var app = new LauncherApp(bridge, host);
             host.NotificationClicked += app.OnNotificationClicked;
             app.RegisterCommands();
             app.SetStartupAction(action);
             single.Listen(app.OnRemoteCommand);
             app.ApplyStartWithSystem();
-            if (startInTray && host.CanHideToTray) app.StartInBackground();
+            if (startInTray) app.StartInBackground();
 
-            // Pencere bildirim alanına küçülünce kapatılıp açılınca yeniden kurulur; her yeni pencere köprüye bağlanır
-            host.Run(window => window.RegisterWebMessageReceivedHandler((_, message) => bridge.HandleMessage(message)), startInTray);
+            host.Start(startInTray);
+            lifetime.Start(args);
 
             app.Shutdown();
         }
 
-        /// <summary>Launcher penceresi: ilk açılışta ve bildirim alanından her geri açılışta yeniden kurulur.</summary>
-        private static PhotinoWindow CreateWindow()
+        /// <summary>Pencerenin boyutu (DIP) ve arayüz ölçeği; ayarlara ve ekrana göre.</summary>
+        internal static (double Width, double Height, double Scale) WindowLayoutDip(string setting)
         {
-            var (width, height, zoom) = WindowLayout(AppSettings.Current.WindowSize);
-
-            var window = new PhotinoWindow()
-                // Photino her arayüz mesajını konsola yazar (JSON içeriğiyle); gereksiz iş, kapalı
-                .SetLogVerbosity(0)
-                .SetTitle("vulu Launcher")
-                .SetIconFile(Path.Combine(AppContext.BaseDirectory, "logo.ico"))
-                // Tarayıcı önbelleği varsayılan olarak bütün Photino uygulamalarının paylaştığı klasöre yazılır;
-                // launcher'ın kendi klasörüne alınır.
-                .SetTemporaryFilesPath(AppPaths.BrowserData)
-                .SetChromeless(true)
-                .SetResizable(false)
-                .SetUseOsDefaultSize(false)
-                .SetUseOsDefaultLocation(false)
-                .SetSize(width, height)
-                .SetZoom(zoom)
-                .Center();
-
-            // Tarayıcının disk önbelleği sınırlanır. Önceki açılışta alan adına ulaşılamayıp yedek adres kullanıldıysa
-            // arayüz de (profil resimleri, skinler) alan adını çözmeden o adrese gider; TLS yine vuluvulu.com.tr adına doğrulanır.
-            string browserArgs = Storage.BrowserArguments;
-            if (VuluShared.ServerConnection.FallbackAddress is { } fallback)
-                browserArgs += $" --host-resolver-rules=\"MAP {VuluShared.ServerConnection.Host} {fallback}\"";
-            window.SetBrowserControlInitParameters(browserArgs);
-
-            // Sağ tık menüsü hiçbir sürümde açılmaz (tarayıcı menüsü launcher'a ait değil)
-            window.SetContextMenuEnabled(false);
-#if !DEBUG
-            // Dağıtılan sürümde geliştirici araçları da kapalıdır; Debug'da F12 ile açılır.
-            window.SetDevToolsEnabled(false);
-#endif
-
-            window.WindowCreated += (_, _) =>
-            {
-                RoundCorners(window.WindowHandle);
-                VuluShared.WindowIcon.Apply(window.WindowHandle, Path.Combine(AppContext.BaseDirectory, "logo.ico"));
-            };
-            return window;
+            var (width, height, zoom) = WindowLayout(setting);
+            double dpi = Math.Max(1, GetDpiForSystem() / 96.0);
+            return (width / dpi, height / dpi, zoom / 100.0);
         }
 
         /// <summary>
@@ -193,30 +153,6 @@ namespace VuluLauncher
             }
         }
 
-        private static bool WebView2Installed() =>
-            HasVersion(Registry.LocalMachine, $@"SOFTWARE\WOW6432Node\{WebView2Key}")
-            || HasVersion(Registry.LocalMachine, $@"SOFTWARE\{WebView2Key}")
-            || HasVersion(Registry.CurrentUser, $@"Software\{WebView2Key}");
-
-        private static bool HasVersion(RegistryKey root, string path)
-        {
-            using var key = root.OpenSubKey(path);
-            return key?.GetValue("pv") is string version && version.Length > 0 && version != "0.0.0.0";
-        }
-
-        /// <summary>Windows 11'de çerçevesiz pencerenin köşelerini yuvarlatır; eski sürümlerde etkisizdir.</summary>
-        private static void RoundCorners(IntPtr hwnd)
-        {
-            try
-            {
-                int preference = 2; // DWMWCP_ROUND
-                _ = DwmSetWindowAttribute(hwnd, 33 /* DWMWA_WINDOW_CORNER_PREFERENCE */, ref preference, sizeof(int));
-            }
-            catch { }
-        }
-
         [DllImport("user32.dll")] private static extern uint GetDpiForSystem();
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
-        [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     }
 }

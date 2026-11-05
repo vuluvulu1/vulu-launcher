@@ -32,26 +32,44 @@ namespace VuluLauncher.Tests
             Assert.False(Releases.VerifySignature(Encoding.UTF8.GetBytes("{}"), "bm90IGEgc2lnbmF0dXJl"));
     }
 
-    /// <summary>
-    /// Bildirim alanına küçültme Photino'nun gizli "_messageLoopIsStarted" alanına dayanır. Photino güncellenip alan
-    /// kaybolursa özellik sessizce kapanır; bu test bunu yayından önce yakalar.
-    /// </summary>
+    /// <summary>Pencere kurulmadan (bildirim alanında başlarken) gelen olaylar hata vermeden düşer.</summary>
     public class TrayTests
     {
         [Fact]
-        public void PhotinoStillHasTheMessageLoopFlag()
+        public void HostWithoutWindowDropsUiMessagesWithoutThrowing()
         {
-            using var host = new WindowsHost(() => throw new InvalidOperationException("pencere açılmaz"), "index.html");
+            using var host = new WindowsHost(new Avalonia.Controls.ApplicationLifetimes.ClassicDesktopStyleApplicationLifetime());
+            host.SendToUi("{\"id\":\"1\",\"ok\":true}");
+            host.SendToUi("bozuk json");
             Assert.True(host.CanHideToTray);
+            Assert.False(host.IsWindowOpen);
+            Assert.False(host.IsForeground);
+        }
+    }
+
+    /// <summary>Native arayüz Core komutlarını köprü üzerinden süreç içinde çağırır.</summary>
+    public class BridgeInvokeTests
+    {
+        [Fact]
+        public async Task CommandResultComesBackAsJson()
+        {
+            var bridge = new Bridge(_ => { });
+            bridge.On("echo", args => Task.FromResult<object?>(new { value = args.Str("value"), count = 2 }));
+            var result = await bridge.InvokeAsync("echo", new { value = "vulu" });
+            Assert.Equal("vulu", result.GetProperty("value").GetString());
+            Assert.Equal(2, result.GetProperty("count").GetInt32());
+            bridge.Shutdown();
         }
 
         [Fact]
-        public void HiddenHostDropsUiMessagesWithoutThrowing()
+        public async Task CommandErrorReachesTheCaller()
         {
-            using var host = new WindowsHost(() => throw new InvalidOperationException(), "index.html");
-            host.SendToUi("{\"event\":\"x\"}");
-            Assert.False(host.IsWindowOpen);
-            Assert.False(host.IsForeground);
+            var bridge = new Bridge(_ => { });
+            bridge.On("fail", _ => throw new InvalidOperationException("Giriş gerekli."));
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => bridge.InvokeAsync("fail"));
+            Assert.Equal("Giriş gerekli.", error.Message);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => bridge.InvokeAsync("yok"));
+            bridge.Shutdown();
         }
     }
 

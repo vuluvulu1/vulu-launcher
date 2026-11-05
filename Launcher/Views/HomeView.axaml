@@ -1,0 +1,209 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+    <UserControl.Styles>
+        <!-- Sol şeritteki paket düğmeleri -->
+        <Style Selector="ListBox.rail">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="ListBox.rail ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="ListBox.rail ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBox.rail ListBoxItem Border.thumb">
+            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
+        </Style>
+        <Style Selector="ListBox.rail ListBoxItem:pointerover Border.thumb">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="ListBox.rail ListBoxItem:selected Border.thumb">
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="BoxShadow" Value="0 0 18 1 #61F2A33A" />
+        </Style>
+
+        <Style Selector="Border.stat">
+            <Setter Property="Background" Value="{StaticResource Card}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="MinWidth" Value="104" />
+        </Style>
+        <Style Selector="Border.chip">
+            <Setter Property="Background" Value="{StaticResource Glass}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,3" />
+        </Style>
+
+        <Style Selector="Button.play">
+            <Setter Property="Background" Value="{StaticResource Accent}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentHi}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Width" Value="200" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.play:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentHi}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentHi}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+            <Setter Property="BoxShadow" Value="0 0 26 1 #61F2A33A" />
+        </Style>
+
+        <Style Selector="SelectableTextBlock.log">
+            <Setter Property="FontFamily" Value="{StaticResource Mono}" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="*,76">
+        <!-- ── Seçili paketin arka planı ──────────────────────────────── -->
+        <Image Grid.Row="0" Source="{Binding Background}" Stretch="UniformToFill" />
+        <!-- Yazılar okunsun: soldan ve alttan karartma -->
+        <Border Grid.Row="0" IsHitTestVisible="False">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                    <GradientStop Color="#E60B0A09" Offset="0" />
+                    <GradientStop Color="#800B0A09" Offset="0.45" />
+                    <GradientStop Color="#1A0B0A09" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+        <Border Grid.Row="0" IsHitTestVisible="False">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,40%" EndPoint="0%,100%">
+                    <GradientStop Color="#000B0A09" Offset="0" />
+                    <GradientStop Color="#F00B0A09" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+
+        <Grid Grid.Row="0" ColumnDefinitions="76,*,380">
+            <!-- ── Sol şerit: paketler ─────────────────────────────── -->
+            <Border Grid.Column="0" Background="#B314100C" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+                <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                    <ListBox Classes="rail" ItemsSource="{Binding Instances}" SelectedItem="{Binding Selected}" Margin="0,14,0,0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:InstanceItem">
+                                <StackPanel Spacing="4" Width="64" ToolTip.Tip="{Binding Name}">
+                                    <Border Classes="thumb" Width="46" Height="46" BorderThickness="2" Background="{StaticResource Raised}"
+                                            HorizontalAlignment="Center" ClipToBounds="True">
+                                        <Grid>
+                                            <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="17"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                                        </Grid>
+                                    </Border>
+                                    <TextBlock Text="{Binding Name}" FontSize="10" Classes="muted" TextTrimming="CharacterEllipsis"
+                                               HorizontalAlignment="Center" MaxWidth="64" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </ScrollViewer>
+            </Border>
+
+            <!-- ── Paket bilgileri (sol alt) ──────────────────────── -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Bottom" Margin="28,0,20,22" Spacing="10">
+                <Image Source="{Binding Logo}" IsVisible="{Binding HasLogo}" MaxWidth="420" MaxHeight="140"
+                       HorizontalAlignment="Left" Stretch="Uniform" />
+                <TextBlock Text="{Binding Selected.Name}" IsVisible="{Binding !HasLogo}" FontSize="40" FontWeight="Bold" />
+                <TextBlock Text="{Binding Selected.Description}" Classes="muted" FontSize="14" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Left" />
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Border Classes="chip">
+                        <TextBlock FontSize="11.5" FontWeight="SemiBold">
+                            <Run Text="Minecraft " /><Run Text="{Binding Selected.McVersion}" />
+                        </TextBlock>
+                    </Border>
+                    <Border Classes="chip">
+                        <TextBlock Text="{Binding Selected.LoaderLabel}" FontSize="11.5" FontWeight="SemiBold" />
+                    </Border>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Modlar" Classes="label" /><TextBlock Text="{Binding ModCount}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
+                    <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Boyut" Classes="label" /><TextBlock Text="{Binding Size}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
+                    <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Güncelleme" Classes="label" /><TextBlock Text="{Binding Updated}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
+                    <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Oynama" Classes="label" /><TextBlock Text="{Binding PlayTime}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ── Konsol (sağ) ───────────────────────────────────── -->
+            <Border Grid.Column="2" Margin="0,18,18,18" Background="{StaticResource Glass}"
+                    BorderBrush="{StaticResource Line}" BorderThickness="1">
+                <Grid RowDefinitions="40,*">
+                    <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="14,0">
+                        <TextBlock Text="Konsol" FontWeight="Bold" VerticalAlignment="Center" />
+                    </Border>
+                    <ScrollViewer Grid.Row="1" x:Name="ConsoleScroll" Padding="12,8">
+                        <ItemsControl ItemsSource="{Binding Console}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:LogLine">
+                                    <SelectableTextBlock Classes="log" Classes.warn="{Binding IsWarn}" Classes.error="{Binding IsError}">
+                                        <Run Text="{Binding Time}" Foreground="{StaticResource Dim}" /><Run Text="  " /><Run Text="{Binding Text}" />
+                                    </SelectableTextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.Styles>
+                                <Style Selector="SelectableTextBlock.warn"><Setter Property="Foreground" Value="{StaticResource Warn}" /></Style>
+                                <Style Selector="SelectableTextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                            </ItemsControl.Styles>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ── Alt çubuk: seçili paket, RAM, durum, OYNA ──────────────── -->
+        <Border Grid.Row="1" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="260,*,Auto,Auto" Margin="16,0,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Border Width="40" Height="40" Background="{StaticResource Raised}" BorderBrush="{StaticResource LineStrong}"
+                            BorderThickness="1" ClipToBounds="True">
+                        <Image Source="{Binding Selected.Thumbnail}" Stretch="UniformToFill" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center" Spacing="1">
+                        <TextBlock Text="{Binding Selected.Name}" FontWeight="Bold" TextTrimming="CharacterEllipsis" MaxWidth="190" />
+                        <TextBlock Text="{Binding Selected.Subtitle}" Classes="dim" FontSize="11.5" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6" Margin="24,0">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding StatusText}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="1" Text="{Binding Progress, StringFormat='{}{0:0}%'}" Classes="dim" FontSize="12"
+                                   IsVisible="{Binding !Indeterminate}" />
+                    </Grid>
+                    <ProgressBar Value="{Binding Progress}" Maximum="100" IsIndeterminate="{Binding Indeterminate}" />
+                </StackPanel>
+
+                <ComboBox Grid.Column="2" ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}"
+                          VerticalAlignment="Center" Margin="0,0,14,0" MinWidth="96" ToolTip.Tip="Oyuna ayrılacak bellek">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="x:Int32">
+                            <TextBlock Text="{Binding StringFormat='{}{0} GB'}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <Button Grid.Column="3" Classes="play" Command="{Binding PlayCommand}" Height="76" BorderThickness="0">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="14" Height="14" Stretch="Uniform" />
+                        <TextBlock Text="{Binding PlayLabel}" FontSize="17" FontWeight="Bold" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

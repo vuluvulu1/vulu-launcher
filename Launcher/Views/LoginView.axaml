@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+    <Grid>
+        <!-- Meşale: karanlıkta ortadan yayılan sıcak ışık -->
+        <Border>
+            <Border.Background>
+                <RadialGradientBrush Center="50%,45%" GradientOrigin="50%,45%" RadiusX="60%" RadiusY="55%">
+                    <GradientStop Color="#3A2410" Offset="0" />
+                    <GradientStop Color="#160F09" Offset="0.55" />
+                    <GradientStop Color="#0B0A09" Offset="1" />
+                </RadialGradientBrush>
+            </Border.Background>
+        </Border>
+
+        <Border Width="380" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Background="{StaticResource Card}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
+                Padding="34,30" BoxShadow="0 18 44 0 #9E000000">
+            <StackPanel Spacing="14">
+                <Image Source="avares://vulu Launcher/Assets/logo.png" Width="52" Height="52" HorizontalAlignment="Center" />
+                <TextBlock Text="vulu Launcher" FontFamily="{StaticResource Script}" FontSize="44"
+                           Foreground="{StaticResource Accent}" HorizontalAlignment="Center" Margin="0,-6,0,-8">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="#F2A33A" BlurRadius="22" OffsetX="0" OffsetY="0" Opacity="0.55" />
+                    </TextBlock.Effect>
+                </TextBlock>
+                <TextBlock Text="Devam etmek için giriş yap" Classes="muted" HorizontalAlignment="Center" Margin="0,0,0,6" />
+
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Kullanıcı adı" Classes="label" />
+                    <TextBox Text="{Binding Username}" MaxLength="16" x:Name="UsernameBox" />
+                </StackPanel>
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Şifre" Classes="label" />
+                    <TextBox Text="{Binding Password}" PasswordChar="•" x:Name="PasswordBox" />
+                </StackPanel>
+                <CheckBox IsChecked="{Binding Remember}" Content="Beni hatırla" />
+
+                <Button Classes="primary" Content="Giriş yap" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Padding="0,10" IsDefault="True" Command="{Binding LoginCommand}" />
+
+                <TextBlock Text="{Binding Status}" TextWrapping="Wrap" TextAlignment="Center" FontSize="12.5"
+                           Classes="muted" Classes.error="{Binding IsError}" MinHeight="18">
+                    <TextBlock.Styles>
+                        <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                    </TextBlock.Styles>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

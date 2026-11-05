@@ -7,6 +7,8 @@
     <RootNamespace>VuluLauncher</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationIcon>logo.ico</ApplicationIcon>
     <!-- Yayınlarken tools/publish-release.ps1 bunu -p:Version ile ezer -->
     <Version>0.9.0</Version>
@@ -24,13 +26,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Photino.NET" Version="4.0.16" />
+    <!-- Arayüz: Avalonia (kendi çizer; WebView2 gerekmez) -->
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.9" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Arayüz dosyaları exe'nin yanına kopyalanır; Photino bunları wwwroot klasöründen yükler. -->
-    <Content Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Paket görselleri (PackCatalog'daki yollar wwwroot'a göre) exe'nin yanına kopyalanır -->
+    <Content Include="wwwroot\assets\**" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Yazı tipleri ve arayüz görselleri programın içine gömülür -->
+    <AvaloniaResource Include="wwwroot\fonts\*.ttf" Link="Assets\Fonts\%(Filename)%(Extension)" />
+    <AvaloniaResource Include="wwwroot\assets\logo.png" Link="Assets\logo.png" />
     <Content Include="logo.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

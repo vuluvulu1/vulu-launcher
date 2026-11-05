@@ -83,6 +83,32 @@ namespace VuluLauncher
             }
         }
 
+        /// <summary>
+        /// Aynı süreçteki (native) arayüzün komut çağrısı: JS köprüsüyle aynı komutlar, JSON sonucu doğrudan döner.
+        /// Komut hata verirse istisna çağırana geçer (iletisi kullanıcıya gösterilecek metindir).
+        /// </summary>
+        public async Task<JsonElement> InvokeAsync(string command, object? args = null)
+        {
+            var element = args == null ? default : JsonSerializer.SerializeToElement(args, Json);
+            if (_inlineHandlers.TryGetValue(command, out var inline))
+            {
+                inline(element);
+                return default;
+            }
+            if (!_asyncHandlers.TryGetValue(command, out var handler))
+                throw new InvalidOperationException($"Bilinmeyen komut: {command}");
+            try
+            {
+                var result = await Task.Run(() => handler(element));
+                return JsonSerializer.SerializeToElement(result, Json);
+            }
+            catch (Exception ex)
+            {
+                if (ex is not InvalidOperationException) LogFile.Write($"[{command}] {ex}");
+                throw;
+            }
+        }
+
         public void Shutdown()
         {
             _logTimer.Dispose();
