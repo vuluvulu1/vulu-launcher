@@ -11,6 +11,7 @@
         <DataTemplate DataType="vm:SettingsViewModel"><v:SettingsView /></DataTemplate>
         <DataTemplate DataType="vm:DiscoverViewModel"><v:DiscoverView /></DataTemplate>
         <DataTemplate DataType="vm:ServersViewModel"><v:ServersView /></DataTemplate>
+        <DataTemplate DataType="vm:SocialViewModel"><v:SocialView /></DataTemplate>
         <DataTemplate DataType="vm:PlaceholderViewModel"><v:PlaceholderView /></DataTemplate>
     </Application.DataTemplates>
 
@@ -50,6 +51,19 @@
             <Color x:Key="SystemAccentColor">#F2A33A</Color>
             <Color x:Key="SystemAccentColorLight1">#FFC873</Color>
             <Color x:Key="SystemAccentColorDark1">#C27E3E</Color>
+            <!-- Yuvarlak profil resmi; yoksa baş harf, çevrimiçiyse nokta -->
+        <DataTemplate x:Key="Avatar" x:DataType="vm:PersonItem">
+            <Panel Width="34" Height="34">
+                <Border Background="{StaticResource Raised}" CornerRadius="17" ClipToBounds="True">
+                    <Grid>
+                        <TextBlock Text="{Binding Initial}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
+                    </Grid>
+                </Border>
+                <Ellipse Classes="dot" Classes.playing="{Binding IsPlaying}" IsVisible="{Binding IsOnline}" Width="10" Height="10"
+                         HorizontalAlignment="Right" VerticalAlignment="Bottom" Stroke="{StaticResource Panel}" StrokeThickness="2" />
+            </Panel>
+        </DataTemplate>
             <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
             <CornerRadius x:Key="OverlayCornerRadius">0</CornerRadius>
 
@@ -167,6 +181,9 @@
         <Style Selector="Button.seg.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource AccentSoft}" />
         </Style>
+
+        <Style Selector="Ellipse.dot"><Setter Property="Fill" Value="#A1958A" /></Style>
+        <Style Selector="Ellipse.dot.playing"><Setter Property="Fill" Value="#5FC46A" /></Style>
 
         <Style Selector="Slider">
             <Setter Property="Foreground" Value="{StaticResource Accent}" />

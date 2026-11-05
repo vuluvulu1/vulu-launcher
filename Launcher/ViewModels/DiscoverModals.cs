@@ -29,6 +29,7 @@ namespace VuluLauncher.ViewModels
         [RelayCommand] private void ExpandChanges() => ShowAll = true;
         [RelayCommand] private void Act() => Close("act");
         [RelayCommand] private void Delete() => Close("delete");
+        [RelayCommand] private void Send() => Close("send");
     }
 
     /// <summary>"Güncellensin mi?": son kurulandan bu yana değişenler. Sonuç true ise güncellenir.</summary>

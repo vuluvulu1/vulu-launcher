@@ -488,15 +488,19 @@ namespace VuluLauncher.ViewModels
         private readonly InstanceItem _item;
         private readonly CoreClient _core = CoreClient.Instance;
 
-        public ScreenshotsModal(MainViewModel main, InstanceItem item)
+        public ScreenshotsModal(MainViewModel main, InstanceItem item, bool pick = false)
         {
             _main = main;
             _item = item;
+            IsPick = pick;
             _ = LoadAsync();
         }
 
         public override double Width => 860;
-        public string Title => $"{_item.Name} — ekran görüntüleri";
+        public string Title => IsPick ? "Paylaşılacak ekran görüntüsünü seç" : $"{_item.Name} — ekran görüntüleri";
+        /// <summary>Seçim için açıldıysa tıklanan görüntünün adı sonuç olur (paylaşmak için).</summary>
+        public bool IsPick { get; }
+        public bool NotPick => !IsPick;
         public ObservableCollection<ShotItem> Shots { get; } = new();
         [ObservableProperty] private string _summary = "Yükleniyor...";
         [ObservableProperty] private bool _isEmpty;
@@ -516,6 +520,7 @@ namespace VuluLauncher.ViewModels
 
         public async Task Run(string command, ShotItem shot)
         {
+            if (IsPick && command == "screenshots.open") { Close(shot.Name); return; }
             try
             {
                 await _core.Call(command, new { id = _item.Id, name = shot.Name });

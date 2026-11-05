@@ -20,6 +20,9 @@ namespace VuluLauncher.ViewModels
 
         /// <summary>Vazgeç, Kapat ya da Esc.</summary>
         [RelayCommand] private void Dismiss() => Close(null);
+
+        /// <summary>Seçim listesindeki satır tıklandı (paket, sunucu, instance seçimi); varsayılan: değeri sonuç olarak döner.</summary>
+        [RelayCommand] private void PickRow(PickRow row) => Close(row.Value);
     }
 
     /// <summary>Soru ya da bilgi kutusu: tamam ise true, vazgeç ise null.</summary>

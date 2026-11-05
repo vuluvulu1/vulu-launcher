@@ -1,0 +1,323 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.SocialView"
+             x:DataType="vm:SocialViewModel">
+    <UserControl.Styles>
+        <Style Selector="Button.sm">
+            <Setter Property="Padding" Value="11,5" />
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+        <Style Selector="Button.xs">
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="FontSize" Value="11.5" />
+        </Style>
+        <Style Selector="Button.row">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="2,0,0,0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="10,7" />
+        </Style>
+        <Style Selector="Button.row:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.row.active">
+            <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+        </Style>
+        <Style Selector="Button.row.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+        </Style>
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{StaticResource Card}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="StackPanel.msg"><Setter Property="HorizontalAlignment" Value="Left" /></Style>
+        <Style Selector="StackPanel.msg.mine"><Setter Property="HorizontalAlignment" Value="Right" /></Style>
+        <Style Selector="Border.bubble">
+            <Setter Property="Background" Value="{StaticResource Raised}" />
+            <Setter Property="Padding" Value="11,7" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="MaxWidth" Value="520" />
+        </Style>
+        <Style Selector="Border.bubble.mine">
+            <Setter Property="Background" Value="#5A3A16" />
+        </Style>
+        <Style Selector="Border.bubble.broken">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource Error}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+    </UserControl.Styles>
+
+
+    <Grid ColumnDefinitions="300,*">
+        <!-- ── Sol: kişiler ───────────────────────────────────────────── -->
+        <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="14,20,14,10" Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="Sosyal" FontSize="22" FontWeight="Bold" />
+                        <Button Grid.Column="1" Classes="sm" Content="Yeni mesaj" Command="{Binding NewMessageCommand}" ToolTip.Tip="Birine yeni mesaj yaz" />
+                    </Grid>
+                    <TextBox Text="{Binding Search}" Watermark="Arkadaş ya da üye ara…" />
+                </StackPanel>
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding List}" Margin="4,0,4,14">
+                        <ItemsControl.DataTemplates>
+                            <DataTemplate DataType="vm:SocialFeedLink">
+                                <Button Classes="row" Classes.active="{Binding IsActive}" Command="{Binding OpenCommand}">
+                                    <Grid ColumnDefinitions="34,*">
+                                        <Border Width="34" Height="34" Background="{StaticResource AccentSoft}" CornerRadius="17">
+                                            <TextBlock Text="▦" Foreground="{StaticResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="Akış" FontWeight="SemiBold" />
+                                            <TextBlock Text="Paylaşılan ekran görüntüleri" Classes="dim" FontSize="12" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                            <DataTemplate DataType="vm:SocialHeader">
+                                <StackPanel Orientation="Horizontal" Spacing="6" Margin="12,14,0,4">
+                                    <TextBlock Text="{Binding Title}" Classes="dim" FontSize="11.5" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding Count}" IsVisible="{Binding HasCount}" Foreground="{StaticResource Accent}" FontSize="11.5" FontWeight="Bold" />
+                                </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate DataType="vm:SocialHint">
+                                <TextBlock Text="{Binding Text}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" Margin="12,4" />
+                            </DataTemplate>
+                            <DataTemplate DataType="vm:SocialRow">
+                                <Button Classes="row" Classes.active="{Binding IsActive}" Command="{Binding OpenCommand}">
+                                    <Grid ColumnDefinitions="34,*,Auto,Auto">
+                                        <ContentControl Content="{Binding Person}" ContentTemplate="{StaticResource Avatar}" />
+                                        <StackPanel Grid.Column="1" Margin="10,0,6,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Person.Username}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Sub}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <Border Grid.Column="2" IsVisible="{Binding HasBadge}" Background="{StaticResource Accent}" MinWidth="18" Height="18"
+                                                CornerRadius="9" Padding="5,0" VerticalAlignment="Center" Margin="0,0,4,0">
+                                            <TextBlock Text="{Binding Badge}" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource AccentInk}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <ItemsControl Grid.Column="3" ItemsSource="{Binding Actions}" IsVisible="{Binding HasActions}" VerticalAlignment="Center">
+                                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:RowAction">
+                                                    <Button Classes="xs" Content="{Binding Label}" Command="{Binding RunCommand}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.DataTemplates>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Akış ───────────────────────────────────────────────────── -->
+        <ScrollViewer Grid.Column="1" IsVisible="{Binding IsFeed}">
+            <StackPanel Margin="26,22,26,28" Spacing="14">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Akış" FontSize="22" FontWeight="Bold" />
+                        <TextBlock Text="Oyuncuların paylaştığı ekran görüntüleri. Yalnızca vulu üyeleri görebilir." Classes="muted" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Bottom">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Classes="seg" Classes.active="{Binding !IsMine}" Content="Herkes" Command="{Binding SetFilterCommand}" CommandParameter="all" />
+                            <Button Classes="seg" Classes.active="{Binding IsMine}" Content="Benimkiler" Command="{Binding SetFilterCommand}" CommandParameter="mine" />
+                        </StackPanel>
+                        <Button Classes="sm primary" Content="+ Paylaş" Command="{Binding ShareCommand}" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Şimdi: duyuru, açık sunucular, oyundaki arkadaşlar -->
+                <StackPanel IsVisible="{Binding HasLive}" Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <Ellipse Width="8" Height="8" Fill="#5FC46A" VerticalAlignment="Center" />
+                        <TextBlock Text="Şimdi" FontWeight="Bold" />
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding Live}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.DataTemplates>
+                            <DataTemplate DataType="vm:LiveAnnouncement">
+                                <Border Classes="card" Width="300" Padding="14" Margin="0,0,10,10" BorderBrush="{StaticResource Accent}">
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="📣 Duyuru" FontWeight="Bold" Foreground="{StaticResource Accent}" FontSize="12" />
+                                        <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="11.5" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                            <DataTemplate DataType="vm:LiveServer">
+                                <Border Classes="card" Width="300" Padding="14" Margin="0,0,10,10">
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnDefinitions="40,*">
+                                            <Border Width="40" Height="40" Background="{StaticResource Raised}" ClipToBounds="True">
+                                                <Grid>
+                                                    <TextBlock Text="{Binding Server.Initial}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <Image Source="{Binding Server.Favicon}" RenderOptions.BitmapInterpolationMode="None" />
+                                                </Grid>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Server.Name}" FontWeight="Bold" />
+                                                <TextBlock Text="{Binding Players}" Classes="dim" FontSize="12" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <ItemsControl ItemsSource="{Binding People}" ItemTemplate="{StaticResource Avatar}">
+                                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                        <Button Classes="sm primary" Content="Bağlan" Command="{Binding JoinCommand}" HorizontalAlignment="Left" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                            <DataTemplate DataType="vm:LiveFriend">
+                                <Border Classes="card" Width="300" Padding="12" Margin="0,0,10,10">
+                                    <Grid ColumnDefinitions="34,*,Auto">
+                                        <ContentControl Content="{Binding Person}" ContentTemplate="{StaticResource Avatar}" />
+                                        <Button Grid.Column="1" Classes="link" Command="{Binding OpenCommand}" Margin="10,0,6,0" HorizontalContentAlignment="Left">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Person.Username}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Detail}" Foreground="#5FC46A" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Grid.Column="2" Classes="xs primary" Content="Katıl" IsVisible="{Binding CanJoin}" Command="{Binding JoinCommand}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.DataTemplates>
+                    </ItemsControl>
+                </StackPanel>
+
+                <TextBlock Text="Ekran görüntüleri" FontWeight="Bold" />
+                <TextBlock Text="{Binding ShotsStatus}" Classes="dim" FontSize="12.5" IsVisible="{Binding ShotsStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <StackPanel IsVisible="{Binding ShotsEmpty}" Spacing="6" Margin="0,20,0,0" HorizontalAlignment="Center">
+                    <TextBlock Text="Akış şimdilik boş" FontSize="17" FontWeight="Bold" HorizontalAlignment="Center" />
+                    <TextBlock Text="Oyunda F2 ile ekran görüntüsü al, sonra buradan paylaş. Bütün vulu üyeleri görür, beğenip yorum yapabilir."
+                               Classes="muted" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420" />
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding Shots}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ShotCard">
+                            <Border Classes="card" Width="300" Margin="0,0,14,14">
+                                <StackPanel>
+                                    <Button Classes="flat" Padding="0" Command="{Binding OpenCommand}" ToolTip.Tip="Büyük gör">
+                                        <Border Width="298" Height="168" Background="{StaticResource Raised}" ClipToBounds="True">
+                                            <Image Source="{Binding Thumb}" Stretch="UniformToFill" />
+                                        </Border>
+                                    </Button>
+                                    <StackPanel Margin="12,10,12,12" Spacing="6">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                            <ContentControl Content="{Binding Author}" ContentTemplate="{StaticResource Avatar}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Author.Username}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0" />
+                                            <Button Grid.Column="2" Classes="link" Content="{Binding CommentText}" Command="{Binding OpenCommand}" Margin="0,0,10,0" />
+                                            <Button Grid.Column="3" Classes="link" Content="{Binding LikeText}" Command="{Binding LikeCommand}" />
+                                        </Grid>
+                                        <TextBlock Text="{Binding Caption}" IsVisible="{Binding HasCaption}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Classes="sm" Content="Daha fazla" IsVisible="{Binding MoreShots}" Command="{Binding MoreShotsLoadCommand}" HorizontalAlignment="Center" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ── Sohbet ─────────────────────────────────────────────────── -->
+        <DockPanel Grid.Column="1" IsVisible="{Binding IsChat}">
+            <Border DockPanel.Dock="Top" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="20,12">
+                <StackPanel Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Active}" FontSize="17" FontWeight="Bold" />
+                            <TextBlock Text="{Binding LockText}" Classes="dim" FontSize="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="sm" Content="Güvenlik kodu" Command="{Binding SafetyCodeCommand}" />
+                    </Grid>
+                    <Border IsVisible="{Binding KeyChanged}" BorderBrush="{StaticResource Warn}" BorderThickness="1" Padding="10,8">
+                        <TextBlock Foreground="{StaticResource Warn}" FontSize="12.5" TextWrapping="Wrap"
+                                   Text="Bu kişinin şifreleme anahtarı değişmiş. Yeni bir cihaza geçmiş ya da şifresi sıfırlanmış olabilir; ama araya biri girmiş de olabilir. Önemli bir şey yazmadan önce güvenlik kodunu birlikte karşılaştırın." />
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- Yazma alanı -->
+            <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="16,12">
+                <Panel>
+                    <TextBlock Text="{Binding PeerNotice}" IsVisible="{Binding !PeerReady}" Classes="muted" TextWrapping="Wrap" />
+                    <Grid ColumnDefinitions="Auto,*,Auto" IsVisible="{Binding PeerReady}">
+                        <Button Content="+" Width="38" Height="38" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                Command="{Binding AttachCardCommand}" ToolTip.Tip="Paket ya da sunucu paylaş" VerticalAlignment="Bottom" />
+                        <TextBox x:Name="Compose" Grid.Column="1" Text="{Binding Draft}" Watermark="{Binding Placeholder}" AcceptsReturn="True"
+                                 TextWrapping="Wrap" MaxLength="2000" MaxHeight="120" Margin="8,0" />
+                        <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Spacing="4">
+                            <TextBlock Text="{Binding Counter}" Classes="dim" FontSize="11" HorizontalAlignment="Right" />
+                            <Button Classes="primary" Content="Gönder" Command="{Binding SendCommand}" IsEnabled="{Binding !Sending}" />
+                        </StackPanel>
+                    </Grid>
+                </Panel>
+            </Border>
+
+            <Panel>
+                <TextBlock Text="{Binding ChatMessage}" IsVisible="{Binding ChatMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                           Classes="dim" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <ScrollViewer x:Name="ChatScroll">
+                    <ItemsControl ItemsSource="{Binding Messages}" Margin="20,12">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ChatMessage">
+                                <StackPanel Margin="0,0,0,8">
+                                    <TextBlock Text="{Binding Day}" IsVisible="{Binding HasDay}" Classes="dim" FontSize="11.5" HorizontalAlignment="Center" Margin="0,8,0,10" />
+                                    <StackPanel Classes="msg" Classes.mine="{Binding Mine}" Spacing="3">
+                                        <Border Classes="bubble" Classes.mine="{Binding Mine}" Classes.broken="{Binding IsBroken}" IsVisible="{Binding HasBubble}">
+                                            <SelectableTextBlock Text="{Binding Bubble}" TextWrapping="Wrap" />
+                                        </Border>
+                                        <Border Classes="card" IsVisible="{Binding HasCard}" Padding="12,10" MinWidth="280">
+                                            <Grid ColumnDefinitions="Auto,*,Auto" DataContext="{Binding Card}" x:DataType="vm:DmCardItem">
+                                                <TextBlock Text="{Binding Icon}" FontSize="22" VerticalAlignment="Center" />
+                                                <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Kind}" Classes="dim" FontSize="11" />
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding Address}" IsVisible="{Binding HasAddress}" Classes="dim" FontSize="12" FontFamily="{StaticResource Mono}" />
+                                                    <TextBlock Text="{Binding Note}" IsVisible="{Binding Note, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                               Foreground="{StaticResource Warn}" FontSize="12" TextWrapping="Wrap" MaxWidth="260" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2" Classes="sm primary" Content="{Binding ActionText}" Command="{Binding ActCommand}"
+                                                        IsEnabled="{Binding !Busy}" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </Border>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" Classes="msg" Classes.mine="{Binding Mine}">
+                                            <TextBlock Text="{Binding Time}" Classes="dim" FontSize="11" />
+                                            <Button Classes="link" Content="sil" FontSize="11" IsVisible="{Binding Mine}" Command="{Binding DeleteCommand}" ToolTip.Tip="Herkesten sil" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Panel>
+        </DockPanel>
+    </Grid>
+</UserControl>

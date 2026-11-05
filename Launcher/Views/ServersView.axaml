@@ -100,6 +100,7 @@
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Button Classes="sm primary" Content="{Binding JoinText}" Command="{Binding JoinCommand}" />
+                                        <Button Classes="sm" Content="Davet et" Command="{Binding InviteCommand}" ToolTip.Tip="Bir arkadaşını mesajla davet et" />
                                         <Button Classes="sm" Content="Kısayol" Command="{Binding ShortcutCommand}" ToolTip.Tip="Masaüstüne tek tıkla bağlanma kısayolu koy" />
                                         <Button Classes="sm" Content="Düzenle" IsVisible="{Binding IsAdmin}" Command="{Binding EditCommand}" />
                                         <Button Classes="sm danger" Content="Sil" IsVisible="{Binding IsAdmin}" Command="{Binding DeleteCommand}" />

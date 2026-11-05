@@ -289,6 +289,7 @@ namespace VuluLauncher.ViewModels
             {
                 case "act": await ActAsync(card); break;
                 case "delete": await DeleteAsync(card); break;
+                case "send": await main.Social.ShareCardAsync(new { type = "pack", id = card.Id, name = card.Name }, $"{card.Name} paketini gönder"); break;
             }
         }
 

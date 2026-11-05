@@ -58,7 +58,7 @@ namespace VuluLauncher.Native
     internal static class Avatars
     {
         public static string ApiBase { get; set; } = "";
-        public static string? Url(string username, int version) =>
+        public static string? Url(string username, long version) =>
             version > 0 && ApiBase.Length > 0 ? $"{ApiBase}/users/{Uri.EscapeDataString(username)}/avatar?v={version}" : null;
     }
 }

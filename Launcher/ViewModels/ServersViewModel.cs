@@ -11,7 +11,7 @@ namespace VuluLauncher.ViewModels
     /// <summary>Bir kişinin çevrimiçi durumu (Sunucular'daki arkadaş listesi, Sosyal).</summary>
     internal sealed partial class PersonItem : ObservableObject
     {
-        public PersonItem(string username, int avatarVersion)
+        public PersonItem(string username, long avatarVersion)
         {
             Username = username;
             _ = LoadAvatar(avatarVersion);
@@ -30,7 +30,7 @@ namespace VuluLauncher.ViewModels
         partial void OnStateChanged(string? value) { OnPropertyChanged(nameof(IsPlaying)); OnPropertyChanged(nameof(IsOnline)); }
         partial void OnGameChanged(string? value) => OnPropertyChanged(nameof(HasGame));
 
-        private async Task LoadAvatar(int version) => Avatar = await Images.LoadAsync(Avatars.Url(Username, version), 96);
+        private async Task LoadAvatar(long version) => Avatar = await Images.LoadAsync(Avatars.Url(Username, version), 96);
     }
 
     /// <summary>Sunucular sayfasındaki kart: oyundaki sunucu listesi gibi simge, ad, oyuncu sayısı, renkli MOTD.</summary>
@@ -110,6 +110,7 @@ namespace VuluLauncher.ViewModels
         [RelayCommand] private Task CopyAddress() => _owner.CopyAsync(Address);
         [RelayCommand] private Task Shortcut() => _owner.ShortcutAsync(this);
         [RelayCommand] private Task Edit() => _owner.EditAsync(this);
+        [RelayCommand] private Task Invite() => _owner.InviteAsync(this);
         [RelayCommand] private Task Delete() => _owner.DeleteAsync(this);
     }
 
@@ -189,7 +190,7 @@ namespace VuluLauncher.ViewModels
             foreach (var p in others)
             {
                 string name = p.Str("username") ?? "";
-                var person = new PersonItem(name, members.TryGetValue(name, out int v) ? v : 0) { State = p.Str("state") };
+                var person = new PersonItem(name, members.TryGetValue(name, out long v) ? v : 0) { State = p.Str("state") };
                 (person.Game, person.Rest) = Describe(p);
                 Online.Add(person);
             }
@@ -259,6 +260,10 @@ namespace VuluLauncher.ViewModels
         }
 
         [RelayCommand] private Task Add() => EditAsync(null);
+
+        /// <summary>"Davet et": sunucu kartı mesajla bir arkadaşa gönderilir.</summary>
+        public Task InviteAsync(ServerCard s) =>
+            _main.Social.ShareCardAsync(new { type = "server", id = s.Id, name = s.Name, address = s.Address }, $"{s.Name} davetini gönder");
 
         public async Task EditAsync(ServerCard? s)
         {
