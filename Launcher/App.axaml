@@ -10,6 +10,7 @@
         <DataTemplate DataType="vm:HomeViewModel"><v:HomeView /></DataTemplate>
         <DataTemplate DataType="vm:SettingsViewModel"><v:SettingsView /></DataTemplate>
         <DataTemplate DataType="vm:DiscoverViewModel"><v:DiscoverView /></DataTemplate>
+        <DataTemplate DataType="vm:ServersViewModel"><v:ServersView /></DataTemplate>
         <DataTemplate DataType="vm:PlaceholderViewModel"><v:PlaceholderView /></DataTemplate>
     </Application.DataTemplates>
 

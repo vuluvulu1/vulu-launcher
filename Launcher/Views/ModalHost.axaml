@@ -662,6 +662,36 @@
                     </Border>
                 </StackPanel>
             </DataTemplate>
+            <!-- ── Sunucu ekle / düzenle (admin) ───────────────────────── -->
+            <DataTemplate DataType="vm:ServerEditorModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,12" />
+                    <StackPanel Margin="22,0,22,18" Spacing="6">
+                        <TextBlock Text="Ad" Classes="label" />
+                        <TextBox Text="{Binding Name}" MaxLength="40" Watermark="AGLR SMP" />
+                        <TextBlock Text="Adres" Classes="label" Margin="0,6,0,0" />
+                        <TextBox Text="{Binding Address}" MaxLength="120" Watermark="oyun.alanadi.com ya da 1.2.3.4:25565" />
+                        <TextBlock Text="Açıklama" Classes="label" Margin="0,6,0,0" />
+                        <TextBox Text="{Binding Description}" MaxLength="200" Watermark="Kısa bir açıklama (isteğe bağlı)" />
+                        <TextBlock Text="Paket" Classes="label" Margin="0,6,0,0" />
+                        <ComboBox ItemsSource="{Binding Packs}" SelectedItem="{Binding Pack}" HorizontalAlignment="Stretch" />
+                        <StackPanel IsVisible="{Binding IsVanilla}" Spacing="6" Margin="0,6,0,0">
+                            <TextBlock Text="Minecraft sürümü (Vanilla)" Classes="label" />
+                            <TextBox Text="{Binding McVersion}" MaxLength="40" Watermark="ör. 1.21.1 (boşsa seçili sürüm)" />
+                        </StackPanel>
+                        <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap" Margin="0,6,0,0"
+                                   Text="Oyuncular &quot;Bağlan&quot;a basınca seçilen paketin instance'ı açılır ve oyun doğrudan bu adrese bağlanır. Paket kurulu değilse önce kurulur." />
+                        <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" FontSize="12.5" TextWrapping="Wrap"
+                                   IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    </StackPanel>
+                    <Border Classes="modal-foot">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Content="Vazgeç" Command="{Binding DismissCommand}" />
+                            <Button Classes="primary" Content="Kaydet" Command="{Binding SaveCommand}" IsDefault="True" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
         </ContentControl.DataTemplates>
     </ContentControl>
 </UserControl>
