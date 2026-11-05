@@ -116,23 +116,23 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <!-- ── Soru/bilgi kutusu: pencerenin üstünde, arkası karartılır ── -->
-            <Border Grid.Row="0" Grid.RowSpan="2" Background="#A6000000" IsVisible="{Binding Dialog, Converter={x:Static ObjectConverters.IsNotNull}}">
-                <Border Width="440" HorizontalAlignment="Center" VerticalAlignment="Center" DataContext="{Binding Dialog}"
-                        Background="{StaticResource Panel}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
-                        BoxShadow="0 18 44 0 #9E000000" x:DataType="vm:DialogViewModel">
-                    <StackPanel>
-                        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="Bold" Margin="22,18,22,0" />
-                        <TextBlock Text="{Binding Message}" Classes="muted" TextWrapping="Wrap" Margin="22,10,22,20" LineHeight="20" />
-                        <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="16,12">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                                <Button Content="{Binding CancelText}" IsVisible="{Binding HasCancel}" Command="{Binding CancelCommand}" IsCancel="True" />
-                                <Button Classes="primary" Classes.danger="{Binding IsDanger}" Content="{Binding OkText}" Command="{Binding OkCommand}" IsDefault="True" />
-                            </StackPanel>
+            <!-- ── Kutular: pencerenin üstünde, arkası karartılır; üst üste açılabilir ── -->
+            <ItemsControl Grid.Row="0" Grid.RowSpan="2" ItemsSource="{Binding Modals}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><Grid /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ModalViewModel">
+                        <Border Background="#A6000000">
+                            <Border Width="{Binding Width}" HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="720"
+                                    Background="{StaticResource Panel}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
+                                    BoxShadow="0 18 44 0 #9E000000">
+                                <v:ModalHost />
+                            </Border>
                         </Border>
-                    </StackPanel>
-                </Border>
-            </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Grid>
     </LayoutTransformControl>
 </Window>

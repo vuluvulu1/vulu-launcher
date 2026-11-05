@@ -31,24 +31,26 @@ namespace VuluLauncher.ViewModels
         public LoginViewModel Login { get; }
         public HomeViewModel Home { get; }
         public SettingsViewModel Settings { get; }
+        public DiscoverViewModel Discover { get; }
         public ObservableCollection<PageTab> Tabs { get; } = new();
         public ObservableCollection<ToastItem> Toasts { get; } = new();
+        /// <summary>Açık kutular; sonuncusu en üstte.</summary>
+        public ObservableCollection<ModalViewModel> Modals { get; } = new();
 
         [ObservableProperty] private bool _loggedIn;
         [ObservableProperty] private string _username = "";
         [ObservableProperty] private string _userInitial = "";
         [ObservableProperty] private string _version = "";
         [ObservableProperty] private PageTab? _selectedTab;
-        /// <summary>Açık soru/bilgi kutusu; yoksa null.</summary>
-        [ObservableProperty] private DialogViewModel? _dialog;
 
         public MainViewModel()
         {
             Login = new LoginViewModel(EnterAsync);
             Home = new HomeViewModel();
             Settings = new SettingsViewModel(this);
+            Discover = new DiscoverViewModel(this);
             Tabs.Add(new PageTab("home", "Oyna", "M7 4l13 8-13 8z", Home));
-            Tabs.Add(new PageTab("discover", "Keşfet", "M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z", new PlaceholderViewModel("Keşfet")));
+            Tabs.Add(new PageTab("discover", "Keşfet", "M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z", Discover));
             Tabs.Add(new PageTab("servers", "Sunucular", "M3 4h18v7H3zM3 13h18v7H3zM7 7.5h.01M7 16.5h.01", new PlaceholderViewModel("Sunucular")));
             Tabs.Add(new PageTab("social", "Sosyal", "M9 4.8a3.2 3.2 0 1 0 0 6.4a3.2 3.2 0 0 0 0-6.4zM3.5 19a5.5 5.5 0 0 1 11 0M17 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5zM15.5 14.2A4.5 4.5 0 0 1 20.5 19", new PlaceholderViewModel("Sosyal")));
             Tabs.Add(new PageTab("settings", "Ayarlar", "M12 9a3 3 0 1 0 0 6a3 3 0 0 0 0-6zM12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1", Settings));
@@ -116,15 +118,23 @@ namespace VuluLauncher.ViewModels
             Login.Prepare(init, auto: false);
         }
 
-        /// <summary>Soru kutusu: tamam denirse true. Aynı anda tek kutu açılır; yenisi eskisini vazgeçmiş sayar.</summary>
-        public async Task<bool> ConfirmAsync(string title, string message, string okText, string? cancelText = "Vazgeç", bool danger = false)
+        /// <summary>Kutuyu açar ve kapanmasını bekler; sonuç kutunun verdiği değerdir (vazgeçilirse null).</summary>
+        public async Task<object?> ShowAsync(ModalViewModel modal)
         {
-            Dialog?.CancelCommand.Execute(null);
-            var dialog = new DialogViewModel(title, message, okText, cancelText, danger);
-            Dialog = dialog;
-            bool result = await dialog.Result;
-            if (Dialog == dialog) Dialog = null;
-            return result;
+            Modals.Add(modal);
+            try { return await modal.Result; }
+            finally { Modals.Remove(modal); }
+        }
+
+        /// <summary>Soru kutusu: tamam denirse true.</summary>
+        public async Task<bool> ConfirmAsync(string title, string message, string okText, string? cancelText = "Vazgeç", bool danger = false) =>
+            await ShowAsync(new DialogViewModel(title, message, okText, cancelText, danger)) is true;
+
+        /// <summary>Oyna sekmesine geçer; verilen paket seçili olur (kurulumdan sonra).</summary>
+        public async Task ShowHomeAsync(string? selectId)
+        {
+            SelectedTab = Tabs[0];
+            await Home.ReloadInstancesAsync(selectId);
         }
 
         public Task AlertAsync(string title, string message) => ConfirmAsync(title, message, "Tamam", null);
@@ -140,6 +150,7 @@ namespace VuluLauncher.ViewModels
             foreach (var tab in Tabs) tab.IsActive = tab == value;
             // Ayarlar her açılışta baştan okunur (başka yerden değişen ayarlar da görünsün)
             if (value?.Page is SettingsViewModel settings) _ = settings.LoadAsync();
+            if (value?.Page is DiscoverViewModel discover) _ = discover.OpenAsync();
         }
 
         public void ShowToast(string title, string body)

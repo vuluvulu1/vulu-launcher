@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
+using VuluLauncher.ViewModels;
 using Avalonia.VisualTree;
 
 namespace VuluLauncher.Views
@@ -15,6 +17,15 @@ namespace VuluLauncher.Views
             {
                 if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !IsOnButton(e.Source as Visual))
                     BeginMoveDrag(e);
+            };
+            // Esc en üstteki kutuyu kapatır
+            KeyDown += (_, e) =>
+            {
+                if (e.Key == Key.Escape && DataContext is MainViewModel { Modals.Count: > 0 } vm)
+                {
+                    vm.Modals[^1].DismissCommand.Execute(null);
+                    e.Handled = true;
+                }
             };
         }
 

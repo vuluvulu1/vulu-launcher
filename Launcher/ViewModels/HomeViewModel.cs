@@ -99,6 +99,9 @@ namespace VuluLauncher.ViewModels
 
         private string _activityText = "";
 
+        /// <summary>Oyun çıktısı dışındaki son log satırı: diğer sayfalarda süren işlem (kurulum, indirme) bununla görünür.</summary>
+        [ObservableProperty] private string _lastActivity = "";
+
         public void ApplyInit(JsonElement init)
         {
             CanLaunchGame = init.Get("canLaunchGame").ValueKind != JsonValueKind.False;
@@ -132,7 +135,7 @@ namespace VuluLauncher.ViewModels
         }
 #endif
 
-        private async Task ReloadInstancesAsync(string? selectId)
+        public async Task ReloadInstancesAsync(string? selectId)
         {
             JsonElement list;
             try { list = await _core.Call("instances.list"); }
@@ -310,6 +313,7 @@ namespace VuluLauncher.ViewModels
             }
             _lastLineWasProgress = replace;
 
+            if (level != "game" && level != "gameError") LastActivity = text;
             if (level != "game" && level != "gameError" && Launching)
             {
                 _activityText = text;

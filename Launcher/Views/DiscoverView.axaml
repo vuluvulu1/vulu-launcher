@@ -1,0 +1,256 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.DiscoverView"
+             x:DataType="vm:DiscoverViewModel">
+    <UserControl.Styles>
+        <Style Selector="Button.sm">
+            <Setter Property="Padding" Value="11,5" />
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="Border.tag">
+            <Setter Property="Background" Value="{StaticResource Raised}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6,1" />
+            <Setter Property="Margin" Value="0,0,5,5" />
+        </Style>
+        <Style Selector="Border.tag.accent">
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+        </Style>
+        <Style Selector="Border.tag TextBlock">
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+        </Style>
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{StaticResource Card}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Border.card:pointerover">
+            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
+        </Style>
+        <!-- Filtre kategorisi -->
+        <Style Selector="Button.chip">
+            <Setter Property="Padding" Value="9,3" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,0,5,5" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+        </Style>
+        <Style Selector="Button.chip.active">
+            <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="TextBlock.field">
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Foreground" Value="{StaticResource Dim}" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="TagTemplate" x:DataType="vm:Tag">
+            <Border Classes="tag" Classes.accent="{Binding Accent}"><TextBlock Text="{Binding Text}" /></Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- ── Başlık: kaynak, tür, süren işlem ─────────────────────────── -->
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="28,22,28,14">
+            <StackPanel Spacing="10">
+                <TextBlock Text="Keşfet" FontSize="24" FontWeight="Bold" />
+                <ItemsControl ItemsSource="{Binding Sources}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:Choice">
+                            <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                    Command="{Binding $parent[UserControl].((vm:DiscoverViewModel)DataContext).SelectSourceCommand}" CommandParameter="{Binding}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <TextBlock Grid.Column="1" Text="{Binding Main.Home.LastActivity}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis"
+                       VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="24,0,16,6" MaxWidth="420" />
+
+            <!-- vulu Packs: yenile; CurseForge/Modrinth: içerik türü -->
+            <Button Grid.Column="2" Classes="sm" Content="Yenile" Command="{Binding Packs.LoadCommand}" IsVisible="{Binding IsPacks}" VerticalAlignment="Bottom" />
+            <ItemsControl Grid.Column="2" ItemsSource="{Binding Content.Types}" IsVisible="{Binding !IsPacks}" VerticalAlignment="Bottom">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:Choice">
+                        <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                Command="{Binding $parent[UserControl].((vm:DiscoverViewModel)DataContext).Content.SelectTypeCommand}" CommandParameter="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <Panel>
+            <!-- ── vulu Packs ─────────────────────────────────────────── -->
+            <ScrollViewer IsVisible="{Binding $parent[UserControl].((vm:DiscoverViewModel)DataContext).IsPacks}" DataContext="{Binding Packs}" x:DataType="vm:PacksViewModel">
+                <StackPanel Margin="28,0,28,28" Spacing="12">
+                    <TextBlock Text="Ekibin paylaştığı paketler. Tek tıkla kur, güncelleme gelince buradan al." Classes="muted" />
+                    <TextBlock Text="{Binding Status}" Classes="dim" Classes.error="{Binding StatusIsError}" FontSize="12.5">
+                        <TextBlock.Styles><Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style></TextBlock.Styles>
+                    </TextBlock>
+                    <StackPanel IsVisible="{Binding IsEmpty}" Margin="0,30,0,0" Spacing="6" HorizontalAlignment="Center">
+                        <TextBlock Text="Henüz paylaşılan paket yok" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Admin bir paket paylaştığında burada görünecek." Classes="muted" HorizontalAlignment="Center" />
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding Cards}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PackCard">
+                                <Border Classes="card" Width="300" Margin="0,0,16,16" Cursor="Hand" Tapped="OnPackTapped">
+                                    <StackPanel>
+                                        <Grid Height="150" ClipToBounds="True" Background="{StaticResource Raised}">
+                                            <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="12" />
+                                            <Image Source="{Binding Cover}" Stretch="UniformToFill" />
+                                            <Border IsVisible="{Binding IsOutdated}" Background="{StaticResource Accent}" Padding="8,3"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+                                                <TextBlock Text="Güncelleme var" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource AccentInk}" />
+                                            </Border>
+                                        </Grid>
+                                        <StackPanel Margin="14,12,14,14" Spacing="6">
+                                            <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" />
+                                            <TextBlock Text="{Binding Description}" IsVisible="{Binding HasDescription}" Classes="muted" FontSize="12.5"
+                                                       TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                                            <ItemsControl ItemsSource="{Binding Tags}" ItemTemplate="{StaticResource TagTemplate}" Margin="0,2,0,0">
+                                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4,0,0">
+                                                <Button Classes="sm" Classes.primary="{Binding ActionIsPrimary}" Content="{Binding ActionText}"
+                                                        Command="{Binding ActCommand}" IsEnabled="{Binding !Busy}" />
+                                                <Button Grid.Column="2" Classes="link" Content="Ayrıntılar" Command="{Binding DetailsCommand}" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ── CurseForge / Modrinth ──────────────────────────────── -->
+            <Grid IsVisible="{Binding !$parent[UserControl].((vm:DiscoverViewModel)DataContext).IsPacks}" DataContext="{Binding Content}" x:DataType="vm:ContentSearchViewModel"
+                  ColumnDefinitions="*,260" Margin="28,0,28,0">
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" Margin="0,0,0,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding ShowTarget}" Margin="0,0,10,0"
+                                    ToolTip.Tip="İçeriğin kurulacağı instance; seçilince yalnızca ona uyanlar görünür">
+                            <TextBlock Text="Kur:" VerticalAlignment="Center" Classes="muted" />
+                            <ComboBox ItemsSource="{Binding Targets}" SelectedItem="{Binding Target}" Width="260" />
+                        </StackPanel>
+                        <TextBox Grid.Column="1" Text="{Binding Query}" Watermark="{Binding SearchHint}" />
+                    </Grid>
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Classes="dim" FontSize="12.5" Margin="0,0,0,8" TextWrapping="Wrap" />
+                    <ScrollViewer x:Name="HitScroll">
+                        <StackPanel Margin="0,0,14,24" Spacing="8">
+                            <ItemsControl ItemsSource="{Binding Hits}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ContentHit">
+                                        <Border Classes="card" Padding="12" Margin="0,0,0,8">
+                                            <Grid ColumnDefinitions="64,*,Auto">
+                                                <Border Width="64" Height="64" Background="{StaticResource Raised}" VerticalAlignment="Top" ClipToBounds="True">
+                                                    <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                                                </Border>
+                                                <StackPanel Grid.Column="1" Margin="14,0,14,0" Spacing="4">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="Bold" />
+                                                        <TextBlock Text="{Binding Author}" Classes="dim" FontSize="12" VerticalAlignment="Bottom" />
+                                                        <Border Classes="tag" IsVisible="{Binding ManualOnly}" Margin="0" VerticalAlignment="Center"
+                                                                ToolTip.Tip="Yapımcısı başka uygulamalardan indirilmesine izin vermiyor; CurseForge sitesinden indirilir">
+                                                            <TextBlock Text="Elle indirilir" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Description}" Classes="muted" FontSize="12.5" TextWrapping="Wrap"
+                                                               MaxLines="2" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" />
+                                                    <ItemsControl ItemsSource="{Binding Tags}" ItemTemplate="{StaticResource TagTemplate}">
+                                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="2" Spacing="8" HorizontalAlignment="Right" MinWidth="130">
+                                                    <Button Classes="sm" Classes.primary="{Binding IsPrimary}" Content="{Binding ButtonText}"
+                                                            Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Center" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Right">
+                                                        <Button Classes="link" Content="Sürüm seç" Command="{Binding PickVersionCommand}" />
+                                                        <Button Classes="link" Content="Sayfa ↗" Command="{Binding OpenPageCommand}" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button Content="Daha fazla göster" IsVisible="{Binding HasMore}" Command="{Binding MoreCommand}"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+
+                <!-- Sıralama ve filtreler -->
+                <ScrollViewer Grid.Column="1" Margin="10,0,0,0">
+                    <StackPanel Spacing="14" Margin="6,0,4,24">
+                        <StackPanel>
+                            <TextBlock Classes="field" Text="Sırala" />
+                            <ComboBox ItemsSource="{Binding Sorts}" SelectedItem="{Binding Sort}" />
+                        </StackPanel>
+                        <StackPanel IsVisible="{Binding FreeBrowse}">
+                            <TextBlock Classes="field" Text="Minecraft" />
+                            <ComboBox ItemsSource="{Binding Versions}" SelectedItem="{Binding Version}" MaxDropDownHeight="360" />
+                        </StackPanel>
+                        <StackPanel IsVisible="{Binding ShowLoader}">
+                            <TextBlock Classes="field" Text="Yükleyici" />
+                            <ComboBox ItemsSource="{Binding LoaderOptions}" SelectedItem="{Binding Loader}" />
+                        </StackPanel>
+                        <TextBlock Text="Filtreler yükleniyor..." IsVisible="{Binding FiltersLoading}" Classes="dim" FontSize="12.5" />
+                        <ItemsControl ItemsSource="{Binding Groups}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CategoryGroup">
+                                    <StackPanel Margin="0,0,0,10">
+                                        <TextBlock Classes="field" Text="{Binding Title}" FontWeight="SemiBold" />
+                                        <ItemsControl ItemsSource="{Binding Chips}">
+                                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:CategoryChip">
+                                                    <Button Classes="chip" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                                            Command="{Binding $parent[UserControl].((vm:DiscoverViewModel)DataContext).Content.ToggleCategoryCommand}"
+                                                            CommandParameter="{Binding}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <CheckBox Content="Yalnızca açık kaynak" IsChecked="{Binding OpenSource}" IsVisible="{Binding !IsCurseForge}" />
+                        <Button Classes="link" Content="{Binding ClearText}" IsEnabled="{Binding CanClear}" Command="{Binding ClearFiltersCommand}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Panel>
+    </DockPanel>
+</UserControl>

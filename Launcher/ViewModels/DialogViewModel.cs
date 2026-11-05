@@ -4,13 +4,27 @@ using CommunityToolkit.Mvvm.Input;
 namespace VuluLauncher.ViewModels
 {
     /// <summary>
-    /// Pencerenin ortasında açılan soru ya da bilgi kutusu (web arayüzündeki confirmDialog/alertDialog).
-    /// Sonuç <see cref="Result"/> ile beklenir: tamam ise true, vazgeç ya da Esc ise false.
+    /// Pencerenin ortasında açılan kutu (web arayüzündeki openModal). Kutular üst üste açılabilir; en üstteki Esc ile
+    /// kapanır. Sonuç <see cref="Result"/> ile beklenir: kapatan neyi verdiyse o, vazgeçilirse null.
     /// </summary>
-    internal sealed partial class DialogViewModel(string title, string message, string okText, string? cancelText, bool danger) : ObservableObject
+    internal abstract partial class ModalViewModel : ObservableObject
     {
-        private readonly TaskCompletionSource<bool> _result = new();
+        private readonly TaskCompletionSource<object?> _result = new();
 
+        public Task<object?> Result => _result.Task;
+
+        /// <summary>Kutunun genişliği (DIP).</summary>
+        public virtual double Width => 440;
+
+        public void Close(object? result = null) => _result.TrySetResult(result);
+
+        /// <summary>Vazgeç, Kapat ya da Esc.</summary>
+        [RelayCommand] private void Dismiss() => Close(null);
+    }
+
+    /// <summary>Soru ya da bilgi kutusu: tamam ise true, vazgeç ise null.</summary>
+    internal sealed partial class DialogViewModel(string title, string message, string okText, string? cancelText, bool danger) : ModalViewModel
+    {
         public string Title { get; } = title;
         public string Message { get; } = message;
         public string OkText { get; } = okText;
@@ -18,9 +32,6 @@ namespace VuluLauncher.ViewModels
         public bool HasCancel => CancelText != null;
         public bool IsDanger { get; } = danger;
 
-        public Task<bool> Result => _result.Task;
-
-        [RelayCommand] private void Ok() => _result.TrySetResult(true);
-        [RelayCommand] private void Cancel() => _result.TrySetResult(false);
+        [RelayCommand] private void Ok() => Close(true);
     }
 }

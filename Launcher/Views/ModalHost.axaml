@@ -1,0 +1,275 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.ModalHost"
+             x:DataType="vm:ModalViewModel">
+    <!-- Bütün kutuların görünümleri: kutunun türüne göre biri seçilir -->
+    <UserControl.Styles>
+        <Style Selector="TextBlock.modal-title">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="Border.modal-foot">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="0,1,0,0" />
+            <Setter Property="Padding" Value="16,12" />
+        </Style>
+        <Style Selector="Border.tag">
+            <Setter Property="Background" Value="{StaticResource Raised}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="7,2" />
+            <Setter Property="Margin" Value="0,0,6,6" />
+        </Style>
+        <Style Selector="Border.row-card">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style Selector="Border.unfit"><Setter Property="Opacity" Value="0.55" /></Style>
+        <Style Selector="Button.sm">
+            <Setter Property="Padding" Value="11,5" />
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <!-- Paketin bir revizyonundaki değişiklikler -->
+        <DataTemplate x:Key="ChangeTemplate" x:DataType="vm:ChangeEntry">
+            <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="0,0,0,10" Margin="0,0,0,10">
+                <StackPanel Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding Head}" FontWeight="Bold" />
+                        <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding Note}" IsVisible="{Binding HasNote}" TextWrapping="Wrap" />
+                    <ItemsControl ItemsSource="{Binding Added}">
+                        <ItemsControl.ItemTemplate><DataTemplate x:DataType="x:String"><TextBlock Text="{Binding}" Foreground="{StaticResource Ok}" FontSize="12.5" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding Updated}">
+                        <ItemsControl.ItemTemplate><DataTemplate x:DataType="x:String"><TextBlock Text="{Binding}" Foreground="{StaticResource Warn}" FontSize="12.5" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding Removed}">
+                        <ItemsControl.ItemTemplate><DataTemplate x:DataType="x:String"><TextBlock Text="{Binding}" Foreground="{StaticResource Error}" FontSize="12.5" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="Config ve paket dosyaları da güncellendi." IsVisible="{Binding FilesChanged}" Classes="dim" FontSize="12.5" />
+                    <TextBlock Text="{Binding Empty}" IsVisible="{Binding HasEmpty}" Classes="dim" FontSize="12.5" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ContentControl Content="{Binding}">
+        <ContentControl.DataTemplates>
+            <!-- ── Soru / bilgi ─────────────────────────────────────────── -->
+            <DataTemplate DataType="vm:DialogViewModel">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,0" />
+                    <TextBlock Text="{Binding Message}" Classes="muted" TextWrapping="Wrap" Margin="22,10,22,20" LineHeight="20" />
+                    <Border Classes="modal-foot">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Content="{Binding CancelText}" IsVisible="{Binding HasCancel}" Command="{Binding DismissCommand}" />
+                            <Button Classes="primary" Classes.danger="{Binding IsDanger}" Content="{Binding OkText}" Command="{Binding OkCommand}" IsDefault="True" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- ── vulu Packs: paket ayrıntısı ──────────────────────────── -->
+            <DataTemplate DataType="vm:PackDetailsModal">
+                <DockPanel>
+                    <Border DockPanel.Dock="Bottom" Classes="modal-foot">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                            <Button Classes="sm danger" Content="Sil" IsVisible="{Binding Card.IsAdmin}" Command="{Binding DeleteCommand}" />
+                            <Button Grid.Column="2" Classes="sm" Content="Kapat" Command="{Binding DismissCommand}" Margin="0,0,8,0" />
+                            <Button Grid.Column="3" Classes="sm" Classes.primary="{Binding Card.ActionIsPrimary}"
+                                    Content="{Binding Card.ActionText}" Command="{Binding ActCommand}" />
+                        </Grid>
+                    </Border>
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="200,*" Margin="20,20,20,0">
+                        <Border Height="112" Background="{StaticResource Raised}" ClipToBounds="True">
+                            <Grid>
+                                <TextBlock Text="{Binding Card.Name}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           TextWrapping="Wrap" TextAlignment="Center" Margin="8" />
+                                <Image Source="{Binding Card.Cover}" Stretch="UniformToFill" />
+                            </Grid>
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="16,4,0,0" Spacing="4">
+                            <TextBlock Text="{Binding Card.Name}" FontSize="20" FontWeight="Bold" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Card.DetailMeta}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                    <ScrollViewer MaxHeight="440" Margin="0,14,0,0">
+                        <StackPanel Margin="20,0,20,18" Spacing="12">
+                            <TextBlock Text="{Binding Card.Description}" IsVisible="{Binding Card.HasDescription}" TextWrapping="Wrap" Classes="muted" />
+                            <ItemsControl ItemsSource="{Binding Card.AllTags}">
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:Tag">
+                                        <Border Classes="tag"><TextBlock Text="{Binding Text}" FontSize="12" FontWeight="SemiBold" /></Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel IsVisible="{Binding HasChanges}" Spacing="8">
+                                <TextBlock Text="Değişiklikler" FontWeight="Bold" />
+                                <ItemsControl ItemsSource="{Binding Changes}" ItemTemplate="{StaticResource ChangeTemplate}" />
+                                <Button Classes="link" Content="{Binding ShowAllText}" IsVisible="{Binding CanShowAll}" Command="{Binding ExpandChangesCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </DataTemplate>
+
+            <!-- ── vulu Packs: güncelleme sorusu ────────────────────────── -->
+            <DataTemplate DataType="vm:PackUpdateModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,0" />
+                    <ScrollViewer MaxHeight="420" Margin="0,10,0,0">
+                        <StackPanel Margin="22,0,22,18" Spacing="10">
+                            <TextBlock Text="{Binding Revisions}" FontWeight="SemiBold" />
+                            <ItemsControl ItemsSource="{Binding Changes}" ItemTemplate="{StaticResource ChangeTemplate}" />
+                            <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap"
+                                       Text="Paketteki config dosyaları seninkilerin üzerine yazılır. Kendi eklediğin modlar ve dünyaların yerinde kalır; dünyalar güncellemeden önce yedeklenir." />
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Border Classes="modal-foot">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Content="Vazgeç" Command="{Binding DismissCommand}" />
+                            <Button Classes="primary" Content="Güncelle" Command="{Binding OkCommand}" IsDefault="True" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- ── Sürüm seç ───────────────────────────────────────────── -->
+            <DataTemplate DataType="vm:VersionPickerModal">
+                <StackPanel>
+                    <Grid ColumnDefinitions="*,Auto" Margin="22,18,22,10">
+                        <TextBlock Classes="modal-title" Text="{Binding Title}" />
+                        <Button Grid.Column="1" Classes="link" Content="Kapat" Command="{Binding DismissCommand}" VerticalAlignment="Top" />
+                    </Grid>
+                    <TextBlock Text="{Binding Message}" IsVisible="{Binding Message, Converter={x:Static ObjectConverters.IsNotNull}}"
+                               Classes="muted" Classes.error="{Binding IsError}" Margin="22,0,22,18" TextWrapping="Wrap" />
+                    <ScrollViewer MaxHeight="460">
+                        <ItemsControl ItemsSource="{Binding Versions}" Margin="22,0,22,16">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:VersionRow">
+                                    <Border Classes="row-card">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Spacing="2">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                                    <Border Classes="tag" IsVisible="{Binding HasBadge}" Margin="0" Padding="5,0">
+                                                        <TextBlock Text="{Binding Badge}" FontSize="11" />
+                                                    </Border>
+                                                    <Border Classes="tag" IsVisible="{Binding ManualOnly}" Margin="0" Padding="5,0"
+                                                            ToolTip.Tip="Yapımcısı başka uygulamalardan indirilmesine izin vermiyor">
+                                                        <TextBlock Text="Elle indirilir" FontSize="11" />
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Classes="sm primary" Content="Bu sürümü kur" Command="{Binding PickCommand}"
+                                                    VerticalAlignment="Center" Margin="12,0,0,0" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- ── Nereye kurulsun ─────────────────────────────────────── -->
+            <DataTemplate DataType="vm:TargetPickerModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,12" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap" Margin="22,0,22,16" IsVisible="{Binding IsEmpty}"
+                               Text="Henüz kişisel instance yok. Yeni instance oluşturma yeni arayüze yakında geliyor; şimdilik bir modpack kurabilirsin." />
+                    <ScrollViewer MaxHeight="420">
+                        <ItemsControl ItemsSource="{Binding Rows}" Margin="22,0,22,14">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TargetRow">
+                                    <Border Classes="row-card" Classes.unfit="{Binding !Fits}">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                                <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Classes="sm" Classes.primary="{Binding Fits}" Content="Buraya kur"
+                                                    IsEnabled="{Binding Fits}" Command="{Binding PickCommand}" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <Border Classes="modal-foot">
+                        <Button Content="Vazgeç" Command="{Binding DismissCommand}" HorizontalAlignment="Right" />
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- ── Elle indirilecek CurseForge dosyaları ────────────────── -->
+            <DataTemplate DataType="vm:ManualDownloadsModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,8" />
+                    <ScrollViewer MaxHeight="460">
+                        <StackPanel Margin="22,0,22,16" Spacing="10">
+                            <TextBlock Text="{Binding Intro}" TextWrapping="Wrap" Classes="muted" />
+                            <ItemsControl ItemsSource="{Binding Rows}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ManualRow">
+                                        <Border Classes="row-card" Classes.placed="{Binding Placed}">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Spacing="2">
+                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding Detail}" Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding Status}" FontSize="12" Classes.ok="{Binding Placed}" Classes.problem="{Binding IsProblem}"
+                                                               IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                                <Button Grid.Column="1" Classes="sm" Content="CurseForge'da aç ↗" Command="{Binding OpenCommand}"
+                                                        VerticalAlignment="Center" Margin="12,0,0,0" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.Styles>
+                                    <Style Selector="Border.placed"><Setter Property="BorderBrush" Value="{StaticResource Ok}" /></Style>
+                                    <Style Selector="TextBlock.ok"><Setter Property="Foreground" Value="{StaticResource Ok}" /></Style>
+                                    <Style Selector="TextBlock.problem"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                                </ItemsControl.Styles>
+                            </ItemsControl>
+                            <TextBlock Text="{Binding Help}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Note}" IsVisible="{Binding Note, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                       Foreground="{StaticResource Warn}" FontSize="12.5" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Border Classes="modal-foot">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Content="Instance klasörünü aç" IsVisible="{Binding HasInstance}" Command="{Binding OpenFolderCommand}" />
+                            <Button Content="Kapat" Command="{Binding DismissCommand}" Classes.primary="{Binding AllPlaced}" />
+                            <Button Classes="primary" Content="İndirilenleri kontrol et" Command="{Binding CheckCommand}"
+                                    IsVisible="{Binding HasInstance}" IsEnabled="{Binding !Checking}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
+        </ContentControl.DataTemplates>
+    </ContentControl>
+</UserControl>
