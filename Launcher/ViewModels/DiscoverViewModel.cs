@@ -197,11 +197,13 @@ namespace VuluLauncher.ViewModels
         public bool IsAdmin => _owner.IsAdmin;
 
         /// <summary>Ana düğme: Kur / Güncelle / Kurulu · Aç.</summary>
-        public string ActionText => !IsInstalled ? "Kur" : IsOutdated ? "Güncelle" : "Kurulu · Aç";
+        public string ActionText => Busy ? (IsOutdated ? "Güncelleniyor…" : "Kuruluyor…") : !IsInstalled ? "Kur" : IsOutdated ? "Güncelle" : "Kurulu · Aç";
         public bool ActionIsPrimary => !IsInstalled || IsOutdated;
 
         [ObservableProperty] private Bitmap? _cover;
-        [ObservableProperty] private bool _busy;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ActionText))]
+        private bool _busy;
 
         private async Task LoadCoverAsync(string? url) => Cover = await Images.LoadAsync(url, 640);
 
@@ -636,11 +638,11 @@ namespace VuluLauncher.ViewModels
         {
             string original = hit.ButtonText;
             hit.CanInstall = false;
-            hit.ButtonText = "Kuruluyor…";
             try
             {
                 if (hit.Type == "modpack")
                 {
+                    hit.ButtonText = "Kuruluyor…";
                     var pack = await _core.Call(Command("installModpack"), new { projectId = hit.Id, versionId });
                     if (!pack.Bool("success")) throw new InvalidOperationException(pack.Str("error") ?? "Kurulamadı.");
                     hit.ButtonText = original;
@@ -660,6 +662,7 @@ namespace VuluLauncher.ViewModels
                     }
                     instanceId = picked;
                 }
+                hit.ButtonText = "Kuruluyor…";
 
                 var result = await _core.Call(Command("install"), new { instanceId, projectId = hit.Id, versionId });
                 if (!result.Bool("success")) throw new InvalidOperationException(result.Str("error") ?? "Kurulamadı.");
