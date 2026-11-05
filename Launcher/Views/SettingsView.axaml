@@ -1,0 +1,224 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h2">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style Selector="Border.row">
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Padding" Value="0,13" />
+        </Style>
+        <Style Selector="TextBlock.set-title">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+        <Style Selector="TextBlock.set-hint">
+            <Setter Property="Foreground" Value="{StaticResource Dim}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,3,0,0" />
+        </Style>
+        <Style Selector="Button.sm">
+            <Setter Property="Padding" Value="11,5" />
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+
+        <!-- Bölüm menüsü -->
+        <Style Selector="Button.nav">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="2,0,0,0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="12,8" />
+        </Style>
+        <Style Selector="Button.nav:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.nav.current">
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="Button.nav.current:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="240,*">
+        <!-- ── Sol: başlık, arama, bölümler ───────────────────────────── -->
+        <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+            <DockPanel Margin="16,22,16,16">
+                <TextBlock DockPanel.Dock="Top" Text="Ayarlar" FontSize="22" FontWeight="Bold" Margin="0,0,0,14" />
+                <TextBox DockPanel.Dock="Top" Text="{Binding Search}" Watermark="Ayarlarda ara" Margin="0,0,0,14" />
+                <TextBlock DockPanel.Dock="Bottom" Text="{Binding Note}" Classes="muted" Classes.error="{Binding NoteIsError}"
+                           TextWrapping="Wrap" FontSize="12.5" MinHeight="18">
+                    <TextBlock.Styles>
+                        <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                    </TextBlock.Styles>
+                </TextBlock>
+                <ItemsControl ItemsSource="{Binding Sections}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SettingSection">
+                            <Button Classes="nav" Classes.current="{Binding IsCurrent}" IsVisible="{Binding IsVisible}"
+                                    Content="{Binding Title}" Click="OnNavClick" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Sağ: bölümler ve satırlar ─────────────────────────────── -->
+        <ScrollViewer Grid.Column="1" x:Name="Scroll">
+            <StackPanel x:Name="Body" MaxWidth="900" Margin="36,26,36,40" Spacing="34">
+                <TextBlock Text="{Binding LoadError}" IsVisible="{Binding LoadError, Converter={x:Static ObjectConverters.IsNotNull}}"
+                           Foreground="{StaticResource Error}" TextWrapping="Wrap" />
+                <TextBlock Text="Aramana uyan bir ayar yok." IsVisible="{Binding NoResults}" Classes="muted" />
+                <ItemsControl x:Name="SectionList" ItemsSource="{Binding Sections}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><StackPanel Spacing="34" /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SettingSection">
+                            <StackPanel IsVisible="{Binding IsVisible}">
+                                <TextBlock Classes="h2" Text="{Binding Title}" />
+                                <ItemsControl ItemsSource="{Binding Rows}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:SettingRow">
+                                            <Border Classes="row" IsVisible="{Binding IsShown}">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <StackPanel Margin="0,0,24,0" VerticalAlignment="Center">
+                                                        <TextBlock Classes="set-title" Text="{Binding Title}" />
+                                                        <TextBlock Classes="set-hint" Text="{Binding Hint}" IsVisible="{Binding HasHint}" />
+                                                    </StackPanel>
+                                                    <ContentControl Grid.Column="1" Content="{Binding}" VerticalAlignment="Center" MaxWidth="480">
+                                                        <ContentControl.DataTemplates>
+                                                            <!-- Seçenekler: yan yana düğmeler -->
+                                                            <DataTemplate DataType="vm:ChoiceRow">
+                                                                <ItemsControl ItemsSource="{Binding Options}">
+                                                                    <ItemsControl.ItemsPanel>
+                                                                        <ItemsPanelTemplate><WrapPanel HorizontalAlignment="Right" /></ItemsPanelTemplate>
+                                                                    </ItemsControl.ItemsPanel>
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate x:DataType="vm:ChoiceOption">
+                                                                            <Button Classes="seg" Classes.active="{Binding IsSelected}"
+                                                                                    Content="{Binding Label}" Command="{Binding PickCommand}" />
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </DataTemplate>
+
+                                                            <DataTemplate DataType="vm:ToggleRow">
+                                                                <ToggleSwitch IsChecked="{Binding Value}" OnContent="" OffContent="" MinWidth="0" />
+                                                            </DataTemplate>
+
+                                                            <DataTemplate DataType="vm:TextRow">
+                                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                                    <TextBox Text="{Binding Value}" Watermark="{Binding Placeholder}" Width="300">
+                                                                        <TextBox.KeyBindings>
+                                                                            <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
+                                                                        </TextBox.KeyBindings>
+                                                                    </TextBox>
+                                                                    <Button Classes="sm" IsVisible="{Binding HasAction}" Content="{Binding Action.Label}"
+                                                                            Command="{Binding Action.RunCommand}" />
+                                                                </StackPanel>
+                                                            </DataTemplate>
+
+                                                            <DataTemplate DataType="vm:SliderRow">
+                                                                <Slider Value="{Binding Value}" Minimum="0" Maximum="100" Width="240" />
+                                                            </DataTemplate>
+
+                                                            <DataTemplate DataType="vm:ActionRow">
+                                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                    <TextBlock Text="{Binding Value}" IsVisible="{Binding HasValue}" FontWeight="SemiBold"
+                                                                               VerticalAlignment="Center" Margin="0,0,4,0" />
+                                                                    <ItemsControl ItemsSource="{Binding Actions}">
+                                                                        <ItemsControl.ItemsPanel>
+                                                                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate x:DataType="vm:RowAction">
+                                                                                <Button Classes="sm" Classes.danger="{Binding IsDanger}" Content="{Binding Label}"
+                                                                                        IsEnabled="{Binding IsEnabled}" Command="{Binding RunCommand}" />
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+
+                                                            <DataTemplate DataType="vm:GameSizeRow">
+                                                                <StackPanel Spacing="8" HorizontalAlignment="Right">
+                                                                    <ItemsControl ItemsSource="{Binding Choice.Options}">
+                                                                        <ItemsControl.ItemsPanel>
+                                                                            <ItemsPanelTemplate><WrapPanel HorizontalAlignment="Right" /></ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate x:DataType="vm:ChoiceOption">
+                                                                                <Button Classes="seg" Classes.active="{Binding IsSelected}"
+                                                                                        Content="{Binding Label}" Command="{Binding PickCommand}" />
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsCustom}" HorizontalAlignment="Right">
+                                                                        <TextBox Text="{Binding Width}" Watermark="Genişlik" Width="96" Classes="commit-size" />
+                                                                        <TextBlock Text="×" VerticalAlignment="Center" />
+                                                                        <TextBox Text="{Binding Height}" Watermark="Yükseklik" Width="96" Classes="commit-size" />
+                                                                        <Button Classes="sm" Content="Kaydet" Command="{Binding SaveCustomCommand}" />
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+
+                                                            <DataTemplate DataType="vm:JavaListRow">
+                                                                <StackPanel Spacing="6" Width="420">
+                                                                    <TextBlock Text="Bilgisayarda kurulu Java bulunamadı; gereken sürüm otomatik indirilir."
+                                                                               Classes="set-hint" IsVisible="{Binding IsEmpty}" />
+                                                                    <ItemsControl ItemsSource="{Binding Items}">
+                                                                        <ItemsControl.ItemsPanel>
+                                                                            <ItemsPanelTemplate><StackPanel Spacing="6" /></ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate x:DataType="vm:JavaItem">
+                                                                                <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}"
+                                                                                        BorderThickness="1" Padding="10,7">
+                                                                                    <Grid ColumnDefinitions="*,Auto">
+                                                                                        <StackPanel>
+                                                                                            <TextBlock>
+                                                                                                <Run Text="{Binding Version}" FontWeight="Bold" />
+                                                                                                <Run Text=" · " Foreground="{StaticResource Dim}" />
+                                                                                                <Run Text="{Binding Source}" Foreground="{StaticResource Dim}" />
+                                                                                            </TextBlock>
+                                                                                            <TextBlock Text="{Binding Path}" Classes="set-hint" TextWrapping="NoWrap"
+                                                                                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Path}" />
+                                                                                        </StackPanel>
+                                                                                        <Button Grid.Column="1" Classes="sm" Content="{Binding ButtonText}"
+                                                                                                Command="{Binding UseCommand}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                                                                                    </Grid>
+                                                                                </Border>
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ContentControl.DataTemplates>
+                                                    </ContentControl>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

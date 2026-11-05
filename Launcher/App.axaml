@@ -8,6 +8,7 @@
     <!-- Sayfa modelinden görünüme: sekme içeriği ContentControl'e model olarak verilir -->
     <Application.DataTemplates>
         <DataTemplate DataType="vm:HomeViewModel"><v:HomeView /></DataTemplate>
+        <DataTemplate DataType="vm:SettingsViewModel"><v:SettingsView /></DataTemplate>
         <DataTemplate DataType="vm:PlaceholderViewModel"><v:PlaceholderView /></DataTemplate>
     </Application.DataTemplates>
 
@@ -49,6 +50,16 @@
             <Color x:Key="SystemAccentColorDark1">#C27E3E</Color>
             <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
             <CornerRadius x:Key="OverlayCornerRadius">0</CornerRadius>
+
+            <!-- Aç/kapa düğmesi: açıkken Meşale turuncusu -->
+            <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#F2A33A" />
+            <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#FFC873" />
+            <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#C27E3E" />
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="#1A0E02" />
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="#1A0E02" />
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPressed" Color="#1A0E02" />
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#4DFFD8A0" />
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#C9BDAF" />
         </ResourceDictionary>
     </Application.Resources>
 
@@ -117,6 +128,46 @@
         <Style Selector="Button.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="#C42B1C" />
             <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <!-- Tehlikeli işlem (sil, temizle) -->
+        <Style Selector="Button.danger">
+            <Setter Property="Foreground" Value="{StaticResource Error}" />
+        </Style>
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="{StaticResource Error}" />
+            <Setter Property="Foreground" Value="{StaticResource Error}" />
+        </Style>
+        <Style Selector="Button.primary.danger">
+            <Setter Property="Background" Value="{StaticResource Error}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Error}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="Button.primary.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#F07A4E" />
+            <Setter Property="BorderBrush" Value="#F07A4E" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <!-- Seçenek düğmeleri (yan yana; seçili olan vurgulu) -->
+        <Style Selector="Button.seg">
+            <Setter Property="Padding" Value="11,6" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Margin" Value="0,0,-1,0" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+        </Style>
+        <Style Selector="Button.seg.active">
+            <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+            <Setter Property="ZIndex" Value="1" />
+        </Style>
+        <Style Selector="Button.seg.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+        </Style>
+
+        <Style Selector="Slider">
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
         </Style>
 
         <!-- Simgeler: 24×24 SVG yolları, çizgi olarak çizilir -->

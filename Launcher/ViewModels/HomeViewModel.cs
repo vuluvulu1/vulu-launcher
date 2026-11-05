@@ -162,8 +162,10 @@ namespace VuluLauncher.ViewModels
             if (value == null) { Refresh(); return; }
 
             UiState.Set("lastPack", value.Id);
-            RamGb = int.TryParse(UiState.Get("ram_" + value.Id), out int saved) && RamOptions.Contains(saved)
-                ? saved : Math.Max(RamOptions.FirstOrDefault(4), RamOptions.LastOrDefault(gb => gb <= value.RecommendedRamGb));
+            // Pakete ayrıca seçilen RAM; yoksa Ayarlar'daki varsayılan; o da "Önerilen"se paketin önerdiği
+            int fallback = RamOptions.Contains(AppSettings.Current.DefaultRamGb) ? AppSettings.Current.DefaultRamGb
+                : Math.Max(RamOptions.FirstOrDefault(4), RamOptions.LastOrDefault(gb => gb <= value.RecommendedRamGb));
+            RamGb = int.TryParse(UiState.Get("ram_" + value.Id), out int saved) && RamOptions.Contains(saved) ? saved : fallback;
             _ = LoadVisualsAsync(value);
             if (!_preview) _ = LoadDetailsAsync(value);
             else Installed = true;

@@ -41,6 +41,9 @@
     <AvaloniaResource Include="wwwroot\fonts\*.ttf" Link="Assets\Fonts\%(Filename)%(Extension)" />
     <AvaloniaResource Include="wwwroot\assets\logo.png" Link="Assets\logo.png" />
     <Content Include="logo.ico" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Açık kaynak lisansları (Ayarlar → Açık kaynak lisansları) -->
+    <Content Include="wwwroot\licenses\**" Link="licenses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="wwwroot\fonts\OFL-*.txt" Link="licenses\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
