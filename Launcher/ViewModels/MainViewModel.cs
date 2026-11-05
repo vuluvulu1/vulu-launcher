@@ -37,6 +37,8 @@ namespace VuluLauncher.ViewModels
         public DiscoverViewModel Discover { get; }
         public ServersViewModel Servers { get; }
         public SocialViewModel Social { get; }
+        public ProfileViewModel Profile { get; }
+        public AdminViewModel Admin { get; }
         public ObservableCollection<PageTab> Tabs { get; } = new();
         public ObservableCollection<ToastItem> Toasts { get; } = new();
         /// <summary>Açık kutular; sonuncusu en üstte.</summary>
@@ -47,6 +49,8 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private string _userInitial = "";
         [ObservableProperty] private string _version = "";
         [ObservableProperty] private bool _isAdmin;
+        /// <summary>Başlık çubuğundaki profil resmi.</summary>
+        [ObservableProperty] private Avalonia.Media.Imaging.Bitmap? _myAvatar;
         [ObservableProperty] private PageTab? _selectedTab;
 
         public MainViewModel()
@@ -63,12 +67,16 @@ namespace VuluLauncher.ViewModels
             Discover = new DiscoverViewModel(this);
             Servers = new ServersViewModel(this);
             Social = new SocialViewModel(this);
+            Profile = new ProfileViewModel(this);
+            Admin = new AdminViewModel(this);
             Tabs.Add(new PageTab("home", "Oyna", "M7 4l13 8-13 8z", Home));
             Tabs.Add(new PageTab("discover", "Keşfet", "M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z", Discover));
             Tabs.Add(new PageTab("servers", "Sunucular", "M3 4h18v7H3zM3 13h18v7H3zM7 7.5h.01M7 16.5h.01", Servers));
             Tabs.Add(new PageTab("social", "Sosyal", "M9 4.8a3.2 3.2 0 1 0 0 6.4a3.2 3.2 0 0 0 0-6.4zM3.5 19a5.5 5.5 0 0 1 11 0M17 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5zM15.5 14.2A4.5 4.5 0 0 1 20.5 19", Social));
             Tabs.Add(new PageTab("settings", "Ayarlar", "M12 9a3 3 0 1 0 0 6a3 3 0 0 0 0-6zM12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1", Settings));
-            Tabs.Add(new PageTab("admin", "Admin", "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z", new PlaceholderViewModel("Admin")) { IsVisible = false });
+            Tabs.Add(new PageTab("admin", "Admin", "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z", Admin) { IsVisible = false });
+            // Profil başlık çubuğunda sekme olarak görünmez; kullanıcı adına ya da bir kişiye tıklanınca açılır
+            Tabs.Add(new PageTab("profile", "Profil", "M12 12a4 4 0 1 0 0-8a4 4 0 0 0 0 8zM4 20a8 8 0 0 1 16 0", Profile) { IsVisible = false });
             SelectedTab = Tabs[0];
 
             _core.Event += OnCoreEvent;
@@ -121,6 +129,8 @@ namespace VuluLauncher.ViewModels
             SelectedTab = Tabs[0];
             LoggedIn = true;
             _ = Social.StartAsync();
+            _ = RefreshMyAvatarAsync();
+            if (IsAdmin) _ = Admin.RefreshRegistrationsAsync();
             await Home.LoadAsync();
         }
 
@@ -138,6 +148,29 @@ namespace VuluLauncher.ViewModels
         }
 
         private Dictionary<string, long>? _members;
+
+        /// <summary>Profil resmi ya da adı değişince üye listesi yeniden alınır.</summary>
+        public void ForgetMembers() => _members = null;
+
+        /// <summary>Kendi profilin (başlık çubuğundaki kullanıcı adına tıklanınca).</summary>
+        [RelayCommand]
+        private Task OpenMyProfile() => OpenProfileAsync(Username);
+
+        public async Task OpenProfileAsync(string username)
+        {
+            SelectedTab = Tabs.First(t => t.Key == "profile");
+            await Profile.OpenAsync(username);
+        }
+
+        public async Task RefreshMyAvatarAsync()
+        {
+            try
+            {
+                var me = await _core.Call("profile.me");
+                MyAvatar = await Images.LoadAsync(Avatars.Url(Username, (long)me.Num("avatarVersion")), 64);
+            }
+            catch { /* baş harf kalır */ }
+        }
 
         /// <summary>Alınmış üye listesi (henüz alınmadıysa boş).</summary>
         public Dictionary<string, long> MembersCached => _members ?? new();
@@ -200,6 +233,7 @@ namespace VuluLauncher.ViewModels
             if (value?.Page is DiscoverViewModel discover) _ = discover.OpenAsync();
             if (value?.Page is ServersViewModel servers) _ = servers.LoadAsync();
             if (value?.Page is SocialViewModel social) _ = social.OpenAsync();
+            if (value?.Page is AdminViewModel admin) _ = admin.OpenAsync();
             // Başka sayfada mod kurulduysa ya da kaldırıldıysa Oyna'daki sayılar güncel olsun
             if (value?.Page is HomeViewModel && LoggedIn) Home.RefreshDetails();
         }

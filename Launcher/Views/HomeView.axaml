@@ -142,6 +142,20 @@
             </Border.Background>
         </Border>
 
+        <!-- Duyuru: paketin üstünde, kapatılabilir -->
+        <Border Grid.Row="0" IsVisible="{Binding HasAnnouncement}" ZIndex="2" Margin="94,18,400,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                MaxWidth="560" Background="{StaticResource Glass}" BorderBrush="{StaticResource Accent}" BorderThickness="2,1,1,1" Padding="14,10">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <TextBlock Text="📣" FontSize="16" VerticalAlignment="Top" Margin="0,0,10,0" />
+                <StackPanel Grid.Column="1" Spacing="2">
+                    <TextBlock Text="{Binding Announcement}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding AnnouncementMeta}" Classes="dim" FontSize="11.5" />
+                </StackPanel>
+                <Button Grid.Column="2" Classes="flat" Content="×" FontSize="16" Padding="8,0" VerticalAlignment="Top" Margin="8,-4,-6,0"
+                        Command="{Binding DismissAnnouncementCommand}" ToolTip.Tip="Duyuruyu kapat" />
+            </Grid>
+        </Border>
+
         <Grid Grid.Row="0" ColumnDefinitions="76,*,380">
             <!-- ── Sol şerit: paketler ─────────────────────────────── -->
             <Border Grid.Column="0" Background="#B314100C" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">

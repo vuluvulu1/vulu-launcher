@@ -162,6 +162,34 @@ namespace VuluLauncher.ViewModels
 
         /// <summary>Oyun çıktısı dışındaki son log satırı: diğer sayfalarda süren işlem (kurulum, indirme) bununla görünür.</summary>
         [ObservableProperty] private string _lastActivity = "";
+        /// <summary>Oyna sayfasının üstündeki duyuru (kapatılan duyuru, yenisi gelene kadar gösterilmez).</summary>
+        [ObservableProperty] private string? _announcement;
+        [ObservableProperty] private string? _announcementMeta;
+        public bool HasAnnouncement => Announcement != null;
+        partial void OnAnnouncementChanged(string? value) => OnPropertyChanged(nameof(HasAnnouncement));
+        private string? _announcementId;
+        private Avalonia.Threading.DispatcherTimer? _announcementTimer;
+
+        public async Task RefreshAnnouncementAsync()
+        {
+            _announcementTimer ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMinutes(10), Avalonia.Threading.DispatcherPriority.Background,
+                async (_, _) => await RefreshAnnouncementAsync());
+            _announcementTimer.Start();
+            JsonElement a;
+            try { a = (await _core.Call("announcement.get")).Get("announcement"); } catch { return; }
+            if (a.ValueKind != JsonValueKind.Object || UiState.Get("announcementDismissed") == a.Str("id")) { Announcement = null; return; }
+            _announcementId = a.Str("id");
+            AnnouncementMeta = string.Join(" · ", new[] { a.Str("author"), Names.Ago(a.Str("createdAt")) }.Where(x => !string.IsNullOrEmpty(x)));
+            Announcement = a.Str("text");
+        }
+
+        [RelayCommand]
+        private void DismissAnnouncement()
+        {
+            UiState.Set("announcementDismissed", _announcementId);
+            Announcement = null;
+        }
+
         /// <summary>Güncellemesi olan paket sayısı (Keşfet sekmesindeki rozet).</summary>
         [ObservableProperty] private int _packUpdateCount;
 
@@ -179,6 +207,7 @@ namespace VuluLauncher.ViewModels
             _lastLineWasProgress = false;
             await ReloadInstancesAsync(UiState.Get("lastPack"));
             _ = RefreshPackUpdatesAsync();
+            _ = RefreshAnnouncementAsync();
             // Launcher simge durumundayken oyun çöktüyse özeti burada bekliyor
             try
             {

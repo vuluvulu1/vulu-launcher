@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
              x:Class="VuluLauncher.Views.ModalHost"
              x:DataType="vm:ModalViewModel">
     <!-- Bütün kutuların görünümleri: kutunun türüne göre biri seçilir -->
@@ -859,6 +860,84 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                             <Button Content="Kapat" Command="{Binding DismissCommand}" />
                             <Button Classes="primary" Content="Kodlar aynı, doğrula" IsVisible="{Binding !Verified}" Command="{Binding VerifyCommand}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- ── Kırpma (profil resmi, banner) ───────────────────────── -->
+            <DataTemplate DataType="vm:CropModal"><v:CropView /></DataTemplate>
+
+            <!-- ── Admin: kullanıcı ekle / düzenle ─────────────────────── -->
+            <DataTemplate DataType="vm:UserEditorModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,12" />
+                    <StackPanel Margin="22,0,22,18" Spacing="6">
+                        <TextBlock Text="Kullanıcı adı" Classes="label" />
+                        <TextBox Text="{Binding Username}" MaxLength="16" IsEnabled="{Binding IsNew}" />
+                        <TextBlock Text="Kullanıcı adı değiştirilemez; oyundaki eşyalar ve ilerleme ada bağlıdır." IsVisible="{Binding IsEdit}" Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                        <TextBlock Text="E-posta" Classes="label" Margin="0,6,0,0" />
+                        <TextBox Text="{Binding Email}" MaxLength="254" IsEnabled="{Binding IsNew}" Watermark="İsteğe bağlı" />
+                        <TextBlock Text="{Binding PasswordLabel}" Classes="label" Margin="0,6,0,0" />
+                        <TextBox Text="{Binding Password}" PasswordChar="•" Watermark="{Binding PasswordHint}" />
+                        <TextBlock Text="Şifre değişirse kullanıcının açık oturumları kapanır." IsVisible="{Binding IsEdit}" Classes="dim" FontSize="12" />
+                        <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,8,0,0">
+                            <CheckBox Content="Admin" IsChecked="{Binding IsAdmin}" IsEnabled="{Binding CanChangeFlags}" />
+                            <CheckBox Content="Aktif" IsChecked="{Binding IsActive}" IsEnabled="{Binding CanChangeFlags}" />
+                        </StackPanel>
+                        <TextBlock Text="Kendi adminliğini kaldıramaz ya da kendini kapatamazsın." IsVisible="{Binding IsSelf}" Classes="dim" FontSize="12" />
+                        <TextBlock Text="Roller" Classes="label" Margin="0,8,0,0" />
+                        <TextBlock Text="Henüz rol yok. Roller sekmesinden oluşturabilirsin." IsVisible="{Binding NoRoles}" Classes="dim" FontSize="12.5" />
+                        <ItemsControl ItemsSource="{Binding RoleBoxes}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:RoleBox">
+                                    <CheckBox IsChecked="{Binding Checked}" Margin="0,0,14,0">
+                                        <TextBlock Text="{Binding Role.Name}" Foreground="{Binding Role.Brush}" FontWeight="SemiBold" />
+                                    </CheckBox>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" FontSize="12.5" TextWrapping="Wrap"
+                                   IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    </StackPanel>
+                    <Border Classes="modal-foot">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Content="Vazgeç" Command="{Binding DismissCommand}" />
+                            <Button Classes="primary" Content="{Binding SaveText}" Command="{Binding SaveCommand}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- ── Admin: rol ekle / düzenle ───────────────────────────── -->
+            <DataTemplate DataType="vm:RoleEditorModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,12" />
+                    <StackPanel Margin="22,0,22,18" Spacing="6">
+                        <TextBlock Text="Rol adı" Classes="label" />
+                        <TextBox Text="{Binding Name}" MaxLength="24" Watermark="ör. AGLR" />
+                        <TextBlock Text="Renk" Classes="label" Margin="0,6,0,0" />
+                        <ItemsControl ItemsSource="{Binding Colors}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Button Width="26" Height="26" Background="{Binding}" BorderThickness="0" Padding="0" ToolTip.Tip="{Binding}"
+                                            Command="{Binding $parent[ItemsControl].((vm:RoleEditorModal)DataContext).PickColorCommand}" CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBox Text="{Binding Color}" MaxLength="7" Width="110" HorizontalAlignment="Left" Watermark="#RRGGBB" />
+                        <Border BorderBrush="{Binding Brush}" BorderThickness="1" Padding="8,2" HorizontalAlignment="Left" Margin="0,6,0,0">
+                            <TextBlock Text="{Binding Preview}" Foreground="{Binding Brush}" FontWeight="SemiBold" />
+                        </Border>
+                        <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" FontSize="12.5" TextWrapping="Wrap"
+                                   IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    </StackPanel>
+                    <Border Classes="modal-foot">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Content="Vazgeç" Command="{Binding DismissCommand}" />
+                            <Button Classes="primary" Content="{Binding SaveText}" Command="{Binding SaveCommand}" />
                         </StackPanel>
                     </Border>
                 </StackPanel>

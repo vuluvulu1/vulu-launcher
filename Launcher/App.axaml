@@ -12,6 +12,8 @@
         <DataTemplate DataType="vm:DiscoverViewModel"><v:DiscoverView /></DataTemplate>
         <DataTemplate DataType="vm:ServersViewModel"><v:ServersView /></DataTemplate>
         <DataTemplate DataType="vm:SocialViewModel"><v:SocialView /></DataTemplate>
+        <DataTemplate DataType="vm:ProfileViewModel"><v:ProfileView /></DataTemplate>
+        <DataTemplate DataType="vm:AdminViewModel"><v:AdminView /></DataTemplate>
         <DataTemplate DataType="vm:PlaceholderViewModel"><v:PlaceholderView /></DataTemplate>
     </Application.DataTemplates>
 

@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.CropView"
+             x:DataType="vm:CropModal">
+    <StackPanel>
+        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="Bold" Margin="24,18,24,12" />
+        <!-- Çerçeve: resim sürükleyerek kaydırılır, tekerlekle yakınlaştırılır -->
+        <Border x:Name="Frame" Width="{Binding FrameWidth}" Height="{Binding FrameHeight}" ClipToBounds="True" Background="#000000" Cursor="SizeAll"
+                HorizontalAlignment="Center">
+            <Canvas>
+                <Image Source="{Binding Image}" Width="{Binding ImageWidth}" Height="{Binding ImageHeight}" Canvas.Left="{Binding X}" Canvas.Top="{Binding Y}"
+                       Stretch="Fill" IsHitTestVisible="False" />
+                <!-- Profil resmi yuvarlak görünür: köşeler karartılır -->
+                <Ellipse Width="{Binding FrameWidth}" Height="{Binding FrameHeight}" IsVisible="{Binding Round}" Stroke="#99FFFFFF" StrokeThickness="2" IsHitTestVisible="False" />
+            </Canvas>
+        </Border>
+        <Grid ColumnDefinitions="Auto,*,Auto" Margin="24,12,24,4">
+            <TextBlock Text="−" Classes="dim" VerticalAlignment="Center" />
+            <Slider Grid.Column="1" Minimum="1" Maximum="4" Value="{Binding Zoom}" Margin="10,0" />
+            <TextBlock Grid.Column="2" Text="+" Classes="dim" VerticalAlignment="Center" />
+        </Grid>
+        <TextBlock Text="Resmi sürükleyerek kaydır; tekerlek ya da kaydırıcıyla yakınlaştır." Classes="dim" FontSize="12.5" Margin="24,0,24,16" />
+        <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="16,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Content="Vazgeç" Command="{Binding DismissCommand}" />
+                <Button Classes="primary" Content="Kaydet" Command="{Binding SaveCommand}" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

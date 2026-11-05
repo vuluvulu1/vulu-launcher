@@ -1,0 +1,227 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.AdminView"
+             x:DataType="vm:AdminViewModel">
+    <UserControl.Styles>
+        <Style Selector="Button.sm">
+            <Setter Property="Padding" Value="11,5" />
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+        <Style Selector="Border.row">
+            <Setter Property="Background" Value="{StaticResource Card}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="Border.row.inactive"><Setter Property="Opacity" Value="0.6" /></Style>
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{StaticResource Card}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Width" Value="290" />
+            <Setter Property="Margin" Value="0,0,12,12" />
+        </Style>
+        <Style Selector="Border.card.attention"><Setter Property="BorderBrush" Value="{StaticResource Accent}" /></Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="RoleChipTemplate" x:DataType="vm:AdminRole">
+            <Border BorderBrush="{Binding Brush}" BorderThickness="1" Padding="7,1" Margin="0,4,6,0">
+                <TextBlock Text="{Binding Name}" Foreground="{Binding Brush}" FontSize="11.5" FontWeight="SemiBold" />
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <DockPanel Margin="28,22,28,0">
+        <StackPanel DockPanel.Dock="Top" Spacing="12" Margin="0,0,0,14">
+            <TextBlock Text="Admin paneli" FontSize="24" FontWeight="Bold" />
+            <ItemsControl ItemsSource="{Binding Tabs}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:Choice">
+                        <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                Command="{Binding $parent[UserControl].((vm:AdminViewModel)DataContext).SelectTabCommand}" CommandParameter="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="{Binding Status}" Classes="dim" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+
+        <ScrollViewer>
+            <Panel Margin="0,0,0,28">
+                <!-- Özet -->
+                <ItemsControl ItemsSource="{Binding Cards}" IsVisible="{Binding IsOverview}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AdminCard">
+                            <Border Classes="card" Classes.attention="{Binding Attention}">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="{Binding Title}" Classes="dim" FontSize="12" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding Value}" FontSize="26" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding Sub}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" />
+                                    <Button Classes="sm" Content="{Binding ActionText}" IsVisible="{Binding HasAction}" Command="{Binding Run}" HorizontalAlignment="Left" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Kullanıcılar -->
+                <StackPanel IsVisible="{Binding IsUsers}" Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding Summary}" Classes="dim" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Classes="sm primary" Content="+ Kullanıcı ekle" Command="{Binding AddUserCommand}" />
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding Users}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:AdminUserRow">
+                                <Border Classes="row" Classes.inactive="{Binding !IsActive}">
+                                    <Grid ColumnDefinitions="*,Auto,Auto">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{Binding Username}" FontWeight="Bold" />
+                                                <TextBlock Text="admin" IsVisible="{Binding IsAdmin}" Foreground="{StaticResource Accent}" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center" />
+                                                <TextBlock Text="pasif" IsVisible="{Binding !IsActive}" Classes="dim" FontSize="11.5" VerticalAlignment="Center" />
+                                                <TextBlock Text="sen" IsVisible="{Binding IsSelf}" Classes="dim" FontSize="11.5" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" />
+                                            <ItemsControl ItemsSource="{Binding Roles}" ItemTemplate="{StaticResource RoleChipTemplate}">
+                                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Classes="sm" Content="Düzenle" Command="{Binding EditCommand}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                        <Button Grid.Column="2" Classes="sm danger" Content="Sil" IsEnabled="{Binding !IsSelf}" Command="{Binding DeleteCommand}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Roller -->
+                <StackPanel IsVisible="{Binding IsRoles}" Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding Summary}" Classes="dim" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Classes="sm primary" Content="+ Rol ekle" Command="{Binding AddRoleCommand}" />
+                    </Grid>
+                    <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap"
+                               Text="Rol verdiğin kişiler o role açılan paketleri görür. Paylaşırken &quot;Kimler erişebilir&quot; kısmında rol seçilmeyen paket herkese açıktır; adminler her paketi görür." />
+                    <ItemsControl ItemsSource="{Binding Roles}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:AdminRole">
+                                <Border Classes="row">
+                                    <Grid ColumnDefinitions="*,Auto,Auto">
+                                        <StackPanel>
+                                            <ContentControl Content="{Binding}" ContentTemplate="{StaticResource RoleChipTemplate}" HorizontalAlignment="Left" />
+                                            <TextBlock Classes="dim" FontSize="12"><Run Text="{Binding Members}" /><Run Text=" kişi · " /><Run Text="{Binding Packs}" /><Run Text=" paket" /></TextBlock>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Classes="sm" Content="Düzenle" VerticalAlignment="Center" Margin="0,0,6,0"
+                                                Command="{Binding $parent[UserControl].((vm:AdminViewModel)DataContext).EditRoleCommand}" CommandParameter="{Binding}" />
+                                        <Button Grid.Column="2" Classes="sm danger" Content="Sil" VerticalAlignment="Center"
+                                                Command="{Binding $parent[UserControl].((vm:AdminViewModel)DataContext).DeleteRoleCommand}" CommandParameter="{Binding}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Kayıt istekleri -->
+                <StackPanel IsVisible="{Binding IsRegistrations}" Spacing="10">
+                    <TextBlock Text="{Binding Summary}" Classes="dim" />
+                    <StackPanel IsVisible="{Binding NoRegistrations}" Spacing="4">
+                        <TextBlock Text="Bekleyen kayıt isteği yok" FontWeight="Bold" />
+                        <TextBlock Text="Biri giriş ekranından kayıt olduğunda burada görünür." Classes="dim" />
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding Registrations}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:RegistrationRow">
+                                <Border Classes="row">
+                                    <Grid ColumnDefinitions="*,Auto,Auto">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Username}" FontWeight="Bold" />
+                                            <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Classes="sm primary" Content="Kabul et" IsEnabled="{Binding Verified}" Command="{Binding ApproveCommand}"
+                                                ToolTip.Tip="Bu kişi e-posta adresini doğrulayınca kabul edebilirsin." VerticalAlignment="Center" Margin="0,0,6,0" />
+                                        <Button Grid.Column="2" Classes="sm danger" Content="Reddet" IsEnabled="{Binding !Busy}" Command="{Binding RejectCommand}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Duyuru -->
+                <StackPanel IsVisible="{Binding IsAnnouncement}" Spacing="10" MaxWidth="680" HorizontalAlignment="Left">
+                    <TextBlock Classes="dim" Text="Duyuru herkesin launcher'ında, Oyna sayfasının üstünde görünür. Yeni duyuru eskisinin yerine geçer." TextWrapping="Wrap" />
+                    <TextBox Text="{Binding AnnouncementText}" AcceptsReturn="True" TextWrapping="Wrap" Height="80" MaxLength="500"
+                             Watermark="Örneğin: Bu akşam 21:00'de AGLR SMP'de etkinlik var!" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Ne kadar kalsın:" VerticalAlignment="Center" />
+                        <ComboBox ItemsSource="{Binding DurationOptions}" SelectedItem="{Binding Duration}" MinWidth="170" />
+                        <Button Classes="primary" Content="Yayınla" Command="{Binding PublishAnnouncementCommand}" />
+                        <TextBlock Text="{Binding AnnouncementNote}" Foreground="{StaticResource Error}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Border Classes="row" IsVisible="{Binding CurrentAnnouncement, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="0,10,0,0">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="{Binding CurrentAnnouncementMeta}" Classes="dim" FontSize="12" />
+                            <TextBlock Text="{Binding CurrentAnnouncement}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                            <Button Classes="sm danger" Content="Kaldır" Command="{Binding RemoveAnnouncementCommand}" HorizontalAlignment="Left" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="Şu an yayında bir duyuru yok." Classes="dim" IsVisible="{Binding CurrentAnnouncement, Converter={x:Static ObjectConverters.IsNull}}" />
+                </StackPanel>
+
+                <!-- Radyo -->
+                <StackPanel IsVisible="{Binding IsRadio}" Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding RadioUsage}" Classes="dim" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Classes="sm primary" Content="{Binding UploadText}" Command="{Binding UploadSongCommand}" />
+                    </Grid>
+                    <TextBlock Text="Sunucuda şarkı klasörü henüz ayarlı değil; yükleme yapılamaz (RADIO_DIR)." IsVisible="{Binding !RadioReady}" Foreground="{StaticResource Error}" />
+                    <TextBlock Text="{Binding RadioNote}" IsVisible="{Binding RadioNote, Converter={x:Static ObjectConverters.IsNotNull}}" Foreground="{StaticResource Error}" TextWrapping="Wrap" />
+                    <ProgressBar Value="{Binding RadioFraction}" Maximum="1" />
+                    <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap"
+                               Text="MP3, OGG ya da M4A; en fazla 30 MB. Dosya adı &quot;Sanatçı - Şarkı&quot; ise ikisi otomatik ayrılır. Yalnızca hakkına sahip olduğun ya da telifsiz şarkıları yükle — buradaki şarkılar bütün üyelere dağıtılır." />
+                    <ItemsControl ItemsSource="{Binding Songs}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SongRow">
+                                <Border Classes="row">
+                                    <Grid ColumnDefinitions="*,*,Auto,Auto">
+                                        <TextBox Text="{Binding Title}" Watermark="Şarkı adı" MaxLength="100" Classes="song" Margin="0,0,6,0" />
+                                        <TextBox Grid.Column="1" Text="{Binding Artist}" Watermark="Sanatçı" MaxLength="100" Classes="song" Margin="0,0,10,0" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Size}" Classes="dim" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                        <Button Grid.Column="3" Classes="sm danger" Content="Sil" Command="{Binding DeleteCommand}" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Alan -->
+                <StackPanel IsVisible="{Binding IsStorage}" Spacing="12" MaxWidth="720" HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding StorageTotal}" FontWeight="Bold" />
+                    <TextBlock Text="{Binding StorageWarning}" IsVisible="{Binding StorageWarning, Converter={x:Static ObjectConverters.IsNotNull}}" Foreground="{StaticResource Warn}" TextWrapping="Wrap" />
+                    <ItemsControl ItemsSource="{Binding StorageParts}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:StoragePart">
+                                <Grid ColumnDefinitions="14,*,240,90" Margin="0,0,0,8">
+                                    <Border Width="10" Height="10" Background="{Binding Brush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Label}" Margin="6,0" />
+                                    <ProgressBar Grid.Column="2" Value="{Binding Fraction}" Maximum="1" Foreground="{Binding Brush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="3" Text="{Binding Size}" FontWeight="Bold" HorizontalAlignment="Right" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Classes="dim" FontSize="12.5" Text="Ekran görüntüleri kendi sınırına (varsayılan 150 MB) ulaşınca en eskileri otomatik silinir." />
+                </StackPanel>
+            </Panel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

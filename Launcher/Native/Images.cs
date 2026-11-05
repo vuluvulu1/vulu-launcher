@@ -26,6 +26,21 @@ namespace VuluLauncher.Native
             return Cache.GetOrAdd($"{width}|{url}", _ => Task.Run(() => LoadCoreAsync(url, width)));
         }
 
+        /// <summary>Görselin baytları (skin gibi önce işlenecek resimler için); alınamazsa null.</summary>
+        public static async Task<byte[]?> LoadBytesAsync(string? url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return null;
+            try
+            {
+                await using var stream = await OpenAsync(url);
+                if (stream == null) return null;
+                var memory = new MemoryStream();
+                await stream.CopyToAsync(memory);
+                return memory.ToArray();
+            }
+            catch { return null; }
+        }
+
         /// <summary>Dosyası değişen yerel görselin (arka plan, logo) önbellekteki eski hâli atılır.</summary>
         public static void Forget(string? url)
         {
