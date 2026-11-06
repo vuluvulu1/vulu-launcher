@@ -78,6 +78,67 @@
                     </ItemsControl>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,6,0" VerticalAlignment="Center">
+                        <!-- Hızlı arama -->
+                        <Button Classes="flat" IsVisible="{Binding LoggedIn}" Width="40" Height="34" Command="{Binding OpenPaletteCommand}" AutomationProperties.Name="Hızlı arama"
+                                ToolTip.Tip="Hızlı arama (Ctrl+K): paket, sayfa ya da kişi">
+                            <Path Classes="icon" Data="M11 4.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 0 0 0-13zM16 16l4.5 4.5" />
+                        </Button>
+                        <!-- Bildirim merkezi -->
+                        <Button Classes="flat" IsVisible="{Binding LoggedIn}" Width="40" Height="34" ToolTip.Tip="Bildirimler" AutomationProperties.Name="Bildirimler">
+                            <Panel>
+                                <Path Classes="icon" Data="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
+                                <Border IsVisible="{Binding Notifications.HasUnread}" Background="{StaticResource Accent}" MinWidth="15" Height="15" CornerRadius="8"
+                                        Padding="3,0" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-6,-9,0">
+                                    <TextBlock Text="{Binding Notifications.Badge}" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource AccentInk}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                            </Panel>
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight" Opened="OnNotificationsOpened" Closed="OnNotificationsClosed">
+                                    <Border Width="360" MaxHeight="480" Background="{StaticResource Panel}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
+                                            DataContext="{Binding Notifications}" x:DataType="vm:NotificationsViewModel">
+                                        <DockPanel>
+                                            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="14,10">
+                                                <TextBlock Text="Bildirimler" FontWeight="Bold" VerticalAlignment="Center" />
+                                                <Button Grid.Column="1" Classes="flat" Content="Tümünü okundu say" FontSize="12" Padding="6,2" Command="{Binding MarkSeenCommand}" />
+                                            </Grid>
+                                            <StackPanel DockPanel.Dock="Top" IsVisible="{Binding IsEmpty}" Margin="16,10,16,20" Spacing="4">
+                                                <TextBlock Text="Bildirim yok" FontWeight="Bold" HorizontalAlignment="Center" />
+                                                <TextBlock Text="Mesajlar, arkadaşlık istekleri, paket güncellemeleri ve oyuna giren arkadaşların burada görünür."
+                                                           Classes="dim" FontSize="12.5" TextWrapping="Wrap" TextAlignment="Center" />
+                                            </StackPanel>
+                                            <ScrollViewer>
+                                                <ItemsControl ItemsSource="{Binding Items}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="vm:NotifItem">
+                                                            <Button Classes="flat notif" Classes.new="{Binding IsNew}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                                    Padding="12,8" Command="{Binding OpenCommand}">
+                                                                <Grid ColumnDefinitions="Auto,*">
+                                                                    <Border Width="34" Height="34" CornerRadius="17" ClipToBounds="True" Background="{StaticResource Raised}" Margin="0,0,10,0" VerticalAlignment="Top">
+                                                                        <Grid>
+                                                                            <TextBlock Text="{Binding Initial}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                            <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
+                                                                        </Grid>
+                                                                    </Border>
+                                                                    <StackPanel Grid.Column="1" Spacing="2">
+                                                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap" />
+                                                                        <TextBlock Text="{Binding Body}" IsVisible="{Binding HasBody}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" MaxLines="2" />
+                                                                        <TextBlock Text="{Binding When}" Classes="dim" FontSize="11.5" />
+                                                                    </StackPanel>
+                                                                </Grid>
+                                                            </Button>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                    <ItemsControl.Styles>
+                                                        <Style Selector="Button.notif.new"><Setter Property="Background" Value="{StaticResource AccentSoft}" /></Style>
+                                                    </ItemsControl.Styles>
+                                                </ItemsControl>
+                                            </ScrollViewer>
+                                        </DockPanel>
+                                    </Border>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
                         <Button Classes="flat" IsVisible="{Binding LoggedIn}" Command="{Binding OpenMyProfileCommand}"
                                 ToolTip.Tip="Profilim" Padding="8,4" Margin="0,0,6,0">
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -108,19 +169,27 @@
 
             <!-- ── Bildirim kartları (sağ alt) ──────────────────────── -->
             <ItemsControl Grid.Row="1" ItemsSource="{Binding Toasts}" HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                          Margin="0,0,18,92" Width="340" IsHitTestVisible="False">
+                          Margin="0,0,18,92" Width="340">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ToastItem">
-                        <Border Background="{StaticResource Glass}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
-                                Padding="14,10" BoxShadow="0 12 32 0 #99000000">
-                            <StackPanel Spacing="3">
-                                <TextBlock Text="{Binding Title}" FontWeight="Bold" />
-                                <TextBlock Text="{Binding Body}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Border>
+                        <Button Classes="flat" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Command="{Binding OpenCommand}">
+                            <Border Background="{StaticResource Glass}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
+                                    Padding="12,10" BoxShadow="0 12 32 0 #99000000">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Border Width="36" Height="36" CornerRadius="18" ClipToBounds="True" Margin="0,0,10,0" VerticalAlignment="Top"
+                                            IsVisible="{Binding Avatar, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                        <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Spacing="3">
+                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Body}" IsVisible="{Binding HasBody}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" MaxLines="3" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Button>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

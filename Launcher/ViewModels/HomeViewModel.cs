@@ -129,6 +129,41 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private bool? _installed;
 
         [ObservableProperty] private int _ramGb = 4;
+        public ObservableCollection<string> McVersions { get; } = new();
+        [ObservableProperty] private string? _mcVersion;
+        private List<string>? _allMcVersions;
+        private bool _settingVersion;
+        /// <summary>Sunucunun Vanilla paketinde sürüm seçilebilir; modlu paketlerin sürümü sabittir.</summary>
+        public bool CanPickVersion => Selected is { Kind: "server", Loader: "vanilla" };
+
+        partial void OnMcVersionChanged(string? value)
+        {
+            if (!_settingVersion && Selected != null && value != null) UiState.Set("mcver_" + Selected.Id, value);
+        }
+
+        private async Task LoadVersionsAsync(InstanceItem item)
+        {
+            OnPropertyChanged(nameof(CanPickVersion));
+            if (!CanPickVersion) return;
+            string current = UiState.Get("mcver_" + item.Id) ?? item.McVersion;
+            _settingVersion = true;
+            McVersions.Clear();
+            McVersions.Add(current);
+            McVersion = current;
+            _settingVersion = false;
+            if (_allMcVersions == null)
+            {
+                try { _allMcVersions = (await _core.Call("game.versions")).Items().Select(v => v.GetString() ?? "").ToList(); }
+                catch { return; }   // liste alınamazsa yalnızca mevcut sürüm seçili kalır
+            }
+            if (Selected != item) return;
+            _settingVersion = true;
+            McVersions.Clear();
+            if (!_allMcVersions.Contains(current)) McVersions.Add(current);
+            foreach (var v in _allMcVersions) McVersions.Add(v);
+            McVersion = current;
+            _settingVersion = false;
+        }
         [ObservableProperty] private bool _gameRunning;
         [ObservableProperty] private bool _launching;
         [ObservableProperty] private bool _canLaunchGame = true;
@@ -276,6 +311,7 @@ namespace VuluLauncher.ViewModels
             RamGb = int.TryParse(UiState.Get("ram_" + value.Id), out int saved) && RamOptions.Contains(saved) ? saved : fallback;
             PackUpdateText = _packUpdates.TryGetValue(value.Id, out var u) ? $"rev {u.Int("from")} → rev {u.Int("to")}" : null;
             _ = LoadVisualsAsync(value);
+            _ = LoadVersionsAsync(value);
             if (!_preview) { _ = LoadDetailsAsync(value); _ = LoadInfoAsync(); }
             else Installed = true;
             Refresh();
@@ -601,7 +637,7 @@ namespace VuluLauncher.ViewModels
             JsonElement result = default;
             try
             {
-                result = await _core.Call("game.play", new { instanceId = instance.Id, ramGb = RamGb, mcVersion = "", ignoreMissing, ignoreFiles, join });
+                result = await _core.Call("game.play", new { instanceId = instance.Id, ramGb = RamGb, mcVersion = CanPickVersion ? McVersion ?? "" : "", ignoreMissing, ignoreFiles, join });
                 GameRunning = result.Bool("started");
             }
             catch (Exception ex)

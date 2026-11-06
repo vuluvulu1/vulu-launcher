@@ -491,6 +491,22 @@ namespace VuluLauncher.ViewModels
             OnPropertyChanged(nameof(HasLive));
         }
 
+        /// <summary>Bildirimden: o ekran görüntüsü açılır (akışta yoksa başa eklenir).</summary>
+        public async Task OpenSharedShotAsync(string id)
+        {
+            if (Main.SelectedTab?.Page != this) Main.SelectedTab = Main.Tabs.First(t => t.Key == "social");
+            JsonElement data;
+            try { data = await _core.Call("social.shot", new { id }); }
+            catch (Exception ex) { await Main.AlertAsync("Ekran görüntüsü", ex.Message); return; }
+            var shot = Shots.FirstOrDefault(s => s.Id == id);
+            if (shot == null)
+            {
+                shot = new ShotCard(this, data, Main.MembersCached.GetValueOrDefault(data.Str("author") ?? ""));
+                Shots.Insert(0, shot);
+            }
+            await ViewShotAsync(shot);
+        }
+
         public async Task ViewShotAsync(ShotCard shot)
         {
             var modal = new ShotViewerModal(this, Shots.ToList(), Shots.IndexOf(shot));

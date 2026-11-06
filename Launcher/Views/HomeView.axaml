@@ -363,7 +363,11 @@
                     <ProgressBar Value="{Binding Progress}" Maximum="100" IsIndeterminate="{Binding Indeterminate}" />
                 </StackPanel>
 
-                <ComboBox Grid.Column="2" ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}"
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <ComboBox ItemsSource="{Binding McVersions}" SelectedItem="{Binding McVersion}" IsVisible="{Binding CanPickVersion}"
+                          IsEnabled="{Binding CanPlay}" VerticalAlignment="Center" Margin="0,0,10,0" MinWidth="100" MaxDropDownHeight="360"
+                          ToolTip.Tip="Minecraft sürümü" />
+                <ComboBox ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}"
                           VerticalAlignment="Center" Margin="0,0,14,0" MinWidth="96" ToolTip.Tip="Oyuna ayrılacak bellek">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="x:Int32">
@@ -371,6 +375,7 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
+                </StackPanel>
 
                 <Button Grid.Column="3" Classes="play" Command="{Binding PlayCommand}" Height="76" BorderThickness="0">
                     <StackPanel Orientation="Horizontal" Spacing="10">

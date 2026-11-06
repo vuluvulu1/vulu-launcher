@@ -23,8 +23,21 @@ namespace VuluLauncher.ViewModels
         public bool HasBadge => Badge > 0;
     }
 
-    /// <summary>Sağ altta birkaç saniye görünen bildirim kartı (launcher içinde).</summary>
-    internal sealed record ToastItem(string Title, string Body);
+    /// <summary>Sağ altta birkaç saniye görünen bildirim kartı (launcher içinde); tıklanınca etiketi ilgili sayfayı açar.</summary>
+    internal sealed partial class ToastItem(MainViewModel main, string title, string body, string? tag, string? avatar) : ObservableObject
+    {
+        public string Title { get; } = title;
+        public string Body { get; } = body;
+        public bool HasBody => Body.Length > 0;
+        [ObservableProperty] private Avalonia.Media.Imaging.Bitmap? _avatar;
+        public async Task LoadAsync() => Avatar = await Images.LoadAsync(avatar, 64);
+        [RelayCommand]
+        private async Task Open()
+        {
+            main.Toasts.Remove(this);
+            if (tag != null) await main.RouteAsync(tag);
+        }
+    }
 
     /// <summary>Pencerenin tamamı: giriş ekranı ya da sekmeli ana görünüm, bildirim kartları.</summary>
     internal sealed partial class MainViewModel : ObservableObject
@@ -39,6 +52,7 @@ namespace VuluLauncher.ViewModels
         public SocialViewModel Social { get; }
         public ProfileViewModel Profile { get; }
         public AdminViewModel Admin { get; }
+        public NotificationsViewModel Notifications { get; }
         public ObservableCollection<PageTab> Tabs { get; } = new();
         public ObservableCollection<ToastItem> Toasts { get; } = new();
         /// <summary>Açık kutular; sonuncusu en üstte.</summary>
@@ -69,6 +83,7 @@ namespace VuluLauncher.ViewModels
             Social = new SocialViewModel(this);
             Profile = new ProfileViewModel(this);
             Admin = new AdminViewModel(this);
+            Notifications = new NotificationsViewModel(this);
             Tabs.Add(new PageTab("home", "Oyna", "M7 4l13 8-13 8z", Home));
             Tabs.Add(new PageTab("discover", "Keşfet", "M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z", Discover));
             Tabs.Add(new PageTab("servers", "Sunucular", "M3 4h18v7H3zM3 13h18v7H3zM7 7.5h.01M7 16.5h.01", Servers));
@@ -131,7 +146,11 @@ namespace VuluLauncher.ViewModels
             _ = Social.StartAsync();
             _ = RefreshMyAvatarAsync();
             if (IsAdmin) _ = Admin.RefreshRegistrationsAsync();
+            _ = Notifications.LoadAsync();
             await Home.LoadAsync();
+            // Bildirime tıklanarak ya da masaüstü kısayoluyla açıldıysa bekleyen istek şimdi yapılır
+            await TakeNotificationAsync();
+            await RunStartupActionAsync();
         }
 
         /// <summary>Sorup çıkış yapar; oyun çalışıyorsa Core izin vermez, nedeni gösterilir.</summary>
@@ -188,6 +207,75 @@ namespace VuluLauncher.ViewModels
             return _members;
         }
 
+        /// <summary>Masaüstü bildirimine tıklandıysa ilgili sayfa açılır.</summary>
+        private async Task TakeNotificationAsync()
+        {
+            if (!LoggedIn) return;   // giriş yapılınca yeniden denenir
+            try
+            {
+                var pending = await _core.Call("app.takeNotification");
+                if (pending.Str("tag") is { } tag) await RouteAsync(tag);
+            }
+            catch { /* bekleyen yok */ }
+        }
+
+        /// <summary>Kısayoldan (ya da açıkken başka bir kısayoldan) gelen istek: paketi oyna ya da sunucuya bağlan.</summary>
+        private async Task RunStartupActionAsync()
+        {
+            if (!LoggedIn) return;
+            JsonElement action;
+            try { action = await _core.Call("app.takeAction"); } catch { return; }
+            if (action.ValueKind != JsonValueKind.Object) return;
+            if (Home.GameRunning) { Home.AppendLog("Oyun zaten açık.", "warn"); return; }
+            string id = action.Str("id") ?? "";
+            if (action.Str("kind") == "play")
+            {
+                await ShowHomeAsync(id);
+                if (Home.Selected?.Id != id) { await AlertAsync("Kısayol", "Bu kısayolun paketi artık yok. Kısayolu silebilirsin."); return; }
+                await Home.PlayAsync(false, false, "");
+            }
+            else if (action.Str("kind") == "join")
+            {
+                if (Servers.Servers.Count == 0) await Servers.LoadAsync();
+                var server = Servers.Servers.FirstOrDefault(s => s.Id == id);
+                if (server == null) { await AlertAsync("Kısayol", "Bu kısayolun sunucusu artık vulu listesinde yok."); return; }
+                await Servers.JoinAsync(server);
+            }
+        }
+
+        /// <summary>Bildirimin etiketine göre ilgili sayfayı açar (masaüstü bildirimi, kart ya da bildirim merkezi).</summary>
+        public async Task RouteAsync(string tag)
+        {
+            if (tag.StartsWith("dm:", StringComparison.Ordinal)) await Social.OpenConversationAsync(tag[3..]);
+            else if (tag.StartsWith("invite:", StringComparison.Ordinal))
+            {
+                // Davet kartındaki "Katıl": sunucu vulu listesindeyse katılır, yoksa konuşma açılır
+                var parts = tag.Split(':');
+                if (Servers.Servers.Count == 0) await Servers.LoadAsync();
+                var server = parts.Length > 2 ? Servers.Servers.FirstOrDefault(s => s.Id == parts[2]) : null;
+                if (server != null) await Servers.JoinAsync(server);
+                else if (parts.Length > 1) await Social.OpenConversationAsync(parts[1]);
+            }
+            else if (tag.StartsWith("profile:", StringComparison.Ordinal)) await OpenProfileAsync(tag[8..]);
+            else if (tag.StartsWith("friend:", StringComparison.Ordinal)) SelectedTab = Tabs.First(t => t.Key == "social");
+            else if (tag.StartsWith("shot:", StringComparison.Ordinal)) await Social.OpenSharedShotAsync(tag[5..]);
+            else if (tag == "crash")
+            {
+                try
+                {
+                    var crash = await _core.Call("crash.takePending");
+                    if (crash.ValueKind == JsonValueKind.Object) await Home.ShowCrashAsync(crash);
+                }
+                catch { /* özet kalmamış */ }
+            }
+            else if (tag.StartsWith("pack:", StringComparison.Ordinal))
+            {
+                await ShowHomeAsync(tag[5..]);
+                await Home.RefreshPackUpdatesAsync();
+                if (Home.HasPackUpdate) await Home.UpdatePackCommand.ExecuteAsync(null);
+            }
+        }
+
         /// <summary>Kutuyu açar ve kapanmasını bekler; sonuç kutunun verdiği değerdir (vazgeçilirse null).</summary>
         public async Task<object?> ShowAsync(ModalViewModel modal)
         {
@@ -219,6 +307,14 @@ namespace VuluLauncher.ViewModels
 
         public Task AlertAsync(string title, string message) => ConfirmAsync(title, message, "Tamam", null);
 
+        /// <summary>Hızlı arama (Ctrl+K ya da büyüteç).</summary>
+        [RelayCommand]
+        private async Task OpenPalette()
+        {
+            if (!LoggedIn || Modals.Count > 0) return;
+            if (await ShowAsync(new PaletteModal(this)) is PaletteItem item) await item.Run();
+        }
+
         [RelayCommand] private void Minimize() => _core.Send("window.minimize");
         [RelayCommand] private void Close() => _core.Send("window.close");
 
@@ -238,9 +334,10 @@ namespace VuluLauncher.ViewModels
             if (value?.Page is HomeViewModel && LoggedIn) Home.RefreshDetails();
         }
 
-        public void ShowToast(string title, string body)
+        public void ShowToast(string title, string body, string? tag = null, string? avatar = null)
         {
-            var toast = new ToastItem(title, body);
+            var toast = new ToastItem(this, title, body, tag, avatar);
+            _ = toast.LoadAsync();
             Toasts.Add(toast);
             while (Toasts.Count > 3) Toasts.RemoveAt(0);
             DispatcherTimer.RunOnce(() => Toasts.Remove(toast), TimeSpan.FromSeconds(6));
@@ -254,7 +351,19 @@ namespace VuluLauncher.ViewModels
                     Social.OnDmUpdate(data);
                     break;
                 case "toast":
-                    ShowToast(data.Str("title") ?? "", data.Str("body") ?? "");
+                    ShowToast(data.Str("title") ?? "", data.Str("body") ?? "", data.Str("tag"), data.Str("avatar"));
+                    break;
+                case "notification":
+                    Notifications.OnNotification(data);
+                    break;
+                case "notificationClicked":
+                    _ = TakeNotificationAsync();
+                    break;
+                case "startupAction":
+                    _ = RunStartupActionAsync();
+                    break;
+                case "shotEvent":
+                    Home.AppendLog(data.Str("kind") == "like" ? $"♥ {data.Str("from")} ekran görüntünü beğendi." : $"💬 {data.Str("from")}: {data.Str("text")}", "accent");
                     break;
                 default:
                     Home.OnCoreEvent(name, data);

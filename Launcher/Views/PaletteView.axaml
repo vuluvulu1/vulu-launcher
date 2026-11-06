@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.PaletteView"
+             x:DataType="vm:PaletteModal">
+    <DockPanel>
+        <TextBox x:Name="Search" DockPanel.Dock="Top" Text="{Binding Query}" Watermark="Paket, sayfa ya da kişi ara…" FontSize="15"
+                 BorderThickness="0,0,0,1" Padding="16,12" />
+        <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="16,8">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <TextBlock Text="↑↓ seç" Classes="dim" FontSize="12" />
+                <TextBlock Text="Enter git" Classes="dim" FontSize="12" />
+                <TextBlock Text="Esc kapat" Classes="dim" FontSize="12" />
+            </StackPanel>
+        </Border>
+        <TextBlock DockPanel.Dock="Top" Text="Sonuç yok." IsVisible="{Binding NoResults}" Classes="dim" Margin="16,14" />
+        <ScrollViewer MaxHeight="400">
+            <ItemsControl ItemsSource="{Binding Shown}" Margin="6">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PaletteItem">
+                        <Button Classes="flat palette" Classes.active="{Binding IsActive}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                Padding="10,7" Command="{Binding $parent[UserControl].((vm:PaletteModal)DataContext).ChooseCommand}" CommandParameter="{Binding}">
+                            <Grid ColumnDefinitions="64,*,Auto">
+                                <TextBlock Text="{Binding Kind}" Classes="dim" FontSize="11.5" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding Label}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="2" Text="{Binding Sub}" IsVisible="{Binding HasSub}" Classes="dim" FontSize="12" Margin="10,0,0,0" />
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.Styles>
+                    <Style Selector="Button.palette.active"><Setter Property="Background" Value="{StaticResource AccentSoft}" /></Style>
+                </ItemsControl.Styles>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

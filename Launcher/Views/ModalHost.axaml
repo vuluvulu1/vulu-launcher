@@ -867,6 +867,7 @@
 
             <!-- ── Kırpma (profil resmi, banner) ───────────────────────── -->
             <DataTemplate DataType="vm:CropModal"><v:CropView /></DataTemplate>
+            <DataTemplate DataType="vm:PaletteModal"><v:PaletteView /></DataTemplate>
 
             <!-- ── Admin: kullanıcı ekle / düzenle ─────────────────────── -->
             <DataTemplate DataType="vm:UserEditorModal">

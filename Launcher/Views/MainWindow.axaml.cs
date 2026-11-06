@@ -18,15 +18,32 @@ namespace VuluLauncher.Views
                 if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !IsOnButton(e.Source as Visual))
                     BeginMoveDrag(e);
             };
-            // Esc en üstteki kutuyu kapatır
+            // Esc en üstteki kutuyu kapatır; Ctrl+K hızlı aramayı açar
             KeyDown += (_, e) =>
             {
+                if (e.Key == Key.K && e.KeyModifiers.HasFlag(KeyModifiers.Control) && DataContext is MainViewModel main)
+                {
+                    main.OpenPaletteCommand.Execute(null);
+                    e.Handled = true;
+                    return;
+                }
                 if (e.Key == Key.Escape && DataContext is MainViewModel { Modals.Count: > 0 } vm)
                 {
                     vm.Modals[^1].DismissCommand.Execute(null);
                     e.Handled = true;
                 }
             };
+        }
+
+        private void OnNotificationsOpened(object? sender, EventArgs e)
+        {
+            if (DataContext is MainViewModel vm) vm.Notifications.IsOpen = true;
+        }
+
+        /// <summary>Bildirim listesi kapanınca hepsi okundu sayılır.</summary>
+        private void OnNotificationsClosed(object? sender, EventArgs e)
+        {
+            if (DataContext is MainViewModel vm) vm.Notifications.IsOpen = false;
         }
 
         private static bool IsOnButton(Visual? visual)
