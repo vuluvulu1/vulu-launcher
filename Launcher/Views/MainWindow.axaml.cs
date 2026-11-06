@@ -18,6 +18,9 @@ namespace VuluLauncher.Views
                 if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !IsOnButton(e.Source as Visual))
                     BeginMoveDrag(e);
             };
+            // İndirme paneli: üstüne gelindiyse tamamlanınca kapanmaz
+            DownloadsPanel.PointerEntered += (_, _) => { if (DataContext is MainViewModel m) m.Downloads.Hovered = true; };
+            DownloadsPanel.PointerExited += (_, _) => { if (DataContext is MainViewModel m) m.Downloads.Hovered = false; };
             // Esc en üstteki kutuyu kapatır; Ctrl+K hızlı aramayı açar
             KeyDown += (_, e) =>
             {

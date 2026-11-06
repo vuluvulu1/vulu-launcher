@@ -54,6 +54,7 @@ namespace VuluLauncher.ViewModels
         public AdminViewModel Admin { get; }
         public NotificationsViewModel Notifications { get; }
         public RadioViewModel Radio { get; }
+        public DownloadsViewModel Downloads { get; }
         public ObservableCollection<PageTab> Tabs { get; } = new();
         public ObservableCollection<ToastItem> Toasts { get; } = new();
         /// <summary>Açık kutular; sonuncusu en üstte.</summary>
@@ -86,6 +87,7 @@ namespace VuluLauncher.ViewModels
             Admin = new AdminViewModel(this);
             Notifications = new NotificationsViewModel(this);
             Radio = new RadioViewModel(this);
+            Downloads = new DownloadsViewModel(this);
             Tabs.Add(new PageTab("home", "Oyna", "M7 4l13 8-13 8z", Home));
             Tabs.Add(new PageTab("discover", "Keşfet", "M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z", Discover));
             Tabs.Add(new PageTab("servers", "Sunucular", "M3 4h18v7H3zM3 13h18v7H3zM7 7.5h.01M7 16.5h.01", Servers));
@@ -377,6 +379,9 @@ namespace VuluLauncher.ViewModels
                     break;
                 case "toast":
                     ShowToast(data.Str("title") ?? "", data.Str("body") ?? "", data.Str("tag"), data.Str("avatar"));
+                    break;
+                case "download":
+                    Downloads.OnDownload(data);
                     break;
                 case "notification":
                     Notifications.OnNotification(data);
