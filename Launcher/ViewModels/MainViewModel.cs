@@ -53,6 +53,7 @@ namespace VuluLauncher.ViewModels
         public ProfileViewModel Profile { get; }
         public AdminViewModel Admin { get; }
         public NotificationsViewModel Notifications { get; }
+        public RadioViewModel Radio { get; }
         public ObservableCollection<PageTab> Tabs { get; } = new();
         public ObservableCollection<ToastItem> Toasts { get; } = new();
         /// <summary>Açık kutular; sonuncusu en üstte.</summary>
@@ -84,6 +85,7 @@ namespace VuluLauncher.ViewModels
             Profile = new ProfileViewModel(this);
             Admin = new AdminViewModel(this);
             Notifications = new NotificationsViewModel(this);
+            Radio = new RadioViewModel(this);
             Tabs.Add(new PageTab("home", "Oyna", "M7 4l13 8-13 8z", Home));
             Tabs.Add(new PageTab("discover", "Keşfet", "M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z", Discover));
             Tabs.Add(new PageTab("servers", "Sunucular", "M3 4h18v7H3zM3 13h18v7H3zM7 7.5h.01M7 16.5h.01", Servers));
@@ -147,6 +149,7 @@ namespace VuluLauncher.ViewModels
             _ = RefreshMyAvatarAsync();
             if (IsAdmin) _ = Admin.RefreshRegistrationsAsync();
             _ = Notifications.LoadAsync();
+            Radio.StartIfEnabled();
             await Home.LoadAsync();
             // Bildirime tıklanarak ya da masaüstü kısayoluyla açıldıysa bekleyen istek şimdi yapılır
             await TakeNotificationAsync();
@@ -162,6 +165,7 @@ namespace VuluLauncher.ViewModels
             catch (Exception ex) { await AlertAsync("Çıkış yapılamadı", ex.Message); return; }
             LoggedIn = false;
             Social.Stop();
+            Radio.Stop();
             var init = await _core.Call("app.init");
             Login.Prepare(init, auto: false);
         }

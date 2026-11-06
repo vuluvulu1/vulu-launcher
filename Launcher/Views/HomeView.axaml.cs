@@ -6,6 +6,12 @@ namespace VuluLauncher.Views
 {
     internal sealed partial class HomeView : UserControl
     {
+        /// <summary>Radyo menüsü açılınca türler ve istasyonlar yüklenir.</summary>
+        private void OnRadioMenuOpened(object? sender, EventArgs e)
+        {
+            if (TopLevel.GetTopLevel(this)?.DataContext is MainViewModel main) _ = main.Radio.OpenMenuAsync();
+        }
+
         public HomeView()
         {
             InitializeComponent();
