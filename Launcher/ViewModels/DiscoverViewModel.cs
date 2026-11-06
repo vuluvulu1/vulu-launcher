@@ -404,6 +404,7 @@ namespace VuluLauncher.ViewModels
         [RelayCommand] private Task Install() => _owner.InstallAsync(this, "");
         [RelayCommand] private Task PickVersion() => _owner.PickVersionAsync(this);
         [RelayCommand] private Task OpenPage() => _owner.OpenPageAsync(this);
+        [RelayCommand] private Task Details() => _owner.ShowDetailsAsync(this);
     }
 
     /// <summary>Filtre grubundaki kategori.</summary>
@@ -744,6 +745,17 @@ namespace VuluLauncher.ViewModels
             var modal = new VersionPickerModal(hit);
             _ = modal.LoadAsync(Command("versions"), hit.Type == "modpack" ? "" : Target?.Key ?? "");
             if (await _main.ShowAsync(modal) is string versionId) await InstallAsync(hit, versionId);
+        }
+
+        /// <summary>Projenin ayrıntıları launcher'ın içinde; oradan kurulabilir.</summary>
+        public async Task ShowDetailsAsync(ContentHit hit)
+        {
+            switch (await _main.ShowAsync(new ProjectDetailsModal(hit, IsCurseForge, Target?.Key ?? "")))
+            {
+                case "install": await InstallAsync(hit, ""); break;
+                case "page": await OpenPageAsync(hit); break;
+                case string versionId: await InstallAsync(hit, versionId); break;
+            }
         }
 
         public async Task OpenPageAsync(ContentHit hit)

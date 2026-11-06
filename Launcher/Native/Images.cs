@@ -59,7 +59,11 @@ namespace VuluLauncher.Native
                 var memory = new MemoryStream();
                 await stream.CopyToAsync(memory);
                 memory.Position = 0;
-                return width > 0 ? Bitmap.DecodeToWidth(memory, width, BitmapInterpolationMode.HighQuality) : new Bitmap(memory);
+                var bitmap = new Bitmap(memory);
+                if (width <= 0 || bitmap.PixelSize.Width <= width) return bitmap;   // küçük resim büyütülmez
+                memory.Position = 0;
+                bitmap.Dispose();
+                return Bitmap.DecodeToWidth(memory, width, BitmapInterpolationMode.HighQuality);
             }
             catch (Exception ex)
             {

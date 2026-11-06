@@ -176,12 +176,16 @@
                                     <DataTemplate x:DataType="vm:ContentHit">
                                         <Border Classes="card" Padding="12" Margin="0,0,0,8">
                                             <Grid ColumnDefinitions="64,*,Auto">
-                                                <Border Width="64" Height="64" Background="{StaticResource Raised}" VerticalAlignment="Top" ClipToBounds="True">
-                                                    <Image Source="{Binding Icon}" Stretch="UniformToFill" />
-                                                </Border>
+                                                <Button Classes="flat" Padding="0" VerticalAlignment="Top" Command="{Binding DetailsCommand}" ToolTip.Tip="Ayrıntıları göster">
+                                                    <Border Width="64" Height="64" Background="{StaticResource Raised}" ClipToBounds="True">
+                                                        <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                                                    </Border>
+                                                </Button>
                                                 <StackPanel Grid.Column="1" Margin="14,0,14,0" Spacing="4">
                                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                                        <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="Bold" />
+                                                        <Button Classes="link" Command="{Binding DetailsCommand}" ToolTip.Tip="Ayrıntıları göster" Foreground="{StaticResource Text}">
+                                                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="Bold" />
+                                                        </Button>
                                                         <TextBlock Text="{Binding Author}" Classes="dim" FontSize="12" VerticalAlignment="Bottom" />
                                                         <Border Classes="tag" IsVisible="{Binding ManualOnly}" Margin="0" VerticalAlignment="Center"
                                                                 ToolTip.Tip="Yapımcısı başka uygulamalardan indirilmesine izin vermiyor; CurseForge sitesinden indirilir">

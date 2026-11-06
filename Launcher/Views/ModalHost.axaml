@@ -1178,6 +1178,116 @@
                     </Grid>
                 </DockPanel>
             </DataTemplate>
+
+            <!-- ── Proje ayrıntıları (CurseForge / Modrinth) ───────────── -->
+            <DataTemplate DataType="vm:ProjectDetailsModal">
+                <DockPanel MaxHeight="700">
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="64,*,Auto" Margin="22,18,22,10">
+                        <Border Width="64" Height="64" Background="{StaticResource Raised}" ClipToBounds="True" VerticalAlignment="Top">
+                            <Image Source="{Binding Hit.Icon}" Stretch="UniformToFill" />
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="14,0" Spacing="4">
+                            <TextBlock Text="{Binding Hit.Title}" FontSize="20" FontWeight="Bold" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Hit.Description}" Classes="muted" TextWrapping="Wrap" />
+                            <ItemsControl ItemsSource="{Binding Facts}" Margin="0,4,0,0">
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:Tag">
+                                        <Border Classes="tag" Margin="0,0,5,5" Padding="6,1"><TextBlock Text="{Binding Text}" FontSize="11.5" /></Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="8" HorizontalAlignment="Right">
+                            <Button Classes="primary" Content="{Binding Hit.ButtonText}" IsEnabled="{Binding Hit.CanInstall}" Command="{Binding InstallCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            <Button Classes="link" Content="{Binding PageText}" Command="{Binding OpenPageCommand}" HorizontalAlignment="Right" />
+                            <Button Classes="link" Content="Kapat" Command="{Binding DismissCommand}" HorizontalAlignment="Right" />
+                        </StackPanel>
+                    </Grid>
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="22,0,22,10">
+                        <ItemsControl ItemsSource="{Binding Tabs}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:Choice">
+                                    <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                            Command="{Binding $parent[ItemsControl].((vm:ProjectDetailsModal)DataContext).PickTabCommand}" CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl Grid.Column="1" ItemsSource="{Binding Links}" VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="12" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ProjectLink">
+                                    <Button Classes="link" Content="{Binding Label, StringFormat='{}{0} ↗'}" Command="{Binding Open}" ToolTip.Tip="{Binding Url}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                    <ScrollViewer>
+                        <StackPanel Margin="22,0,22,18">
+                            <TextBlock Text="{Binding Message}" IsVisible="{Binding Message, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="dim" />
+                            <!-- Açıklama -->
+                            <ItemsControl ItemsSource="{Binding Blocks}" IsVisible="{Binding IsAbout}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:DescriptionItem">
+                                        <Panel Margin="0,0,0,8">
+                                            <SelectableTextBlock Text="{Binding Block.Text}" IsVisible="{Binding Block.IsHeading}" FontSize="{Binding Block.HeadingSize}" FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,0" />
+                                            <SelectableTextBlock Text="{Binding Block.Text}" IsVisible="{Binding Block.IsParagraph}" TextWrapping="Wrap" LineHeight="20" Foreground="{StaticResource Muted}" />
+                                            <SelectableTextBlock Text="{Binding Block.Text}" IsVisible="{Binding Block.IsItem}" TextWrapping="Wrap" Margin="12,0,0,0" Foreground="{StaticResource Muted}" />
+                                            <Border IsVisible="{Binding Block.IsCode}" Background="{StaticResource Surface}" Padding="10,8">
+                                                <SelectableTextBlock Text="{Binding Block.Text}" FontFamily="{StaticResource Mono}" FontSize="12" TextWrapping="Wrap" />
+                                            </Border>
+                                            <Image Source="{Binding Image}" IsVisible="{Binding Block.IsImage}" MaxHeight="420" HorizontalAlignment="Left" Stretch="Uniform" StretchDirection="DownOnly" />
+                                        </Panel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <!-- Galeri -->
+                            <StackPanel IsVisible="{Binding IsGallery}">
+                                <TextBlock Text="Bu projede galeri yok." IsVisible="{Binding !Gallery.Count}" Classes="dim" />
+                                <ItemsControl ItemsSource="{Binding Gallery}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:GalleryItem">
+                                            <StackPanel Width="390" Margin="0,0,12,12" Spacing="4">
+                                                <Border Height="220" Background="{StaticResource Raised}" ClipToBounds="True">
+                                                    <Image Source="{Binding Image}" Stretch="UniformToFill" />
+                                                </Border>
+                                                <TextBlock Text="{Binding Title}" IsVisible="{Binding HasTitle}" Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            <!-- Sürümler -->
+                            <StackPanel IsVisible="{Binding IsVersions}" Spacing="8">
+                                <ComboBox ItemsSource="{Binding McFilters}" SelectedItem="{Binding McFilter}" MinWidth="220" MaxDropDownHeight="360"
+                                          IsVisible="{Binding McFilters.Count}" />
+                                <TextBlock Text="{Binding VersionsMessage}" IsVisible="{Binding VersionsMessage, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="dim" />
+                                <ItemsControl ItemsSource="{Binding Versions}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:VersionRow">
+                                            <Border Classes="row-card">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <StackPanel Spacing="2">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                                            <Border Classes="tag" IsVisible="{Binding HasBadge}" Margin="0" Padding="5,0"><TextBlock Text="{Binding Badge}" FontSize="11" /></Border>
+                                                            <Border Classes="tag" IsVisible="{Binding ManualOnly}" Margin="0" Padding="5,0"><TextBlock Text="Elle indirilir" FontSize="11" /></Border>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1" Classes="sm primary" Content="Bu sürümü kur" Command="{Binding PickCommand}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </DataTemplate>
         </ContentControl.DataTemplates>
     </ContentControl>
 </UserControl>
