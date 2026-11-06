@@ -72,7 +72,7 @@
                     <!-- Kaldırma: oyun dosyaları da silinsin mi -->
                     <Border Margin="0,16,0,0" Padding="12,10" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1"
                             IsVisible="{Binding IsConfirm}">
-                        <CheckBox IsChecked="{Binding DeleteData}" VerticalContentAlignment="Top">
+                        <CheckBox IsChecked="{Binding DeleteData}" VerticalContentAlignment="Top" AutomationProperties.Name="Oyun dosyalarını da sil">
                             <StackPanel Spacing="2">
                                 <TextBlock Text="Oyun dosyalarını da sil" FontSize="12.5" FontWeight="SemiBold" />
                                 <TextBlock Text="Dünyalar, instance'lar, Java ve launcher ayarları kalıcı olarak silinir." FontSize="11.5"

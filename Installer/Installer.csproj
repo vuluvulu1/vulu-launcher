@@ -8,6 +8,7 @@
     <AssemblyName>vulu-launcher-setup</AssemblyName>
     <RootNamespace>Installer</RootNamespace>
     <ApplicationIcon>..\Launcher\logo.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <Version>0.9.0</Version>
     <Authors>vuluvulu1</Authors>
     <Company>vuluvulu1</Company>
@@ -16,7 +17,7 @@
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
     <!-- Tek dosya olarak dağıtılır ve .NET kurulu olmayan bilgisayarda da çalışır.
-         Photino'nun yerel kütüphaneleri de içine gömülür, çalışırken geçici klasöre açılır. -->
+         Arayüzün yerel kütüphaneleri (Skia) de içine gömülür, çalışırken geçici klasöre açılır. -->
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
@@ -26,23 +27,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Photino.NET" Version="4.0.16" />
+    <!-- Arayüz: Launcher ile aynı kütüphane (kendi çizer; WebView2 gerekmez) -->
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Launcher ve Updater ile ortak: GitHub release bilgisi, pencere ikonu, kurulum kaydı ve kısayollar -->
+    <!-- Launcher ve Updater ile ortak: GitHub release bilgisi, pencere ikonu, kurulum kaydı, kısayollar ve başlık -->
     <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
     <Compile Include="..\Shared\ServerConnection.cs" Link="Shared\ServerConnection.cs" />
     <Compile Include="..\Shared\WindowIcon.cs" Link="Shared\WindowIcon.cs" />
     <Compile Include="..\Shared\InstallInfo.cs" Link="Shared\InstallInfo.cs" />
+    <Compile Include="..\Shared\ScriptTitle*.cs" Link="Shared\%(Filename)%(Extension)" />
 
-    <!-- Arayüz exe'nin içine gömülür, çalışırken geçici klasöre açılıp oradan yüklenir -->
-    <EmbeddedResource Include="ui\setup.html" LogicalName="ui/setup.html" />
-    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\IBMPlexSans.ttf" LogicalName="ui/IBMPlexSans.ttf" />
-    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\IBMPlexMono-Medium.ttf" LogicalName="ui/IBMPlexMono.ttf" />
-    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\GreatVibes-Regular.ttf" LogicalName="ui/GreatVibes.ttf" />
-    <EmbeddedResource Include="..\Launcher\wwwroot\assets\logo.png" LogicalName="ui/logo.png" />
-    <EmbeddedResource Include="..\Launcher\logo.ico" LogicalName="logo.ico" />
+    <!-- Yazı tipleri ve logo exe'nin içine gömülür -->
+    <AvaloniaResource Include="..\Launcher\wwwroot\fonts\IBMPlexSans.ttf" Link="Assets\Fonts\IBMPlexSans.ttf" />
+    <AvaloniaResource Include="..\Launcher\wwwroot\fonts\IBMPlexMono-Medium.ttf" Link="Assets\Fonts\IBMPlexMono-Medium.ttf" />
+    <AvaloniaResource Include="..\Launcher\wwwroot\assets\logo.png" Link="Assets\logo.png" />
+    <AvaloniaResource Include="..\Launcher\logo.ico" Link="Assets\logo.ico" />
   </ItemGroup>
 
 </Project>

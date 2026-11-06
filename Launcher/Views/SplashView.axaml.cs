@@ -1,13 +1,8 @@
 using System.Diagnostics;
-using System.Globalization;
 using Avalonia;
 using Avalonia.Animation.Easings;
-using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
-using Path = Avalonia.Controls.Shapes.Path;
 using Avalonia.Media;
-using VuluLauncher.Native;
 using VuluLauncher.ViewModels;
 
 namespace VuluLauncher.Views
@@ -19,13 +14,10 @@ namespace VuluLauncher.Views
     /// </summary>
     internal sealed partial class SplashView : UserControl
     {
-        private const double StrokeWidth = 9.7;   // 500 piksellik yazıda ~1,1 piksel
-        private static readonly Easing PenEase = new SplineEasing(0.45, 0, 0.35, 1);
         private static readonly Easing CurtainEase = new SplineEasing(0.65, 0, 0.3, 1);
         private static readonly Easing ValanceEase = new SplineEasing(0.65, 0, 0.35, 1);
         private static readonly Easing OutEase = new CubicEaseOut();
 
-        private readonly List<(Path Path, double Dash, Brush Fill)> _letters = new();
         private readonly Stopwatch _clock = new();
         private readonly Stopwatch _openClock = new();
         private SplashViewModel? _vm;
@@ -35,7 +27,6 @@ namespace VuluLauncher.Views
         public SplashView()
         {
             InitializeComponent();
-            BuildLetters();
             Stage.SizeChanged += (_, e) => Layout(e.NewSize);
             DataContextChanged += (_, _) =>
             {
@@ -45,45 +36,6 @@ namespace VuluLauncher.Views
                 _vm.Played += Play;
                 _vm.Opener = OpenAsync;
             };
-        }
-
-        /// <summary>Harfler web arayüzündeki yazının yollarıdır; her birinin kalem çizgisi kendi uzunluğuna göre ayarlanır.</summary>
-        private void BuildLetters()
-        {
-            var gold = new LinearGradientBrush
-            {
-                StartPoint = new RelativePoint(0, 0, RelativeUnit.Absolute),
-                EndPoint = new RelativePoint(4401, 1182, RelativeUnit.Absolute),
-                GradientStops =
-                {
-                    new GradientStop(Color.Parse("#8A5A2B"), 0),
-                    new GradientStop(Color.Parse("#E3B37A"), 0.3),
-                    new GradientStop(Color.Parse("#F3D6A4"), 0.5),
-                    new GradientStop(Color.Parse("#C27E3E"), 0.7),
-                    new GradientStop(Color.Parse("#7A4D24"), 1),
-                },
-            };
-            foreach (string data in SplashTitle.Letters)
-            {
-                double dash = PathLength(data) / StrokeWidth + 1;
-                var fill = new LinearGradientBrush { StartPoint = gold.StartPoint, EndPoint = gold.EndPoint, GradientStops = gold.GradientStops, Opacity = 0 };
-                var path = new Path
-                {
-                    Data = Geometry.Parse(data),
-                    Fill = fill,
-                    Stroke = new SolidColorBrush(Color.Parse("#E3B37A")),
-                    StrokeThickness = StrokeWidth,
-                    StrokeLineCap = PenLineCap.Round,
-                    StrokeJoin = PenLineJoin.Round,
-                    StrokeDashArray = new AvaloniaList<double> { dash, dash },
-                    StrokeDashOffset = dash,
-                };
-                // viewBox -3 -831: yollar tuvale kaydırılır
-                Canvas.SetLeft(path, 3);
-                Canvas.SetTop(path, 831);
-                Letters.Children.Add(path);
-                _letters.Add((path, dash, fill));
-            }
         }
 
         private void Layout(Size size)
@@ -199,14 +151,7 @@ namespace VuluLauncher.Views
         private void Render(double t, double open)
         {
             Blackout.Opacity = 1 - OutEase.Ease(Progress(t, 100, 550));
-            for (int i = 0; i < _letters.Count; i++)
-            {
-                var (path, dash, fill) = _letters[i];
-                path.StrokeDashOffset = dash * (1 - PenEase.Ease(Progress(t, 450 + i * 70, 500)));
-                double ink = OutEase.Ease(Progress(t, 750 + i * 70, 400));
-                fill.Opacity = ink;
-                ((Brush)path.Stroke!).Opacity = 1 - 0.7 * ink;
-            }
+            Letters.Render(t - 450);
             Rise(Ornament, Progress(t, 1600, 450));
             Rise(GreetingText, Progress(t, 1750, 450));
 
@@ -237,57 +182,6 @@ namespace VuluLauncher.Views
             {
                 Children = { new ScaleTransform(1 - 0.15 * p, 1), new TranslateTransform(direction * w * p, 0) },
             };
-        }
-
-        /// <summary>Yolun yaklaşık uzunluğu (M, L, H, V, Q ve Z komutları); kalem çizgisinin boyu için.</summary>
-        internal static double PathLength(string data)
-        {
-            var tokens = new List<string>();
-            int k = 0;
-            while (k < data.Length)
-            {
-                char c = data[k];
-                if (char.IsLetter(c)) { tokens.Add(c.ToString()); k++; }
-                else if (c == '-' || c == '.' || char.IsDigit(c))
-                {
-                    int start = k++;
-                    while (k < data.Length && (char.IsDigit(data[k]) || (data[k] == '.' && !data[start..k].Contains('.')))) k++;
-                    tokens.Add(data[start..k]);
-                }
-                else k++;
-            }
-
-            double length = 0, x = 0, y = 0, sx = 0, sy = 0;
-            char command = 'M';
-            int n = 0;
-            double Next() => double.Parse(tokens[n++], CultureInfo.InvariantCulture);
-            while (n < tokens.Count)
-            {
-                if (char.IsLetter(tokens[n][0])) command = tokens[n++][0];
-                switch (command)
-                {
-                    case 'M': x = sx = Next(); y = sy = Next(); command = 'L'; break;
-                    case 'L': { double nx = Next(), ny = Next(); length += Math.Sqrt((nx - x) * (nx - x) + (ny - y) * (ny - y)); x = nx; y = ny; break; }
-                    case 'H': { double nx = Next(); length += Math.Abs(nx - x); x = nx; break; }
-                    case 'V': { double ny = Next(); length += Math.Abs(ny - y); y = ny; break; }
-                    case 'Q':
-                    {
-                        double cx = Next(), cy = Next(), ex = Next(), ey = Next(), px = x, py = y;
-                        for (int s = 1; s <= 8; s++)
-                        {
-                            double u = s / 8.0, a = (1 - u) * (1 - u), b = 2 * (1 - u) * u, d = u * u;
-                            double qx = a * x + b * cx + d * ex, qy = a * y + b * cy + d * ey;
-                            length += Math.Sqrt((qx - px) * (qx - px) + (qy - py) * (qy - py));
-                            px = qx; py = qy;
-                        }
-                        x = ex; y = ey;
-                        break;
-                    }
-                    case 'Z': length += Math.Sqrt((sx - x) * (sx - x) + (sy - y) * (sy - y)); x = sx; y = sy; command = 'L'; break;
-                    default: n++; break;   // bilinmeyen komut: atlanır
-                }
-            }
-            return length;
         }
     }
 }

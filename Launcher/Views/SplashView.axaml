@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:sh="using:VuluShared"
              x:Class="VuluLauncher.Views.SplashView"
              x:DataType="vm:SplashViewModel"
              ClipToBounds="True">
@@ -34,9 +35,7 @@
 
         <!-- Başlık: harfler sırayla kalemle çizilip altın-bakırla dolar -->
         <StackPanel x:Name="Title" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
-            <Viewbox Width="500" Stretch="Uniform">
-                <Canvas x:Name="Letters" Width="4401" Height="1182" />
-            </Viewbox>
+            <sh:ScriptTitle x:Name="Letters" Width="500" />
             <Panel x:Name="Ornament" Width="160" Height="9" Margin="0,8,0,0" Opacity="0">
                 <Border Height="1" VerticalAlignment="Center">
                     <Border.Background>

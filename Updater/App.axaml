@@ -6,6 +6,13 @@
     <!-- Launcher'ın renkleri (Launcher/App.axaml ile aynı) -->
     <Application.Resources>
         <ResourceDictionary>
+            <!-- Fluent denetimlerinin vurgu rengi (işaret kutusu) -->
+            <Color x:Key="SystemAccentColor">#A8321F</Color>
+            <Color x:Key="SystemAccentColorDark1">#A8321F</Color>
+            <Color x:Key="SystemAccentColorLight1">#A8321F</Color>
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="#FFFFFF" />
             <SolidColorBrush x:Key="Bg" Color="#0B0A09" />
             <SolidColorBrush x:Key="Panel" Color="#14100C" />
             <SolidColorBrush x:Key="Surface" Color="#1B1510" />

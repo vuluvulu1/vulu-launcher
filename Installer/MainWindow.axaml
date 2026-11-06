@@ -1,0 +1,169 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="using:Installer"
+        xmlns:sh="using:VuluShared"
+        x:Class="Installer.MainWindow"
+        x:DataType="i:SetupViewModel"
+        Title="vulu Launcher Kurulumu"
+        Icon="avares://vulu-launcher-setup/Assets/logo.ico"
+        Width="760" Height="500"
+        WindowDecorations="None"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Bg}">
+
+    <Border BorderBrush="{StaticResource LineStrong}" BorderThickness="1">
+        <Panel>
+            <!-- Spot: yukarıdan inen huzme, başlığa düşen ışık havuzu ve kenarlarda karanlık (launcher'ın açılışıyla aynı dil) -->
+            <Path Data="M46,0 L54,0 L68,100 L32,100 Z" Stretch="Fill" IsHitTestVisible="False">
+                <Path.Fill>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Offset="0" Color="#16FFE4BA" />
+                        <GradientStop Offset="0.55" Color="#05FFE4BA" />
+                        <GradientStop Offset="0.85" Color="#00FFE4BA" />
+                    </LinearGradientBrush>
+                </Path.Fill>
+            </Path>
+            <Border IsHitTestVisible="False">
+                <Border.Background>
+                    <RadialGradientBrush Center="50%,30%" GradientOrigin="50%,30%" RadiusX="34%" RadiusY="30%">
+                        <GradientStop Offset="0" Color="#1FFFE0B2" />
+                        <GradientStop Offset="0.72" Color="#00FFE0B2" />
+                    </RadialGradientBrush>
+                </Border.Background>
+            </Border>
+            <Border IsHitTestVisible="False">
+                <Border.Background>
+                    <RadialGradientBrush Center="50%,40%" GradientOrigin="50%,40%" RadiusX="75%" RadiusY="70%">
+                        <GradientStop Offset="0.45" Color="#00000000" />
+                        <GradientStop Offset="1" Color="#B3000000" />
+                    </RadialGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <DockPanel>
+                <!-- Üst çubuk -->
+                <Grid DockPanel.Dock="Top" Height="40" ColumnDefinitions="Auto,*,Auto,Auto" Margin="14,0,6,0">
+                    <Image Source="avares://vulu-launcher-setup/Assets/logo.png" Width="18" Height="18" RenderOptions.BitmapInterpolationMode="None" />
+                    <TextBlock Grid.Column="1" Text="Kurulum" Margin="10,0" FontSize="12.5" Foreground="{StaticResource Muted}" VerticalAlignment="Center" />
+                    <Button Grid.Column="2" Classes="chrome" Command="{Binding MinimizeCommand}" ToolTip.Tip="Küçült" AutomationProperties.Name="Küçült">
+                        <Path Data="M2,6 L10,6" />
+                    </Button>
+                    <Button Grid.Column="3" Classes="chrome close" Command="{Binding CloseCommand}" ToolTip.Tip="Kapat" AutomationProperties.Name="Kapat">
+                        <Path Data="M2.5,2.5 L9.5,9.5 M9.5,2.5 L2.5,9.5" />
+                    </Button>
+                </Grid>
+
+                <DockPanel Margin="44,6,44,28">
+                    <StackPanel DockPanel.Dock="Top" HorizontalAlignment="Center">
+                        <sh:ScriptTitle x:Name="TitleArt" Width="400" Margin="0,8,0,0" />
+                        <TextBlock x:Name="Subtitle" HorizontalAlignment="Center" Margin="0,2,0,0" FontSize="13" LetterSpacing="0.8" Foreground="#CCE3B37A" Opacity="0">
+                            <Run Text="Minecraft launcher · " /><Run Text="{Binding VersionText}" FontFamily="{StaticResource Mono}" />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Alt kart: seçenekler / ilerleme / bitiş -->
+                    <Border x:Name="Card" VerticalAlignment="Bottom" Padding="20,18" Background="{StaticResource Card}"
+                            BorderBrush="{StaticResource Line}" BorderThickness="1" Opacity="0">
+                        <Panel>
+                            <!-- Seçenekler -->
+                            <StackPanel IsVisible="{Binding IsOptions}">
+                                <TextBlock Text="Kurulum klasörü" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource Muted}" />
+                                <Grid ColumnDefinitions="*,8,Auto" Margin="0,6,0,0">
+                                    <TextBox x:Name="DirBox" Text="{Binding Directory}" AutomationProperties.Name="Kurulum klasörü" />
+                                    <Button Grid.Column="2" Content="Değiştir" Command="{Binding BrowseCommand}" Padding="16,0" Height="36" />
+                                </Grid>
+                                <TextBlock Text="{Binding DirHint}" Margin="0,6,0,0" MinHeight="18" FontSize="12" TextWrapping="Wrap"
+                                           Foreground="{StaticResource Muted}" Classes.error="{Binding DirHintIsError}">
+                                    <TextBlock.Styles>
+                                        <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                                    </TextBlock.Styles>
+                                </TextBlock>
+                                <StackPanel Orientation="Horizontal" Spacing="22" Margin="0,10,0,0">
+                                    <CheckBox Content="Masaüstü kısayolu" IsChecked="{Binding DesktopShortcut}" />
+                                    <CheckBox Content="Başlat menüsü kısayolu" IsChecked="{Binding StartMenuShortcut}" />
+                                </StackPanel>
+                                <Border Margin="0,10,0,0" Padding="12,10" Background="#14E2604A" BorderBrush="#59E2604A" BorderThickness="1" IsVisible="{Binding HasReleaseError}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="{Binding ReleaseError}" FontSize="12.5" Foreground="#F0B3A7" TextWrapping="Wrap" MaxWidth="520" />
+                                        <Button Classes="link" Content="Tekrar dene" Command="{Binding ReloadReleaseCommand}" FontSize="12.5" />
+                                    </StackPanel>
+                                </Border>
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,16,0,0">
+                                    <TextBlock Text="{Binding SizeInfo}" FontSize="12" Foreground="{StaticResource Dim}" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Classes="primary big" Content="{Binding InstallText}" Command="{Binding InstallCommand}" />
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- İlerleme -->
+                            <StackPanel IsVisible="{Binding IsProgress}">
+                                <ItemsControl ItemsSource="{Binding Steps}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="i:SetupStep">
+                                            <StackPanel Orientation="Horizontal" Spacing="8" Classes.active="{Binding IsActive}" Classes.done="{Binding IsDone}">
+                                                <StackPanel.Styles>
+                                                    <Style Selector="StackPanel > Border"><Setter Property="BorderBrush" Value="{StaticResource Dim}" /></Style>
+                                                    <Style Selector="StackPanel > TextBlock"><Setter Property="Foreground" Value="{StaticResource Dim}" /></Style>
+                                                    <Style Selector="StackPanel.active > Border">
+                                                        <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+                                                        <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+                                                    </Style>
+                                                    <Style Selector="StackPanel.active > TextBlock"><Setter Property="Foreground" Value="{StaticResource AccentHi}" /></Style>
+                                                    <Style Selector="StackPanel.done > Border">
+                                                        <Setter Property="BorderBrush" Value="{StaticResource Ok}" />
+                                                        <Setter Property="Background" Value="{StaticResource Ok}" />
+                                                    </Style>
+                                                    <Style Selector="StackPanel.done > TextBlock"><Setter Property="Foreground" Value="{StaticResource Text}" /></Style>
+                                                </StackPanel.Styles>
+                                                <Border Width="18" Height="18" CornerRadius="9" BorderThickness="1.5">
+                                                    <Path Data="M3,7 L6,10 L11,4" Stroke="#0C0A08" StrokeThickness="1.8" StrokeLineCap="Round" StrokeJoin="Round"
+                                                          Width="14" Height="14" Stretch="None" IsVisible="{Binding IsDone}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="{Binding Label}" FontSize="12.5" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,16,0,0">
+                                    <TextBlock Text="{Binding StatusTitle}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding PercentText}" FontFamily="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource Muted}" />
+                                </Grid>
+                                <ProgressBar Margin="0,8,0,0" Minimum="0" Maximum="100" Value="{Binding Percent}" IsIndeterminate="{Binding IsIndeterminate}" />
+                                <TextBlock Text="{Binding Detail}" Margin="0,6,0,0" MinHeight="18" FontFamily="{StaticResource Mono}" FontSize="11.5"
+                                           Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" />
+                                <Border Margin="0,12,0,0" Padding="12,10" Background="#14E2604A" BorderBrush="#59E2604A" BorderThickness="1" IsVisible="{Binding HasInstallError}">
+                                    <TextBlock Text="{Binding InstallError}" FontSize="12.5" Foreground="#F0B3A7" TextWrapping="Wrap" />
+                                </Border>
+                                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,16,0,0" IsVisible="{Binding HasInstallError}">
+                                    <Button Content="Geri" Command="{Binding BackCommand}" Padding="16,0" />
+                                    <Button Classes="primary big" Content="Tekrar dene" Command="{Binding InstallCommand}" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Bitiş -->
+                            <StackPanel IsVisible="{Binding IsDone}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <Border Width="30" Height="30" CornerRadius="15" Background="{StaticResource Ok}">
+                                        <Path Data="M3,7 L6,10 L11,4" Stroke="#0C0A08" StrokeThickness="2" StrokeLineCap="Round" StrokeJoin="Round"
+                                              Width="14" Height="14" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Kurulum tamamlandı" FontSize="16" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding DoneText}" Margin="0,2,0,0" FontFamily="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource Muted}"
+                                                   TextTrimming="CharacterEllipsis" MaxWidth="560" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <Grid ColumnDefinitions="*,Auto,10,Auto" Margin="0,16,0,0">
+                                    <TextBlock Text="Güncellemeler bundan sonra otomatik gelir." FontSize="12" Foreground="{StaticResource Dim}" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Content="Kapat" Command="{Binding CloseCommand}" Padding="16,0" />
+                                    <Button Grid.Column="3" x:Name="PlayButton" Classes="primary big" Content="▶  OYNA" Command="{Binding LaunchCommand}" />
+                                </Grid>
+                            </StackPanel>
+                        </Panel>
+                    </Border>
+                </DockPanel>
+            </DockPanel>
+        </Panel>
+    </Border>
+</Window>

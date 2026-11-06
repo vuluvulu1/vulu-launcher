@@ -1,0 +1,178 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Installer.App"
+             RequestedThemeVariant="Dark">
+
+    <!-- Launcher'ın renkleri (Launcher/App.axaml ile aynı) -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Fluent denetimlerinin vurgu rengi (işaret kutusu) -->
+            <Color x:Key="SystemAccentColor">#F2A33A</Color>
+            <Color x:Key="SystemAccentColorDark1">#F2A33A</Color>
+            <Color x:Key="SystemAccentColorLight1">#F2A33A</Color>
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="#1A0E02" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="#1A0E02" />
+            <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="#1A0E02" />
+            <SolidColorBrush x:Key="Bg" Color="#070605" />
+            <SolidColorBrush x:Key="Card" Color="#C7121010" />
+            <SolidColorBrush x:Key="AccentSoft" Color="#29F2A33A" />
+            <SolidColorBrush x:Key="Panel" Color="#14100C" />
+            <SolidColorBrush x:Key="Surface" Color="#1B1510" />
+            <SolidColorBrush x:Key="Raised" Color="#281F17" />
+            <SolidColorBrush x:Key="Hover" Color="#12FFE2BA" />
+            <SolidColorBrush x:Key="Line" Color="#1AFFD8A0" />
+            <SolidColorBrush x:Key="LineStrong" Color="#33FFD8A0" />
+            <SolidColorBrush x:Key="ButtonBg" Color="#EB261E17" />
+            <SolidColorBrush x:Key="ButtonLine" Color="#4DFFD8A0" />
+            <SolidColorBrush x:Key="Text" Color="#F3ECE2" />
+            <SolidColorBrush x:Key="Muted" Color="#C9BDAF" />
+            <SolidColorBrush x:Key="Dim" Color="#A1958A" />
+            <SolidColorBrush x:Key="Accent" Color="#F2A33A" />
+            <SolidColorBrush x:Key="AccentHi" Color="#FFC873" />
+            <SolidColorBrush x:Key="AccentInk" Color="#1A0E02" />
+            <SolidColorBrush x:Key="Ok" Color="#7CC47F" />
+            <SolidColorBrush x:Key="Error" Color="#E8693A" />
+            <SolidColorBrush x:Key="Danger" Color="#A8321F" />
+            <SolidColorBrush x:Key="DangerHi" Color="#C03A24" />
+            <FontFamily x:Key="Sans">avares://vulu-launcher-setup/Assets/Fonts#IBM Plex Sans</FontFamily>
+            <FontFamily x:Key="Mono">avares://vulu-launcher-setup/Assets/Fonts#IBM Plex Mono</FontFamily>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <Style Selector=":is(TopLevel)">
+            <Setter Property="FontFamily" Value="{StaticResource Sans}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="FontSize" Value="13.5" />
+        </Style>
+
+        <Style Selector="Button">
+            <Setter Property="Background" Value="{StaticResource ButtonBg}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ButtonLine}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource ButtonBg}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Raised}" />
+        </Style>
+        <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="Foreground" Value="{StaticResource Dim}" />
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{StaticResource Accent}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentHi}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AccentHi}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+        </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="{StaticResource Danger}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Danger}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource DangerHi}" />
+            <Setter Property="BorderBrush" Value="{StaticResource DangerHi}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <!-- Başlık çubuğu düğmeleri -->
+        <Style Selector="Button.chrome">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Margin" Value="2,4" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="Button.chrome:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+        </Style>
+        <Style Selector="Button.chrome.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Danger}" />
+        </Style>
+        <Style Selector="Button.chrome Path">
+            <Setter Property="Stroke" Value="{StaticResource Muted}" />
+            <Setter Property="StrokeThickness" Value="1.5" />
+            <Setter Property="StrokeLineCap" Value="Round" />
+            <Setter Property="Width" Value="12" />
+            <Setter Property="Height" Value="12" />
+            <Setter Property="Stretch" Value="None" />
+        </Style>
+        <Style Selector="Button.chrome:pointerover Path"><Setter Property="Stroke" Value="{StaticResource Text}" /></Style>
+
+        <Style Selector="ProgressBar">
+            <Setter Property="Height" Value="5" />
+            <Setter Property="MinHeight" Value="5" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Background" Value="#14FFFFFF" />
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
+        </Style>
+        <Style Selector="ProgressBar.ok"><Setter Property="Foreground" Value="{StaticResource Ok}" /></Style>
+
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+        </Style>
+
+        <Style Selector="Button.big">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="MinWidth" Value="150" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="LetterSpacing" Value="0.8" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Height" Value="NaN" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="#F0B3A7" />
+        </Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="FontFamily" Value="{StaticResource Mono}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="Background" Value="#59000000" />
+            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="11,8" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#59000000" />
+            <Setter Property="BorderBrush" Value="{StaticResource ButtonLine}" />
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#59000000" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+    </Application.Styles>
+</Application>

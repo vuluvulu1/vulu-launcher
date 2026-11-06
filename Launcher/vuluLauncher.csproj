@@ -24,6 +24,7 @@
     <!-- Updater ile ortak: pencere simgesi ve kurulum kaydı (Releases.cs Vulu.Core'da) -->
     <Compile Include="..\Shared\WindowIcon.cs" Link="Shared\WindowIcon.cs" />
     <Compile Include="..\Shared\InstallInfo.cs" Link="Shared\InstallInfo.cs" />
+    <Compile Include="..\Shared\ScriptTitle*.cs" Link="Shared\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
