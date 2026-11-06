@@ -44,8 +44,9 @@
         </Style>
 
         <Style Selector="Button.play">
-            <Setter Property="Background" Value="{StaticResource Accent}" />
-            <Setter Property="BorderBrush" Value="{StaticResource AccentHi}" />
+            <Setter Property="Background" Value="{StaticResource PrimaryFill}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="LetterSpacing" Value="1.8" />
             <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
             <Setter Property="FontSize" Value="17" />
             <Setter Property="FontWeight" Value="Bold" />
@@ -53,11 +54,14 @@
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
+        <Style Selector="Button.play /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #4DFFECC8" />
+        </Style>
         <Style Selector="Button.play:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource AccentHi}" />
-            <Setter Property="BorderBrush" Value="{StaticResource AccentHi}" />
+            <Setter Property="Background" Value="{StaticResource PrimaryFillHover}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
-            <Setter Property="BoxShadow" Value="0 0 26 1 #61F2A33A" />
+            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #5CFFECC8" />
         </Style>
 
         <Style Selector="Button.info-tab">

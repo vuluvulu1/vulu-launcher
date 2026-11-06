@@ -40,6 +40,15 @@
             <SolidColorBrush x:Key="AccentHi" Color="#FFC873" />
             <SolidColorBrush x:Key="AccentSoft" Color="#29F2A33A" />
             <SolidColorBrush x:Key="AccentInk" Color="#1A0E02" />
+            <!-- Ana düğme: yukarıdan aşağı koyulaşan amber (mesale.css .btn-primary) -->
+            <LinearGradientBrush x:Key="PrimaryFill" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#EDA23A" />
+                <GradientStop Offset="1" Color="#D9852A" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="PrimaryFillHover" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#F5B04C" />
+                <GradientStop Offset="1" Color="#E39236" />
+            </LinearGradientBrush>
             <SolidColorBrush x:Key="Ok" Color="#9CC3DE" />
             <SolidColorBrush x:Key="Warn" Color="#FFC873" />
             <SolidColorBrush x:Key="Error" Color="#E8693A" />
@@ -107,6 +116,28 @@
             <Setter Property="Padding" Value="14,7" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
+            <!-- Basınca 1 piksel iner (web: .btn:active translateY(1px)); Fluent'in küçülmesi yerine -->
+            <Setter Property="RenderTransform" Value="none" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.06" />
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button:pressed">
+            <Setter Property="RenderTransform" Value="translateY(1px)" />
+        </Style>
+        <!-- Renkler anında değil, web'deki gibi kısa bir geçişle değişir -->
+        <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+                    <BrushTransition Property="Foreground" Duration="0:0:0.12" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource ButtonBg}" />
@@ -116,21 +147,32 @@
         <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource Raised}" />
         </Style>
+        <!-- Devre dışı: rengini korur, solar (web: .btn:disabled opacity .45) -->
         <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource Surface}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
-            <Setter Property="Foreground" Value="{StaticResource Dim}" />
+            <Setter Property="Background" Value="{Binding $parent[Button].Background}" />
+            <Setter Property="BorderBrush" Value="{Binding $parent[Button].BorderBrush}" />
+            <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+        </Style>
+        <Style Selector="Button:disabled">
+            <Setter Property="Opacity" Value="0.45" />
         </Style>
 
         <Style Selector="Button.primary">
-            <Setter Property="Background" Value="{StaticResource Accent}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Background" Value="{StaticResource PrimaryFill}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
         </Style>
+        <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #4DFFECC8" />
+        </Style>
         <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource AccentHi}" />
-            <Setter Property="BorderBrush" Value="{StaticResource AccentHi}" />
+            <Setter Property="Background" Value="{StaticResource PrimaryFillHover}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #5CFFECC8" />
+        </Style>
+        <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource PrimaryFill}" />
         </Style>
 
         <!-- Düz düğme: yalnızca simge ya da metin (başlık çubuğu, bağlantılar) -->
@@ -161,6 +203,9 @@
             <Setter Property="BorderBrush" Value="{StaticResource Error}" />
             <Setter Property="Foreground" Value="White" />
         </Style>
+        <Style Selector="Button.primary.danger /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BoxShadow" Value="none" />
+        </Style>
         <Style Selector="Button.primary.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="#F07A4E" />
             <Setter Property="BorderBrush" Value="#F07A4E" />
@@ -180,8 +225,22 @@
             <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
             <Setter Property="ZIndex" Value="1" />
         </Style>
+        <Style Selector="Button.seg.active /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BoxShadow" Value="inset 0 -2 0 0 #F2A33A" />
+        </Style>
         <Style Selector="Button.seg.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+            <Setter Property="BoxShadow" Value="inset 0 -2 0 0 #F2A33A" />
+        </Style>
+
+        <!-- Kartlar: üstüne gelince kenar yumuşakça belirginleşir -->
+        <Style Selector="Border.card, Border.row-card">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
         </Style>
 
         <Style Selector="Ellipse.dot"><Setter Property="Fill" Value="#A1958A" /></Style>
@@ -206,6 +265,11 @@
             <Setter Property="Height" Value="15" />
         </Style>
 
+        <Style Selector="Path.icon">
+            <Setter Property="Transitions">
+                <Transitions><BrushTransition Property="Stroke" Duration="0:0:0.12" /></Transitions>
+            </Setter>
+        </Style>
         <Style Selector="Button:pointerover Path.icon"><Setter Property="Stroke" Value="{StaticResource Text}" /></Style>
         <Style Selector="Button.close:pointerover Path.icon"><Setter Property="Stroke" Value="White" /></Style>
         <Style Selector="Button.tab.active Path.icon"><Setter Property="Stroke" Value="{StaticResource AccentHi}" /></Style>
@@ -222,6 +286,11 @@
         <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="{StaticResource Surface}" />
             <Setter Property="BorderBrush" Value="{StaticResource ButtonLine}" />
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Transitions">
+                <Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.12" /></Transitions>
+            </Setter>
         </Style>
         <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="{StaticResource Surface}" />

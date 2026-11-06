@@ -36,41 +36,61 @@
                                 <Button Classes="tab" Classes.active="{Binding IsActive}" Classes.glow="{Binding IsGlowing}" IsVisible="{Binding IsVisible}"
                                         Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SelectTabCommand}"
                                         CommandParameter="{Binding}">
-                                    <StackPanel Orientation="Horizontal" Spacing="7">
-                                        <Path Classes="icon" Data="{Binding Icon}" />
-                                        <TextBlock Text="{Binding Title}" />
+                                    <Panel>
+                                    <Border Classes="bar" Height="2" Margin="8,0" VerticalAlignment="Top" Background="{StaticResource Accent}"
+                                            BoxShadow="0 0 15 3 #B8F2A33A" />
+                                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="12,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
                                         <Border IsVisible="{Binding HasBadge}" Background="{StaticResource Accent}" MinWidth="16" Height="16" Padding="4,0"
                                                 CornerRadius="8" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentInk}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>
                                     </StackPanel>
+                                    </Panel>
                                 </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                         <ItemsControl.Styles>
                             <Style Selector="Button.tab">
                                 <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="BorderThickness" Value="0,0,0,2" />
+                                <Setter Property="BorderThickness" Value="0" />
                                 <Setter Property="BorderBrush" Value="Transparent" />
+                                <Setter Property="Margin" Value="0,0,2,0" />
                                 <Setter Property="Foreground" Value="{StaticResource Muted}" />
                                 <Setter Property="Height" Value="50" />
-                                <Setter Property="Padding" Value="13,0" />
-                                <Setter Property="VerticalContentAlignment" Value="Center" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                            </Style>
+                            <Style Selector="Button.tab:pressed">
+                                <Setter Property="RenderTransform" Value="none" />
                             </Style>
                             <Style Selector="Button.tab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                                <Setter Property="Background" Value="{StaticResource Hover}" />
+                                <Setter Property="Background" Value="Transparent" />
                                 <Setter Property="BorderBrush" Value="Transparent" />
                                 <Setter Property="Foreground" Value="{StaticResource Text}" />
                             </Style>
                             <Style Selector="Button.tab.active">
-                                <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
                                 <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+                                <Setter Property="Background">
+                                    <RadialGradientBrush Center="50%,0%" GradientOrigin="50%,0%" RadiusX="62%" RadiusY="90%">
+                                        <GradientStop Offset="0" Color="#33F2A33A" />
+                                        <GradientStop Offset="1" Color="#00F2A33A" />
+                                    </RadialGradientBrush>
+                                </Setter>
                             </Style>
                             <Style Selector="Button.tab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                                <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+                                <Setter Property="Background" Value="{Binding $parent[Button].Background}" />
                                 <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
                             </Style>
+                            <!-- Seçili sekmenin üstündeki parlayan çizgi -->
+                            <Style Selector="Button.tab Border.bar">
+                                <Setter Property="Opacity" Value="0" />
+                                <Setter Property="Transitions">
+                                    <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.15" /></Transitions>
+                                </Setter>
+                            </Style>
+                            <Style Selector="Button.tab.active Border.bar"><Setter Property="Opacity" Value="1" /></Style>
                             <Style Selector="Button.tab.glow /template/ ContentPresenter#PART_ContentPresenter">
                                 <Setter Property="Background" Value="{StaticResource AccentSoft}" />
                                 <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
@@ -182,7 +202,19 @@
 
             <!-- ── İçerik: giriş ya da seçili sekme ──────────────────── -->
             <v:LoginView Grid.Row="1" DataContext="{Binding Login}" IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).LoggedIn}" />
-            <ContentControl Grid.Row="1" Content="{Binding SelectedTab.Page}" IsVisible="{Binding LoggedIn}" />
+            <!-- Sayfa değişince yeni sayfa yumuşakça belirir (web: .view animation view-in .18s) -->
+            <ContentControl Grid.Row="1" Classes="pages" Content="{Binding SelectedTab.Page}" IsVisible="{Binding LoggedIn}">
+                <ContentControl.Styles>
+                    <Style Selector="ContentControl.pages /template/ ContentPresenter#PART_ContentPresenter > :is(Control)">
+                        <Style.Animations>
+                            <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
+                                <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /></KeyFrame>
+                                <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+                            </Animation>
+                        </Style.Animations>
+                    </Style>
+                </ContentControl.Styles>
+            </ContentControl>
             <!-- ── Açılış perdesi: giriş ve ana ekran arkasında hazırlanır ── -->
             <v:SplashView Grid.Row="1" DataContext="{Binding Splash}" IsVisible="{Binding IsVisible}" />
 
@@ -194,7 +226,18 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ToastItem">
-                        <Button Classes="flat" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Command="{Binding OpenCommand}">
+                        <Button Classes="flat toast" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Command="{Binding OpenCommand}">
+                            <!-- Sağdan kayarak gelir (web: toast-in .34s) -->
+                            <Button.Styles>
+                                <Style Selector="Button.toast">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:0.34" Easing="0.16,1,0.3,1" FillMode="Backward">
+                                            <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="380" /></KeyFrame>
+                                            <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="0" /></KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                            </Button.Styles>
                             <Border Background="{StaticResource Glass}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
                                     Padding="12,10" BoxShadow="0 12 32 0 #99000000">
                                 <Grid ColumnDefinitions="Auto,*">
@@ -214,6 +257,17 @@
             </ItemsControl>
 
             <!-- ── İndirme paneli (sağ üst): dosyalar, hız, kalan süre ── -->
+            <!-- İndirme paneli belirirken hafifçe yükselir (web: dl-in .18s) -->
+            <Panel.Styles>
+                <Style Selector="Border#DownloadsPanel[IsVisible=True]">
+                    <Style.Animations>
+                        <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
+                            <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="6" /></KeyFrame>
+                            <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+                        </Animation>
+                    </Style.Animations>
+                </Style>
+            </Panel.Styles>
             <Border x:Name="DownloadsPanel" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,18,0" Width="370"
                     IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).Downloads.Visible}" DataContext="{Binding Downloads}" x:DataType="vm:DownloadsViewModel"
                     Background="{StaticResource Panel}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1" Padding="14,12"
@@ -292,7 +346,18 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ModalViewModel">
-                        <Border Background="#A6000000">
+                        <Border Classes="backdrop" Background="#A6000000">
+                            <!-- Kutu açılırken karartma ve kutu yumuşakça belirir (web: view-in .12s) -->
+                            <Border.Styles>
+                                <Style Selector="Border.backdrop">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:0.12" Easing="CubicEaseOut" FillMode="Backward">
+                                            <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /></KeyFrame>
+                                            <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                            </Border.Styles>
                             <Border Width="{Binding Width}" HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="720"
                                     Background="{StaticResource Panel}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
                                     BoxShadow="0 18 44 0 #9E000000">
