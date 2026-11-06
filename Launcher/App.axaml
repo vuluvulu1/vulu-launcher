@@ -209,6 +209,7 @@
         <Style Selector="Button:pointerover Path.icon"><Setter Property="Stroke" Value="{StaticResource Text}" /></Style>
         <Style Selector="Button.close:pointerover Path.icon"><Setter Property="Stroke" Value="White" /></Style>
         <Style Selector="Button.tab.active Path.icon"><Setter Property="Stroke" Value="{StaticResource AccentHi}" /></Style>
+        <Style Selector="Button.tab.glow Path.icon"><Setter Property="Stroke" Value="{StaticResource AccentHi}" /></Style>
 
         <!-- ── Metin kutuları ───────────────────────────────────────── -->
         <Style Selector="TextBox">

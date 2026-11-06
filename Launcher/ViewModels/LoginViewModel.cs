@@ -54,7 +54,8 @@ namespace VuluLauncher.ViewModels
         }
 
         /// <summary>Giriş ekranını hazırlar; açılışta kayıtlı hesap varsa giriş kendiliğinden denenir.</summary>
-        public void Prepare(JsonElement init, bool auto)
+        /// <returns>Kendiliğinden giriş denendiyse o deneme (giriş olduysa ana ekran açılınca biter).</returns>
+        public Task Prepare(JsonElement init, bool auto)
         {
             string saved = init.Text("savedUsername") ?? "";
             bool hasPassword = init.Bool("hasSavedPassword");
@@ -62,10 +63,11 @@ namespace VuluLauncher.ViewModels
             SetFields(saved, _useSaved ? SavedMask : "");
             Remember = saved.Length > 0;
 
-            if (auto && _useSaved) { _ = LoginAsync(); return; }
+            if (auto && _useSaved) return LoginAsync();
 
             SetStatus("Sunucuya bağlanılıyor...");
             _ = WakeAsync();
+            return Task.CompletedTask;
         }
 
         private async Task WakeAsync()

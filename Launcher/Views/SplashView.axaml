@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.SplashView"
+             x:DataType="vm:SplashViewModel"
+             ClipToBounds="True">
+    <!-- Perde, saçak, spot ve yazı; hepsi kod tarafında karelerle canlandırılır (SplashView.axaml.cs) -->
+    <Panel x:Name="Stage" Background="Transparent">
+        <!-- Perdeler: neredeyse siyah kadife, kıvrımlar yalnızca ışıkta seçilir -->
+        <Border x:Name="CurtainLeft" HorizontalAlignment="Left" Background="#0D0A08" BoxShadow="inset -30 0 50 -12 #000000">
+            <Border x:Name="FoldsLeft" />
+        </Border>
+        <Border x:Name="CurtainRight" HorizontalAlignment="Right" Background="#0D0A08" BoxShadow="inset 30 0 50 -12 #000000">
+            <Border x:Name="FoldsRight" />
+        </Border>
+
+        <!-- Spot: ortadaki ışık havuzu ve yukarıdan inen huzme; gerisi karanlık -->
+        <Panel x:Name="Vignette" IsHitTestVisible="False">
+            <Border x:Name="Pool" />
+            <Border x:Name="Dark" />
+            <Path x:Name="Beam" Stretch="Fill" Data="M47,0 L53,0 L66,100 L34,100 Z">
+                <Path.Fill>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Offset="0" Color="#17FFE4BA" />
+                        <GradientStop Offset="0.55" Color="#06FFE4BA" />
+                        <GradientStop Offset="0.8" Color="#00FFE4BA" />
+                    </LinearGradientBrush>
+                </Path.Fill>
+            </Path>
+        </Panel>
+
+        <!-- Üst saçak: dalgalı kenarı kod çizer -->
+        <Path x:Name="Valance" VerticalAlignment="Top" Fill="#080605" IsHitTestVisible="False" />
+
+        <!-- Başlık: harfler sırayla kalemle çizilip altın-bakırla dolar -->
+        <StackPanel x:Name="Title" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+            <Viewbox Width="500" Stretch="Uniform">
+                <Canvas x:Name="Letters" Width="4401" Height="1182" />
+            </Viewbox>
+            <Panel x:Name="Ornament" Width="160" Height="9" Margin="0,8,0,0" Opacity="0">
+                <Border Height="1" VerticalAlignment="Center">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                            <GradientStop Offset="0" Color="#00C27E3E" />
+                            <GradientStop Offset="0.3" Color="#CCC27E3E" />
+                            <GradientStop Offset="0.7" Color="#CCC27E3E" />
+                            <GradientStop Offset="1" Color="#00C27E3E" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                <Border Width="6" Height="6" Background="#E3B37A" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border.RenderTransform><RotateTransform Angle="45" /></Border.RenderTransform>
+                </Border>
+            </Panel>
+            <TextBlock x:Name="GreetingText" Text="{Binding Greeting}" Margin="0,10,0,0" HorizontalAlignment="Center" Opacity="0"
+                       FontSize="13.5" FontWeight="Medium" LetterSpacing="1" Foreground="#CCE3B37A" />
+            <TextBlock Text="{Binding Status}" MinHeight="18" Margin="0,16,0,0" HorizontalAlignment="Center"
+                       FontSize="12" FontWeight="Medium" LetterSpacing="0.5" Foreground="#8CE3B37A" />
+        </StackPanel>
+
+        <!-- Başta her yer karanlık; spot yanınca bu örtü kalkar -->
+        <Border x:Name="Blackout" Background="#000000" IsHitTestVisible="False" />
+    </Panel>
+</UserControl>

@@ -33,7 +33,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:PageTab">
-                                <Button Classes="tab" Classes.active="{Binding IsActive}" IsVisible="{Binding IsVisible}"
+                                <Button Classes="tab" Classes.active="{Binding IsActive}" Classes.glow="{Binding IsGlowing}" IsVisible="{Binding IsVisible}"
                                         Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SelectTabCommand}"
                                         CommandParameter="{Binding}">
                                     <StackPanel Orientation="Horizontal" Spacing="7">
@@ -68,6 +68,11 @@
                                 <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
                             </Style>
                             <Style Selector="Button.tab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+                                <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+                            </Style>
+                            <Style Selector="Button.tab.glow /template/ ContentPresenter#PART_ContentPresenter">
+                                <Setter Property="Background" Value="{StaticResource AccentSoft}" />
                                 <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
                                 <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
                             </Style>
@@ -178,6 +183,8 @@
             <!-- ── İçerik: giriş ya da seçili sekme ──────────────────── -->
             <v:LoginView Grid.Row="1" DataContext="{Binding Login}" IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).LoggedIn}" />
             <ContentControl Grid.Row="1" Content="{Binding SelectedTab.Page}" IsVisible="{Binding LoggedIn}" />
+            <!-- ── Açılış perdesi: giriş ve ana ekran arkasında hazırlanır ── -->
+            <v:SplashView Grid.Row="1" DataContext="{Binding Splash}" IsVisible="{Binding IsVisible}" />
 
             <!-- ── Bildirim kartları (sağ alt) ──────────────────────── -->
             <ItemsControl Grid.Row="1" ItemsSource="{Binding Toasts}" HorizontalAlignment="Right" VerticalAlignment="Bottom"

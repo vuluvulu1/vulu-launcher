@@ -17,6 +17,8 @@ namespace VuluLauncher.ViewModels
         public object Page { get; } = page;
         [ObservableProperty] private bool _isVisible = true;
         [ObservableProperty] private bool _isActive;
+        /// <summary>Tanıtım rehberinde bu sekme anlatılıyor.</summary>
+        [ObservableProperty] private bool _isGlowing;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasBadge))]
         private int _badge;
@@ -55,6 +57,7 @@ namespace VuluLauncher.ViewModels
         public NotificationsViewModel Notifications { get; }
         public RadioViewModel Radio { get; }
         public DownloadsViewModel Downloads { get; }
+        public SplashViewModel Splash { get; } = new();
         public ObservableCollection<PageTab> Tabs { get; } = new();
         public ObservableCollection<ToastItem> Toasts { get; } = new();
         /// <summary>Açık kutular; sonuncusu en üstte.</summary>
@@ -126,20 +129,43 @@ namespace VuluLauncher.ViewModels
                 Home.ApplyInit(init);
                 if (init.Get("session") is { ValueKind: JsonValueKind.Object } session)
                 {
+                    // Pencere bildirim alanından geri açıldı: oturum açık, perde ve rehber atlanır
                     Home.GameRunning = init.Bool("gameRunning");
-                    await EnterAsync(session);
+                    await EnterAsync(session, resume: true);
                     return;
                 }
-                Login.Prepare(init, auto: true);
+                string saved = init.Text("savedUsername") ?? "";
+                if (!AppSettings.Current.SkipSplash && saved.Length > 0 && init.Bool("hasSavedPassword"))
+                {
+                    // Kayıtlı hesapla giriş perde kapalıyken yapılır; olmazsa perde giriş ekranına açılır
+                    Splash.Begin(saved);
+                    using var slow = new CancellationTokenSource();
+                    _ = Task.Delay(SplashViewModel.OpenAtMs - 600, slow.Token).ContinueWith(t =>
+                    {
+                        if (!t.IsCanceled) Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (!LoggedIn && Splash.IsVisible) Splash.Status = "Sunucuya bağlanılıyor…"; });
+                    }, TaskScheduler.Default);
+                    await Login.Prepare(init, auto: true);
+                    slow.Cancel();
+                    if (!LoggedIn) await Splash.OpenAsync();
+                    return;
+                }
+                await Login.Prepare(init, auto: true);
             }
             catch (Exception ex)
             {
                 Login.SetStatus(ex.Message, true);
+                await Splash.OpenAsync();
             }
         }
 
-        private async Task EnterAsync(JsonElement session)
+        private Task EnterAsync(JsonElement session) => EnterAsync(session, resume: false);
+
+        /// <param name="resume">Oturum zaten açıktı (pencere yeniden açıldı): perde ve rehber gösterilmez.</param>
+        private async Task EnterAsync(JsonElement session, bool resume)
         {
+            // Perde (otomatik girişte zaten kapalı) arayüzden önce gelir; ana ekran arkada hazırlanır
+            bool useSplash = !resume && !AppSettings.Current.SkipSplash;
+            if (useSplash && !Splash.IsVisible) Splash.Begin(session.Text("username") ?? "");
             Username = session.Text("username") ?? "";
             UserInitial = Username.Length > 0 ? Username[..1].ToUpperInvariant() : "";
             IsAdmin = session.Bool("isAdmin");
@@ -151,12 +177,24 @@ namespace VuluLauncher.ViewModels
             _ = RefreshMyAvatarAsync();
             if (IsAdmin) _ = Admin.RefreshRegistrationsAsync();
             _ = Notifications.LoadAsync();
-            Radio.StartIfEnabled();
             _ = RefreshFeedbackCountAsync();
             await Home.LoadAsync();
+            if (useSplash) await Splash.OpenAsync();
+            Radio.StartIfEnabled();
             // Bildirime tıklanarak ya da masaüstü kısayoluyla açıldıysa bekleyen istek şimdi yapılır
             await TakeNotificationAsync();
             await RunStartupActionAsync();
+            if (!resume && UiState.Get("tourDone") != "true") await ShowTourAsync();
+        }
+
+        /// <summary>Tanıtım rehberi; bir kez gösterilir (Ayarlar → Launcher'dan yeniden açılır).</summary>
+        public async Task ShowTourAsync()
+        {
+            var tour = new TourModal(Tabs);
+            var result = await ShowAsync(tour);
+            UiState.Set("tourDone", "true");
+            tour.Glow(null);
+            if (result is string key && Tabs.FirstOrDefault(t => t.Key == key && t.IsVisible) is { } tab) SelectedTab = tab;
         }
 
         /// <summary>Sorup çıkış yapar; oyun çalışıyorsa Core izin vermez, nedeni gösterilir.</summary>
