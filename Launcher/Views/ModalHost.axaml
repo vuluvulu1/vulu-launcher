@@ -111,6 +111,29 @@
                 </StackPanel>
             </Button>
         </DataTemplate>
+        <!-- Rol seçici: Herkes ya da belirli roller -->
+        <DataTemplate x:Key="RoleChooserTemplate" x:DataType="vm:RoleChooser">
+            <StackPanel Spacing="6">
+                <WrapPanel>
+                    <Button Classes="seg" Classes.active="{Binding Everyone}" Content="Herkes" Command="{Binding AllCommand}" Margin="0,0,6,6" />
+                    <ItemsControl ItemsSource="{Binding Roles}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:RolePick">
+                                <Button Classes="seg" Classes.active="{Binding IsSelected}" Margin="0,0,6,6"
+                                        Command="{Binding $parent[ItemsControl].((vm:RoleChooser)DataContext).ToggleCommand}" CommandParameter="{Binding}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Ellipse Width="8" Height="8" Fill="{Binding Brush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Name}" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </WrapPanel>
+                <TextBlock Text="{Binding Hint}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" />
+            </StackPanel>
+        </DataTemplate>
     </UserControl.Resources>
 
     <ContentControl Content="{Binding}">
@@ -134,7 +157,10 @@
                 <DockPanel>
                     <Border DockPanel.Dock="Bottom" Classes="modal-foot">
                         <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                            <Button Classes="sm danger" Content="Sil" IsVisible="{Binding Card.IsAdmin}" Command="{Binding DeleteCommand}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Classes="sm" Content="Erişim" IsVisible="{Binding Card.CanEditAccess}" Command="{Binding AccessCommand}" ToolTip.Tip="Kimler görebilir" />
+                                <Button Classes="sm danger" Content="Sil" IsVisible="{Binding Card.IsAdmin}" Command="{Binding DeleteCommand}" />
+                            </StackPanel>
                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" Margin="0,0,8,0">
                                 <Button Classes="sm" Content="{Binding Card.FeedbackText}" IsVisible="{Binding Card.FeedbackEnabled}" Command="{Binding FeedbackCommand}" />
                                 <Button Classes="sm" Content="Arkadaşına gönder" Command="{Binding SendCommand}" />
@@ -1036,6 +1062,120 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
+                </DockPanel>
+            </DataTemplate>
+
+            <!-- ── Paket erişimi (admin) ───────────────────────────────── -->
+            <DataTemplate DataType="vm:PackAccessModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,12" />
+                    <StackPanel Margin="22,0,22,18" Spacing="8">
+                        <TextBlock Text="Henüz rol yok. Admin paneli → Roller sekmesinden oluşturabilirsin." IsVisible="{Binding !Chooser.HasRoles}" Classes="dim" TextWrapping="Wrap" />
+                        <ContentControl Content="{Binding Chooser}" ContentTemplate="{StaticResource RoleChooserTemplate}" IsVisible="{Binding Chooser.HasRoles}" />
+                        <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" FontSize="12.5" TextWrapping="Wrap"
+                                   IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    </StackPanel>
+                    <Border Classes="modal-foot">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Content="Vazgeç" Command="{Binding DismissCommand}" />
+                            <Button Classes="primary" Content="Kaydet" Command="{Binding SaveCommand}" IsVisible="{Binding Chooser.HasRoles}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- ── vulu Packs'te paylaş (admin) ────────────────────────── -->
+            <DataTemplate DataType="vm:ShareModal">
+                <DockPanel MaxHeight="700">
+                    <TextBlock DockPanel.Dock="Top" Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,12" />
+                    <Border DockPanel.Dock="Bottom" Classes="modal-foot">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" FontSize="12.5" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="520"
+                                       IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <Button Content="Vazgeç" Command="{Binding DismissCommand}" />
+                            <Button Classes="primary" Content="{Binding SubmitText}" Command="{Binding PublishCommand}" IsEnabled="{Binding !Busy}" />
+                        </StackPanel>
+                    </Border>
+                    <Grid ColumnDefinitions="380,*" Margin="22,0,22,16">
+                        <ScrollViewer>
+                            <StackPanel Spacing="6" Margin="0,0,18,0">
+                                <Button Classes="flat" Padding="0" Command="{Binding PickCoverCommand}" HorizontalAlignment="Stretch">
+                                    <Border Height="150" Background="{StaticResource Raised}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1" ClipToBounds="True">
+                                        <Grid>
+                                            <TextBlock Text="{Binding CoverText}" Classes="dim" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="10" />
+                                            <Image Source="{Binding Cover}" Stretch="UniformToFill" />
+                                        </Grid>
+                                    </Border>
+                                </Button>
+                                <Grid ColumnDefinitions="Auto,*" Margin="0,4,0,0">
+                                    <Button Classes="flat" Padding="0" Command="{Binding PickIconCommand}" ToolTip.Tip="Simge seç">
+                                        <Border Width="56" Height="56" Background="{StaticResource Raised}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1" ClipToBounds="True">
+                                            <Grid>
+                                                <TextBlock Text="Simge" Classes="dim" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                                            </Grid>
+                                        </Border>
+                                    </Button>
+                                    <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="2">
+                                        <CheckBox Content="Arka planı simge olarak kullan" IsChecked="{Binding BackgroundAsIcon}" />
+                                        <TextBlock Text="Simge seçilmez ve bu işaretlenmezse paket adının baş harfi görünür." Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="Paket adı" Classes="label" Margin="0,6,0,0" />
+                                <TextBox Text="{Binding Name}" MaxLength="40" />
+                                <TextBlock Text="Açıklama" Classes="label" Margin="0,6,0,0" />
+                                <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap" Height="70" MaxLength="600"
+                                         Watermark="Paket hakkında kısa bir açıklama: ne içeriyor, nasıl oynanıyor…" />
+                                <TextBlock Text="Güncelleme notu" Classes="label" Margin="0,6,0,0" IsVisible="{Binding IsUpdate}" />
+                                <TextBox Text="{Binding ChangeNote}" AcceptsReturn="True" TextWrapping="Wrap" Height="60" MaxLength="1000" IsVisible="{Binding IsUpdate}"
+                                         Watermark="Bu güncellemede ne değişti? (isteğe bağlı)" />
+                                <TextBlock Text="Önerilen RAM" Classes="label" Margin="0,6,0,0" />
+                                <ItemsControl ItemsSource="{Binding RamOptions}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:Choice">
+                                            <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:ShareModal)DataContext).PickRamCommand}" CommandParameter="{Binding}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="Paketi kuranların oyunu bu RAM ile açılır; istedikleri zaman değiştirebilirler." Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                                <TextBlock Text="Kimler erişebilir" Classes="label" Margin="0,6,0,0" IsVisible="{Binding HasRoles}" />
+                                <ContentControl Content="{Binding Chooser}" ContentTemplate="{StaticResource RoleChooserTemplate}" IsVisible="{Binding HasRoles}" />
+                            </StackPanel>
+                        </ScrollViewer>
+                        <ScrollViewer Grid.Column="1">
+                            <StackPanel Spacing="8">
+                                <Border IsVisible="{Binding CheckOk}" BorderBrush="{StaticResource Ok}" BorderThickness="1" Padding="10,8">
+                                    <TextBlock Text="✓ Paket denetlendi: iki kez kurulu mod, eksik bağımlılık ya da birbirini ezen dünya modu yok." Foreground="{StaticResource Ok}" FontSize="12.5" TextWrapping="Wrap" />
+                                </Border>
+                                <StackPanel IsVisible="{Binding HasIssues}" Spacing="6">
+                                    <TextBlock Text="{Binding IssuesTitle}" FontWeight="Bold" Foreground="{StaticResource Warn}" />
+                                    <ItemsControl ItemsSource="{Binding Issues}" ItemTemplate="{StaticResource HealthTemplate}" />
+                                </StackPanel>
+                                <TextBlock Text="Pakete dahil edilecekler" FontWeight="Bold" />
+                                <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap"
+                                           Text="Modrinth'te bulunan modlar, kaynak paketleri ve shaderlar dosya yerine bağlantı olarak eklenir; kuranlar Modrinth'ten indirir. Açık kaynak paketleri ve seçili shader kuranlarda da açık gelir. Görev kitabı ve özel tarifler genelde config/ ve kubejs/ içindedir." />
+                                <TextBlock Text="Paylaşılacak dosya bulunamadı." IsVisible="{Binding NoEntries}" Classes="dim" />
+                                <ItemsControl ItemsSource="{Binding Entries}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ShareEntry">
+                                            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,4">
+                                                <CheckBox IsChecked="{Binding Checked}" VerticalAlignment="Top" />
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock>
+                                                        <Run Text="{Binding Label}" FontWeight="Bold" /><Run Text=" " /><Run Text="{Binding Path}" Foreground="{StaticResource Dim}" FontFamily="{StaticResource Mono}" FontSize="12" />
+                                                    </TextBlock>
+                                                    <TextBlock Text="{Binding Note}" IsVisible="{Binding HasNote}" Classes="dim" FontSize="11.5" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="2" Text="{Binding Size}" Classes="dim" FontSize="11.5" Margin="8,2,0,0" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
                 </DockPanel>
             </DataTemplate>
         </ContentControl.DataTemplates>

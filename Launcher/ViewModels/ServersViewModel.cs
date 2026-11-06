@@ -41,13 +41,13 @@ namespace VuluLauncher.ViewModels
         public ServerCard(ServersViewModel owner, JsonElement s, string packLabel)
         {
             _owner = owner;
-            Id = s.Str("id") ?? "";
-            Name = s.Str("name") ?? "";
-            Address = s.Str("address") ?? "";
-            Description = s.Str("description") ?? "";
-            PackId = s.Str("packId");
-            McVersion = s.Str("mcVersion") ?? "";
-            InstanceId = s.Str("instanceId");
+            Id = s.Text("id") ?? "";
+            Name = s.Text("name") ?? "";
+            Address = s.Text("address") ?? "";
+            Description = s.Text("description") ?? "";
+            PackId = s.Text("packId");
+            McVersion = s.Text("mcVersion") ?? "";
+            InstanceId = s.Text("instanceId");
             PackLabel = packLabel;
             _motdFallback = Description.Length > 0 ? Description : "Durum denetleniyor…";
         }
@@ -92,8 +92,8 @@ namespace VuluLauncher.ViewModels
             State = online ? "online" : "offline";
             Players = online ? $"{st.Int("players")}/{st.Int("maxPlayers")}" : "";
             Sample = string.Join(", ", st.Items("sample").Select(x => x.GetString()));
-            Status = online ? string.Join(" · ", new[] { st.Str("version"), $"{st.Int("ping")} ms" }.Where(x => !string.IsNullOrEmpty(x))) : "Kapalı ya da ulaşılamıyor";
-            if (Favicon == null && st.Str("favicon") is { } fav) Favicon = await Images.LoadAsync(fav, 64);
+            Status = online ? string.Join(" · ", new[] { st.Text("version"), $"{st.Int("ping")} ms" }.Where(x => !string.IsNullOrEmpty(x))) : "Kapalı ya da ulaşılamıyor";
+            if (Favicon == null && st.Text("favicon") is { } fav) Favicon = await Images.LoadAsync(fav, 64);
             if (online && st.Items("motdParts").Any())
             {
                 Motd = RichPart.FromMotd(st.Get("motdParts"));
@@ -164,10 +164,10 @@ namespace VuluLauncher.ViewModels
                 Servers.Clear();
                 foreach (var s in servers.Items())
                 {
-                    string? packId = s.Str("packId");
+                    string? packId = s.Text("packId");
                     string label = packId != null
-                        ? packs.Items("packs").FirstOrDefault(p => p.Str("id") == packId).Str("name") ?? "vulu paketi"
-                        : "Vanilla" + (s.Str("mcVersion") is { Length: > 0 } v ? " " + v : "");
+                        ? packs.Items("packs").FirstOrDefault(p => p.Text("id") == packId).Text("name") ?? "vulu paketi"
+                        : "Vanilla" + (s.Text("mcVersion") is { Length: > 0 } v ? " " + v : "");
                     Servers.Add(new ServerCard(this, s, label));
                 }
                 IsEmpty = Servers.Count == 0;
@@ -184,13 +184,13 @@ namespace VuluLauncher.ViewModels
             try { _presence = await _core.Call("community.presence"); }
             catch { return; /* sunucuya ulaşılamazsa eski liste kalır */ }
             var members = await _main.MembersAsync();
-            var others = _presence.Items().Where(p => p.Str("username") != _main.Username)
-                .OrderBy(p => p.Str("state") == "playing" ? 0 : 1).ThenBy(p => p.Str("username"), StringComparer.Create(new System.Globalization.CultureInfo("tr-TR"), true)).ToList();
+            var others = _presence.Items().Where(p => p.Text("username") != _main.Username)
+                .OrderBy(p => p.Text("state") == "playing" ? 0 : 1).ThenBy(p => p.Text("username"), StringComparer.Create(new System.Globalization.CultureInfo("tr-TR"), true)).ToList();
             Online.Clear();
             foreach (var p in others)
             {
-                string name = p.Str("username") ?? "";
-                var person = new PersonItem(name, members.TryGetValue(name, out long v) ? v : 0) { State = p.Str("state") };
+                string name = p.Text("username") ?? "";
+                var person = new PersonItem(name, members.TryGetValue(name, out long v) ? v : 0) { State = p.Text("state") };
                 (person.Game, person.Rest) = Describe(p);
                 Online.Add(person);
             }
@@ -202,13 +202,13 @@ namespace VuluLauncher.ViewModels
         /// <summary>Oyundaysa ("AGLR SMP", "sunucuda · 1 sa 12 dk"); değilse (null, "Çevrimiçi").</summary>
         public (string? Game, string Detail) Describe(JsonElement p)
         {
-            if (p.Str("state") != "playing") return (null, "Çevrimiçi");
-            string game = p.Str("instance") ?? "Minecraft";
-            string? address = p.Str("server");
+            if (p.Text("state") != "playing") return (null, "Çevrimiçi");
+            string game = p.Text("instance") ?? "Minecraft";
+            string? address = p.Text("server");
             var server = address != null ? Servers.FirstOrDefault(s => s.Address == address) : null;
             string where = server != null && server.Name != game ? server.Name : address != null ? "sunucuda" : "";
             string played = "";
-            if (p.Str("since") is { } since && DateTime.TryParse(since, null, System.Globalization.DateTimeStyles.RoundtripKind, out var at))
+            if (p.Text("since") is { } since && DateTime.TryParse(since, null, System.Globalization.DateTimeStyles.RoundtripKind, out var at))
             {
                 int minutes = (int)(DateTime.UtcNow - at.ToUniversalTime()).TotalMinutes;
                 played = minutes < 1 ? "" : minutes < 60 ? $"{minutes} dk" : $"{minutes / 60} sa {minutes % 60} dk";
@@ -220,7 +220,7 @@ namespace VuluLauncher.ViewModels
         {
             foreach (var card in Servers)
             {
-                var here = _presence.Items().Where(p => p.Str("state") == "playing" && p.Str("server") == card.Address).Select(p => p.Str("username")).ToList();
+                var here = _presence.Items().Where(p => p.Text("state") == "playing" && p.Text("server") == card.Address).Select(p => p.Text("username")).ToList();
                 card.FriendsHere = here.Count > 0 ? $"{here.Count} arkadaş burada" : null;
             }
         }
@@ -231,7 +231,7 @@ namespace VuluLauncher.ViewModels
             string? instanceId = s.InstanceId;
             if (instanceId == null && s.PackId != null)
             {
-                try { instanceId = (await _core.Call("packs.install", new { id = s.PackId })).Str("id"); }
+                try { instanceId = (await _core.Call("packs.install", new { id = s.PackId })).Text("id"); }
                 catch (Exception ex) { await _main.AlertAsync("Paket kurulamadı", ex.Message); return; }
             }
             await _main.ShowHomeAsync(instanceId);
@@ -301,7 +301,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 foreach (var p in (await CoreClient.Instance.Call("packs.list")).Items("packs"))
-                    Packs.Add(new Option(p.Str("id") ?? "", $"{p.Str("name")} · {p.Str("mcVersion")}"));
+                    Packs.Add(new Option(p.Text("id") ?? "", $"{p.Text("name")} · {p.Text("mcVersion")}"));
             }
             catch { /* paketsiz (Vanilla) seçilebilir */ }
             Pack = Packs.FirstOrDefault(p => p.Key == (server?.PackId ?? "")) ?? Packs[0];

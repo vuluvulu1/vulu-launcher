@@ -226,6 +226,7 @@
                                 <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
                                 <MenuItem Header="Çoğalt" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DuplicateCommand}" />
                                 <MenuItem Header=".mrpack olarak dışa aktar" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ExportMrpackCommand}" />
+                                <MenuItem Header="{Binding ShareText}" IsVisible="{Binding CanShare}" Command="{Binding ShareCommand}" Foreground="{StaticResource Accent}" />
                                 <Separator IsVisible="{Binding SelectedIsCustom}" />
                                 <MenuItem Header="Sil" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DeleteInstanceCommand}" Classes="danger" />
                             </MenuFlyout>

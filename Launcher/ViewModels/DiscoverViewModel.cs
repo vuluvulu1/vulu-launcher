@@ -133,14 +133,14 @@ namespace VuluLauncher.ViewModels
             }
             int revision = c.Int("revision");
             var added = Cap(c.Items("added").Select(a => "+  " + a.GetString()));
-            var updated = Cap(c.Items("updated").Select(u => $"↑  {u.Str("title")}  {u.Str("from")} → {u.Str("to")}"));
+            var updated = Cap(c.Items("updated").Select(u => $"↑  {u.Text("title")}  {u.Text("from")} → {u.Text("to")}"));
             var removed = Cap(c.Items("removed").Select(r => "−  " + r.GetString()));
-            string? note = c.Str("note");
+            string? note = c.Text("note");
             bool files = c.Bool("filesChanged");
             bool empty = string.IsNullOrEmpty(note) && added.Count == 0 && updated.Count == 0 && removed.Count == 0 && !files;
-            string date = c.Str("at") is { } at && DateTime.TryParse(at, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var d)
+            string date = c.Text("at") is { } at && DateTime.TryParse(at, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var d)
                 ? d.ToLocalTime().ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")) : "";
-            return new ChangeEntry($"rev {revision}", string.Join(" · ", new[] { date, c.Str("by") }.Where(s => !string.IsNullOrEmpty(s))),
+            return new ChangeEntry($"rev {revision}", string.Join(" · ", new[] { date, c.Text("by") }.Where(s => !string.IsNullOrEmpty(s))),
                 note, added, updated, removed, files, empty ? (revision == 1 ? "İlk sürüm." : "İçerik değişmedi.") : null);
         }
     }
@@ -153,20 +153,20 @@ namespace VuluLauncher.ViewModels
         public PackCard(PacksViewModel owner, JsonElement p)
         {
             _owner = owner;
-            Id = p.Str("id") ?? "";
-            Name = p.Str("name") ?? "";
-            Description = p.Str("description") ?? "";
+            Id = p.Text("id") ?? "";
+            Name = p.Text("name") ?? "";
+            Description = p.Text("description") ?? "";
             Revision = p.Int("revision");
             var installed = p.Get("installed");
-            InstalledId = installed.ValueKind == JsonValueKind.Object ? installed.Str("instanceId") : null;
+            InstalledId = installed.ValueKind == JsonValueKind.Object ? installed.Text("instanceId") : null;
             InstalledRevision = installed.Int("revision");
-            string loader = p.Str("loader") == "vanilla" ? "Vanilla" : $"{Names.Loader(p.Str("loader"))} {p.Str("loaderVersion")}".Trim();
-            Meta = string.Join(" · ", new[] { p.Str("author"), Names.Ago(p.Str("updatedAt")) }.Where(s => !string.IsNullOrEmpty(s)));
-            DetailMeta = string.Join(" · ", new[] { p.Str("author") is { Length: > 0 } a ? "Paylaşan: " + a : null, Names.Ago(p.Str("updatedAt")), $"rev {Revision}" }
+            string loader = p.Text("loader") == "vanilla" ? "Vanilla" : $"{Names.Loader(p.Text("loader"))} {p.Text("loaderVersion")}".Trim();
+            Meta = string.Join(" · ", new[] { p.Text("author"), Names.Ago(p.Text("updatedAt")) }.Where(s => !string.IsNullOrEmpty(s)));
+            DetailMeta = string.Join(" · ", new[] { p.Text("author") is { Length: > 0 } a ? "Paylaşan: " + a : null, Names.Ago(p.Text("updatedAt")), $"rev {Revision}" }
                 .Where(s => !string.IsNullOrEmpty(s)));
 
             int mods = p.Int("modCount");
-            Tags.Add(new Tag("Minecraft " + p.Str("mcVersion")));
+            Tags.Add(new Tag("Minecraft " + p.Text("mcVersion")));
             Tags.Add(new Tag(loader));
             if (mods > 0) Tags.Add(new Tag(mods + " mod"));
 
@@ -184,7 +184,10 @@ namespace VuluLauncher.ViewModels
 
             Changelog = p.Items("changelog").Select(ChangeEntry.From).ToList();
             OpenFeedback = p.Int("openFeedback");
-            _ = LoadCoverAsync(p.Str("coverUrl"));
+            RoleIds = p.Items("roles").Select(r => r.GetString() ?? "").ToList();
+            var names = owner.Roles.Items().Where(r => RoleIds.Contains(r.Text("id") ?? "")).Select(r => r.Text("name")).ToList();
+            if (owner.IsAdmin && RoleIds.Count > 0) AllTags.Add(new Tag("🔒 " + (names.Count > 0 ? string.Join(", ", names) : "Kısıtlı"), true));
+            _ = LoadCoverAsync(p.Text("coverUrl"));
         }
 
         public string Id { get; }
@@ -203,6 +206,8 @@ namespace VuluLauncher.ViewModels
         public List<ChangeEntry> Changelog { get; }
         public bool IsAdmin => _owner.IsAdmin;
         public int OpenFeedback { get; }
+        public List<string> RoleIds { get; }
+        public bool CanEditAccess => _owner.IsAdmin && _owner.Roles.ValueKind == JsonValueKind.Array;
         public bool FeedbackEnabled => _owner.FeedbackEnabled;
         public string FeedbackText => OpenFeedback > 0 ? $"Geri bildirim ({OpenFeedback})" : "Geri bildirim";
 
@@ -232,6 +237,8 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private bool _isEmpty;
         [ObservableProperty] private bool _isAdmin;
         [ObservableProperty] private bool _feedbackEnabled;
+        /// <summary>Roller (yalnızca admin için gelir): paketlerin "Kimler erişebilir" seçimi.</summary>
+        public JsonElement Roles { get; private set; }
         [ObservableProperty] private int _generalFeedback;
         public string RequestText => GeneralFeedback > 0 ? $"Paket isteği ({GeneralFeedback})" : "Paket isteği";
         partial void OnGeneralFeedbackChanged(int value) => OnPropertyChanged(nameof(RequestText));
@@ -255,6 +262,7 @@ namespace VuluLauncher.ViewModels
                 var result = await _core.Call("packs.list");
                 IsAdmin = result.Bool("isAdmin");
                 FeedbackEnabled = result.Bool("feedbackEnabled");
+                Roles = result.Get("roles").Clone();
                 GeneralFeedback = result.Int("generalFeedback");
                 Cards.Clear();
                 foreach (var p in result.Items("packs")) Cards.Add(new PackCard(this, p));
@@ -290,7 +298,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var result = await _core.Call(card.IsOutdated ? "packs.update" : "packs.install", new { id = card.Id });
-                await main.ShowHomeAsync(result.Str("id"));
+                await main.ShowHomeAsync(result.Text("id"));
             }
             catch (Exception ex)
             {
@@ -306,6 +314,9 @@ namespace VuluLauncher.ViewModels
             {
                 case "act": await ActAsync(card); break;
                 case "delete": await DeleteAsync(card); break;
+                case "access":
+                    if (await main.ShowAsync(new PackAccessModal(card.Id, card.Name, Roles, card.RoleIds)) is true) await LoadAsync();
+                    break;
                 case "feedback": await main.OpenFeedbackAsync(card.Id, card.Name); await LoadAsync(); break;
                 case "send": await main.Social.ShareCardAsync(new { type = "pack", id = card.Id, name = card.Name }, $"{card.Name} paketini gönder"); break;
             }
@@ -332,13 +343,13 @@ namespace VuluLauncher.ViewModels
         public ContentHit(ContentSearchViewModel owner, JsonElement h, bool curseForge)
         {
             _owner = owner;
-            Id = h.Str("id") ?? "";
-            Slug = h.Str("slug") ?? "";
-            Type = h.Str("type") ?? "mod";
-            Title = h.Str("title") ?? "";
-            Author = h.Str("author") ?? "";
-            Description = h.Str("description") ?? "";
-            PageUrl = h.Str("pageUrl");
+            Id = h.Text("id") ?? "";
+            Slug = h.Text("slug") ?? "";
+            Type = h.Text("type") ?? "mod";
+            Title = h.Text("title") ?? "";
+            Author = h.Text("author") ?? "";
+            Description = h.Text("description") ?? "";
+            PageUrl = h.Text("pageUrl");
             ManualOnly = h.Bool("manualOnly");
             GameVersions = h.Items("gameVersions").Select(v => v.GetString() ?? "").ToList();
             Loaders = h.Items("loaders").Select(v => v.GetString() ?? "").ToList();
@@ -346,7 +357,7 @@ namespace VuluLauncher.ViewModels
 
             var meta = new List<string> { "↓ " + Names.Count(h.Num("downloads")) };
             if (h.Num("follows") > 0) meta.Add((curseForge ? "👍 " : "♥ ") + Names.Count(h.Num("follows")));
-            if (Names.Ago(h.Str("updated")) is { Length: > 0 } ago) meta.Add("Güncelleme: " + ago);
+            if (Names.Ago(h.Text("updated")) is { Length: > 0 } ago) meta.Add("Güncelleme: " + ago);
             Meta = string.Join("   ", meta);
 
             bool isPack = Type == "modpack";
@@ -357,7 +368,7 @@ namespace VuluLauncher.ViewModels
 
             _buttonText = isPack ? "Instance olarak kur" : Installed ? "Güncelle" : "Kur";
             _isPrimary = !Installed || isPack;
-            _ = LoadIconAsync(h.Str("iconUrl"));
+            _ = LoadIconAsync(h.Text("iconUrl"));
         }
 
         public string Id { get; }
@@ -579,7 +590,7 @@ namespace VuluLauncher.ViewModels
             var selected = SelectedCategories;
             foreach (var group in data.Items("categories"))
             {
-                string header = group.Str("header") ?? "";
+                string header = group.Text("header") ?? "";
                 var chips = group.Items("names").Select(n => new CategoryChip(n.GetString() ?? "") { IsSelected = selected.Contains(n.GetString() ?? "") }).ToList();
                 Groups.Add(new CategoryGroup(Headers.TryGetValue(header, out var h) ? h : header, chips));
             }
@@ -689,10 +700,10 @@ namespace VuluLauncher.ViewModels
                 {
                     hit.ButtonText = "Kuruluyor…";
                     var pack = await _core.Call(Command("installModpack"), new { projectId = hit.Id, versionId });
-                    if (!pack.Bool("success")) throw new InvalidOperationException(pack.Str("error") ?? "Kurulamadı.");
+                    if (!pack.Bool("success")) throw new InvalidOperationException(pack.Text("error") ?? "Kurulamadı.");
                     hit.ButtonText = original;
-                    await _main.ShowHomeAsync(pack.Str("id"));
-                    if (pack.Items("manual").Any()) await ShowManualAsync(pack.Get("manual"), pack.Str("id"));
+                    await _main.ShowHomeAsync(pack.Text("id"));
+                    if (pack.Items("manual").Any()) await ShowManualAsync(pack.Get("manual"), pack.Text("id"));
                     return;
                 }
 
@@ -710,7 +721,7 @@ namespace VuluLauncher.ViewModels
                 hit.ButtonText = "Kuruluyor…";
 
                 var result = await _core.Call(Command("install"), new { instanceId, projectId = hit.Id, versionId });
-                if (!result.Bool("success")) throw new InvalidOperationException(result.Str("error") ?? "Kurulamadı.");
+                if (!result.Bool("success")) throw new InvalidOperationException(result.Text("error") ?? "Kurulamadı.");
                 var installed = result.Items("installed").Select(i => i.GetString()).ToList();
                 hit.ButtonText = installed.Count > 0 ? "Kuruldu ✓" : original;
                 hit.IsPrimary = false;

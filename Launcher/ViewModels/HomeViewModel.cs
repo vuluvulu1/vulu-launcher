@@ -40,23 +40,23 @@ namespace VuluLauncher.ViewModels
 
         public static InstanceItem From(JsonElement e) => new()
         {
-            Id = e.Str("id") ?? "",
-            Kind = e.Str("kind") ?? "custom",
-            Name = e.Str("name") ?? "",
-            Description = e.Str("description") ?? "",
-            McVersion = e.Str("mcVersion") ?? "",
-            Loader = e.Str("loader") ?? "",
-            LoaderVersion = e.Str("loaderVersion"),
+            Id = e.Text("id") ?? "",
+            Kind = e.Text("kind") ?? "custom",
+            Name = e.Text("name") ?? "",
+            Description = e.Text("description") ?? "",
+            McVersion = e.Text("mcVersion") ?? "",
+            Loader = e.Text("loader") ?? "",
+            LoaderVersion = e.Text("loaderVersion"),
             RecommendedRamGb = e.Int("recommendedRamGb", 4),
-            LogoUrl = e.Str("logo"),
-            BackgroundUrl = e.Str("background"),
+            LogoUrl = e.Text("logo"),
+            BackgroundUrl = e.Text("background"),
             // Kişisel instance'ın küçük resmi yoksa Modrinth/CurseForge simgesi kullanılır
-            ThumbnailUrl = e.Str("thumbnail") ?? e.Str("iconUrl"),
-            CustomIconUrl = e.Str("customIcon"),
+            ThumbnailUrl = e.Text("thumbnail") ?? e.Text("iconUrl"),
+            CustomIconUrl = e.Text("customIcon"),
             HasCustomLogo = e.Bool("hasCustomLogo"),
             HasCustomBackground = e.Bool("hasCustomBackground"),
             BackgroundAsIcon = e.Get("backgroundAsIcon").ValueKind != JsonValueKind.False,
-            SharedPackId = e.Str("sharedPackId"),
+            SharedPackId = e.Text("sharedPackId"),
         };
     }
 
@@ -212,10 +212,10 @@ namespace VuluLauncher.ViewModels
             _announcementTimer.Start();
             JsonElement a;
             try { a = (await _core.Call("announcement.get")).Get("announcement"); } catch { return; }
-            if (a.ValueKind != JsonValueKind.Object || UiState.Get("announcementDismissed") == a.Str("id")) { Announcement = null; return; }
-            _announcementId = a.Str("id");
-            AnnouncementMeta = string.Join(" · ", new[] { a.Str("author"), Names.Ago(a.Str("createdAt")) }.Where(x => !string.IsNullOrEmpty(x)));
-            Announcement = a.Str("text");
+            if (a.ValueKind != JsonValueKind.Object || UiState.Get("announcementDismissed") == a.Text("id")) { Announcement = null; return; }
+            _announcementId = a.Text("id");
+            AnnouncementMeta = string.Join(" · ", new[] { a.Text("author"), Names.Ago(a.Text("createdAt")) }.Where(x => !string.IsNullOrEmpty(x)));
+            Announcement = a.Text("text");
         }
 
         [RelayCommand]
@@ -302,6 +302,8 @@ namespace VuluLauncher.ViewModels
             ModCount = Size = Updated = PlayTime = "–";
             Installed = null;
             OnPropertyChanged(nameof(SelectedIsCustom));
+            OnPropertyChanged(nameof(CanShare));
+            OnPropertyChanged(nameof(ShareText));
             if (value == null) { Refresh(); return; }
 
             UiState.Set("lastPack", value.Id);
@@ -318,6 +320,21 @@ namespace VuluLauncher.ViewModels
         }
 
         public bool SelectedIsCustom => Selected?.IsCustom == true;
+        /// <summary>Admin kendi instance'ını vulu Packs'te paylaşabilir (ya da paylaşımını güncelleyebilir).</summary>
+        public bool CanShare => SelectedIsCustom && Main?.IsAdmin == true;
+        public string ShareText => Selected?.SharedPackId != null ? "Paylaşımı güncelle" : "vulu Packs'te paylaş";
+
+        [RelayCommand]
+        private async Task Share()
+        {
+            if (Selected is not { IsCustom: true } s) return;
+            JsonElement info;
+            try { info = await _core.Call("packs.shareInfo", new { instanceId = s.Id }); }
+            catch (Exception ex) { await Main.AlertAsync("Paylaşılamıyor", ex.Message); return; }
+            if (await Main.ShowAsync(new ShareModal(Main, s, info)) is not true) return;
+            await ReloadInstancesAsync(s.Id);
+            AppendLog($"{s.Name} paylaşıldı. vulu Packs sekmesinde görünüyor.", "ok");
+        }
 
         partial void OnRamGbChanged(int value)
         {
@@ -359,7 +376,7 @@ namespace VuluLauncher.ViewModels
             Installed = d.Bool("installed");
             ModCount = d.Int("modCount").ToString(CultureInfo.InvariantCulture);
             Size = FormatSize(d.Num("sizeMb"));
-            Updated = d.Str("updatedAt") is { } u && DateTime.TryParse(u, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at)
+            Updated = d.Text("updatedAt") is { } u && DateTime.TryParse(u, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at)
                 ? FormatAgo(at) : "–";
             PlayTime = FormatPlayTime(d.Get("playTime").Num("seconds"));
             Refresh();
@@ -424,24 +441,24 @@ namespace VuluLauncher.ViewModels
             {
                 case "worlds":
                     Worlds.Clear();
-                    foreach (var w in data.Items("worlds").OrderByDescending(w => w.Str("lastPlayed")).Take(8))
-                        Worlds.Add(new WorldTile(w.Str("name") ?? "", Names.Ago(w.Str("lastPlayed")) + (w.Items("backups").Count() is > 0 and var n ? $" · {n} yedek" : ""), w.Str("icon")));
+                    foreach (var w in data.Items("worlds").OrderByDescending(w => w.Text("lastPlayed")).Take(8))
+                        Worlds.Add(new WorldTile(w.Text("name") ?? "", Names.Ago(w.Text("lastPlayed")) + (w.Items("backups").Count() is > 0 and var n ? $" · {n} yedek" : ""), w.Text("icon")));
                     if (Worlds.Count == 0) InfoMessage = "Henüz dünya yok. Oyunu açıp bir dünya oluşturunca burada görünür.";
                     break;
                 case "shots":
                     Shots.Clear();
-                    foreach (var s in data.Items("shots").Take(10)) Shots.Add(new ShotTile(s.Str("url")));
+                    foreach (var s in data.Items("shots").Take(10)) Shots.Add(new ShotTile(s.Text("url")));
                     ShotsMore = $"Tümü ({data.Int("total")}) ›";
                     if (Shots.Count == 0) InfoMessage = "Henüz ekran görüntüsü yok. Oyunda F2 tuşuna basınca burada görünür.";
                     break;
                 case "content":
                     ContentTags.Clear();
                     var items = data.Items("items").ToList();
-                    int Count(string type) => items.Count(i => i.Str("type") == type);
+                    int Count(string type) => items.Count(i => i.Text("type") == type);
                     ContentSummary = string.Join(" · ", new[] { (Count("mod"), "mod"), (Count("resourcepack"), "kaynak paketi"), (Count("shader"), "shader") }
                         .Where(x => x.Item1 > 0).Select(x => $"{x.Item1} {x.Item2}"));
-                    var mods = items.Where(i => i.Str("type") == "mod").ToList();
-                    foreach (var m in mods.Take(18)) ContentTags.Add(new Tag(m.Str("title") ?? ""));
+                    var mods = items.Where(i => i.Text("type") == "mod").ToList();
+                    foreach (var m in mods.Take(18)) ContentTags.Add(new Tag(m.Text("title") ?? ""));
                     if (mods.Count > 18) ContentTags.Add(new Tag($"+{mods.Count - 18}"));
                     if (items.Count == 0) InfoMessage = "Bu instance'ta henüz mod yok.";
                     break;
@@ -534,7 +551,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var result = await _core.Call("instances.duplicate", new { id = s.Id, name });
-                await ReloadInstancesAsync(result.Str("id"));
+                await ReloadInstancesAsync(result.Text("id"));
             }
             catch (Exception ex) { await Main.AlertAsync("Çoğaltılamadı", ex.Message); }
         }
@@ -546,7 +563,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var result = await _core.Call("instances.exportMrpack", new { id = s.Id });
-                AppendLog("Kaydedildi: " + result.Str("path"), "ok");
+                AppendLog("Kaydedildi: " + result.Text("path"), "ok");
             }
             catch (Exception ex) { await Main.AlertAsync("Dışa aktarılamadı", ex.Message); }
         }
@@ -569,7 +586,7 @@ namespace VuluLauncher.ViewModels
         private async Task UpdatePack()
         {
             if (Selected is not { } s || !_packUpdates.TryGetValue(s.Id, out var u)) return;
-            await Main.Discover.Packs.UpdateByIdAsync(u.Str("packId") ?? "");
+            await Main.Discover.Packs.UpdateByIdAsync(u.Text("packId") ?? "");
             await RefreshPackUpdatesAsync();
         }
 
@@ -580,7 +597,7 @@ namespace VuluLauncher.ViewModels
 
         private void ApplyPackUpdates(JsonElement result)
         {
-            _packUpdates = result.Items("updates").ToDictionary(u => u.Str("instanceId") ?? "", u => u.Clone());
+            _packUpdates = result.Items("updates").ToDictionary(u => u.Text("instanceId") ?? "", u => u.Clone());
             PackUpdateCount = _packUpdates.Count;
             foreach (var i in Instances) i.HasUpdate = _packUpdates.ContainsKey(i.Id);
             PackUpdateText = Selected != null && _packUpdates.TryGetValue(Selected.Id, out var u) ? $"rev {u.Int("from")} → rev {u.Int("to")}" : null;
@@ -669,7 +686,7 @@ namespace VuluLauncher.ViewModels
                         await _core.Call("mods.installMissing", new
                         {
                             instanceId = instance.Id,
-                            items = missing.Items().Where(m => m.Str("projectId") != null).Select(m => new { source = m.Str("source") ?? "modrinth", projectId = m.Str("projectId") }).ToList(),
+                            items = missing.Items().Where(m => m.Text("projectId") != null).Select(m => new { source = m.Text("source") ?? "modrinth", projectId = m.Text("projectId") }).ToList(),
                         });
                         RefreshDetails();
                     }
@@ -680,7 +697,7 @@ namespace VuluLauncher.ViewModels
                 return;
             }
 
-            if (!result.Bool("started") && result.Str("error") is { Length: > 0 } error)
+            if (!result.Bool("started") && result.Text("error") is { Length: > 0 } error)
                 AppendLog(error, "error");
         }
 
@@ -731,7 +748,7 @@ namespace VuluLauncher.ViewModels
             {
                 case "log":
                     foreach (var line in data.Items())
-                        AppendLog(line.Str("text") ?? "", line.Str("level") ?? "info", line.Bool("replace"), line.Str("time"));
+                        AppendLog(line.Text("text") ?? "", line.Text("level") ?? "info", line.Bool("replace"), line.Text("time"));
                     break;
                 case "gameExited":
                     GameRunning = false;

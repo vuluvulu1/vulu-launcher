@@ -56,7 +56,7 @@ namespace VuluLauncher.Native
         public static JsonElement Get(this JsonElement e, string name) =>
             e.ValueKind == JsonValueKind.Object && e.TryGetProperty(name, out var v) ? v : default;
 
-        public static string? Str(this JsonElement e, string name) =>
+        public static string? Text(this JsonElement e, string name) =>
             e.Get(name) is { ValueKind: JsonValueKind.String } v ? v.GetString() : null;
 
         public static int Int(this JsonElement e, string name, int fallback = 0) =>

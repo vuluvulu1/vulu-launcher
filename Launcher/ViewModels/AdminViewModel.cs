@@ -22,12 +22,12 @@ namespace VuluLauncher.ViewModels
     internal sealed partial class AdminUserRow(AdminViewModel owner, JsonElement u, List<AdminRole> roles, string me) : ObservableObject
     {
         public JsonElement Data { get; } = u.Clone();
-        public string Id { get; } = u.Str("id") ?? "";
-        public string Username { get; } = u.Str("username") ?? "";
+        public string Id { get; } = u.Text("id") ?? "";
+        public string Username { get; } = u.Text("username") ?? "";
         public bool IsAdmin { get; } = u.Bool("isAdmin");
         public bool IsActive { get; } = u.Bool("isActive");
-        public bool IsSelf { get; } = u.Str("username") == me;
-        public string Meta { get; } = string.Join(" · ", new[] { u.Str("email"), u.Str("lastSeenAt") is { } s ? "Son görülme: " + Names.Ago(s) : "Henüz giriş yapmadı" }.Where(x => !string.IsNullOrEmpty(x)));
+        public bool IsSelf { get; } = u.Text("username") == me;
+        public string Meta { get; } = string.Join(" · ", new[] { u.Text("email"), u.Text("lastSeenAt") is { } s ? "Son görülme: " + Names.Ago(s) : "Henüz giriş yapmadı" }.Where(x => !string.IsNullOrEmpty(x)));
         public List<AdminRole> Roles { get; } = u.Items("roles").Select(r => roles.FirstOrDefault(x => x.Id == r.GetString())).OfType<AdminRole>().ToList();
         [RelayCommand] private Task Edit() => owner.EditUserAsync(this);
         [RelayCommand] private Task Delete() => owner.DeleteUserAsync(this);
@@ -35,12 +35,12 @@ namespace VuluLauncher.ViewModels
 
     internal sealed partial class RegistrationRow(AdminViewModel owner, JsonElement r) : ObservableObject
     {
-        public string Id { get; } = r.Str("id") ?? "";
-        public string Username { get; } = r.Str("username") ?? "";
-        public string Email { get; } = r.Str("email") ?? "";
+        public string Id { get; } = r.Text("id") ?? "";
+        public string Username { get; } = r.Text("username") ?? "";
+        public string Email { get; } = r.Text("email") ?? "";
         // Alanı olmayan (eski sunucu) istekler doğrulanmış sayılır
         public bool Verified { get; } = r.Get("emailVerified").ValueKind != JsonValueKind.False;
-        public string Meta => string.Join(" · ", new[] { Email, Verified ? null : "e-posta doğrulanmadı", r.Str("createdAt") is { } c ? "İstek: " + Names.Ago(c) : null }.Where(x => !string.IsNullOrEmpty(x)));
+        public string Meta => string.Join(" · ", new[] { Email, Verified ? null : "e-posta doğrulanmadı", r.Text("createdAt") is { } c ? "İstek: " + Names.Ago(c) : null }.Where(x => !string.IsNullOrEmpty(x)));
         [ObservableProperty] private bool _busy;
         [RelayCommand] private Task Approve() => owner.DecideAsync(this, true);
         [RelayCommand] private Task Reject() => owner.DecideAsync(this, false);
@@ -48,12 +48,12 @@ namespace VuluLauncher.ViewModels
 
     internal sealed partial class SongRow(AdminViewModel owner, JsonElement s) : ObservableObject
     {
-        public string Id { get; } = s.Str("id") ?? "";
+        public string Id { get; } = s.Text("id") ?? "";
         public string Size { get; } = SettingsViewModel.FormatBytes(s.Num("size"));
-        public string SavedTitle { get; set; } = s.Str("title") ?? "";
-        public string SavedArtist { get; set; } = s.Str("artist") ?? "";
-        [ObservableProperty] private string _title = s.Str("title") ?? "";
-        [ObservableProperty] private string _artist = s.Str("artist") ?? "";
+        public string SavedTitle { get; set; } = s.Text("title") ?? "";
+        public string SavedArtist { get; set; } = s.Text("artist") ?? "";
+        [ObservableProperty] private string _title = s.Text("title") ?? "";
+        [ObservableProperty] private string _artist = s.Text("artist") ?? "";
         [RelayCommand] private Task Save() => owner.SaveSongAsync(this);
         [RelayCommand] private Task Delete() => owner.DeleteSongAsync(this);
     }
@@ -168,23 +168,23 @@ namespace VuluLauncher.ViewModels
             int launcherFeedback = counts.Int("launcher");
             var packList = packs.Items("packs").ToList();
             int packFeedback = packList.Sum(p => p.Int("openFeedback"));
-            var online = presence.Items().Where(p => p.Str("username") != main.Username).ToList();
-            int playing = online.Count(p => p.Str("state") == "playing");
+            var online = presence.Items().Where(p => p.Text("username") != main.Username).ToList();
+            int playing = online.Count(p => p.Text("state") == "playing");
             var servers = main.Servers.Servers;
 
             Cards.Clear();
             Cards.Add(new AdminCard("Kayıt istekleri", _registrations.Count.ToString(CultureInfo.InvariantCulture),
-                _registrations.Count > 0 ? string.Join(", ", _registrations.Take(3).Select(r => r.Str("username"))) + (_registrations.Count > 3 ? "…" : "") : "Bekleyen istek yok.",
+                _registrations.Count > 0 ? string.Join(", ", _registrations.Take(3).Select(r => r.Text("username"))) + (_registrations.Count > 3 ? "…" : "") : "Bekleyen istek yok.",
                 _registrations.Count > 0, _registrations.Count > 0 ? "İncele" : null, () => SelectAsync("registrations")));
             Cards.Add(new AdminCard("Launcher geri bildirimleri", launcherFeedback.ToString(CultureInfo.InvariantCulture),
                 launcherFeedback > 0 ? "Açık hata bildirimi ya da öneri var." : "Açık bildirim yok.", launcherFeedback > 0, "Aç", () => main.OpenFeedbackAsync("launcher")));
             Cards.Add(new AdminCard("Paket geri bildirimleri", packFeedback.ToString(CultureInfo.InvariantCulture),
-                packFeedback > 0 ? string.Join(", ", packList.Where(p => p.Int("openFeedback") > 0).Select(p => $"{p.Str("name")} ({p.Int("openFeedback")})")) : "Açık bildirim yok.",
+                packFeedback > 0 ? string.Join(", ", packList.Where(p => p.Int("openFeedback") > 0).Select(p => $"{p.Text("name")} ({p.Int("openFeedback")})")) : "Açık bildirim yok.",
                 packFeedback > 0, "Paketlere git", () => { main.SelectedTab = main.Tabs[1]; return Task.CompletedTask; }));
             Cards.Add(new AdminCard("Çevrimiçi", online.Count.ToString(CultureInfo.InvariantCulture),
                 online.Count > 0 ? $"{playing} kişi oyunda · {members.Count} üye" : $"{members.Count} üye, şu an kimse çevrimiçi değil.", false, "Kullanıcılar", () => SelectAsync("users")));
             Cards.Add(new AdminCard("Duyuru", announcement.ValueKind == JsonValueKind.Object ? "Yayında" : "Yok",
-                announcement.ValueKind == JsonValueKind.Object ? announcement.Str("text") ?? "" : "Oyna sayfasının üstünde herkese bir mesaj gösterebilirsin.",
+                announcement.ValueKind == JsonValueKind.Object ? announcement.Text("text") ?? "" : "Oyna sayfasının üstünde herkese bir mesaj gösterebilirsin.",
                 false, announcement.ValueKind == JsonValueKind.Object ? "Düzenle" : "Duyuru yaz", () => SelectAsync("announcement")));
             Cards.Add(new AdminCard("Sunucular", servers.Count.ToString(CultureInfo.InvariantCulture),
                 servers.Count == 0 ? "Henüz sunucu eklenmemiş." : $"{servers.Count(s => s.IsOnline)} açık · {servers.Sum(s => int.TryParse(s.Players.Split('/')[0], out int n) ? n : 0)} oyuncu",
@@ -206,7 +206,7 @@ namespace VuluLauncher.ViewModels
         private async Task LoadRoleListAsync()
         {
             _roles = (await _core.Call("admin.roles")).Items()
-                .Select(r => new AdminRole(r.Str("id") ?? "", r.Str("name") ?? "", r.Str("color") ?? "#c9a992", r.Int("members"), r.Int("packs"))).ToList();
+                .Select(r => new AdminRole(r.Text("id") ?? "", r.Text("name") ?? "", r.Text("color") ?? "#c9a992", r.Int("members"), r.Int("packs"))).ToList();
         }
 
         [RelayCommand] private Task AddUser() => EditUserAsync(null);
@@ -276,9 +276,9 @@ namespace VuluLauncher.ViewModels
             AnnouncementNote = null;
             var a = (await _core.Call("announcement.get")).Get("announcement");
             if (a.ValueKind != JsonValueKind.Object) { CurrentAnnouncement = null; _currentAnnouncementId = null; return; }
-            _currentAnnouncementId = a.Str("id");
-            CurrentAnnouncement = a.Str("text");
-            CurrentAnnouncementMeta = "Şu anki duyuru" + (a.Str("expiresAt") is { } exp && DateTime.TryParse(exp, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at)
+            _currentAnnouncementId = a.Text("id");
+            CurrentAnnouncement = a.Text("text");
+            CurrentAnnouncementMeta = "Şu anki duyuru" + (a.Text("expiresAt") is { } exp && DateTime.TryParse(exp, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at)
                 ? $" · {at.ToLocalTime().ToString("d MMMM HH:mm", CultureInfo.GetCultureInfo("tr-TR"))} tarihine kadar" : "");
         }
 
@@ -341,8 +341,8 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var updated = await _core.Call("radio.updateSong", new { id = song.Id, title = song.Title, artist = song.Artist });
-                song.SavedTitle = updated.Str("title") ?? song.Title;
-                song.SavedArtist = updated.Str("artist") ?? song.Artist;
+                song.SavedTitle = updated.Text("title") ?? song.Title;
+                song.SavedArtist = updated.Text("artist") ?? song.Artist;
             }
             catch (Exception ex)
             {
@@ -373,8 +373,8 @@ namespace VuluLauncher.ViewModels
                 : ratio >= 0.7 ? "Alanın çoğu doldu. Büyük paketleri ve eski ekran görüntülerini gözden geçirmek iyi olabilir." : null;
             StorageParts.Clear();
             foreach (var p in parts)
-                StorageParts.Add(new StoragePart(p.Str("label") ?? "", SettingsViewModel.FormatBytes(p.Num("bytes")),
-                    new SolidColorBrush(Color.Parse(StorageColors.GetValueOrDefault(p.Str("key") ?? "", "#A1958A"))), p.Num("bytes") / limit));
+                StorageParts.Add(new StoragePart(p.Text("label") ?? "", SettingsViewModel.FormatBytes(p.Num("bytes")),
+                    new SolidColorBrush(Color.Parse(StorageColors.GetValueOrDefault(p.Text("key") ?? "", "#A1958A"))), p.Num("bytes") / limit));
             StorageParts.Add(new StoragePart("Diğer (kullanıcılar, paket listesi, dizinler)", SettingsViewModel.FormatBytes(Math.Max(0, used - known)),
                 new SolidColorBrush(Color.Parse("#A1958A")), Math.Max(0, used - known) / limit));
         }
@@ -390,7 +390,7 @@ namespace VuluLauncher.ViewModels
             _user = user;
             IsSelf = user?.Username == me;
             _username = user?.Username ?? "";
-            _email = user?.Data.Str("email") ?? "";
+            _email = user?.Data.Text("email") ?? "";
             _isAdmin = user?.IsAdmin ?? false;
             _isActive = user?.IsActive ?? true;
             var mine = user?.Data.Items("roles").Select(r => r.GetString()).ToHashSet() ?? new HashSet<string?>();

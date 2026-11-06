@@ -112,7 +112,7 @@ namespace VuluLauncher.ViewModels
             async Task Load()
             {
                 if (_genres.Count == 0)
-                    _genres = (await _core.Call("radio.genres")).Items().Select(g => (g.Str("id") ?? "", g.Str("label") ?? "")).ToList();
+                    _genres = (await _core.Call("radio.genres")).Items().Select(g => (g.Text("id") ?? "", g.Text("label") ?? "")).ToList();
                 if (_genres.Any(g => g.Id == Genre)) { await LoadStationsAsync(Genre); return; }
                 try { await LoadStationsAsync("vulu"); } catch { _stations = new(); }
                 if (_stations.Count == 0) await LoadStationsAsync("lofi");
@@ -124,7 +124,7 @@ namespace VuluLauncher.ViewModels
             Genre = genre;
             UiState.Set("radioGenre", genre);
             _stations = (await _core.Call("radio.stations", new { genre })).Items()
-                .Select(s => new RadioStation(s.Str("id") ?? "", s.Str("name") ?? "", s.Str("url") ?? "", s.Str("kind") ?? "station", s.Str("country"))).ToList();
+                .Select(s => new RadioStation(s.Text("id") ?? "", s.Text("name") ?? "", s.Text("url") ?? "", s.Text("kind") ?? "station", s.Text("country"))).ToList();
             string? saved = UiState.Get("radioStation");
             _index = Math.Max(0, _stations.FindIndex(s => s.Id == saved));
         }
@@ -156,7 +156,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 // vulu Radyo şarkıları bir kez indirilip yerel dosyadan çalınır; istasyonlar doğrudan yayından
-                url = station.Kind == "song" ? (await _core.Call("radio.songFile", new { id = station.Id })).Str("url") ?? "" : station.Url;
+                url = station.Kind == "song" ? (await _core.Call("radio.songFile", new { id = station.Id })).Text("url") ?? "" : station.Url;
             }
             catch { if (token == _playToken) OnFailed(); return; }
             if (token != _playToken) return;   // bu arada başka bir istasyon seçildi
@@ -259,7 +259,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 return JsonSerializer.Deserialize<List<JsonElement>>(UiState.Get("radioFavs") ?? "[]")!
-                    .Select(f => (f.Str("genre") ?? "", f.Str("name") ?? "")).ToList();
+                    .Select(f => (f.Text("genre") ?? "", f.Text("name") ?? "")).ToList();
             }
             catch { return new(); }
         }

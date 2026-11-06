@@ -125,7 +125,7 @@ namespace VuluLauncher.ViewModels
                     loader = Loader,
                     loaderVersion = Loader == "vanilla" ? "" : LoaderVersion?.Key ?? "",
                 });
-                Close(result.Str("id"));
+                Close(result.Text("id"));
             }
             catch (Exception ex)
             {
@@ -276,14 +276,14 @@ namespace VuluLauncher.ViewModels
             Rows.Clear();
             foreach (var i in content.Items("items"))
             {
-                string file = i.Str("file") ?? "";
+                string file = i.Text("file") ?? "";
                 var update = _updates != null && _updates.TryGetValue(file, out var u) ? u : (JsonElement?)null;
-                Rows.Add(new ContentRow(this, file, i.Str("title") ?? file,
-                    string.Join(" · ", new[] { TypeNames.GetValueOrDefault(i.Str("type") ?? ""), i.Str("version"), i.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR")) + " MB" }.Where(s => !string.IsNullOrEmpty(s))),
-                    i.Get("enabled").ValueKind != JsonValueKind.False, i.Str("iconUrl"), update));
+                Rows.Add(new ContentRow(this, file, i.Text("title") ?? file,
+                    string.Join(" · ", new[] { TypeNames.GetValueOrDefault(i.Text("type") ?? ""), i.Text("version"), i.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR")) + " MB" }.Where(s => !string.IsNullOrEmpty(s))),
+                    i.Get("enabled").ValueKind != JsonValueKind.False, i.Text("iconUrl"), update));
             }
             IsEmpty = Rows.Count == 0;
-            Summary = $"{Rows.Count} dosya · Minecraft {content.Str("mcVersion")} · {Names.Loader(content.Str("loader"))}";
+            Summary = $"{Rows.Count} dosya · Minecraft {content.Text("mcVersion")} · {Names.Loader(content.Text("loader"))}";
             StableUpdates = _updates?.Values.Count(u => u.Bool("stable")) ?? 0;
         }
 
@@ -295,7 +295,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var result = await _core.Call("instances.checkUpdates", new { id = _item.Id });
-                _updates = result.Items("updates").ToDictionary(u => u.Str("file") ?? "", u => u.Clone());
+                _updates = result.Items("updates").ToDictionary(u => u.Text("file") ?? "", u => u.Clone());
             }
             catch (Exception ex) { _updates = null; _main.Home.AppendLog("Güncellemeler denetlenemedi: " + ex.Message, "error"); }
             CheckText = _updates is { Count: 0 } ? "Güncel ✓" : "Güncellemeleri denetle";
@@ -311,7 +311,7 @@ namespace VuluLauncher.ViewModels
             {
                 try
                 {
-                    var r = await _core.Call("mods.update", new { instanceId = _item.Id, projectId = u.Str("projectId"), versionId = u.Str("versionId"), source = u.Str("source") ?? "" });
+                    var r = await _core.Call("mods.update", new { instanceId = _item.Id, projectId = u.Text("projectId"), versionId = u.Text("versionId"), source = u.Text("source") ?? "" });
                     if (r.Items("manual").Any()) await _main.ShowAsync(new ManualDownloadsModal(r.Get("manual"), _item.Id));
                 }
                 catch (Exception ex) { _main.Home.AppendLog(ex.Message, "error"); }
@@ -361,7 +361,7 @@ namespace VuluLauncher.ViewModels
             Meta = meta;
             _enabled = enabled;
             _update = update;
-            UpdateText = update is { } u ? (u.Bool("stable") ? $"Güncelle ({u.Str("to")})" : $"Güncelle ({u.Str("to")} · {u.Str("type")})") : null;
+            UpdateText = update is { } u ? (u.Bool("stable") ? $"Güncelle ({u.Text("to")})" : $"Güncelle ({u.Text("to")} · {u.Text("type")})") : null;
             _loading = false;
             _ = LoadIcon(iconUrl);
         }
@@ -410,7 +410,7 @@ namespace VuluLauncher.ViewModels
             catch (Exception ex) { Summary = ex.Message; return; }
             Running = data.Bool("running");
             Worlds.Clear();
-            foreach (var w in data.Items("worlds").OrderByDescending(w => w.Str("lastPlayed")))
+            foreach (var w in data.Items("worlds").OrderByDescending(w => w.Text("lastPlayed")))
                 Worlds.Add(new WorldRow(this, w));
             IsEmpty = Worlds.Count == 0;
             Summary = Worlds.Count > 0 ? $"{Worlds.Count} dünya" : "";
@@ -451,10 +451,10 @@ namespace VuluLauncher.ViewModels
         public WorldRow(WorldsModal owner, JsonElement w)
         {
             _owner = owner;
-            Name = w.Str("name") ?? "";
-            Meta = $"Son oynanma: {Names.Ago(w.Str("lastPlayed"))} · {w.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR"))} MB";
+            Name = w.Text("name") ?? "";
+            Meta = $"Son oynanma: {Names.Ago(w.Text("lastPlayed"))} · {w.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR"))} MB";
             foreach (var b in w.Items("backups")) Backups.Add(new BackupRow(this, b));
-            _ = LoadIcon(w.Str("icon"));
+            _ = LoadIcon(w.Text("icon"));
         }
 
         public string Name { get; }
@@ -472,9 +472,9 @@ namespace VuluLauncher.ViewModels
 
     internal sealed partial class BackupRow(WorldRow world, JsonElement b)
     {
-        public string Name { get; } = b.Str("name") ?? "";
-        public string Text { get; } = $"{Names.Ago(b.Str("createdAt"))} · {b.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR"))} MB"
-            + (b.Bool("auto") ? " · otomatik" : (b.Str("name") ?? "").Contains("-geri-yukleme-oncesi-") ? " · geri yükleme öncesi" : "");
+        public string Name { get; } = b.Text("name") ?? "";
+        public string Text { get; } = $"{Names.Ago(b.Text("createdAt"))} · {b.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR"))} MB"
+            + (b.Bool("auto") ? " · otomatik" : (b.Text("name") ?? "").Contains("-geri-yukleme-oncesi-") ? " · geri yükleme öncesi" : "");
         public bool Running => world.Running;
 
         [RelayCommand] private Task Restore() => world.Restore(this);
@@ -511,7 +511,7 @@ namespace VuluLauncher.ViewModels
             try { data = await _core.Call("screenshots.list", new { id = _item.Id }); }
             catch (Exception ex) { Summary = ex.Message; return; }
             Shots.Clear();
-            foreach (var s in data.Items("shots")) Shots.Add(new ShotItem(this, s.Str("name") ?? "", s.Str("url"), s.Str("takenAt")));
+            foreach (var s in data.Items("shots")) Shots.Add(new ShotItem(this, s.Text("name") ?? "", s.Text("url"), s.Text("takenAt")));
             int total = data.Int("total");
             IsEmpty = total == 0;
             Summary = total == 0 ? "" : $"{total} ekran görüntüsü · {HomeViewModel.FormatSize(data.Num("totalMb"))}"
@@ -569,9 +569,9 @@ namespace VuluLauncher.ViewModels
             var repaired = r.Items("repaired").Select(x => x.GetString() ?? "").ToList();
             var moved = r.Items("moved").Select(x => (x.GetString() ?? "").Replace("mods/", "")).ToList();
             var missing = r.Items("missing").Select(x => x.GetString() ?? "").ToList();
-            var manual = r.Items("manual").Select(m => m.Str("title") ?? "").ToList();
+            var manual = r.Items("manual").Select(m => m.Text("title") ?? "").ToList();
             var notes = r.Items("notes").Select(x => x.GetString() ?? "").ToList();
-            string? gameError = r.Str("gameError");
+            string? gameError = r.Text("gameError");
             int fixedCount = repaired.Count + moved.Count;
             bool clean = fixedCount == 0 && gameError == null && missing.Count == 0 && manual.Count == 0 && notes.Count == 0;
 

@@ -11,7 +11,7 @@ namespace VuluLauncher.Native
     {
         /// <summary>Core'un MOTD parçaları: { t, c, b, i, u, s }.</summary>
         public static List<RichPart> FromMotd(JsonElement parts) => parts.Items().Select(p =>
-            new RichPart(p.Str("t") ?? "", p.Str("c"), p.Bool("b"), p.Bool("i"), p.Bool("u"), p.Bool("s"))).ToList();
+            new RichPart(p.Text("t") ?? "", p.Text("c"), p.Bool("b"), p.Bool("i"), p.Bool("u"), p.Bool("s"))).ToList();
     }
 
     /// <summary>

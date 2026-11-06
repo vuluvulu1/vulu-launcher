@@ -17,16 +17,16 @@ namespace VuluLauncher.ViewModels
         {
             _owner = owner;
             Id = n.Get("id").ToString();
-            Title = n.Str("title") ?? "";
-            Body = n.Str("body") ?? "";
-            Tag = n.Str("tag");
-            At = DateTime.TryParse(n.Str("at"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at) ? at.ToUniversalTime() : DateTime.UtcNow;
+            Title = n.Text("title") ?? "";
+            Body = n.Text("body") ?? "";
+            Tag = n.Text("tag");
+            At = DateTime.TryParse(n.Text("at"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at) ? at.ToUniversalTime() : DateTime.UtcNow;
             _isNew = new DateTimeOffset(At).ToUnixTimeMilliseconds() > seenAt;
             // Bir kişiden geliyorsa (mesaj, istek, oyunda, davet) onun resmi; yoksa launcher logosu
             var person = Tag != null ? System.Text.RegularExpressions.Regex.Match(Tag, "^(dm|friend|profile|invite):([^:]+)") : null;
             Person = person is { Success: true } ? person.Groups[2].Value : null;
             Initial = (Person ?? "v")[..1].ToUpperInvariant();
-            _ = LoadAvatar(n.Str("avatar"));
+            _ = LoadAvatar(n.Text("avatar"));
         }
 
         public string Id { get; }

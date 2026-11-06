@@ -11,10 +11,10 @@ namespace VuluLauncher.ViewModels
     /// <summary>Yorum.</summary>
     internal sealed partial class CommentItem(ShotViewerModal owner, JsonElement c, long avatarVersion)
     {
-        public string Id { get; } = c.Str("id") ?? "";
-        public PersonItem Author { get; } = new(c.Str("author") ?? "", avatarVersion);
-        public string Text { get; } = c.Str("text") ?? "";
-        public string When { get; } = Names.Ago(c.Str("createdAt"));
+        public string Id { get; } = c.Text("id") ?? "";
+        public PersonItem Author { get; } = new(c.Text("author") ?? "", avatarVersion);
+        public string Text { get; } = c.Text("text") ?? "";
+        public string When { get; } = Names.Ago(c.Text("createdAt"));
         public bool CanDelete { get; } = c.Bool("canDelete");
         [RelayCommand] private Task Delete() => owner.DeleteCommentAsync(this);
     }
@@ -60,7 +60,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var r = await CoreClient.Instance.Call("social.image", new { id = shot.Id });
-                var full = await Images.LoadAsync(r.Str("url"));
+                var full = await Images.LoadAsync(r.Text("url"));
                 if (mine == _token) { Image = full ?? shot.Thumb; Status = null; }
             }
             catch (Exception ex) { if (mine == _token) Status = ex.Message; }
@@ -75,7 +75,7 @@ namespace VuluLauncher.ViewModels
                 var list = await CoreClient.Instance.Call("social.comments", new { id = shot.Id });
                 if (mine != _token) return;
                 var members = await _social.Main.MembersAsync();
-                foreach (var c in list.Items()) Comments.Add(new CommentItem(this, c, members.GetValueOrDefault(c.Str("author") ?? "")));
+                foreach (var c in list.Items()) Comments.Add(new CommentItem(this, c, members.GetValueOrDefault(c.Text("author") ?? "")));
                 CommentsStatus = Comments.Count == 0 ? "Henüz yorum yok. İlk yorumu sen yaz." : "";
             }
             catch (Exception ex) { if (mine == _token) CommentsStatus = ex.Message; }
@@ -222,12 +222,12 @@ namespace VuluLauncher.ViewModels
             {
                 var packs = await CoreClient.Instance.Call("packs.list");
                 foreach (var p in packs.Items("packs"))
-                    Packs.Add(new PickRow(p.Str("name") ?? "", $"Minecraft {p.Str("mcVersion")} · rev {p.Int("revision")}",
-                        JsonSerializer.SerializeToElement(new { type = "pack", id = p.Str("id"), name = p.Str("name") }, options), "📦"));
+                    Packs.Add(new PickRow(p.Text("name") ?? "", $"Minecraft {p.Text("mcVersion")} · rev {p.Int("revision")}",
+                        JsonSerializer.SerializeToElement(new { type = "pack", id = p.Text("id"), name = p.Text("name") }, options), "📦"));
                 var servers = await CoreClient.Instance.Call("community.servers");
                 foreach (var s in servers.Items())
-                    Servers.Add(new PickRow(s.Str("name") ?? "", s.Str("address"),
-                        JsonSerializer.SerializeToElement(new { type = "server", id = s.Str("id"), name = s.Str("name"), address = s.Str("address") }, options), "🎮"));
+                    Servers.Add(new PickRow(s.Text("name") ?? "", s.Text("address"),
+                        JsonSerializer.SerializeToElement(new { type = "server", id = s.Text("id"), name = s.Text("name"), address = s.Text("address") }, options), "🎮"));
             }
             catch (Exception ex) { Error = ex.Message; }
             NoPacks = Packs.Count == 0;

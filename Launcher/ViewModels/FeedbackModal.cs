@@ -15,17 +15,17 @@ namespace VuluLauncher.ViewModels
         {
             _owner = owner;
             Data = item.Clone();
-            Id = item.Str("id") ?? "";
-            Author = item.Str("author") ?? "";
+            Id = item.Text("id") ?? "";
+            Author = item.Text("author") ?? "";
             Initial = Author.Length > 0 ? Author[..1].ToUpperInvariant() : "?";
-            Kind = FeedbackModal.KindLabel(item.Str("kind"));
-            IsDone = item.Str("status") == "done";
-            Text = item.Str("text") ?? "";
-            When = Names.Ago(item.Str("createdAt"));
+            Kind = FeedbackModal.KindLabel(item.Text("kind"));
+            IsDone = item.Text("status") == "done";
+            Text = item.Text("text") ?? "";
+            When = Names.Ago(item.Text("createdAt"));
             var meta = item.Get("meta");
-            Meta = string.Join(" · ", new[] { meta.Str("version") is { } v ? "v" + v : null, meta.Str("platform") }.Where(x => !string.IsNullOrEmpty(x)));
-            Reply = item.Str("reply");
-            RepliedBy = item.Str("repliedBy") ?? "admin";
+            Meta = string.Join(" · ", new[] { meta.Text("version") is { } v ? "v" + v : null, meta.Text("platform") }.Where(x => !string.IsNullOrEmpty(x)));
+            Reply = item.Text("reply");
+            RepliedBy = item.Text("repliedBy") ?? "admin";
             CanDelete = item.Bool("canDelete");
             _replyDraft = Reply ?? "";
             _ = LoadAvatar((long)item.Num("authorAvatarVersion"));

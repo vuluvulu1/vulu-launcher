@@ -111,7 +111,7 @@ namespace VuluLauncher.ViewModels
                 Username = "önizleme";
                 UserInitial = "Ö";
                 LoggedIn = true;
-                Version = "v" + (await _core.Call("app.init")).Str("version");
+                Version = "v" + (await _core.Call("app.init")).Text("version");
                 Home.LoadPreview();
                 // VULU_UI_PAGE=settings: o sekmeyle açılır
                 if (Tabs.FirstOrDefault(t => t.Key == Environment.GetEnvironmentVariable("VULU_UI_PAGE")) is { } page) SelectedTab = page;
@@ -121,8 +121,8 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var init = await _core.Call("app.init");
-                Version = "v" + init.Str("version");
-                Avatars.ApiBase = init.Str("apiBaseUrl") ?? "";
+                Version = "v" + init.Text("version");
+                Avatars.ApiBase = init.Text("apiBaseUrl") ?? "";
                 Home.ApplyInit(init);
                 if (init.Get("session") is { ValueKind: JsonValueKind.Object } session)
                 {
@@ -140,7 +140,7 @@ namespace VuluLauncher.ViewModels
 
         private async Task EnterAsync(JsonElement session)
         {
-            Username = session.Str("username") ?? "";
+            Username = session.Text("username") ?? "";
             UserInitial = Username.Length > 0 ? Username[..1].ToUpperInvariant() : "";
             IsAdmin = session.Bool("isAdmin");
             Tabs.First(t => t.Key == "admin").IsVisible = IsAdmin;
@@ -208,7 +208,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var list = await _core.Call("profile.list");
-                _members = list.Items().ToDictionary(m => m.Str("username") ?? "", m => (long)m.Num("avatarVersion"));
+                _members = list.Items().ToDictionary(m => m.Text("username") ?? "", m => (long)m.Num("avatarVersion"));
             }
             catch { return new(); }
             return _members;
@@ -221,7 +221,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var pending = await _core.Call("app.takeNotification");
-                if (pending.Str("tag") is { } tag) await RouteAsync(tag);
+                if (pending.Text("tag") is { } tag) await RouteAsync(tag);
             }
             catch { /* bekleyen yok */ }
         }
@@ -234,14 +234,14 @@ namespace VuluLauncher.ViewModels
             try { action = await _core.Call("app.takeAction"); } catch { return; }
             if (action.ValueKind != JsonValueKind.Object) return;
             if (Home.GameRunning) { Home.AppendLog("Oyun zaten açık.", "warn"); return; }
-            string id = action.Str("id") ?? "";
-            if (action.Str("kind") == "play")
+            string id = action.Text("id") ?? "";
+            if (action.Text("kind") == "play")
             {
                 await ShowHomeAsync(id);
                 if (Home.Selected?.Id != id) { await AlertAsync("Kısayol", "Bu kısayolun paketi artık yok. Kısayolu silebilirsin."); return; }
                 await Home.PlayAsync(false, false, "");
             }
-            else if (action.Str("kind") == "join")
+            else if (action.Text("kind") == "join")
             {
                 if (Servers.Servers.Count == 0) await Servers.LoadAsync();
                 var server = Servers.Servers.FirstOrDefault(s => s.Id == id);
@@ -378,7 +378,7 @@ namespace VuluLauncher.ViewModels
                     Social.OnDmUpdate(data);
                     break;
                 case "toast":
-                    ShowToast(data.Str("title") ?? "", data.Str("body") ?? "", data.Str("tag"), data.Str("avatar"));
+                    ShowToast(data.Text("title") ?? "", data.Text("body") ?? "", data.Text("tag"), data.Text("avatar"));
                     break;
                 case "download":
                     Downloads.OnDownload(data);
@@ -393,7 +393,7 @@ namespace VuluLauncher.ViewModels
                     _ = RunStartupActionAsync();
                     break;
                 case "shotEvent":
-                    Home.AppendLog(data.Str("kind") == "like" ? $"♥ {data.Str("from")} ekran görüntünü beğendi." : $"💬 {data.Str("from")}: {data.Str("text")}", "accent");
+                    Home.AppendLog(data.Text("kind") == "like" ? $"♥ {data.Text("from")} ekran görüntünü beğendi." : $"💬 {data.Text("from")}: {data.Text("text")}", "accent");
                     break;
                 default:
                     Home.OnCoreEvent(name, data);

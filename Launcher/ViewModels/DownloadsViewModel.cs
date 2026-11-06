@@ -66,14 +66,14 @@ namespace VuluLauncher.ViewModels
             // Aynı işin eski bir durumu bitişten sonra gelirse yok sayılır
             if (id == _jobId && _state != "running") return;
             _jobId = id;
-            _state = job.Str("state") ?? "running";
+            _state = job.Text("state") ?? "running";
             Running = _state == "running";
             FailedState = _state == "failed";
             OnPropertyChanged(nameof(Done));
             Paused = job.Bool("paused");
             Pausable = job.Bool("pausable");
-            Title = Running ? job.Str("title") ?? "" : job.Str("message") ?? job.Str("title") ?? "";
-            Phase = Running ? (Paused ? "Duraklatıldı" : job.Str("phase") ?? "Hazırlanıyor") : _state == "done" ? "Tamamlandı" : "Durdu";
+            Title = Running ? job.Text("title") ?? "" : job.Text("message") ?? job.Text("title") ?? "";
+            Phase = Running ? (Paused ? "Duraklatıldı" : job.Text("phase") ?? "Hazırlanıyor") : _state == "done" ? "Tamamlandı" : "Durdu";
 
             double filesDone = job.Get("files").Num("done"), filesTotal = job.Get("files").Num("total");
             double bytesDone = job.Get("bytes").Num("done"), bytesTotal = job.Get("bytes").Num("total");
@@ -92,18 +92,18 @@ namespace VuluLauncher.ViewModels
             Stats = string.Join("   ", stats);
 
             Failed.Clear();
-            foreach (var f in job.Items("failed")) Failed.Add(new DownloadRow(f.Str("name") ?? "", "", null, f.Str("error")));
+            foreach (var f in job.Items("failed")) Failed.Add(new DownloadRow(f.Text("name") ?? "", "", null, f.Text("error")));
             Active.Clear();
             foreach (var a in job.Items("active"))
             {
                 double size = a.Num("size"), done = a.Num("done");
                 // Oyun dosyaları tek tek izlenmez; yalnızca son denetlenen dosyaların adı gelir
                 bool tracked = size > 0 || done > 0;
-                string name = a.Str("name") ?? "";
+                string name = a.Text("name") ?? "";
                 Active.Add(new DownloadRow(tracked ? name : name.Split('/', '\\').Last(), size > 0 ? $"{Bytes(done)} / {Bytes(size)}" : "", size > 0 ? Math.Min(100, done * 100 / size) : null, null));
             }
             Recent.Clear();
-            foreach (var r in job.Items("recent")) Recent.Add(new DownloadRow(r.Str("name") ?? "", r.Num("size") > 0 ? Bytes(r.Num("size")) : "", null, null));
+            foreach (var r in job.Items("recent")) Recent.Add(new DownloadRow(r.Text("name") ?? "", r.Num("size") > 0 ? Bytes(r.Num("size")) : "", null, null));
             int queued = job.Int("queued");
             ActiveTitle = (Running ? "Şu an" : "Son işlenen") + (queued > 0 ? $" · sırada {queued}" : "");
             Empty = Failed.Count + Active.Count + Recent.Count == 0 ? (Running ? "Dosyalar hazırlanıyor…" : "İndirilecek dosya yoktu.") : null;

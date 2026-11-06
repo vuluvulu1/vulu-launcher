@@ -101,7 +101,7 @@ namespace VuluLauncher.ViewModels
                 Action = new RowAction("Gözat", async () =>
                 {
                     var picked = await _core.Call("settings.pickJava");
-                    if (picked.Str("path") is not { Length: > 0 } path) return;
+                    if (picked.Text("path") is not { Length: > 0 } path) return;
                     if (await Change(("javaMode", "custom"), ("customJavaPath", path))) await LoadAsync();
                 }),
             };
@@ -118,8 +118,8 @@ namespace VuluLauncher.ViewModels
             var detected = new JavaListRow("Bilgisayarda bulunan Java");
             foreach (var j in info.Items("detectedJava"))
             {
-                string path = j.Str("path") ?? "";
-                detected.Items.Add(new JavaItem("Java " + j.Str("version"), j.Str("source") ?? "", path,
+                string path = j.Text("path") ?? "";
+                detected.Items.Add(new JavaItem("Java " + j.Text("version"), j.Text("source") ?? "", path,
                     S("javaMode") == "custom" && S("customJavaPath") == path,
                     async item =>
                     {
@@ -247,12 +247,12 @@ namespace VuluLauncher.ViewModels
         private SettingSection AccountSection(JsonElement info)
         {
             bool hasPassword = info.Bool("hasSavedPassword");
-            string gameFolder = info.Str("gameFolder") ?? "";
+            string gameFolder = info.Text("gameFolder") ?? "";
             string licenses = Path.Combine(AppContext.BaseDirectory, "licenses");
 
             return new SettingSection("Hesap ve dosyalar")
                 .Add(new ActionRow("Hesap", $"{main.Username} olarak giriş yapıldı.").With(new RowAction("Çıkış yap", main.LogoutAsync)))
-                .Add(new ActionRow("Kayıtlı şifre", hasPassword ? $"{info.Str("savedUsername")} için şifre bu bilgisayarda kayıtlı." : "Kayıtlı şifre yok.")
+                .Add(new ActionRow("Kayıtlı şifre", hasPassword ? $"{info.Text("savedUsername")} için şifre bu bilgisayarda kayıtlı." : "Kayıtlı şifre yok.")
                     .With(new RowAction("Sil", async () =>
                     {
                         await _core.Call("auth.forgetPassword");

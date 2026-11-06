@@ -56,7 +56,7 @@ namespace VuluLauncher.ViewModels
         /// <summary>Giriş ekranını hazırlar; açılışta kayıtlı hesap varsa giriş kendiliğinden denenir.</summary>
         public void Prepare(JsonElement init, bool auto)
         {
-            string saved = init.Str("savedUsername") ?? "";
+            string saved = init.Text("savedUsername") ?? "";
             bool hasPassword = init.Bool("hasSavedPassword");
             _useSaved = saved.Length > 0 && hasPassword;
             SetFields(saved, _useSaved ? SavedMask : "");
@@ -123,7 +123,7 @@ namespace VuluLauncher.ViewModels
 
             if (!result.Bool("success"))
             {
-                SetStatus(result.Str("error") ?? "Giriş başarısız.", true);
+                SetStatus(result.Text("error") ?? "Giriş başarısız.", true);
                 return;
             }
             SetFields(Username, "");

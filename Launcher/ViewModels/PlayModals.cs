@@ -49,13 +49,13 @@ namespace VuluLauncher.ViewModels
             foreach (var m in missing.Items())
             {
                 total++;
-                bool found = m.Str("projectId") != null;
+                bool found = m.Text("projectId") != null;
                 if (found) installable++;
-                Items.Add(new HealthItem(m.Str("title") ?? m.Str("id") ?? "?",
+                Items.Add(new HealthItem(m.Text("title") ?? m.Text("id") ?? "?",
                     "İsteyen: " + string.Join(", ", m.Items("requiredBy").Select(r => r.GetString())),
                     found ? null : "CurseForge'ta da Modrinth'te de bulunamadı; elle kurman gerekiyor.",
-                    m.Str("source") is { } src ? (src == "curseforge" ? "CurseForge" : "Modrinth") : null,
-                    m.Str("iconUrl"), m.Str("pageUrl") ?? m.Str("searchUrl"), m.Str("pageUrl") != null ? "Sayfa ↗" : "Ara ↗"));
+                    m.Text("source") is { } src ? (src == "curseforge" ? "CurseForge" : "Modrinth") : null,
+                    m.Text("iconUrl"), m.Text("pageUrl") ?? m.Text("searchUrl"), m.Text("pageUrl") != null ? "Sayfa ↗" : "Ara ↗"));
             }
             Intro = total == 1
                 ? "Bir mod, kurulu olmayan başka bir modu istiyor. Oyun bu hâliyle büyük ihtimalle \"Error loading mods\" hatasıyla açılmaz."
@@ -96,18 +96,18 @@ namespace VuluLauncher.ViewModels
             foreach (var b in files.Items("broken"))
             {
                 severe = true;
-                Add(b.Str("file") ?? "", b.Str("reason"));
+                Add(b.Text("file") ?? "", b.Text("reason"));
             }
             foreach (var d in files.Items("duplicates"))
             {
-                severe |= !picksOne || d.Str("reason") != "version";
-                string copyOf = d.Str("copyOf") ?? "";
-                Add(d.Str("file") ?? "", d.Str("reason") == "version"
+                severe |= !picksOne || d.Text("reason") != "version";
+                string copyOf = d.Text("copyOf") ?? "";
+                Add(d.Text("file") ?? "", d.Text("reason") == "version"
                     ? picksOne ? $"{copyOf} ile aynı mod (ikisi de aynı kimliği kullanıyor). Oyun yalnızca yeni sürümü yükler; bu dosya boşuna duruyor."
                                : $"{copyOf} ile aynı mod; aynı modun iki sürümü birlikte yüklenemez."
                     : $"{copyOf} dosyasının kopyası; aynı mod iki kez yüklenir.");
             }
-            foreach (var m in _manual.Items()) Manual.Add(new HealthItem(m.Str("title") ?? "", m.Str("fileName"), iconUrl: m.Str("iconUrl")));
+            foreach (var m in _manual.Items()) Manual.Add(new HealthItem(m.Text("title") ?? "", m.Text("fileName"), iconUrl: m.Text("iconUrl")));
 
             Title = severe ? "Mod dosyalarında sorun var" : "Gereksiz mod dosyası var";
             Intro = (severe ? "Oyun bu dosyalarla büyük ihtimalle açılmaz." : "Oyun açılır, ama bu dosyalar boşuna yükleniyor.")
@@ -164,11 +164,11 @@ namespace VuluLauncher.ViewModels
         public CrashModal(MainViewModel main, JsonElement crash)
         {
             _main = main;
-            InstanceId = crash.Str("instanceId") ?? "";
-            Report = crash.Str("report");
-            Title = $"{crash.Str("name")} çöktü";
+            InstanceId = crash.Text("instanceId") ?? "";
+            Report = crash.Text("report");
+            Title = $"{crash.Text("name")} çöktü";
             var findings = crash.Items("findings").ToList();
-            Intro = findings.Count == 1 && findings[0].Str("kind") == "unknown" ? "Oyun beklenmedik şekilde kapandı." : "Oyunun kapanma nedeni büyük ihtimalle şu:";
+            Intro = findings.Count == 1 && findings[0].Text("kind") == "unknown" ? "Oyun beklenmedik şekilde kapandı." : "Oyunun kapanma nedeni büyük ihtimalle şu:";
             foreach (var f in findings) Findings.Add(new CrashFinding(this, f));
         }
 
@@ -187,16 +187,16 @@ namespace VuluLauncher.ViewModels
             var core = CoreClient.Instance;
             try
             {
-                switch (action.Str("type"))
+                switch (action.Text("type"))
                 {
                     case "install":
                         await core.Call("mods.installMissing", new { instanceId = InstanceId, projectIds = action.Items("projectIds").Select(p => p.GetString()).ToList() });
                         break;
                     case "update":
-                        await core.Call("mods.update", new { instanceId = InstanceId, projectId = action.Str("projectId"), versionId = action.Str("versionId") });
+                        await core.Call("mods.update", new { instanceId = InstanceId, projectId = action.Text("projectId"), versionId = action.Text("versionId") });
                         break;
                     case "disable":
-                        await core.Call("instances.setContentEnabled", new { id = InstanceId, file = action.Str("file"), enabled = false });
+                        await core.Call("instances.setContentEnabled", new { id = InstanceId, file = action.Text("file"), enabled = false });
                         break;
                 }
                 Changed = true;
@@ -228,17 +228,17 @@ namespace VuluLauncher.ViewModels
 
     internal sealed partial class CrashFinding(CrashModal owner, JsonElement f)
     {
-        public string Title { get; } = f.Str("title") ?? "";
-        public string Detail { get; } = f.Str("detail") ?? "";
-        public string Fix { get; } = "Öneri: " + f.Str("fix");
+        public string Title { get; } = f.Text("title") ?? "";
+        public string Detail { get; } = f.Text("detail") ?? "";
+        public string Fix { get; } = "Öneri: " + f.Text("fix");
         public List<CrashAction> Actions { get; } = f.Items("actions").Select(a => new CrashAction(owner, a.Clone())).ToList();
         public bool HasActions => Actions.Count > 0;
     }
 
     internal sealed partial class CrashAction(CrashModal owner, JsonElement action) : ObservableObject
     {
-        public bool IsPrimary { get; } = action.Str("type") != "disable";
-        [ObservableProperty] private string _label = action.Str("label") ?? "";
+        public bool IsPrimary { get; } = action.Text("type") != "disable";
+        [ObservableProperty] private string _label = action.Text("label") ?? "";
         [ObservableProperty] private bool _canRun = true;
 
         [RelayCommand]

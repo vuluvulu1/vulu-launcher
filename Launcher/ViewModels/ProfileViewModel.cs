@@ -101,14 +101,14 @@ namespace VuluLauncher.ViewModels
             foreach (var name in new[] { nameof(IsOwn), nameof(IsOther), nameof(IsViewingOwn), nameof(ShowEditButton), nameof(Initial) }) OnPropertyChanged(name);
             IsAdminUser = user.Bool("isAdmin");
             var parts = new List<string>();
-            if (user.Str("createdAt") is { } created && DateTime.TryParse(created, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at))
+            if (user.Text("createdAt") is { } created && DateTime.TryParse(created, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at))
                 parts.Add("Katıldı: " + at.ToLocalTime().ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")));
-            parts.Add(user.Str("lastSeenAt") is { } seen ? "Son görülme: " + Names.Ago(seen) : "Henüz giriş yapmadı");
+            parts.Add(user.Text("lastSeenAt") is { } seen ? "Son görülme: " + Names.Ago(seen) : "Henüz giriş yapmadı");
             Meta = string.Join(" · ", parts);
             Roles.Clear();
-            foreach (var r in user.Items("roles")) Roles.Add(new RoleChip(r.Str("name") ?? "", r.Str("color") is { Length: > 0 } c ? c : "#C9BDAF"));
+            foreach (var r in user.Items("roles")) Roles.Add(new RoleChip(r.Text("name") ?? "", r.Text("color") is { Length: > 0 } c ? c : "#C9BDAF"));
 
-            Bio = user.Str("bio") ?? "";
+            Bio = user.Text("bio") ?? "";
             _savedBio = Bio;
             BioDraft = Bio;
             OnPropertyChanged(nameof(BioText));
@@ -120,9 +120,9 @@ namespace VuluLauncher.ViewModels
             Avatar = await Images.LoadAsync(Avatars.Url(Username, avatarVersion), 256);
             Banner = bannerVersion > 0 ? await Images.LoadAsync($"{Avatars.ApiBase}/users/{Uri.EscapeDataString(Username)}/banner?v={bannerVersion}", 1600) : null;
 
-            HasSkin = user.Str("skinHash") is { Length: > 0 };
-            Slim = user.Str("skinModel") == "slim";
-            Skin = HasSkin && await Images.LoadBytesAsync($"{Avatars.ApiBase}/yggdrasil/textures/{user.Str("skinHash")}?c=1") is { } png
+            HasSkin = user.Text("skinHash") is { Length: > 0 };
+            Slim = user.Text("skinModel") == "slim";
+            Skin = HasSkin && await Images.LoadBytesAsync($"{Avatars.ApiBase}/yggdrasil/textures/{user.Text("skinHash")}?c=1") is { } png
                 ? SkinRenderer.RenderFront(png, Slim) : null;
             OnPropertyChanged(nameof(ShowSkin));
             OnPropertyChanged(nameof(SkinButton));
@@ -134,7 +134,7 @@ namespace VuluLauncher.ViewModels
             if (total > 0)
             {
                 double max = Math.Max(1, p.Items("top").Select(t => t.Num("seconds")).DefaultIfEmpty(1).Max());
-                foreach (var t in p.Items("top")) Playtime.Add(new PlaytimeRow(t.Str("name") ?? "", FormatPlayTime(t.Num("seconds")), Math.Max(0.04, t.Num("seconds") / max)));
+                foreach (var t in p.Items("top")) Playtime.Add(new PlaytimeRow(t.Text("name") ?? "", FormatPlayTime(t.Num("seconds")), Math.Max(0.04, t.Num("seconds") / max)));
             }
             OnPropertyChanged(nameof(HasPlaytime));
             OnPropertyChanged(nameof(ShowPlaytimeHint));
@@ -142,7 +142,7 @@ namespace VuluLauncher.ViewModels
 
             Packs.Clear();
             foreach (var pack in user.Items("packs"))
-                Packs.Add(new ProfilePack(pack.Str("name") ?? "", $"{pack.Str("mcVersion")} · {Names.Loader(pack.Str("loader"))} · rev {pack.Int("revision")}"));
+                Packs.Add(new ProfilePack(pack.Text("name") ?? "", $"{pack.Text("mcVersion")} · {Names.Loader(pack.Text("loader"))} · rev {pack.Int("revision")}"));
             OnPropertyChanged(nameof(HasPacks));
             OnPropertyChanged(nameof(PacksTitle));
 
@@ -198,7 +198,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var updated = await _core.Call("profile.saveBio", new { bio = BioDraft });
-                Bio = updated.Str("bio") ?? BioDraft;
+                Bio = updated.Text("bio") ?? BioDraft;
                 _savedBio = Bio;
                 OnPropertyChanged(nameof(CanSaveBio));
                 OnPropertyChanged(nameof(BioText));
@@ -240,8 +240,8 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var picked = await _core.Call(pick);
-                if (picked.ValueKind != JsonValueKind.Object || picked.Str("dataUrl") is not { } dataUrl) return;   // vazgeçildi
-                if (picked.Str("type") != "image/gif")
+                if (picked.ValueKind != JsonValueKind.Object || picked.Text("dataUrl") is not { } dataUrl) return;   // vazgeçildi
+                if (picked.Text("type") != "image/gif")
                 {
                     var bytes = ImageEncoder.FromDataUrl(dataUrl);
                     var crop = new CropModal(bytes, aspect, round, title);

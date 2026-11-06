@@ -45,16 +45,16 @@ namespace VuluLauncher.ViewModels
         public ShotCard(SocialViewModel owner, JsonElement s, long avatarVersion)
         {
             _owner = owner;
-            Id = s.Str("id") ?? "";
-            Author = new PersonItem(s.Str("author") ?? "", avatarVersion);
-            Caption = s.Str("caption") ?? "";
-            CreatedAt = s.Str("createdAt");
-            Meta = string.Join(" · ", new[] { s.Str("packName"), Names.Ago(CreatedAt) }.Where(x => !string.IsNullOrEmpty(x)));
+            Id = s.Text("id") ?? "";
+            Author = new PersonItem(s.Text("author") ?? "", avatarVersion);
+            Caption = s.Text("caption") ?? "";
+            CreatedAt = s.Text("createdAt");
+            Meta = string.Join(" · ", new[] { s.Text("packName"), Names.Ago(CreatedAt) }.Where(x => !string.IsNullOrEmpty(x)));
             _likes = s.Int("likes");
             _liked = s.Bool("liked");
             _commentCount = s.Int("commentCount");
             CanDelete = s.Bool("canDelete");
-            ThumbUrl = s.Str("thumbUrl");
+            ThumbUrl = s.Text("thumbUrl");
             _ = LoadThumb();
         }
 
@@ -120,10 +120,10 @@ namespace VuluLauncher.ViewModels
     /// <summary>Mesajla paylaşılan paket ya da sunucu daveti.</summary>
     internal sealed partial class DmCardItem(SocialViewModel owner, JsonElement card, bool mine) : ObservableObject
     {
-        public string Type { get; } = card.Str("type") ?? "pack";
-        public string Id { get; } = card.Str("id") ?? "";
-        public string Name { get; } = card.Str("name") ?? "";
-        public string? Address { get; } = card.Str("address");
+        public string Type { get; } = card.Text("type") ?? "pack";
+        public string Id { get; } = card.Text("id") ?? "";
+        public string Name { get; } = card.Text("name") ?? "";
+        public string? Address { get; } = card.Text("address");
         public bool Mine { get; } = mine;
         public bool HasAddress => Address != null;
         public string Icon => Type == "pack" ? "📦" : "🎮";
@@ -149,12 +149,12 @@ namespace VuluLauncher.ViewModels
         public ChatMessage(SocialViewModel owner, JsonElement m)
         {
             _owner = owner;
-            Id = m.Str("id") ?? "";
+            Id = m.Text("id") ?? "";
             Mine = m.Bool("mine");
-            Text = m.Str("text");
-            Problem = m.Str("problem");
-            CreatedAt = DateTime.TryParse(m.Str("createdAt"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at) ? at.ToLocalTime() : DateTime.Now;
-            CreatedAtRaw = m.Str("createdAt") ?? "";
+            Text = m.Text("text");
+            Problem = m.Text("problem");
+            CreatedAt = DateTime.TryParse(m.Text("createdAt"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at) ? at.ToLocalTime() : DateTime.Now;
+            CreatedAtRaw = m.Text("createdAt") ?? "";
             Read = m.Bool("read");
             if (m.Get("card").ValueKind == JsonValueKind.Object) Card = new DmCardItem(owner, m.Get("card").Clone(), Mine);
         }
@@ -280,7 +280,7 @@ namespace VuluLauncher.ViewModels
             RenderList();
             if (IsChat && Active != null) return;
             var unread = _conversations.FirstOrDefault(c => c.Int("unread") > 0);
-            if (unread.ValueKind == JsonValueKind.Object) await OpenConversationAsync(unread.Str("username")!);
+            if (unread.ValueKind == JsonValueKind.Object) await OpenConversationAsync(unread.Text("username")!);
             else ShowFeed();
         }
 
@@ -310,7 +310,7 @@ namespace VuluLauncher.ViewModels
             try { _presence = (await _core.Call("community.presence")).Clone(); } catch { /* eski kalır */ }
         }
 
-        private JsonElement PresenceOf(string name) => _presence.Items().FirstOrDefault(p => p.Str("username") == name);
+        private JsonElement PresenceOf(string name) => _presence.Items().FirstOrDefault(p => p.Text("username") == name);
 
         private PersonItem Person(string name)
         {
@@ -318,7 +318,7 @@ namespace VuluLauncher.ViewModels
             var p = PresenceOf(name);
             if (p.ValueKind == JsonValueKind.Object)
             {
-                person.State = p.Str("state");
+                person.State = p.Text("state");
                 (person.Game, person.Rest) = Main.Servers.Describe(p);
             }
             return person;
@@ -331,7 +331,7 @@ namespace VuluLauncher.ViewModels
             var tr = CultureInfo.GetCultureInfo("tr-TR");
             string query = Search.Trim().ToLower(tr);
             bool Match(string name) => query.Length == 0 || name.ToLower(tr).Contains(query);
-            JsonElement Conv(string name) => _conversations.FirstOrDefault(c => c.Str("username") == name);
+            JsonElement Conv(string name) => _conversations.FirstOrDefault(c => c.Text("username") == name);
 
             List.Clear();
             if (query.Length == 0) List.Add(new SocialFeedLink(this, IsFeed));
@@ -347,15 +347,15 @@ namespace VuluLauncher.ViewModels
                     });
             }
 
-            var known = _conversations.Select(c => c.Str("username") ?? "").Concat(_friends).Where(n => n != Main.Username && n.Length > 0).ToHashSet();
+            var known = _conversations.Select(c => c.Text("username") ?? "").Concat(_friends).Where(n => n != Main.Username && n.Length > 0).ToHashSet();
             int Rank(string name)
             {
                 var p = PresenceOf(name);
-                int state = p.ValueKind != JsonValueKind.Object ? 2 : p.Str("state") == "playing" ? 0 : 1;
+                int state = p.ValueKind != JsonValueKind.Object ? 2 : p.Text("state") == "playing" ? 0 : 1;
                 return (Conv(name).Int("unread") > 0 ? 0 : 10) + state;
             }
             var people = known.Where(Match).OrderBy(Rank)
-                .ThenByDescending(n => Conv(n).Str("lastAt") ?? "")
+                .ThenByDescending(n => Conv(n).Text("lastAt") ?? "")
                 .ThenBy(n => n, StringComparer.Create(tr, true)).ToList();
             List.Add(new SocialHeader("Kişiler", 0));
             foreach (var name in people)
@@ -363,11 +363,11 @@ namespace VuluLauncher.ViewModels
                 var person = Person(name);
                 var conv = Conv(name);
                 string sub = person.IsOnline ? (person.Game != null ? $"{person.Game} · {person.Rest}" : person.Rest ?? "")
-                    : conv.ValueKind == JsonValueKind.Object ? Names.Ago(conv.Str("lastAt")) : "";
+                    : conv.ValueKind == JsonValueKind.Object ? Names.Ago(conv.Text("lastAt")) : "";
                 var row = new SocialRow(person, sub, () => OpenConversationAsync(name)) { Badge = conv.Int("unread"), IsActive = IsChat && Active == name };
                 // Arkadaş bir vulu sunucusunda oynuyorsa yanına tek tıkla gidilir
                 var p = PresenceOf(name);
-                var server = p.Str("state") == "playing" && p.Str("server") is { } addr ? Main.Servers.Servers.FirstOrDefault(s => s.Address == addr) : null;
+                var server = p.Text("state") == "playing" && p.Text("server") is { } addr ? Main.Servers.Servers.FirstOrDefault(s => s.Address == addr) : null;
                 if (server != null) row.Actions.Add(new RowAction("Katıl", () => Main.Servers.JoinAsync(server)));
                 List.Add(row);
             }
@@ -401,7 +401,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var result = await _core.Call("friends." + action, new { username });
-                if (action == "request" && result.Str("status") == "accepted") Main.ShowToast("Arkadaş", $"{username} ile artık arkadaşsınız.");
+                if (action == "request" && result.Text("status") == "accepted") Main.ShowToast("Arkadaş", $"{username} ile artık arkadaşsınız.");
             }
             catch (Exception ex) { await Main.AlertAsync("Olmadı", ex.Message); }
             await RefreshFriendsAsync();
@@ -445,7 +445,7 @@ namespace VuluLauncher.ViewModels
                 var result = await _core.Call("social.feed", new { before = append && Shots.Count > 0 ? Shots[^1].CreatedAt : "", author = IsMine ? Main.Username : "" });
                 if (request != _shotsRequest) return;
                 var members = await Main.MembersAsync();
-                foreach (var s in result.Items("shots")) Shots.Add(new ShotCard(this, s, members.GetValueOrDefault(s.Str("author") ?? "")));
+                foreach (var s in result.Items("shots")) Shots.Add(new ShotCard(this, s, members.GetValueOrDefault(s.Text("author") ?? "")));
                 MoreShots = result.Bool("more");
                 ShotsStatus = "";
                 ShotsEmpty = Shots.Count == 0;
@@ -471,7 +471,7 @@ namespace VuluLauncher.ViewModels
             var members = await Main.MembersAsync();
             Live.Clear();
             if (announcement.ValueKind == JsonValueKind.Object)
-                Live.Add(new LiveAnnouncement(announcement.Str("text") ?? "", string.Join(" · ", new[] { announcement.Str("author"), Names.Ago(announcement.Str("createdAt")) }.Where(x => !string.IsNullOrEmpty(x)))));
+                Live.Add(new LiveAnnouncement(announcement.Text("text") ?? "", string.Join(" · ", new[] { announcement.Text("author"), Names.Ago(announcement.Text("createdAt")) }.Where(x => !string.IsNullOrEmpty(x)))));
             foreach (var s in Main.Servers.Servers.Where(s => s.IsOnline))
             {
                 var names = s.Sample.Length > 0 ? s.Sample.Split(", ") : Array.Empty<string>();
@@ -479,12 +479,12 @@ namespace VuluLauncher.ViewModels
                 Live.Add(new LiveServer(s, count > 0 ? $"{count} kişi oyunda" : "Şu an kimse yok · ilk giren sen ol",
                     names.Take(8).Select(x => new PersonItem(x, members.GetValueOrDefault(x))).ToList(), () => Main.Servers.JoinAsync(s)));
             }
-            var playing = _presence.Items().Where(p => p.Str("username") != Main.Username && p.Str("state") == "playing" && _friends.Contains(p.Str("username") ?? "")).Take(6).ToList();
+            var playing = _presence.Items().Where(p => p.Text("username") != Main.Username && p.Text("state") == "playing" && _friends.Contains(p.Text("username") ?? "")).Take(6).ToList();
             foreach (var p in playing)
             {
-                string name = p.Str("username")!;
+                string name = p.Text("username")!;
                 var person = Person(name);
-                var server = p.Str("server") is { } addr ? Main.Servers.Servers.FirstOrDefault(x => x.Address == addr) : null;
+                var server = p.Text("server") is { } addr ? Main.Servers.Servers.FirstOrDefault(x => x.Address == addr) : null;
                 Live.Add(new LiveFriend(person, $"{person.Game} · {person.Rest}".Trim(' ', '·'), () => OpenConversationAsync(name),
                     server != null ? () => Main.Servers.JoinAsync(server) : null));
             }
@@ -501,7 +501,7 @@ namespace VuluLauncher.ViewModels
             var shot = Shots.FirstOrDefault(s => s.Id == id);
             if (shot == null)
             {
-                shot = new ShotCard(this, data, Main.MembersCached.GetValueOrDefault(data.Str("author") ?? ""));
+                shot = new ShotCard(this, data, Main.MembersCached.GetValueOrDefault(data.Text("author") ?? ""));
                 Shots.Insert(0, shot);
             }
             await ViewShotAsync(shot);
@@ -543,7 +543,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 var local = await _core.Call("social.localImage", new { id = instance.Id, name });
-                var bytes = ImageEncoder.FromDataUrl(local.Str("dataUrl") ?? "");
+                var bytes = ImageEncoder.FromDataUrl(local.Text("dataUrl") ?? "");
                 (full, thumb) = await Task.Run(() => (ImageEncoder.Encode(bytes, 1920, 1100 * 1024), ImageEncoder.Encode(bytes, 480, 150 * 1024)));
             }
             catch (Exception ex) { await Main.AlertAsync("Paylaşılamadı", ex.Message); return; }
@@ -575,12 +575,12 @@ namespace VuluLauncher.ViewModels
                 SetMessages(result.Items("messages").Select(m => new ChatMessage(this, m)).ToList());
                 _reachedStart = result.Items("messages").Count() < 50;
                 PeerReady = result.Get("peerReady").ValueKind != JsonValueKind.False;
-                PeerNotice = PeerReady ? null : result.Str("peerError") ?? $"{user} henüz mesajlaşmayı kullanmadı; launcher'ın yeni sürümüyle bir kez giriş yaptığında yazabilirsin.";
+                PeerNotice = PeerReady ? null : result.Text("peerError") ?? $"{user} henüz mesajlaşmayı kullanmadı; launcher'ın yeni sürümüyle bir kez giriş yaptığında yazabilirsin.";
                 Verified = result.Bool("verified");
                 KeyChanged = result.Bool("keyChanged");
                 ScrollToEnd?.Invoke();
                 await _core.Call("dm.read", new { user });
-                int unread = _conversations.FirstOrDefault(c => c.Str("username") == user).Int("unread");
+                int unread = _conversations.FirstOrDefault(c => c.Text("username") == user).Int("unread");
                 if (unread > 0)
                 {
                     _dmUnread = Math.Max(0, _dmUnread - unread);
@@ -684,7 +684,7 @@ namespace VuluLauncher.ViewModels
             JsonElement info;
             try { info = await _core.Call("dm.safety", new { user }); }
             catch (Exception ex) { await Main.AlertAsync("Güvenlik kodu", ex.Message); return; }
-            if (await Main.ShowAsync(new SafetyModal(user, info.Str("code") ?? "", info.Bool("verified"))) is not true) return;
+            if (await Main.ShowAsync(new SafetyModal(user, info.Text("code") ?? "", info.Bool("verified"))) is not true) return;
             try
             {
                 await _core.Call("dm.verify", new { user });
@@ -703,7 +703,7 @@ namespace VuluLauncher.ViewModels
         public async Task<string?> PickUserAsync(string title)
         {
             var members = await Main.MembersAsync();
-            var recent = _conversations.Select(c => c.Str("username")).ToList();
+            var recent = _conversations.Select(c => c.Text("username")).ToList();
             var ordered = members.Where(m => m.Key != Main.Username)
                 .OrderBy(m => recent.IndexOf(m.Key) is var i && i >= 0 ? i : int.MaxValue)
                 .Select(m => new PersonItem(m.Key, m.Value)).ToList();
@@ -746,9 +746,9 @@ namespace VuluLauncher.ViewModels
             bool added = false;
             foreach (var m in incoming)
             {
-                string peer = m.Str("peer") ?? "";
+                string peer = m.Text("peer") ?? "";
                 bool inChat = Main.SelectedTab?.Page == this && IsChat && Active == peer;
-                if (inChat && Messages.All(x => x.Id != m.Str("id")))
+                if (inChat && Messages.All(x => x.Id != m.Text("id")))
                 {
                     Messages.Add(new ChatMessage(this, m));
                     added = true;
@@ -756,8 +756,8 @@ namespace VuluLauncher.ViewModels
                 }
                 else if (Main.SelectedTab?.Page != this)
                 {
-                    string preview = m.Str("text") is { } t ? (t.Length > 80 ? t[..80] : t)
-                        : m.Get("card").ValueKind == JsonValueKind.Object ? (m.Get("card").Str("type") == "pack" ? "📦 " : "🎮 ") + m.Get("card").Str("name") : "yeni mesaj";
+                    string preview = m.Text("text") is { } t ? (t.Length > 80 ? t[..80] : t)
+                        : m.Get("card").ValueKind == JsonValueKind.Object ? (m.Get("card").Text("type") == "pack" ? "📦 " : "🎮 ") + m.Get("card").Text("name") : "yeni mesaj";
                     Main.Home.AppendLog($"💬 {peer}: {preview}", "accent");
                 }
             }

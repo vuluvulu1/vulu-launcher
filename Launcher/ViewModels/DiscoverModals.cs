@@ -31,6 +31,7 @@ namespace VuluLauncher.ViewModels
         [RelayCommand] private void Delete() => Close("delete");
         [RelayCommand] private void Send() => Close("send");
         [RelayCommand] private void Feedback() => Close("feedback");
+        [RelayCommand] private void Access() => Close("access");
     }
 
     /// <summary>"Güncellensin mi?": son kurulandan bu yana değişenler. Sonuç true ise güncellenir.</summary>
@@ -62,15 +63,15 @@ namespace VuluLauncher.ViewModels
                 var versions = await CoreClient.Instance.Call(command, new { projectId = hit.Id, instanceId });
                 foreach (var v in versions.Items())
                 {
-                    string type = v.Str("type") ?? "release";
+                    string type = v.Text("type") ?? "release";
                     var meta = new[]
                     {
-                        v.Str("number"),
+                        v.Text("number"),
                         string.Join(", ", v.Items("gameVersions").Select(g => g.GetString()).TakeLast(3)),
                         string.Join(", ", v.Items("loaders").Select(l => Names.Loader(l.GetString()))),
-                        Names.Ago(v.Str("published")),
+                        Names.Ago(v.Text("published")),
                     }.Where(s => !string.IsNullOrEmpty(s));
-                    Versions.Add(new VersionRow(this, v.Str("id") ?? "", v.Str("name") is { Length: > 0 } n ? n : v.Str("number") ?? "",
+                    Versions.Add(new VersionRow(this, v.Text("id") ?? "", v.Text("name") is { Length: > 0 } n ? n : v.Text("number") ?? "",
                         type == "release" ? null : TypeNames.GetValueOrDefault(type, type), v.Bool("manualOnly"), string.Join(" · ", meta)));
                 }
                 Message = Versions.Count == 0 ? "Uyumlu sürüm bulunamadı." : null;
@@ -141,7 +142,7 @@ namespace VuluLauncher.ViewModels
         {
             _instanceId = instanceId;
             foreach (var m in manual.Items())
-                Rows.Add(new ManualRow(m.Get("fileId").ToString(), m.Str("title") ?? "", $"{m.Str("folder")}/ · tam olarak bu dosya: {m.Str("fileName")}", m.Str("url") ?? ""));
+                Rows.Add(new ManualRow(m.Get("fileId").ToString(), m.Text("title") ?? "", $"{m.Text("folder")}/ · tam olarak bu dosya: {m.Text("fileName")}", m.Text("url") ?? ""));
             Title = Rows.Count == 1 ? $"{Rows[0].Title} elle indirilmeli" : $"{Rows.Count} dosya elle indirilmeli";
             Intro = Rows.Count == 1
                 ? "Bu modun yapımcısı, modun başka uygulamalardan indirilmesine izin vermiyor. CurseForge sayfasından yazan dosyayı indir; sayfadaki en yeni sürümü değil, tam olarak bu dosyayı."
@@ -173,9 +174,9 @@ namespace VuluLauncher.ViewModels
                 {
                     var row = Rows.FirstOrDefault(x => x.FileId == res.Get("fileId").ToString());
                     if (row == null) continue;
-                    string status = res.Str("status") ?? "";
+                    string status = res.Text("status") ?? "";
                     row.Placed = status == "placed";
-                    row.Status = status == "placed" ? "✓ Yerine kondu" : status == "problem" ? res.Str("problem") ?? "" : "İndirilenler'de henüz yok";
+                    row.Status = status == "placed" ? "✓ Yerine kondu" : status == "problem" ? res.Text("problem") ?? "" : "İndirilenler'de henüz yok";
                     row.IsProblem = status == "problem";
                 }
                 Note = r.Get("downloads").ValueKind is JsonValueKind.Null or JsonValueKind.Undefined or JsonValueKind.False
