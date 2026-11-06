@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <!-- Updater ile ortak: pencere simgesi ve kurulum kaydı (Releases.cs Vulu.Core'da) -->
-    <Compile Include="..\Shared\WindowIcon.cs" Link="Shared\WindowIcon.cs" />
     <Compile Include="..\Shared\InstallInfo.cs" Link="Shared\InstallInfo.cs" />
     <Compile Include="..\Shared\ScriptTitle*.cs" Link="Shared\%(Filename)%(Extension)" />
   </ItemGroup>
@@ -37,15 +36,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Paket görselleri (PackCatalog'daki yollar wwwroot'a göre) exe'nin yanına kopyalanır -->
-    <Content Include="wwwroot\assets\**" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Paket görselleri (PackCatalog'daki "assets/..." yolları) exe'nin yanına kopyalanır -->
+    <Content Include="..\Shared\Assets\assets\**" Link="assets\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <!-- Yazı tipleri ve arayüz görselleri programın içine gömülür -->
-    <AvaloniaResource Include="wwwroot\fonts\*.ttf" Link="Assets\Fonts\%(Filename)%(Extension)" />
-    <AvaloniaResource Include="wwwroot\assets\logo.png" Link="Assets\logo.png" />
+    <AvaloniaResource Include="..\Shared\Assets\fonts\*.ttf" Link="Assets\Fonts\%(Filename)%(Extension)" />
+    <AvaloniaResource Include="..\Shared\Assets\assets\logo.png" Link="Assets\logo.png" />
     <Content Include="logo.ico" CopyToOutputDirectory="PreserveNewest" />
     <!-- Açık kaynak lisansları (Ayarlar → Açık kaynak lisansları) -->
-    <Content Include="wwwroot\licenses\**" Link="licenses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="wwwroot\fonts\OFL-*.txt" Link="licenses\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Shared\Assets\licenses\**" Link="licenses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Shared\Assets\fonts\OFL-*.txt" Link="licenses\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

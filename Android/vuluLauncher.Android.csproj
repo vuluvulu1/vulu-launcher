@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    vulu Launcher'ın Android sürümü: aynı arayüz (Launcher/wwwroot) MAUI HybridWebView içinde, aynı komutlar ve
+    vulu Launcher'ın Android sürümü: web arayüzü (Android/wwwroot) MAUI HybridWebView içinde, aynı komutlar ve
     servisler (Core). Faz 1: oyun başlatma yok; giriş, sosyal, mesajlar, paketler, sunucular ve Modrinth çalışır.
   -->
   <PropertyGroup>
@@ -75,8 +75,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Windows sürümüyle aynı arayüz dosyaları; HybridWebView bunları Resources/Raw/wwwroot'tan yükler -->
-    <MauiAsset Include="..\Launcher\wwwroot\**" LogicalName="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- Web arayüzü (Windows sürümü native'e geçti, bu dosyaları yalnızca Android kullanır) ve Windows'la ortak
+         yazı tipleri, görseller ve lisanslar; HybridWebView hepsini Resources/Raw/wwwroot'tan yükler -->
+    <MauiAsset Include="wwwroot\**" LogicalName="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiAsset Include="..\Shared\Assets\**" LogicalName="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" />
 
     <!-- Uyarlanabilir ikon: siyah zemin + ortada VL. Android ikonu 108 birimlik tuvalin yalnızca ortasını kendi şekliyle
          (daire, yuvarlatılmış kare…) gösterir; harfler en dar şekil olan dairede de kesilmesin diye küçültülür. -->

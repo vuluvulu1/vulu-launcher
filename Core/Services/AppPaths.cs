@@ -6,6 +6,7 @@ namespace VuluLauncher
         public static string AppData { get; private set; } = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "vuluLauncher");
 
+        /// <summary>Eski web arayüzünün tarayıcı verisi (artık kullanılmıyor; Storage açılışta siler).</summary>
         public static string BrowserData => Path.Combine(AppData, "browser");
         public static string Credentials => Path.Combine(AppData, "credentials.json");
         public static string Settings => Path.Combine(AppData, "settings.json");

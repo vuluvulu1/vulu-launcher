@@ -7,35 +7,25 @@ namespace VuluLauncher
     /// </summary>
     internal static class Storage
     {
-        /// <summary>Arayüzün tarayıcı önbelleği bu boyutla sınırlanır (WebView2 varsayılanı sınırsıza yakındır).</summary>
-        public const long BrowserCacheBytes = 50L * 1024 * 1024;
-
-        private static string WebView => Path.Combine(AppPaths.BrowserData, "EBWebView");
-        private static string UpdaterWebView => Path.Combine(AppPaths.AppData, "updater-browser", "EBWebView");
         private static string ShotCache => Path.Combine(AppPaths.AppData, "shot-cache");
-        // WebView2 çalışırken önbellek dosyaları kilitlidir; silme isteği bir sonraki açılışa bırakılır
-        private static string ClearBrowserFlag => Path.Combine(AppPaths.AppData, "clear-browser-cache");
 
-        // Tarayıcının yeniden üretebildiği klasörler (oturum, çerez ve yerel depolama bunların dışında kalır)
-        private static readonly string[] BrowserCaches = { "Cache", "Code Cache", "GPUCache", "DawnGraphiteCache", "DawnWebGPUCache" };
+        /// <summary>
+        /// Eski web arayüzünün (WebView2) ve eski güncelleyicinin tarayıcı verileri. Arayüz native olduktan sonra
+        /// kullanılmıyor; açılışta bütünüyle silinir.
+        /// </summary>
+        private static readonly string[] OldBrowserData =
+        {
+            AppPaths.BrowserData,
+            Path.Combine(AppPaths.AppData, "updater-browser"),
+        };
 
-        /// <summary>Tarayıcıya verilecek ek argüman: disk önbelleği sınırı.</summary>
-        public static string BrowserArguments => $"--disk-cache-size={BrowserCacheBytes}";
-
-        /// <summary>Pencere (WebView2) açılmadan önce: bekleyen tarayıcı temizliği, sonra arka planda kalan temizlik.</summary>
+        /// <summary>Açılışta arka planda: eski tarayıcı verileri, eski güncelleme yedekleri ve bayat önbellek.</summary>
         public static void CleanUpAtStartup()
         {
-            if (File.Exists(ClearBrowserFlag))
-            {
-                ClearBrowserCaches();
-                try { File.Delete(ClearBrowserFlag); } catch { }
-            }
             _ = Task.Run(() =>
             {
                 ModCache.PruneInBackground();
-                // WebView2 çökme dökümleri hiçbir yere gönderilmez, yalnızca birikir
-                DeleteContents(Path.Combine(WebView, "Crashpad", "reports"));
-                DeleteContents(Path.Combine(UpdaterWebView, "Crashpad", "reports"));
+                RemoveOldBrowserData();
                 // Updater değiştirdiği dosyaları buraya taşır; launcher açıldığına göre güncelleme bitmiştir
                 DeleteContents(Path.Combine(AppPaths.Base, ".update", "old"));
             });
@@ -45,7 +35,7 @@ namespace VuluLauncher
         public static object Usage()
         {
             var (shared, orphan) = ModCache.Measure();
-            long browser = SizeOf(WebView) + SizeOf(UpdaterWebView);
+            long browser = OldBrowserData.Sum(SizeOf);
             long shots = SizeOf(ShotCache);
             return new
             {
@@ -57,31 +47,28 @@ namespace VuluLauncher
                 game = SizeOf(AppPaths.GameCore),
                 java = SizeOf(JavaManager.JavaRoot),
                 instances = SizeOf(AppPaths.Instances),
-                browserPending = File.Exists(ClearBrowserFlag)
+                browserPending = false
             };
         }
 
-        /// <summary>Önbellekleri temizler. Tarayıcı önbelleği launcher bir sonraki açılışında silinir.</summary>
+        /// <summary>Önbellekleri temizler.</summary>
         public static object Clear()
         {
             long freed = ModCache.ClearOrphans();
             freed += DeleteContents(ShotCache);
-            freed += DeleteContents(Path.Combine(WebView, "Crashpad", "reports"));
-            freed += DeleteContents(Path.Combine(UpdaterWebView, "Crashpad", "reports"));
-            // Güncelleyicinin tarayıcısı şu an çalışmıyor; hemen silinebilir
-            foreach (string name in BrowserCaches) freed += DeleteContents(Path.Combine(UpdaterWebView, "Default", name));
-            try
-            {
-                Directory.CreateDirectory(AppPaths.AppData);
-                File.WriteAllText(ClearBrowserFlag, "");
-            }
-            catch { }
-            return new { freed, browserPending = true };
+            freed += RemoveOldBrowserData();
+            return new { freed, browserPending = false };
         }
 
-        private static void ClearBrowserCaches()
+        private static long RemoveOldBrowserData()
         {
-            foreach (string name in BrowserCaches) DeleteContents(Path.Combine(WebView, "Default", name));
+            long freed = 0;
+            foreach (string directory in OldBrowserData)
+            {
+                freed += DeleteContents(directory);
+                try { if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true); } catch { }
+            }
+            return freed;
         }
 
         private static long SizeOf(string directory)

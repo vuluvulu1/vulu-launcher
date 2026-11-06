@@ -4,7 +4,7 @@ using Avalonia.Media.Imaging;
 namespace VuluLauncher.Native
 {
     /// <summary>
-    /// Görsel yükleyici: Core'un verdiği adresler file://, http(s):// ya da wwwroot'a göre yol ("assets/x.jpg") olabilir.
+    /// Görsel yükleyici: Core'un verdiği adresler file://, http(s):// ya da uygulama klasörüne göre yol ("assets/x.jpg") olabilir.
     /// Aynı adres bir kez yüklenir; büyük görseller istenen genişliğe küçültülerek çözülür (bellek).
     /// </summary>
     internal static class Images
@@ -88,7 +88,7 @@ namespace VuluLauncher.Native
             }
             string path = url.StartsWith("file:", StringComparison.OrdinalIgnoreCase)
                 ? new Uri(url).LocalPath
-                : Path.Combine(AppContext.BaseDirectory, "wwwroot", url.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                : Path.Combine(AppContext.BaseDirectory, url.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
             return File.Exists(path) ? File.OpenRead(path) : null;
         }
     }

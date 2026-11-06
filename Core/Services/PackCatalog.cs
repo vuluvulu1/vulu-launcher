@@ -6,8 +6,8 @@ namespace VuluLauncher
     /// <param name="Loader">"vanilla" | "fabric" | "quilt" | "forge" | "neoforge"</param>
     /// <param name="LoaderVersion">Mod yükleyici sürümü; vanilla için null.</param>
     /// <param name="FolderName">instances altındaki klasör.</param>
-    /// <param name="Logo">wwwroot'a göre logo yolu; yoksa paket adı yazıyla gösterilir.</param>
-    /// <param name="Background">wwwroot'a göre arka plan görseli; yoksa düz gradyan kullanılır.</param>
+    /// <param name="Logo">Arayüz dosyalarına göre logo yolu ("assets/..."); yoksa paket adı yazıyla gösterilir.</param>
+    /// <param name="Background">Arayüz dosyalarına göre arka plan görseli ("assets/..."); yoksa düz gradyan kullanılır.</param>
     /// <param name="BackgroundStyle">"cover": görsel tüm alanı kaplar; "side": küçük görseller için, sağa yaslanıp karanlığa karışır.</param>
     public sealed record Pack(
         string Id,

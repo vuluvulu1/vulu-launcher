@@ -49,12 +49,6 @@ namespace VuluShared
         /// <summary>Şu an yedek yol kullanılıyor mu (arayüzde bilgi vermek için).</summary>
         public static bool UsingFallback { get { lock (Gate) return DateTime.UtcNow < _fallbackUntil; } }
 
-        /// <summary>
-        /// Önceki açılışta yedek yol gerektiyse o sırada çalışan adres; gerekmediyse null. Windows'ta arayüz (WebView2)
-        /// resimleri de alan adını çözmeden bu adresten yükler.
-        /// </summary>
-        public static IPAddress? FallbackAddress { get { lock (Gate) return _lastGood; } }
-
         /// <summary>Sunucuyla konuşan bütün HttpClient'lar bunu kullanır.</summary>
         public static HttpMessageHandler CreateHandler() => new RetryHandler(new SocketsHttpHandler
         {

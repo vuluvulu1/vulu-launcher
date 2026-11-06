@@ -30,13 +30,12 @@
     <!-- Launcher ile ortak: GitHub release bilgisi ve sürüm karşılaştırma -->
     <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
     <Compile Include="..\Shared\ServerConnection.cs" Link="Shared\ServerConnection.cs" />
-    <Compile Include="..\Shared\WindowIcon.cs" Link="Shared\WindowIcon.cs" />
     <Compile Include="..\Shared\InstallInfo.cs" Link="Shared\InstallInfo.cs" />
 
     <!-- Yazı tipleri ve logo exe'nin içine gömülür; güncelleme sırasında diskteki dosyalar değişse de etkilenmez -->
-    <AvaloniaResource Include="..\Launcher\wwwroot\fonts\IBMPlexSans.ttf" Link="Assets\Fonts\IBMPlexSans.ttf" />
-    <AvaloniaResource Include="..\Launcher\wwwroot\fonts\IBMPlexMono-Medium.ttf" Link="Assets\Fonts\IBMPlexMono-Medium.ttf" />
-    <AvaloniaResource Include="..\Launcher\wwwroot\assets\logo.png" Link="Assets\logo.png" />
+    <AvaloniaResource Include="..\Shared\Assets\fonts\IBMPlexSans.ttf" Link="Assets\Fonts\IBMPlexSans.ttf" />
+    <AvaloniaResource Include="..\Shared\Assets\fonts\IBMPlexMono-Medium.ttf" Link="Assets\Fonts\IBMPlexMono-Medium.ttf" />
+    <AvaloniaResource Include="..\Shared\Assets\assets\logo.png" Link="Assets\logo.png" />
     <Content Include="vuluLauncher-logo-prototip.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

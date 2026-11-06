@@ -19,11 +19,15 @@ da Microsoft ile bağlantılı değildir ve onlar tarafından desteklenmez.
 
 ═══ Yalnızca Windows ═══
 
-• Photino.NET — TryPhotino — Apache 2.0
-• hls.js (radyo yayınları) — Dailymotion — Apache 2.0
+• Avalonia — AvaloniaUI OÜ — MIT
+• SkiaSharp, HarfBuzzSharp — Microsoft / .NET Foundation — MIT
+  (Skia — Google — BSD 3-Clause; HarfBuzz — MIT tarzı lisans)
+• ANGLE (Avalonia ile gelen OpenGL ES katmanı) — The ANGLE Project Authors — BSD tarzı lisans (ANGLE.txt)
+• CommunityToolkit.Mvvm, Microsoft.Windows.SDK.NET (C#/WinRT) — Microsoft / .NET Foundation — MIT
 
 ═══ Yalnızca Android ═══
 
+• hls.js (radyo yayınları) — Dailymotion — Apache 2.0
 • .NET MAUI, .NET for Android — Microsoft — MIT
 • AndroidX, Material Components, Kotlin, Glide, Tink ve MAUI'nin getirdiği diğer
   Google / JetBrains kütüphaneleri — Apache 2.0

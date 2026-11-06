@@ -38,14 +38,13 @@
     <!-- Launcher ve Updater ile ortak: GitHub release bilgisi, pencere ikonu, kurulum kaydı, kısayollar ve başlık -->
     <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
     <Compile Include="..\Shared\ServerConnection.cs" Link="Shared\ServerConnection.cs" />
-    <Compile Include="..\Shared\WindowIcon.cs" Link="Shared\WindowIcon.cs" />
     <Compile Include="..\Shared\InstallInfo.cs" Link="Shared\InstallInfo.cs" />
     <Compile Include="..\Shared\ScriptTitle*.cs" Link="Shared\%(Filename)%(Extension)" />
 
     <!-- Yazı tipleri ve logo exe'nin içine gömülür -->
-    <AvaloniaResource Include="..\Launcher\wwwroot\fonts\IBMPlexSans.ttf" Link="Assets\Fonts\IBMPlexSans.ttf" />
-    <AvaloniaResource Include="..\Launcher\wwwroot\fonts\IBMPlexMono-Medium.ttf" Link="Assets\Fonts\IBMPlexMono-Medium.ttf" />
-    <AvaloniaResource Include="..\Launcher\wwwroot\assets\logo.png" Link="Assets\logo.png" />
+    <AvaloniaResource Include="..\Shared\Assets\fonts\IBMPlexSans.ttf" Link="Assets\Fonts\IBMPlexSans.ttf" />
+    <AvaloniaResource Include="..\Shared\Assets\fonts\IBMPlexMono-Medium.ttf" Link="Assets\Fonts\IBMPlexMono-Medium.ttf" />
+    <AvaloniaResource Include="..\Shared\Assets\assets\logo.png" Link="Assets\logo.png" />
     <AvaloniaResource Include="..\Launcher\logo.ico" Link="Assets\logo.ico" />
   </ItemGroup>
 

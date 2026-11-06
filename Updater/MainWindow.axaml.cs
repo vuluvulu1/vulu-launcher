@@ -35,7 +35,6 @@ namespace Updater
                 if (TryGetPlatformHandle()?.Handle is { } hwnd)
                 {
                     RoundCorners(hwnd);
-                    if (File.Exists(icon)) VuluShared.WindowIcon.Apply(hwnd, icon);
                 }
                 model.Start();
             };

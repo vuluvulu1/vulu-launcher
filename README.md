@@ -34,7 +34,7 @@ Windows ilk seferde SmartScreen uyarısı verebilir: *Ek bilgi → Yine de çal�
 
 Telefonda henüz olmayanlar: Forge ve NeoForge paketleri açılmıyor; sunucuya doğrudan katılma ve oynama süresi çalışmıyor.
 
-Geliştirme: Android uygulaması (`Android/`, .NET MAUI) Windows sürümüyle aynı arayüzü (`Launcher/wwwroot`) ve aynı komutları (`Core/`) kullanır. `tools/android-build.ps1` derler, `tools/publish-android.ps1` yayınlar.
+Geliştirme: Windows arayüzü native'dir (Avalonia, `Launcher/`); Android uygulaması (`Android/`, .NET MAUI) web arayüzünü (`Android/wwwroot`) kullanır. İkisi aynı komutları (`Core/`) ve ortak yazı tipi, görsel ve lisans dosyalarını (`Shared/Assets`) paylaşır. `tools/android-build.ps1` derler, `tools/publish-android.ps1` yayınlar.
 
 ## Neler var
 
