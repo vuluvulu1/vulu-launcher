@@ -136,6 +136,7 @@
                         <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                             <Button Classes="sm danger" Content="Sil" IsVisible="{Binding Card.IsAdmin}" Command="{Binding DeleteCommand}" />
                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" Margin="0,0,8,0">
+                                <Button Classes="sm" Content="{Binding Card.FeedbackText}" IsVisible="{Binding Card.FeedbackEnabled}" Command="{Binding FeedbackCommand}" />
                                 <Button Classes="sm" Content="Arkadaşına gönder" Command="{Binding SendCommand}" />
                                 <Button Classes="sm" Content="Kapat" Command="{Binding DismissCommand}" />
                             </StackPanel>
@@ -942,6 +943,100 @@
                         </StackPanel>
                     </Border>
                 </StackPanel>
+            </DataTemplate>
+
+            <!-- ── Geri bildirim ───────────────────────────────────────── -->
+            <DataTemplate DataType="vm:FeedbackModal">
+                <DockPanel MaxHeight="660">
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="22,18,22,10">
+                        <StackPanel>
+                            <TextBlock Classes="modal-title" Text="{Binding Title}" />
+                            <TextBlock Text="{Binding Subtitle}" Classes="dim" FontSize="12.5" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="link" Content="Kapat" Command="{Binding DismissCommand}" VerticalAlignment="Top" />
+                    </Grid>
+                    <!-- Yazma alanı -->
+                    <Border DockPanel.Dock="Top" Margin="22,0,22,12" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="12">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <ItemsControl ItemsSource="{Binding Kinds}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:Choice">
+                                            <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:FeedbackModal)DataContext).PickKindCommand}" CommandParameter="{Binding}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Grid.Column="1" Text="Ctrl+Enter ile gönder" Classes="dim" FontSize="11.5" VerticalAlignment="Center" />
+                            </Grid>
+                            <TextBox Text="{Binding Draft}" Watermark="{Binding Placeholder}" AcceptsReturn="True" TextWrapping="Wrap" Height="70" MaxLength="1000">
+                                <TextBox.KeyBindings><KeyBinding Gesture="Ctrl+Enter" Command="{Binding SendCommand}" /></TextBox.KeyBindings>
+                            </TextBox>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                                <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" FontSize="12" VerticalAlignment="Center"
+                                           IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                <TextBlock Text="{Binding Counter}" Classes="dim" FontSize="12" VerticalAlignment="Center" />
+                                <Button Classes="sm primary" Content="Gönder" Command="{Binding SendCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Filters}" Margin="22,0,22,8">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:Choice">
+                                <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                        Command="{Binding $parent[ItemsControl].((vm:FeedbackModal)DataContext).PickFilterCommand}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}"
+                               Classes="dim" Margin="22,4,22,16" TextWrapping="Wrap" />
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Shown}" Margin="22,0,22,16">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:FeedbackEntry">
+                                    <Border Classes="row-card" Classes.unfit="{Binding IsDone}">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <Border Width="32" Height="32" CornerRadius="16" ClipToBounds="True" Background="{StaticResource Raised}" VerticalAlignment="Top" Margin="0,0,10,0">
+                                                <Grid>
+                                                    <TextBlock Text="{Binding Initial}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
+                                                </Grid>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Spacing="4">
+                                                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto">
+                                                    <TextBlock Text="{Binding Author}" FontWeight="Bold" />
+                                                    <Border Grid.Column="1" Classes="tag" Margin="8,0,0,0" Padding="5,0"><TextBlock Text="{Binding Kind}" FontSize="11" /></Border>
+                                                    <TextBlock Grid.Column="2" Text="✓ Yapıldı" IsVisible="{Binding IsDone}" Foreground="{StaticResource Ok}" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="3" Text="{Binding When}" Classes="dim" FontSize="11.5" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                    <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="10">
+                                                        <Button Classes="link" Content="{Binding DoneText}" IsVisible="{Binding IsAdmin}" Command="{Binding ToggleDoneCommand}" />
+                                                        <Button Classes="link" Content="{Binding ReplyText}" IsVisible="{Binding IsAdmin}" Command="{Binding StartReplyCommand}" />
+                                                        <Button Classes="link danger" Content="Sil" IsVisible="{Binding CanDelete}" Command="{Binding DeleteCommand}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                                <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Meta}" IsVisible="{Binding HasMeta}" Classes="dim" FontSize="11.5" />
+                                                <Border IsVisible="{Binding HasReply}" BorderBrush="{StaticResource Accent}" BorderThickness="2,0,0,0" Padding="10,4" Margin="0,4,0,0">
+                                                    <TextBlock TextWrapping="Wrap"><Run Text="{Binding RepliedBy}" FontWeight="Bold" /><Run Text="  " /><Run Text="{Binding Reply}" /></TextBlock>
+                                                </Border>
+                                                <StackPanel IsVisible="{Binding Replying}" Spacing="6" Margin="0,4,0,0">
+                                                    <TextBox Text="{Binding ReplyDraft}" AcceptsReturn="True" TextWrapping="Wrap" Height="56" MaxLength="500"
+                                                             Watermark="Kısa bir yanıt, ör. &quot;rev 4'te eklendi&quot;" />
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
+                                                        <Button Classes="sm" Content="Vazgeç" Command="{Binding CancelReplyCommand}" />
+                                                        <Button Classes="sm primary" Content="Kaydet" Command="{Binding SaveReplyCommand}" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
             </DataTemplate>
         </ContentControl.DataTemplates>
     </ContentControl>

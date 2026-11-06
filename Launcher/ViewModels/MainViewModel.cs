@@ -150,6 +150,7 @@ namespace VuluLauncher.ViewModels
             if (IsAdmin) _ = Admin.RefreshRegistrationsAsync();
             _ = Notifications.LoadAsync();
             Radio.StartIfEnabled();
+            _ = RefreshFeedbackCountAsync();
             await Home.LoadAsync();
             // Bildirime tıklanarak ya da masaüstü kısayoluyla açıldıysa bekleyen istek şimdi yapılır
             await TakeNotificationAsync();
@@ -310,6 +311,26 @@ namespace VuluLauncher.ViewModels
         }
 
         public Task AlertAsync(string title, string message) => ConfirmAsync(title, message, "Tamam", null);
+
+        /// <summary>Adminlere açık launcher bildirimlerinin sayısı (geri bildirim düğmesinde rozet).</summary>
+        [ObservableProperty] private int _feedbackCount;
+        public bool HasFeedbackCount => FeedbackCount > 0;
+        partial void OnFeedbackCountChanged(int value) => OnPropertyChanged(nameof(HasFeedbackCount));
+
+        public async Task RefreshFeedbackCountAsync()
+        {
+            if (!IsAdmin) { FeedbackCount = 0; return; }
+            try { FeedbackCount = (await _core.Call("feedback.counts")).Int("launcher"); } catch { /* rozet sonra yenilenir */ }
+        }
+
+        /// <summary>Geri bildirim: "launcher", "general" (paket istekleri) ya da paket kimliği.</summary>
+        public async Task OpenFeedbackAsync(string pack, string? packName = null)
+        {
+            await ShowAsync(new FeedbackModal(this, pack, packName));
+            _ = RefreshFeedbackCountAsync();
+        }
+
+        [RelayCommand] private Task OpenLauncherFeedback() => OpenFeedbackAsync("launcher");
 
         /// <summary>Hızlı arama (Ctrl+K ya da büyüteç).</summary>
         [RelayCommand]

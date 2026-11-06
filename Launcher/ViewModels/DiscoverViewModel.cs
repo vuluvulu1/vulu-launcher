@@ -183,6 +183,7 @@ namespace VuluLauncher.ViewModels
             AllTags.Add(new Tag(HomeViewModel.FormatSize(p.Num("sizeMb"))));
 
             Changelog = p.Items("changelog").Select(ChangeEntry.From).ToList();
+            OpenFeedback = p.Int("openFeedback");
             _ = LoadCoverAsync(p.Str("coverUrl"));
         }
 
@@ -201,6 +202,9 @@ namespace VuluLauncher.ViewModels
         public List<Tag> AllTags { get; } = new();
         public List<ChangeEntry> Changelog { get; }
         public bool IsAdmin => _owner.IsAdmin;
+        public int OpenFeedback { get; }
+        public bool FeedbackEnabled => _owner.FeedbackEnabled;
+        public string FeedbackText => OpenFeedback > 0 ? $"Geri bildirim ({OpenFeedback})" : "Geri bildirim";
 
         /// <summary>Ana düğme: Kur / Güncelle / Kurulu · Aç.</summary>
         public string ActionText => Busy ? (IsOutdated ? "Güncelleniyor…" : "Kuruluyor…") : !IsInstalled ? "Kur" : IsOutdated ? "Güncelle" : "Kurulu · Aç";
@@ -227,6 +231,17 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private bool _statusIsError;
         [ObservableProperty] private bool _isEmpty;
         [ObservableProperty] private bool _isAdmin;
+        [ObservableProperty] private bool _feedbackEnabled;
+        [ObservableProperty] private int _generalFeedback;
+        public string RequestText => GeneralFeedback > 0 ? $"Paket isteği ({GeneralFeedback})" : "Paket isteği";
+        partial void OnGeneralFeedbackChanged(int value) => OnPropertyChanged(nameof(RequestText));
+
+        [RelayCommand]
+        private async Task Requests()
+        {
+            await main.OpenFeedbackAsync("general");
+            await LoadAsync();
+        }
 
         [RelayCommand]
         public async Task LoadAsync()
@@ -239,6 +254,8 @@ namespace VuluLauncher.ViewModels
             {
                 var result = await _core.Call("packs.list");
                 IsAdmin = result.Bool("isAdmin");
+                FeedbackEnabled = result.Bool("feedbackEnabled");
+                GeneralFeedback = result.Int("generalFeedback");
                 Cards.Clear();
                 foreach (var p in result.Items("packs")) Cards.Add(new PackCard(this, p));
                 IsEmpty = Cards.Count == 0;
@@ -289,6 +306,7 @@ namespace VuluLauncher.ViewModels
             {
                 case "act": await ActAsync(card); break;
                 case "delete": await DeleteAsync(card); break;
+                case "feedback": await main.OpenFeedbackAsync(card.Id, card.Name); await LoadAsync(); break;
                 case "send": await main.Social.ShareCardAsync(new { type = "pack", id = card.Id, name = card.Name }, $"{card.Name} paketini gönder"); break;
             }
         }

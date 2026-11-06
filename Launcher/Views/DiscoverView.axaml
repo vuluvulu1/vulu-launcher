@@ -91,7 +91,11 @@
                        VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="24,0,16,6" MaxWidth="420" />
 
             <!-- vulu Packs: yenile; CurseForge/Modrinth: içerik türü -->
-            <Button Grid.Column="2" Classes="sm" Content="Yenile" Command="{Binding Packs.LoadCommand}" IsVisible="{Binding IsPacks}" VerticalAlignment="Bottom" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsPacks}" VerticalAlignment="Bottom">
+                <Button Classes="sm" Content="{Binding Packs.RequestText}" IsVisible="{Binding Packs.FeedbackEnabled}" Command="{Binding Packs.RequestsCommand}"
+                        ToolTip.Tip="Pakete bağlı olmayan istekler: yeni paket, mod ya da özellik" />
+                <Button Classes="sm" Content="Yenile" Command="{Binding Packs.LoadCommand}" />
+            </StackPanel>
             <ItemsControl Grid.Column="2" ItemsSource="{Binding Content.Types}" IsVisible="{Binding !IsPacks}" VerticalAlignment="Bottom">
                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>

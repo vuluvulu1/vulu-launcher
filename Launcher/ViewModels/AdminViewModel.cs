@@ -177,7 +177,7 @@ namespace VuluLauncher.ViewModels
                 _registrations.Count > 0 ? string.Join(", ", _registrations.Take(3).Select(r => r.Str("username"))) + (_registrations.Count > 3 ? "…" : "") : "Bekleyen istek yok.",
                 _registrations.Count > 0, _registrations.Count > 0 ? "İncele" : null, () => SelectAsync("registrations")));
             Cards.Add(new AdminCard("Launcher geri bildirimleri", launcherFeedback.ToString(CultureInfo.InvariantCulture),
-                launcherFeedback > 0 ? "Açık hata bildirimi ya da öneri var." : "Açık bildirim yok.", launcherFeedback > 0, null, null));
+                launcherFeedback > 0 ? "Açık hata bildirimi ya da öneri var." : "Açık bildirim yok.", launcherFeedback > 0, "Aç", () => main.OpenFeedbackAsync("launcher")));
             Cards.Add(new AdminCard("Paket geri bildirimleri", packFeedback.ToString(CultureInfo.InvariantCulture),
                 packFeedback > 0 ? string.Join(", ", packList.Where(p => p.Int("openFeedback") > 0).Select(p => $"{p.Str("name")} ({p.Int("openFeedback")})")) : "Açık bildirim yok.",
                 packFeedback > 0, "Paketlere git", () => { main.SelectedTab = main.Tabs[1]; return Task.CompletedTask; }));
