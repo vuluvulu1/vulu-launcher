@@ -1,0 +1,87 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:u="using:Updater"
+        x:Class="Updater.MainWindow"
+        x:DataType="u:UpdaterViewModel"
+        Width="340" Height="400"
+        WindowDecorations="None"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Bg}">
+
+    <Border BorderBrush="{StaticResource LineStrong}" BorderThickness="1">
+        <DockPanel>
+            <!-- Başlık çubuğu: sürükleme buradan ve boş alanlardan -->
+            <Border DockPanel.Dock="Top" Height="36" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
+                        <Image Source="avares://Updater/Assets/logo.png" Width="16" Height="16" RenderOptions.BitmapInterpolationMode="None" />
+                        <TextBlock Text="vulu Launcher" FontWeight="Bold" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Classes="chrome" Command="{Binding MinimizeCommand}" ToolTip.Tip="Küçült" AutomationProperties.Name="Küçült">
+                        <Path Data="M2,6 L10,6" />
+                    </Button>
+                    <Button Grid.Column="2" Classes="chrome close" Command="{Binding CloseCommand}" ToolTip.Tip="Kapat" AutomationProperties.Name="Kapat">
+                        <Path Data="M2.5,2.5 L9.5,9.5 M9.5,2.5 L2.5,9.5" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <DockPanel Margin="22,22,22,18">
+                <!-- Düğmeler: duruma göre biri görünür -->
+                <Panel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+                    <Grid ColumnDefinitions="*,6,*" IsVisible="{Binding ShowErrorActions}">
+                        <Button Content="Yine de aç" Command="{Binding LaunchCommand}" IsVisible="{Binding CanLaunchAnyway}" />
+                        <Button Grid.Column="2" Classes="primary" Content="Tekrar dene" Command="{Binding RetryCommand}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,6,*" IsVisible="{Binding IsConfirm}">
+                        <Button Content="Vazgeç" Command="{Binding CloseCommand}" />
+                        <Button Grid.Column="2" Classes="danger" Content="Kaldır" Command="{Binding UninstallCommand}" />
+                    </Grid>
+                    <Button Classes="primary" Content="Kapat" Command="{Binding CloseCommand}" IsVisible="{Binding IsUninstalled}" />
+                </Panel>
+
+                <StackPanel>
+                    <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Muted}" />
+
+                    <StackPanel Margin="0,28,0,0">
+                        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" MinHeight="22"
+                                   Classes.error="{Binding IsError}" Classes.ok="{Binding IsUninstalled}">
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                                <Style Selector="TextBlock.ok"><Setter Property="Foreground" Value="{StaticResource Ok}" /></Style>
+                            </TextBlock.Styles>
+                        </TextBlock>
+                        <TextBlock Text="{Binding Detail}" Margin="0,4,0,0" MinHeight="18" FontFamily="{StaticResource Mono}" FontSize="11.5"
+                                   Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
+                        <ProgressBar Margin="0,14,0,0" Minimum="0" Maximum="100" Value="{Binding Percent}"
+                                     IsIndeterminate="{Binding IsIndeterminate}" IsVisible="{Binding ShowBar}" Classes.ok="{Binding IsLaunching}" />
+                    </StackPanel>
+
+                    <!-- Sürüm notları -->
+                    <Border Margin="0,18,0,0" MaxHeight="120" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                            IsVisible="{Binding ShowNotes}">
+                        <ScrollViewer Padding="12,10">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="{Binding NotesTitle}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource AccentHi}" />
+                                <TextBlock Text="{Binding Notes}" FontSize="11.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Kaldırma: oyun dosyaları da silinsin mi -->
+                    <Border Margin="0,16,0,0" Padding="12,10" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                            IsVisible="{Binding IsConfirm}">
+                        <CheckBox IsChecked="{Binding DeleteData}" VerticalContentAlignment="Top">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Oyun dosyalarını da sil" FontSize="12.5" FontWeight="SemiBold" />
+                                <TextBlock Text="Dünyalar, instance'lar, Java ve launcher ayarları kalıcı olarak silinir." FontSize="11.5"
+                                           Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </CheckBox>
+                    </Border>
+                </StackPanel>
+            </DockPanel>
+        </DockPanel>
+    </Border>
+</Window>

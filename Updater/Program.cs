@@ -1,15 +1,12 @@
-using System.Drawing;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text.Json;
-using Microsoft.Win32;
-using Photino.NET;
+using Avalonia;
 
 namespace Updater
 {
     /// <summary>
     /// Discord tarzı güncelleyici. Kısayol launcher'ı açar; launcher (Release derlemede) önce bunu çalıştırır.
     /// Bu küçük pencere sürümü denetler, gerekiyorsa günceller ve launcher'ı "--from-updater" ile açar.
+    /// Arayüz launcher'la aynı kütüphaneyle (Avalonia) kendisi çizilir; WebView2 gerekmez.
     ///
     /// Argümanlar:
     ///   --wait-pid &lt;pid&gt;   kurulumdan önce kapanması beklenecek süreç (launcher'dan başlatılınca)
@@ -19,32 +16,13 @@ namespace Updater
     /// </summary>
     internal static class Program
     {
-        private const int BaseWidth = 340;
-        private const int BaseHeight = 400;
-
-        private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
-
-        private static PhotinoWindow _window = null!;
-        private static UpdateEngine _engine = null!;
-        private static CancellationTokenSource _cancel = new();
-        private static bool _started;
-        private static bool _uninstallMode;
-        private static bool _uninstalling;
-        private static string _installDir = "";
-
-        // Pencere sürükleme: başlangıçtaki pencere ve imleç konumu
-        private static Point _dragWindowStart;
-        private static POINT _dragCursorStart;
-
         [STAThread]
         private static void Main(string[] args)
         {
             string installDir = AppContext.BaseDirectory;
-            _installDir = installDir;
-            var waitPids = ParseWaitPids(args);
-            _uninstallMode = args.Contains(VuluShared.InstallInfo.UninstallSwitch, StringComparer.OrdinalIgnoreCase);
+            bool uninstallMode = args.Contains(VuluShared.InstallInfo.UninstallSwitch, StringComparer.OrdinalIgnoreCase);
 
-            if (_uninstallMode && args.Contains("--silent", StringComparer.OrdinalIgnoreCase))
+            if (uninstallMode && args.Contains("--silent", StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
@@ -60,225 +38,21 @@ namespace Updater
                 return;
             }
 
-            if (_uninstallMode && !WebView2Installed())
-            {
-                UninstallWithoutUi(installDir);
-                return;
-            }
-
-            if (!WebView2Installed())
-            {
-                // Arayüz açılamıyor; güncellemeden launcher'a geçilir (launcher kendi uyarısını gösterir)
-                TryLaunch(installDir, waitPids);
-                return;
-            }
-
-            double scale = Math.Max(1, GetDpiForSystem() / 96.0);
-
-            _window = new PhotinoWindow()
-                .SetTitle(_uninstallMode ? "vulu Launcher Kaldır" : "vulu Launcher Güncelleyici")
-                .SetIconFile(Path.Combine(installDir, "vuluLauncher-logo-prototip.ico"))
-                // Kaldırırken kullanıcı verisi silinebileceği için tarayıcı önbelleği geçici klasörde tutulur
-                .SetTemporaryFilesPath(_uninstallMode
-                    ? Path.Combine(Path.GetTempPath(), "vulu-uninstall-browser")
-                    : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "vuluLauncher", "updater-browser"))
-                .SetChromeless(true)
-                .SetResizable(false)
-                .SetUseOsDefaultSize(false)
-                .SetUseOsDefaultLocation(false)
-                .SetSize((int)(BaseWidth * scale), (int)(BaseHeight * scale))
-                .Center();
-
-            // Güncelleyici yalnızca kendi sayfasını gösterir; tarayıcı önbelleğinin büyümesine gerek yok
-            _window.SetBrowserControlInitParameters("--disk-cache-size=10485760");
-            _window.SetContextMenuEnabled(false);
-#if !DEBUG
-            _window.SetDevToolsEnabled(false);
-#endif
-
-            _window.WindowCreated += (_, _) =>
-            {
-                RoundCorners(_window.WindowHandle);
-                VuluShared.WindowIcon.Apply(_window.WindowHandle, Path.Combine(installDir, "vuluLauncher-logo-prototip.ico"));
-            };
-            // Dosyalar yer değiştirirken kapatılırsa kurulum yarım kalır; o sırada kapatma engellenir
-            _window.WindowClosing += (_, _) => _engine.IsApplying || _uninstalling;
-
-            _engine = new UpdateEngine(installDir, waitPids, Send);
-            _window.RegisterWebMessageReceivedHandler((_, message) => HandleMessage(message));
-            _window.LoadRawString(BuildPage());
-            _window.WaitForClose();
-
-            _cancel.Cancel();
-        }
-
-        // ── Arayüzden gelen komutlar ──────────────────────────────────────
-        private static void HandleMessage(string raw)
-        {
-            string cmd;
-            JsonElement root;
-            try
-            {
-                root = JsonDocument.Parse(raw).RootElement;
-                cmd = root.GetProperty("cmd").GetString() ?? "";
-            }
-            catch { return; }
-
-            if (_uninstallMode)
-            {
-                switch (cmd)
-                {
-                    case "ready":
-                    case "retry":
-                        Send(new UpdateStatus("confirm", "vulu Launcher kaldırılsın mı?",
-                            Path.GetFullPath(_installDir).TrimEnd(Path.DirectorySeparatorChar)));
-                        return;
-                    case "uninstall":
-                        if (_uninstalling) return;
-                        bool deleteData = root.TryGetProperty("deleteData", out var flag) && flag.ValueKind == JsonValueKind.True;
-                        _ = UninstallAsync(deleteData);
-                        return;
-                    case "launch":
-                        return;
-                    case "close":
-                        if (!_uninstalling) _window.Close();
-                        return;
-                }
-            }
-
-            switch (cmd)
-            {
-                case "ready":
-                    // Sayfa yüklenmeden gönderilen mesajlar kaybolur; akış sayfa hazır olunca başlar
-                    if (_started) return;
-                    _started = true;
-                    _ = RunAsync();
-                    break;
-                case "retry":
-                    _cancel = new CancellationTokenSource();
-                    _ = RunAsync();
-                    break;
-                case "launch":
-                    LaunchAndClose();
-                    break;
-                case "minimize":
-                    _window.SetMinimized(true);
-                    break;
-                case "close":
-                    if (!_engine.IsApplying) _window.Close();
-                    break;
-                case "dragStart":
-                    _dragWindowStart = _window.Location;
-                    GetCursorPos(out _dragCursorStart);
-                    break;
-                case "dragMove":
-                    if (!GetCursorPos(out var cursor)) return;
-                    _window.Location = new Point(
-                        _dragWindowStart.X + cursor.X - _dragCursorStart.X,
-                        _dragWindowStart.Y + cursor.Y - _dragCursorStart.Y);
-                    break;
-            }
-        }
-
-        private static async Task RunAsync()
-        {
-            try
-            {
-                if (await _engine.RunAsync(_cancel.Token)) LaunchAndClose();
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
-            {
-                Send(new UpdateStatus("error", "Güncelleme başarısız", ex.Message));
-            }
-        }
-
-        private static async Task UninstallAsync(bool deleteData)
-        {
-            _uninstalling = true;
-            try
-            {
-                await Uninstaller.RunAsync(_installDir, deleteData, Send);
-            }
-            catch (Exception ex)
-            {
-                Send(new UpdateStatus("error", "Kaldırılamadı", ex.Message));
-            }
-            finally
-            {
-                _uninstalling = false;
-            }
-        }
-
-        /// <summary>WebView2 yoksa (nadiren) kaldırma Windows'un kendi sorularıyla yapılır.</summary>
-        private static void UninstallWithoutUi(string installDir)
-        {
-            const uint YesNo = 0x4, YesNoCancel = 0x3, Question = 0x20, Info = 0x40, Error = 0x10;
-            const int Yes = 6, No = 7;
-
-            if (MessageBox(IntPtr.Zero, "vulu Launcher kaldırılsın mı?", "vulu Launcher Kaldır", YesNo | Question) != Yes) return;
-            int answer = MessageBox(IntPtr.Zero,
-                "Oyun dosyaları, dünyalar ve ayarlar da silinsin mi?\n\nHayır dersen yalnızca launcher kaldırılır; dünyaların klasörde kalır.",
-                "vulu Launcher Kaldır", YesNoCancel | Question);
-            if (answer != Yes && answer != No) return;
+            string version = VuluShared.Releases.Clean(Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "");
+            App.Model = new UpdaterViewModel(installDir, ParseWaitPids(args), uninstallMode, version);
 
             try
             {
-                UpdateStatus? last = null;
-                Uninstaller.RunAsync(installDir, answer == Yes, s => last = s).GetAwaiter().GetResult();
-                MessageBox(IntPtr.Zero, last?.Detail ?? "vulu Launcher kaldırıldı.", "vulu Launcher kaldırıldı", Info);
+                AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace().StartWithClassicDesktopLifetime(args);
             }
-            catch (Exception ex)
+            catch when (!uninstallMode)
             {
-                MessageBox(IntPtr.Zero, ex.Message, "Kaldırılamadı", Error);
+                // Arayüz açılamadıysa (ekran kartı sürücüsü vb.) güncellemeden launcher'a geçilir
+                TryLaunch(installDir, ParseWaitPids(args));
             }
         }
 
-        private static void LaunchAndClose()
-        {
-            try
-            {
-                _engine.LaunchLauncher();
-                _window.Close();
-            }
-            catch (Exception ex)
-            {
-                Send(new UpdateStatus("error", "Launcher açılamadı", ex.Message));
-            }
-        }
-
-        private static void Send(UpdateStatus status)
-        {
-            try { _window.SendWebMessage(JsonSerializer.Serialize(status, Json)); }
-            catch { /* pencere kapanırken gelen geç mesajlar yok sayılır */ }
-        }
-
-        // ── Sayfa ─────────────────────────────────────────────────────────
-        /// <summary>Gömülü HTML'e font ve logoyu yerleştirir; sayfa diskteki hiçbir dosyaya bağlı değildir.</summary>
-        private static string BuildPage()
-        {
-            string version = Assembly.GetExecutingAssembly()
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "";
-            return ReadResourceText("updater.html")
-                .Replace("__FONT__", "data:font/ttf;base64," + Convert.ToBase64String(ReadResource("IBMPlexMono.ttf")))
-                .Replace("__SANS__", "data:font/ttf;base64," + Convert.ToBase64String(ReadResource("IBMPlexSans.ttf")))
-                .Replace("__LOGO__", "data:image/png;base64," + Convert.ToBase64String(ReadResource("logo.png")))
-                .Replace("__VERSION__", VuluShared.Releases.Clean(version))
-                .Replace("__MODE__", _uninstallMode ? "uninstall" : "update");
-        }
-
-        private static byte[] ReadResource(string name)
-        {
-            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name)
-                ?? throw new FileNotFoundException(name);
-            using var memory = new MemoryStream();
-            stream.CopyTo(memory);
-            return memory.ToArray();
-        }
-
-        private static string ReadResourceText(string name) => System.Text.Encoding.UTF8.GetString(ReadResource(name));
-
-        // ── Yardımcılar ───────────────────────────────────────────────────
         private static List<int> ParseWaitPids(string[] args)
         {
             var pids = new List<int>();
@@ -292,37 +66,5 @@ namespace Updater
             try { new UpdateEngine(installDir, waitPids, _ => { }).LaunchLauncher(); }
             catch { }
         }
-
-        private const string WebView2Key = @"Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}";
-
-        private static bool WebView2Installed() =>
-            HasVersion(Registry.LocalMachine, $@"SOFTWARE\WOW6432Node\{WebView2Key}")
-            || HasVersion(Registry.LocalMachine, $@"SOFTWARE\{WebView2Key}")
-            || HasVersion(Registry.CurrentUser, $@"Software\{WebView2Key}");
-
-        private static bool HasVersion(RegistryKey root, string path)
-        {
-            using var key = root.OpenSubKey(path);
-            return key?.GetValue("pv") is string version && version.Length > 0 && version != "0.0.0.0";
-        }
-
-        /// <summary>Windows 11'de çerçevesiz pencerenin köşelerini yuvarlatır; eski sürümlerde etkisizdir.</summary>
-        private static void RoundCorners(IntPtr hwnd)
-        {
-            try
-            {
-                int preference = 2; // DWMWCP_ROUND
-                _ = DwmSetWindowAttribute(hwnd, 33 /* DWMWA_WINDOW_CORNER_PREFERENCE */, ref preference, sizeof(int));
-            }
-            catch { }
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT { public int X; public int Y; }
-
-        [DllImport("user32.dll")] private static extern bool GetCursorPos(out POINT point);
-        [DllImport("user32.dll")] private static extern uint GetDpiForSystem();
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int MessageBox(IntPtr hwnd, string text, string caption, uint type);
-        [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     }
 }

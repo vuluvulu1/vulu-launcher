@@ -1,0 +1,18 @@
+<Project>
+  <!--
+    SkiaSharp ve HarfBuzzSharp paketleri her çalışma zamanı klasörüne ~80 MB'lık yerel hata ayıklama dosyası (pdb)
+    koyar; uygulamanın işine yaramaz, yalnızca diski doldurur. Derleme çıktısına ve yayına hiç kopyalanmaz.
+  -->
+  <Target Name="SkipNativeDebugSymbols" BeforeTargets="_CopyFilesMarkedCopyLocal">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
+                               Condition="'%(Filename)%(Extension)' == 'libSkiaSharp.pdb' or '%(Filename)%(Extension)' == 'libHarfBuzzSharp.pdb'" />
+    </ItemGroup>
+  </Target>
+  <Target Name="SkipNativeDebugSymbolsOnPublish" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(Filename)%(Extension)' == 'libSkiaSharp.pdb' or '%(Filename)%(Extension)' == 'libHarfBuzzSharp.pdb'" />
+    </ItemGroup>
+  </Target>
+</Project>

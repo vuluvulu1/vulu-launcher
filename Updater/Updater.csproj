@@ -2,11 +2,14 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <!-- Launcher ile aynı hedef: aynı klasöre yayınlandıklarında ortak paketlerin (CommunityToolkit vb.) aynı dosyası seçilir -->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Updater</RootNamespace>
     <ApplicationIcon>vuluLauncher-logo-prototip.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <Version>0.9.0</Version>
     <Authors>vuluvulu1</Authors>
     <Company>vuluvulu1</Company>
@@ -16,7 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Photino.NET" Version="4.0.16" />
+    <!-- Launcher ile aynı arayüz kütüphanesi ve sürümü: yayında aynı klasördeki dosyaları paylaşırlar -->
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,11 +33,10 @@
     <Compile Include="..\Shared\WindowIcon.cs" Link="Shared\WindowIcon.cs" />
     <Compile Include="..\Shared\InstallInfo.cs" Link="Shared\InstallInfo.cs" />
 
-    <!-- Arayüz exe'nin içine gömülür; güncelleme sırasında diskteki dosyalar değişse de etkilenmez -->
-    <EmbeddedResource Include="ui\updater.html" LogicalName="updater.html" />
-    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\IBMPlexMono-Medium.ttf" LogicalName="IBMPlexMono.ttf" />
-    <EmbeddedResource Include="..\Launcher\wwwroot\fonts\IBMPlexSans.ttf" LogicalName="IBMPlexSans.ttf" />
-    <EmbeddedResource Include="..\Launcher\wwwroot\assets\logo.png" LogicalName="logo.png" />
+    <!-- Yazı tipleri ve logo exe'nin içine gömülür; güncelleme sırasında diskteki dosyalar değişse de etkilenmez -->
+    <AvaloniaResource Include="..\Launcher\wwwroot\fonts\IBMPlexSans.ttf" Link="Assets\Fonts\IBMPlexSans.ttf" />
+    <AvaloniaResource Include="..\Launcher\wwwroot\fonts\IBMPlexMono-Medium.ttf" Link="Assets\Fonts\IBMPlexMono-Medium.ttf" />
+    <AvaloniaResource Include="..\Launcher\wwwroot\assets\logo.png" Link="Assets\logo.png" />
     <Content Include="vuluLauncher-logo-prototip.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

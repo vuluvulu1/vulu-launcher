@@ -57,9 +57,10 @@
     <ProjectReference Include="..\Updater\Updater.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <Target Name="CopyUpdater" AfterTargets="Build">
+  <!-- Yayında (win-x64) Updater ayrıca aynı klasöre yayınlanır; bu kopya yalnızca geliştirme derlemesi içindir -->
+  <Target Name="CopyUpdater" AfterTargets="Build" Condition="'$(RuntimeIdentifier)' == ''">
     <ItemGroup>
-      <UpdaterFiles Include="..\Updater\bin\$(Configuration)\net10.0-windows\Updater.*;..\Updater\bin\$(Configuration)\net10.0-windows\vuluLauncher-logo-prototip.ico" />
+      <UpdaterFiles Include="..\Updater\bin\$(Configuration)\net10.0-windows10.0.19041.0\Updater.*;..\Updater\bin\$(Configuration)\net10.0-windows10.0.19041.0\vuluLauncher-logo-prototip.ico" />
     </ItemGroup>
     <Copy SourceFiles="@(UpdaterFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
   </Target>
