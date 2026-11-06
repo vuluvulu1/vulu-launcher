@@ -38,7 +38,7 @@
     <DockPanel Margin="28,22,28,0">
         <StackPanel DockPanel.Dock="Top" Spacing="12" Margin="0,0,0,14">
             <TextBlock Text="Admin paneli" FontSize="24" FontWeight="Bold" />
-            <ItemsControl ItemsSource="{Binding Tabs}">
+            <ItemsControl Classes="segmented" ItemsSource="{Binding Tabs}">
                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:Choice">

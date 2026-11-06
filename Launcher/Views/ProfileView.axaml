@@ -118,11 +118,13 @@
                                     <Button Classes="sm" Content="Kaldır" IsVisible="{Binding HasSkin}" Command="{Binding RemoveSkinCommand}" />
                                 </StackPanel>
                                 <TextBlock Text="Beden tipi" Classes="label" />
+                                <Border Classes="segmented">
                                 <StackPanel Orientation="Horizontal" IsEnabled="{Binding HasSkin}">
                                     <Button Classes="seg" Classes.active="{Binding !Slim}" Content="Klasik (Steve)" Command="{Binding SetSkinModelCommand}" CommandParameter="default" />
                                     <Button Classes="seg" Classes.active="{Binding Slim}" Content="İnce (Alex)" Command="{Binding SetSkinModelCommand}" CommandParameter="slim" />
                                 </StackPanel>
-                                <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap" MaxWidth="420"
+                                </Border>
+                                <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap" MaxWidth="420" HorizontalAlignment="Left"
                                            Text="64×64 PNG. Tek oyunculu dünyada, LAN'da ve vulu sunucularında görünür; değişiklik oyunu bir sonraki açışında geçerli olur." />
                             </StackPanel>
                         </Grid>
@@ -211,10 +213,20 @@
                             <DataTemplate x:DataType="vm:PersonItem">
                                 <Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="6,5"
                                         Command="{Binding $parent[UserControl].((vm:ProfileViewModel)DataContext).OpenMemberCommand}" CommandParameter="{Binding}">
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
-                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource Avatar}" />
-                                        <TextBlock Text="{Binding Username}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                    </StackPanel>
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource Avatar}" VerticalAlignment="Center" />
+                                        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center" Spacing="1">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="{Binding Username}" FontWeight="SemiBold" />
+                                                <Border IsVisible="{Binding IsAdmin}" Background="{StaticResource AccentSoft}" Padding="4,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="admin" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentHi}" />
+                                                </Border>
+                                                <TextBlock IsVisible="{Binding IsYou}" Text="sen" FontSize="11" Classes="dim" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Sub}" IsVisible="{Binding HasSub}" FontSize="12" FontWeight="Normal"
+                                                       Foreground="{StaticResource Dim}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Grid>
                                 </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

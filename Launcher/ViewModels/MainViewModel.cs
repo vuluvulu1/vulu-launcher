@@ -245,11 +245,38 @@ namespace VuluLauncher.ViewModels
             if (_members != null) return _members;
             try
             {
-                var list = await _core.Call("profile.list");
+                var list = (await _core.Call("profile.list")).Clone();
                 _members = list.Items().ToDictionary(m => m.Text("username") ?? "", m => (long)m.Num("avatarVersion"));
+                _memberInfo = list.Items().ToDictionary(m => m.Text("username") ?? "", m => m);
             }
             catch { return new(); }
             return _members;
+        }
+
+        private Dictionary<string, JsonElement>? _memberInfo;
+
+        /// <summary>Üyenin listedeki bilgisi (biyografi, son görülme, admin); liste alınmadıysa boş.</summary>
+        public JsonElement MemberInfo(string name) =>
+            _memberInfo != null && _memberInfo.TryGetValue(name, out var m) ? m : default;
+
+        /// <summary>"Son görülme: dün" (web: lastSeenText); üye bilgisi yoksa boş.</summary>
+        public string LastSeenText(string name)
+        {
+            var info = MemberInfo(name);
+            if (info.ValueKind != JsonValueKind.Object) return "";
+            string ago = RelativeDay(info.Text("lastSeenAt"));
+            return ago.Length > 0 ? "Son görülme: " + ago : "Henüz giriş yapmadı";
+        }
+
+        /// <summary>bugün, dün, "5 gün önce" ya da tarih (web: relativeDate, küçük harfle).</summary>
+        public static string RelativeDay(string? iso)
+        {
+            if (iso == null || !DateTime.TryParse(iso, System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.RoundtripKind, out var at)) return "";
+            var local = at.ToLocalTime().Date;
+            int days = (int)Math.Round((DateTime.Today - local).TotalDays);
+            return days <= 0 ? "bugün" : days == 1 ? "dün" : days < 30 ? $"{days} gün önce"
+                : local.ToString("d MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
         }
 
         /// <summary>Masaüstü bildirimine tıklandıysa ilgili sayfa açılır.</summary>

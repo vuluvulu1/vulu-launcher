@@ -312,7 +312,7 @@ namespace VuluLauncher.ViewModels
 
         private JsonElement PresenceOf(string name) => _presence.Items().FirstOrDefault(p => p.Text("username") == name);
 
-        private PersonItem Person(string name)
+        public PersonItem Person(string name)
         {
             var person = new PersonItem(name, Main.MembersCached.TryGetValue(name, out long v) ? v : 0);
             var p = PresenceOf(name);
@@ -362,8 +362,9 @@ namespace VuluLauncher.ViewModels
             {
                 var person = Person(name);
                 var conv = Conv(name);
+                // Web'deki sıra: oyunda/çevrimiçi → son konuşma → son görülme
                 string sub = person.IsOnline ? (person.Game != null ? $"{person.Game} · {person.Rest}" : person.Rest ?? "")
-                    : conv.ValueKind == JsonValueKind.Object ? Names.Ago(conv.Text("lastAt")) : "";
+                    : conv.ValueKind == JsonValueKind.Object ? Names.Ago(conv.Text("lastAt")) : Main.LastSeenText(name);
                 var row = new SocialRow(person, sub, () => OpenConversationAsync(name)) { Badge = conv.Int("unread"), IsActive = IsChat && Active == name };
                 // Arkadaş bir vulu sunucusunda oynuyorsa yanına tek tıkla gidilir
                 var p = PresenceOf(name);

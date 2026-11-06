@@ -103,7 +103,7 @@
                                                         <ContentControl.DataTemplates>
                                                             <!-- Seçenekler: yan yana düğmeler -->
                                                             <DataTemplate DataType="vm:ChoiceRow">
-                                                                <ItemsControl ItemsSource="{Binding Options}">
+                                                                <ItemsControl Classes="segmented" HorizontalAlignment="Right" ItemsSource="{Binding Options}">
                                                                     <ItemsControl.ItemsPanel>
                                                                         <ItemsPanelTemplate><WrapPanel HorizontalAlignment="Right" /></ItemsPanelTemplate>
                                                                     </ItemsControl.ItemsPanel>
@@ -156,7 +156,7 @@
 
                                                             <DataTemplate DataType="vm:GameSizeRow">
                                                                 <StackPanel Spacing="8" HorizontalAlignment="Right">
-                                                                    <ItemsControl ItemsSource="{Binding Choice.Options}">
+                                                                    <ItemsControl Classes="segmented" HorizontalAlignment="Right" ItemsSource="{Binding Choice.Options}">
                                                                         <ItemsControl.ItemsPanel>
                                                                             <ItemsPanelTemplate><WrapPanel HorizontalAlignment="Right" /></ItemsPanelTemplate>
                                                                         </ItemsControl.ItemsPanel>

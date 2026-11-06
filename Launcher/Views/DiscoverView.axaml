@@ -76,7 +76,7 @@
         <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="28,22,28,14">
             <StackPanel Spacing="10">
                 <TextBlock Text="Keşfet" FontSize="24" FontWeight="Bold" />
-                <ItemsControl ItemsSource="{Binding Sources}">
+                <ItemsControl Classes="segmented" ItemsSource="{Binding Sources}">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:Choice">
@@ -96,7 +96,7 @@
                         ToolTip.Tip="Pakete bağlı olmayan istekler: yeni paket, mod ya da özellik" />
                 <Button Classes="sm" Content="Yenile" Command="{Binding Packs.LoadCommand}" />
             </StackPanel>
-            <ItemsControl Grid.Column="2" ItemsSource="{Binding Content.Types}" IsVisible="{Binding !IsPacks}" VerticalAlignment="Bottom">
+            <ItemsControl Classes="segmented" Grid.Column="2" ItemsSource="{Binding Content.Types}" IsVisible="{Binding !IsPacks}" VerticalAlignment="Bottom">
                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:Choice">

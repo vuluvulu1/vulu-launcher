@@ -166,8 +166,17 @@ namespace VuluLauncher.ViewModels
             var tr = CultureInfo.GetCultureInfo("tr-TR");
             string q = MemberSearch.Trim().ToLower(tr);
             Members.Clear();
-            foreach (var m in members.Where(m => q.Length == 0 || m.Key.ToLower(tr).Contains(q)).OrderBy(m => m.Key, StringComparer.Create(tr, true)))
-                Members.Add(new PersonItem(m.Key, m.Value));
+            // Çevrimiçi olanlar (önce oynayanlar) üstte; altta oyunda olduğu yer, biyografi ya da son görülme (web: renderMembers)
+            var people = members.Keys.Where(name => q.Length == 0 || name.ToLower(tr).Contains(q)).Select(main.Social.Person).ToList();
+            foreach (var person in people.OrderBy(p => p.IsPlaying ? 0 : p.IsOnline ? 1 : 2).ThenBy(p => p.Username, StringComparer.Create(tr, true)))
+            {
+                var info = main.MemberInfo(person.Username);
+                person.IsAdmin = info.Bool("isAdmin");
+                person.IsYou = person.Username == main.Username;
+                person.Sub = person.IsOnline ? (person.Game != null ? $"{person.Game} · {person.Rest}" : person.Rest ?? "")
+                    : info.Text("bio") is { Length: > 0 } bio ? bio.ReplaceLineEndings(" ") : main.LastSeenText(person.Username);
+                Members.Add(person);
+            }
             MembersCount = $"{members.Count} üye";
         }
 

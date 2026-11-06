@@ -24,6 +24,13 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private string? _state;
         [ObservableProperty] private string? _game;
         [ObservableProperty] private string? _rest;
+        /// <summary>Adın altındaki satır (listelerde: oyunda / biyografi / son görülme).</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasSub))]
+        private string _sub = "";
+        public bool HasSub => Sub.Length > 0;
+        [ObservableProperty] private bool _isAdmin;
+        [ObservableProperty] private bool _isYou;
         public bool IsPlaying => State == "playing";
         public bool IsOnline => State != null;
         public bool HasGame => !string.IsNullOrEmpty(Game);

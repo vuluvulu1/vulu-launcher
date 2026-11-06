@@ -142,10 +142,12 @@
                         <TextBlock Text="Oyuncuların paylaştığı ekran görüntüleri. Yalnızca vulu üyeleri görebilir." Classes="muted" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Bottom">
+                        <Border Classes="segmented">
                         <StackPanel Orientation="Horizontal">
                             <Button Classes="seg" Classes.active="{Binding !IsMine}" Content="Herkes" Command="{Binding SetFilterCommand}" CommandParameter="all" />
                             <Button Classes="seg" Classes.active="{Binding IsMine}" Content="Benimkiler" Command="{Binding SetFilterCommand}" CommandParameter="mine" />
                         </StackPanel>
+                        </Border>
                         <Button Classes="sm primary" Content="+ Paylaş" Command="{Binding ShareCommand}" />
                     </StackPanel>
                 </Grid>

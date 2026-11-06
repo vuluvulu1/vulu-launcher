@@ -212,25 +212,74 @@
             <Setter Property="Foreground" Value="White" />
         </Style>
 
-        <!-- Seçenek düğmeleri (yan yana; seçili olan vurgulu) -->
+        <!-- Seçenek grubu (web: .segmented): çerçeveli kutu içinde çizgisiz düğmeler; seçili olan koyu zeminli,
+             altında turuncu çizgi. Grup ItemsControl.segmented ya da Border.segmented ile çizilir. -->
+        <Style Selector="ItemsControl.segmented">
+            <Setter Property="Background" Value="{StaticResource Panel}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="2,3" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+        <Style Selector="Border.segmented">
+            <Setter Property="Background" Value="{StaticResource Panel}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="2,3" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
         <Style Selector="Button.seg">
-            <Setter Property="Padding" Value="11,6" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Margin" Value="1,0" />
             <Setter Property="FontSize" Value="12.5" />
-            <Setter Property="Margin" Value="0,0,-1,0" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Foreground" Value="{StaticResource Muted}" />
         </Style>
+        <Style Selector="Button.seg:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+        </Style>
         <Style Selector="Button.seg.active">
-            <Setter Property="Background" Value="{StaticResource AccentSoft}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
-            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
-            <Setter Property="ZIndex" Value="1" />
+            <Setter Property="Background" Value="{StaticResource Raised}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
         </Style>
         <Style Selector="Button.seg.active /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="BoxShadow" Value="inset 0 -2 0 0 #F2A33A" />
         </Style>
         <Style Selector="Button.seg.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+            <Setter Property="Background" Value="{StaticResource Raised}" />
             <Setter Property="BoxShadow" Value="inset 0 -2 0 0 #F2A33A" />
+        </Style>
+        <!-- Tek tek seçilen düğmeler (roller, türler): kendi kenarı olan çip -->
+        <Style Selector="Button.seg.loose">
+            <Setter Property="Background" Value="{StaticResource ButtonBg}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ButtonLine}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="NaN" />
+            <Setter Property="Padding" Value="11,5" />
+        </Style>
+        <Style Selector="Button.seg.loose:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource ButtonBg}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="Button.seg.loose.active">
+            <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="Button.seg.loose.active /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BoxShadow" Value="none" />
+        </Style>
+        <Style Selector="Button.seg.loose.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+            <Setter Property="BoxShadow" Value="none" />
         </Style>
 
         <!-- Kartlar: üstüne gelince kenar yumuşakça belirginleşir -->

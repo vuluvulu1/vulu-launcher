@@ -412,7 +412,7 @@
                                                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate x:DataType="vm:Choice">
-                                                        <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}" Margin="0,0,4,4" FontSize="11.5" Padding="8,3"
+                                                        <Button Classes="seg loose" Classes.active="{Binding IsSelected}" Content="{Binding Label}" Margin="0,0,4,4" FontSize="11.5" Padding="8,3"
                                                                 Command="{Binding $parent[ItemsControl].((vm:RadioViewModel)DataContext).PickGenreCommand}" CommandParameter="{Binding}" />
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
