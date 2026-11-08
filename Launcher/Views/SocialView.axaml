@@ -77,7 +77,7 @@
 
     <Grid ColumnDefinitions="300,*">
         <!-- ── Sol: kişiler ───────────────────────────────────────────── -->
-        <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+        <Border Background="{StaticResource SidePanel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="14,20,14,10" Spacing="10">
                     <Grid ColumnDefinitions="*,Auto">

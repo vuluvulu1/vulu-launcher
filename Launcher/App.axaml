@@ -24,6 +24,8 @@
             <Color x:Key="AccentColor">#F2A33A</Color>
             <SolidColorBrush x:Key="Bg" Color="#0B0A09" />
             <SolidColorBrush x:Key="Panel" Color="#14100C" />
+            <!-- Sayfa yan panelleri: arkadaki bulanık zemin görünsün, panel hafif koyu bir camla ayrılsın -->
+            <SolidColorBrush x:Key="SidePanel" Color="#6B000000" />
             <SolidColorBrush x:Key="Surface" Color="#1B1510" />
             <SolidColorBrush x:Key="Raised" Color="#281F17" />
             <SolidColorBrush x:Key="Card" Color="#D61A140F" />
