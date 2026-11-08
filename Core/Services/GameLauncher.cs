@@ -170,9 +170,11 @@ namespace VuluLauncher
         /// </summary>
         /// <param name="skins">Verilirse oyun vulu skin sistemiyle (authlib-injector) açılır; null ise eskisi gibi çevrimdışı.</param>
         /// <param name="serverAddress">Verilirse oyun açılınca doğrudan bu sunucuya bağlanır (host ya da host:port).</param>
+        /// <param name="microsoft">Verilirse oyun gerçek Microsoft oturumuyla açılır (resmi skin, online-mode sunucular); skins yok sayılır.</param>
         public async Task LaunchAsync(LaunchTarget target, string username, int ramGb, SkinSession? skins = null, string? serverAddress = null,
-            PhaseTimer? timer = null)
+            PhaseTimer? timer = null, MicrosoftSession? microsoft = null)
         {
+            if (microsoft != null) { skins = null; username = microsoft.Name; }
             if (!UsernameRegex.IsMatch(username))
                 throw new InvalidOperationException(
                     "Kullanıcı adınız uygun değil; sadece ingilizce harf, sayı ve alt çizgi kullanılabilir.");
@@ -223,7 +225,9 @@ namespace VuluLauncher
                 {
                     MaximumRamMb = ramGb * 1024,
                     // Skin sisteminde kimlik çevrimdışı kimliğin aynısıdır; token LAN/sunucu doğrulaması için kullanılır
-                    Session = skins == null
+                    Session = microsoft != null
+                        ? new MSession(microsoft.Name, microsoft.AccessToken, microsoft.Uuid) { UserType = "msa" }
+                        : skins == null
                         ? MSession.CreateOfflineSession(username)
                         : new MSession(username, skins.AccessToken, skins.ProfileId) { UserType = "mojang" },
                     JavaPath = javaPath,

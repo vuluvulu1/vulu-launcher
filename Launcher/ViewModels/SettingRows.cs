@@ -35,6 +35,8 @@ namespace VuluLauncher.ViewModels
         [NotifyPropertyChangedFor(nameof(IsShown))]
         private bool _matchesSearch = true;
         public bool IsShown => IsAvailable && MatchesSearch;
+        /// <summary>Şu an değiştirilemez (ör. koşulu sağlanmamış seçenek); satır görünür ama soluk.</summary>
+        [ObservableProperty] private bool _isEnabled = true;
 
         /// <summary>Aramada bakılan metin.</summary>
         public virtual string SearchText => Title + " " + Hint;

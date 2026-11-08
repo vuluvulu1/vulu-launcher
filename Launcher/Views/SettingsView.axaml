@@ -131,7 +131,7 @@
                                                             </DataTemplate>
 
                                                             <DataTemplate DataType="vm:ToggleRow">
-                                                                <ToggleSwitch IsChecked="{Binding Value}" OnContent="" OffContent="" MinWidth="0" />
+                                                                <ToggleSwitch IsChecked="{Binding Value}" IsEnabled="{Binding IsEnabled}" OnContent="" OffContent="" MinWidth="0" />
                                                             </DataTemplate>
 
                                                             <DataTemplate DataType="vm:TextRow">

@@ -71,7 +71,7 @@
             <StackPanel Spacing="12" IsVisible="{Binding IsRegister}">
                 <TextBlock Text="Kayıt ol" FontFamily="{StaticResource Script}" FontSize="40"
                            Foreground="{StaticResource Accent}" HorizontalAlignment="Center" Margin="0,-6,0,-6" />
-                <TextBlock Text="İsteğin bir admin onayladığında hesabın açılır." Classes="muted" HorizontalAlignment="Center"
+                <TextBlock Text="Hesap ücretsiz; e-posta adresini doğrulayınca açılır." Classes="muted" HorizontalAlignment="Center"
                            TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,4" />
                 <StackPanel Spacing="5">
                     <TextBlock Text="Kullanıcı adı" Classes="label" />

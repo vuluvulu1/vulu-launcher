@@ -63,6 +63,21 @@ namespace VuluLauncher
                 // Sunucu bu özelliği henüz desteklemiyorsa sekme boş görünür
                 catch (ApiException ex) when (ex.Status == HttpStatusCode.NotFound) { return null; }
             });
+            // Genel ayarlar: registrationApproval 'auto' (e-posta doğrulanınca hesap açılır) ya da 'admin'
+            _bridge.On("admin.settings", async _ =>
+            {
+                RequireAdmin();
+                try { return await _api.GetAsync<JsonElement>("/admin/settings"); }
+                catch (ApiException ex) when (ex.Status == HttpStatusCode.NotFound) { return null; }
+            });
+            _bridge.On("admin.saveSettings", async args =>
+            {
+                RequireAdmin();
+                var changes = new Dictionary<string, object>();
+                if (args.TryGetProperty("registrationApproval", out _)) changes["registrationApproval"] = args.Str("registrationApproval") == "admin" ? "admin" : "auto";
+                if (args.TryGetProperty("requireMinecraftOwnership", out _)) changes["requireMinecraftOwnership"] = args.Bool("requireMinecraftOwnership");
+                return await _api.PutAsync<JsonElement>("/admin/settings", changes);
+            });
             _bridge.On("admin.approveRegistration", async args =>
             {
                 RequireAdmin();

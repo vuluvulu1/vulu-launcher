@@ -137,6 +137,24 @@
 
                 <!-- Kayıt istekleri -->
                 <StackPanel IsVisible="{Binding IsRegistrations}" Spacing="10">
+                    <Border Classes="row" IsVisible="{Binding HasSettings}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Hesaplar e-posta doğrulanınca açılsın" FontWeight="Bold" />
+                                <TextBlock Text="Kapalıyken her kayıt isteği burada bir adminin onayını bekler." Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding AutoApprove}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <Border Classes="row" IsVisible="{Binding HasSettings}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Oynamak için Minecraft sahipliği zorunlu" FontWeight="Bold" />
+                                <TextBlock Text="Açıkken oyun yalnızca Microsoft hesabını bağlamış kişilerle açılır (Ayarlar → Hesap). Halka açılışta açılmalı; Microsoft girişi etkin olmadan açma." Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding RequireOwnership}" OnContent="" OffContent="" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
                     <TextBlock Text="{Binding Summary}" Classes="dim" />
                     <StackPanel IsVisible="{Binding NoRegistrations}" Spacing="4">
                         <TextBlock Text="Bekleyen kayıt isteği yok" FontWeight="Bold" />

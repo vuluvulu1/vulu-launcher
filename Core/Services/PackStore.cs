@@ -175,6 +175,12 @@ namespace VuluLauncher
         public string? Sha1 { get; set; }
         public string? Sha512 { get; set; }
         public long Size { get; set; }
+        /// <summary>
+        /// Yapımcısı başka uygulamalardan indirmeye izin vermeyen CurseForge dosyası: <see cref="Url"/> CurseForge'daki
+        /// indirme sayfasıdır; kuran kişi dosyayı tarayıcıdan indirir, launcher yerine koyar. Dosya pakete gömülmez.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+        public bool Manual { get; set; }
         /// <summary>Dosyanın kopyası vulu sunucusunda var (sunucu bildirir; yayınlarken gönderilmez).</summary>
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
         public bool Mirrored { get; set; }

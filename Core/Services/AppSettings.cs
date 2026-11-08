@@ -37,6 +37,11 @@ namespace VuluLauncher
         /// <summary>Biri oyuna girince bildirim: "friends" (arkadaşlarım) | "all" (herkes) | "off".</summary>
         public string PlayingNotifications { get; set; } = "friends";
         public bool ConsoleExpanded { get; set; }
+        /// <summary>
+        /// Microsoft hesabı bağlı olsa da oyun vulu hesabıyla (çevrimdışı oturum, vulu skinleri) açılır. Yalnızca Minecraft
+        /// sahipliği doğrulanmış hesaplarda seçilebilir.
+        /// </summary>
+        public bool PlayOffline { get; set; }
         /// <summary>Discord'da "vulu Launcher oynuyor" durumu.</summary>
         public bool DiscordPresence { get; set; } = true;
         /// <summary>Arkadaşlar ne görsün: "full" (ne oynadığım) | "online" (yalnızca çevrimiçi) | "hidden" (görünmez).</summary>

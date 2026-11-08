@@ -45,7 +45,7 @@ namespace VuluLauncher.ViewModels
 
         // "Postanı kontrol et" kartı. Şifre yalnızca bu kart açıkken bellekte durur: adres düzeltmek için gerekir.
         private string _sentUsername = "", _sentPassword = "", _sentEmail = "";
-        private bool _sentUseSaved;
+        private bool _sentUseSaved, _sentAutoApprove = true;
         [ObservableProperty] private string _sentTitle = "";
         [ObservableProperty] private string _sentText = "";
         [ObservableProperty] private bool _canResend;
@@ -98,6 +98,7 @@ namespace VuluLauncher.ViewModels
                 _sentPassword = RegPassword;
                 _sentUseSaved = false;
                 _sentEmail = mail.ToLowerInvariant();
+                _sentAutoApprove = !result.TryGetProperty("autoApprove", out var auto) || auto.ValueKind != JsonValueKind.False;
                 RegUsername = RegEmail = RegPassword = RegPassword2 = "";
                 RegStatus = "";
                 OpenSent(result.Bool("verifyEmail"));
@@ -107,7 +108,9 @@ namespace VuluLauncher.ViewModels
         }
 
         private string SentToText() =>
-            $"{_sentEmail} adresine bir doğrulama bağlantısı gönderdik. Kaydını tamamlamak için bağlantıyı aç; birkaç dakika içinde gelmezse spam klasörüne de bak.";
+            $"{_sentEmail} adresine bir doğrulama bağlantısı gönderdik. " +
+            (_sentAutoApprove ? "Bağlantıyı açınca hesabın açılır ve buradan giriş yapabilirsin" : "Kaydını tamamlamak için bağlantıyı aç; ardından bir admin onaylayınca hesabın açılır") +
+            ". Birkaç dakika içinde gelmezse spam klasörüne de bak.";
 
         private void OpenSent(bool verify)
         {

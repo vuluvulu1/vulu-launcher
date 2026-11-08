@@ -150,7 +150,7 @@ namespace VuluLauncher.ViewModels
                     case "overview": await LoadOverviewAsync(); break;
                     case "users": await LoadUsersAsync(); break;
                     case "roles": await LoadRolesAsync(); break;
-                    case "registrations": await RefreshRegistrationsAsync(); LoadRegistrations(); break;
+                    case "registrations": await RefreshRegistrationsAsync(); LoadRegistrations(); await LoadSettingsAsync(); break;
                     case "announcement": await LoadAnnouncementAsync(); break;
                     case "radio": await LoadRadioAsync(); break;
                     case "storage": await LoadStorageAsync(); break;
@@ -259,6 +259,55 @@ namespace VuluLauncher.ViewModels
         }
 
         // ── Kayıt istekleri ──────────────────────────────────────────────
+        /// <summary>Kayıt onayı: açıkken e-posta doğrulanan kişinin hesabı kendiliğinden açılır.</summary>
+        [ObservableProperty] private bool _autoApprove = true;
+        [ObservableProperty] private bool _hasSettings;
+        /// <summary>Açıkken oyun yalnızca Microsoft hesabı bağlı (Minecraft sahipliği doğrulanmış) hesaplarla açılır.</summary>
+        [ObservableProperty] private bool _requireOwnership;
+        private bool _settingApproval;
+
+        private async Task LoadSettingsAsync()
+        {
+            var result = await _core.Call("admin.settings");
+            HasSettings = result.ValueKind == JsonValueKind.Object;
+            _settingApproval = true;
+            AutoApprove = !HasSettings || result.Text("registrationApproval") != "admin";
+            RequireOwnership = result.Bool("requireMinecraftOwnership");
+            _settingApproval = false;
+        }
+
+        partial void OnAutoApproveChanged(bool value)
+        {
+            if (_settingApproval) return;
+            _ = SaveApprovalAsync(value);
+        }
+
+        partial void OnRequireOwnershipChanged(bool value)
+        {
+            if (_settingApproval) return;
+            _ = SaveOwnershipAsync(value);
+        }
+
+        private async Task SaveOwnershipAsync(bool required)
+        {
+            try
+            {
+                await _core.Call("admin.saveSettings", new { requireMinecraftOwnership = required });
+                Status = required ? "Artık yalnızca Microsoft hesabı bağlı olanlar oynayabilir." : "Microsoft hesabı bağlamak artık zorunlu değil.";
+            }
+            catch (Exception ex) { Status = "Ayar kaydedilemedi: " + ex.Message; }
+        }
+
+        private async Task SaveApprovalAsync(bool auto)
+        {
+            try
+            {
+                await _core.Call("admin.saveSettings", new { registrationApproval = auto ? "auto" : "admin" });
+                Status = auto ? "Kayıtlar artık e-posta doğrulanınca açılıyor." : "Kayıtlar artık admin onayı bekliyor.";
+            }
+            catch (Exception ex) { Status = "Ayar kaydedilemedi: " + ex.Message; }
+        }
+
         private void LoadRegistrations()
         {
             Registrations.Clear();

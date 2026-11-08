@@ -104,6 +104,7 @@ namespace VuluLauncher
             // Açılışta sunucuya bir istek atılır; bağlantı (DNS, TLS) giriş yapılana kadar ısınmış olur
             _ = Task.Run(async () => { try { using var _ = await Downloader.Http.GetAsync(ApiConfig.BaseUrl + "/ping"); } catch { } });
             RegisterProfileCommands();
+            RegisterMicrosoftCommands();
 
             // ── Admin ─────────────────────────────────────────────────────
             RegisterAdminCommands();
@@ -506,6 +507,8 @@ namespace VuluLauncher
                 return new { started = false, error = "Bu cihazda oyun başlatma henüz desteklenmiyor." };
 
             var timer = new PhaseTimer("Oyun açılışı");
+            // vulu paketleri vulu oturumu ve skinleriyle açılır; diğerleri Microsoft hesabı bağlıysa gerçek oturumla
+            var microsoftTask = UsesVuluSession(instanceId) ? Task.FromResult<MicrosoftSession?>(null) : MicrosoftSessionForGameAsync();
             // Skin oturumu (iki sunucu isteği) denetimlerle aynı anda hazırlanır
             var skinsTask = PrepareSkinsAsync();
             try
@@ -531,16 +534,19 @@ namespace VuluLauncher
                 if (!PackCatalog.RamOptionsGb.Contains(ramGb))
                     ramGb = PackCatalog.FitRam(AppSettings.Current.DefaultRamGb > 0 ? AppSettings.Current.DefaultRamGb : recommendedRamGb);
 
+                var microsoft = await microsoftTask;
+                timer.Mark("microsoft");
                 // Sunucu yavaşsa açılış takılmasın: skin oturumu en fazla birkaç saniye beklenir
                 SkinSession? skins = null;
-                if (await Task.WhenAny(skinsTask, Task.Delay(TimeSpan.FromSeconds(6))) == skinsTask) skins = await skinsTask;
+                if (microsoft != null) _ = skinsTask.ContinueWith(t => _ = t.Exception, TaskScheduler.Default);
+                else if (await Task.WhenAny(skinsTask, Task.Delay(TimeSpan.FromSeconds(6))) == skinsTask) skins = await skinsTask;
                 else Log("Skin sunucusu yanıt vermedi; oyun varsayılan skinlerle açılıyor.", "warn");
                 timer.Mark("skin");
                 if (string.IsNullOrWhiteSpace(join)) join = null;
                 else if (!System.Text.RegularExpressions.Regex.IsMatch(join, @"^[A-Za-z0-9](?:[A-Za-z0-9.\-]{0,118}[A-Za-z0-9])?(?::\d{1,5})?$"))
                     throw new InvalidOperationException("Sunucu adresi geçersiz.");
 
-                await _game.LaunchAsync(target, _login.Username, ramGb, skins, join, timer);
+                await _game.LaunchAsync(target, _login.Username, ramGb, skins, join, timer, microsoft);
                 timer.Write();
                 StartPlayTime(instanceId);
                 if (!_game.IsRunning) StopPlayTime();   // oyun hemen kapandıysa kapanış olayı sayaçtan önce gelmiş olabilir
@@ -614,6 +620,11 @@ namespace VuluLauncher
 
                 Log("Skinler etkin.", "muted");
                 return new SkinSession(accessToken, profileId, apiRoot, metadata, agent);
+            }
+            catch (ApiException ex) when (ex.Status == System.Net.HttpStatusCode.Forbidden)
+            {
+                // Sunucu bu hesabın oynamasına izin vermiyor (ör. Microsoft hesabı bağlanmamış): oyun açılmaz
+                throw new InvalidOperationException(ex.Message);
             }
             catch (Exception ex)
             {

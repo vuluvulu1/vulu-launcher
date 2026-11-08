@@ -86,6 +86,7 @@ namespace VuluLauncher.ViewModels
             Sections.Add(StorageSection());
             Sections.Add(AccountSection(info));
             Sections[0].IsCurrent = true;
+            _ = LoadMicrosoftAsync();
         }
 
         private SettingSection GameSection(JsonElement info)
@@ -244,14 +245,86 @@ namespace VuluLauncher.ViewModels
             return new SettingSection("Depolama").Add(cache).Add(instances).Add(game).Add(java);
         }
 
+        // ── Microsoft hesabı ─────────────────────────────────────────────
+        private readonly ActionRow _microsoftRow = new("Microsoft hesabı", "Yükleniyor…");
+        private ToggleRow _offlineRow = null!;
+        private bool _settingOffline;
+
+        private ToggleRow CreateOfflineRow() => new("Çevrimdışı oyna",
+            "Açıkken bütün paketler vulu hesabınla ve vulu skinleriyle açılır. Yalnızca Minecraft'a sahip bir Microsoft hesabı bağlıyken seçilebilir.",
+            false, async value =>
+            {
+                if (_settingOffline) return true;
+                try
+                {
+                    var status = await _core.Call("ms.setOffline", new { offline = value });
+                    ApplyMicrosoft(status);
+                    return true;
+                }
+                catch (Exception ex) { Flash(ex.Message, true); return false; }
+            });
+
+        private async Task LoadMicrosoftAsync()
+        {
+            try { ApplyMicrosoft(await _core.Call("ms.status")); }
+            catch (Exception ex) { _microsoftRow.Hint = ex.Message; }
+        }
+
+        private void ApplyMicrosoft(JsonElement status)
+        {
+            bool available = status.Bool("available"), linked = status.Bool("linked"), signedIn = status.Bool("signedIn");
+            string? name = status.Text("name");
+            _microsoftRow.Actions.Clear();
+            if (linked)
+            {
+                _microsoftRow.Value = name;
+                _microsoftRow.Hint = signedIn
+                    ? "Minecraft sahipliğin doğrulandı. vulu paketleri dışındaki instance'lar bu hesapla (resmi skin, online sunucular) açılır; vulu paketleri vulu skinleriyle açılır."
+                    : "Minecraft sahipliğin doğrulandı, ama bu bilgisayarda Microsoft oturumu yok; oyun vulu hesabınla açılır. Resmi oturum için yeniden giriş yap.";
+                if (!signedIn && available) _microsoftRow.With(new RowAction("Giriş yap", ConnectMicrosoftAsync));
+                _microsoftRow.With(new RowAction("Bağlantıyı kaldır", DisconnectMicrosoftAsync, danger: true));
+            }
+            else
+            {
+                _microsoftRow.Value = null;
+                _microsoftRow.Hint = !available
+                    ? "Microsoft girişi bu sunucuda henüz açılmadı."
+                    : status.Bool("ownershipRequired")
+                    ? "Oynamak için Minecraft'ı aldığın Microsoft hesabını bağlaman gerekiyor."
+                    : "Minecraft'ı aldığın Microsoft hesabını bağla: oyun resmi hesabınla açılır, sahipliğin doğrulanır.";
+                if (available) _microsoftRow.With(new RowAction("Bağla", ConnectMicrosoftAsync));
+            }
+            _settingOffline = true;
+            _offlineRow.Value = status.Bool("offline");
+            _settingOffline = false;
+            _offlineRow.IsEnabled = linked;
+        }
+
+        private async Task ConnectMicrosoftAsync()
+        {
+            var result = await main.ShowAsync(new MicrosoftLoginModal());
+            if (result is string name) Flash($"{name} bağlandı ✓");
+            await LoadMicrosoftAsync();
+        }
+
+        private async Task DisconnectMicrosoftAsync()
+        {
+            if (!await main.ConfirmAsync("Bağlantıyı kaldır", "Microsoft hesabının vulu hesabınla bağlantısı kaldırılacak ve bu bilgisayardaki oturumu silinecek.", "Kaldır", danger: true)) return;
+            try { ApplyMicrosoft(await _core.Call("ms.unlink")); Flash("Kaldırıldı ✓"); }
+            catch (Exception ex) { Flash(ex.Message, true); }
+        }
+
         private SettingSection AccountSection(JsonElement info)
         {
+            _offlineRow = CreateOfflineRow();
             bool hasPassword = info.Bool("hasSavedPassword");
             string gameFolder = info.Text("gameFolder") ?? "";
             string licenses = Path.Combine(AppContext.BaseDirectory, "licenses");
 
             return new SettingSection("Hesap ve dosyalar")
                 .Add(new ActionRow("Hesap", $"{main.Username} olarak giriş yapıldı.").With(new RowAction("Çıkış yap", main.LogoutAsync)))
+                .Add(_microsoftRow)
+                .Add(_offlineRow)
                 .Add(new ActionRow("Kayıtlı şifre", hasPassword ? $"{info.Text("savedUsername")} için şifre bu bilgisayarda kayıtlı." : "Kayıtlı şifre yok.")
                     .With(new RowAction("Sil", async () =>
                     {

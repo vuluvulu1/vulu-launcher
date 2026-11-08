@@ -367,6 +367,23 @@ namespace VuluLauncher
                 throw new InvalidDataException($"{pack.Name}: paketin sürüm bilgisi geçersiz.");
         }
 
+        /// <summary>Paketteki elle indirilecek dosyayı instance'ın bekleyenlerine ekler (yerinde ve sağlamsa eklemez).</summary>
+        private static void QueuePackManual(InstanceMeta meta, PackMod mod)
+        {
+            string? path = Downloader.ResolveInside(InstanceStore.PathOf(meta.Folder), mod.File);
+            if (path != null && File.Exists(path) && !string.IsNullOrEmpty(mod.Sha1))
+            {
+                using var stream = File.OpenRead(path);
+                if (string.Equals(Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(stream)), mod.Sha1, StringComparison.OrdinalIgnoreCase)) return;
+            }
+            if (!Uri.TryCreate(mod.Url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps || uri.Host != "www.curseforge.com")
+                throw new InvalidDataException($"Paket izin verilmeyen bir sayfa adresi içeriyor: {mod.Title}");
+            meta.PendingManual.RemoveAll(p => p.FileId == mod.VersionId || p.ProjectId == mod.ProjectId);
+            string folder = mod.File.Contains('/') ? mod.File[..mod.File.IndexOf('/')] : "mods";
+            meta.PendingManual.Add(new ManualDownload(mod.Title, mod.Url, folder, Path.GetFileName(mod.File),
+                mod.Sha1?.ToLowerInvariant(), mod.Size, mod.ProjectId, mod.VersionId, mod.Type, mod.IconUrl));
+        }
+
         private async Task ApplyPackAsync(PackStore store, SharedPack pack, InstanceMeta meta, DownloadJob job)
         {
             string dir = InstanceStore.PathOf(meta.Folder);
@@ -382,14 +399,18 @@ namespace VuluLauncher
             var missing = wanted.Values
                 .Where(m => !meta.Content.Any(c => c.FromPack && c.ProjectId == m.ProjectId && SameSource(c.Source, m.Source)))
                 .ToList();
+            // Yapımcısı izin vermediği için elle indirilecek dosyalar: listeye girer, oyun açılmadan kişiye indirtilir
+            var manualMods = missing.Where(m => m.Manual).ToList();
+            var downloads = missing.Where(m => !m.Manual).ToList();
+            foreach (var mod in manualMods) QueuePackManual(meta, mod);
 
             // Panelde her dosya ayrı görünür; paket dosyaları (config, görevler) en sonda iner
-            var items = missing.ToDictionary(m => m, m => job.Add(string.IsNullOrEmpty(m.Title) ? Path.GetFileName(m.File) : m.Title, m.Size));
+            var items = downloads.ToDictionary(m => m, m => job.Add(string.IsNullOrEmpty(m.Title) ? Path.GetFileName(m.File) : m.Title, m.Size));
             var overridesItem = job.Add("Paket dosyaları (config, görevler…)", pack.OverridesSize);
-            job.Phase = missing.Count > 0 ? "Modlar indiriliyor" : "Paket dosyaları indiriliyor";
+            job.Phase = downloads.Count > 0 ? "Modlar indiriliyor" : "Paket dosyaları indiriliyor";
 
             int done = 0;
-            await Parallel.ForEachAsync(missing, new ParallelOptions { MaxDegreeOfParallelism = 6 }, async (mod, cancel) =>
+            await Parallel.ForEachAsync(downloads, new ParallelOptions { MaxDegreeOfParallelism = 6 }, async (mod, cancel) =>
             {
                 string path = Downloader.ResolveInside(dir, mod.File)
                     ?? throw new InvalidDataException($"Paket geçersiz bir dosya yolu içeriyor: {mod.File}");
@@ -399,7 +420,7 @@ namespace VuluLauncher
 
                 await DownloadPackFileAsync(items[mod], mod.Sha1, mod.Sha512, mod.Mirrored, mod.Url, path, cancel);
                 int current = Interlocked.Increment(ref done);
-                Log($"Modlar indiriliyor... {current}/{missing.Count}", "replace");
+                Log($"Modlar indiriliyor... {current}/{downloads.Count}", "replace");
             });
 
             foreach (var mod in missing)
@@ -696,22 +717,41 @@ namespace VuluLauncher
             var mods = new List<PackMod>();
             var fallback = new List<string>();
 
-            // CurseForge dosyaları: yapımcı izin veriyorsa bağlantı olarak, vermiyorsa dosya pakete gömülür
+            // CurseForge dosyaları: yapımcı izin veriyorsa bağlantı olarak; vermiyorsa dosya pakete gömülmez (yapımcının
+            // dağıtım hakkı), kuran kişiye CurseForge sayfasından elle indirtilir
             var cfFiles = new Dictionary<int, CfFile>();
             if (fromCf.Count > 0)
             {
-                try
-                {
-                    var ids = fromCf.Select(c => int.TryParse(c.VersionId, out var i) ? i : 0).Where(i => i > 0);
-                    cfFiles = (await _curseforge.FilesByIdsAsync(ids)).ToDictionary(f => f.Id);
-                }
-                catch (Exception) { /* CurseForge'a ulaşılamazsa dosyalar pakete gömülür */ }
+                var ids = fromCf.Select(c => int.TryParse(c.VersionId, out var i) ? i : 0).Where(i => i > 0);
+                try { cfFiles = (await _curseforge.FilesByIdsAsync(ids)).ToDictionary(f => f.Id); }
+                catch (Exception ex) { throw new InvalidOperationException("CurseForge'a ulaşılamadı, paket şimdi paylaşılamıyor: " + ex.Message); }
             }
             foreach (var content in fromCf)
             {
-                if (!int.TryParse(content.VersionId, out var fileId) || !cfFiles.TryGetValue(fileId, out var cf)
-                    || string.IsNullOrEmpty(cf.DownloadUrl) || !CurseForgeService.IsCurseForgeCdn(cf.DownloadUrl))
+                if (!int.TryParse(content.VersionId, out var fileId) || !cfFiles.TryGetValue(fileId, out var cf))
                 { fallback.Add(content.File); continue; }
+                if (string.IsNullOrEmpty(cf.DownloadUrl) || !CurseForgeService.IsCurseForgeCdn(cf.DownloadUrl))
+                {
+                    CfMod? cfMod = null;
+                    try { cfMod = await _curseforge.ModAsync(cf.ModId); } catch { /* sayfa adresi genel olur */ }
+                    var manual = ManualDownload.Of(cfMod, cf, content.File.Contains('/') ? content.File[..content.File.IndexOf('/')] : "mods");
+                    mods.Add(new PackMod
+                    {
+                        Source = CurseForgeService.Source,
+                        ProjectId = content.ProjectId,
+                        VersionId = content.VersionId,
+                        Title = content.Title,
+                        VersionNumber = content.VersionNumber,
+                        Type = content.Type,
+                        File = content.File,
+                        IconUrl = content.IconUrl,
+                        Url = manual.Url,
+                        Sha1 = manual.Sha1,
+                        Size = cf.FileLength,
+                        Manual = true,
+                    });
+                    continue;
+                }
                 mods.Add(new PackMod
                 {
                     Source = CurseForgeService.Source,

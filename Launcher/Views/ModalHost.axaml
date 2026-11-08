@@ -152,6 +152,31 @@
                 </StackPanel>
             </DataTemplate>
 
+            <!-- ── Microsoft hesabını bağla (cihaz kodu) ─────────────────── -->
+            <DataTemplate DataType="vm:MicrosoftLoginModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="Microsoft hesabını bağla" Margin="22,18,22,0" />
+                    <Border IsVisible="{Binding HasCode}" Margin="22,16,22,0" Padding="0,14" HorizontalAlignment="Stretch"
+                            Background="{StaticResource AccentSoft}" BorderBrush="{StaticResource Accent}" BorderThickness="1">
+                        <SelectableTextBlock Text="{Binding Code}" FontFamily="Consolas" FontSize="30" FontWeight="Bold" LetterSpacing="4"
+                                             Foreground="{StaticResource AccentHi}" HorizontalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Margin="22,12,22,18" LineHeight="20"
+                               Classes="muted" Classes.error="{Binding IsError}">
+                        <TextBlock.Styles>
+                            <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                        </TextBlock.Styles>
+                    </TextBlock>
+                    <Border Classes="modal-foot">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Content="Vazgeç" Command="{Binding CancelCommand}" />
+                            <Button Content="Kodu kopyala" IsVisible="{Binding HasCode}" Command="{Binding CopyCodeCommand}" />
+                            <Button Classes="primary" Content="Sayfayı aç ↗" IsVisible="{Binding HasCode}" Command="{Binding OpenPageCommand}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
+
             <!-- ── vulu Packs: paket ayrıntısı ──────────────────────────── -->
             <DataTemplate DataType="vm:PackDetailsModal">
                 <DockPanel>
