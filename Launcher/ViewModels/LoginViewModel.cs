@@ -45,7 +45,7 @@ namespace VuluLauncher.ViewModels
 
         // "Postanı kontrol et" kartı. Şifre yalnızca bu kart açıkken bellekte durur: adres düzeltmek için gerekir.
         private string _sentUsername = "", _sentPassword = "", _sentEmail = "";
-        private bool _sentUseSaved, _sentAutoApprove = true;
+        private bool _sentUseSaved, _sentAutoApprove;
         [ObservableProperty] private string _sentTitle = "";
         [ObservableProperty] private string _sentText = "";
         [ObservableProperty] private bool _canResend;
@@ -98,7 +98,7 @@ namespace VuluLauncher.ViewModels
                 _sentPassword = RegPassword;
                 _sentUseSaved = false;
                 _sentEmail = mail.ToLowerInvariant();
-                _sentAutoApprove = !result.TryGetProperty("autoApprove", out var auto) || auto.ValueKind != JsonValueKind.False;
+                _sentAutoApprove = result.TryGetProperty("autoApprove", out var auto) && auto.ValueKind == JsonValueKind.True;
                 RegUsername = RegEmail = RegPassword = RegPassword2 = "";
                 RegStatus = "";
                 OpenSent(result.Bool("verifyEmail"));

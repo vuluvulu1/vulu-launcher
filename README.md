@@ -24,7 +24,7 @@ Minecraft'ı kurmayı, modlamayı ve oynamayı tek bir uygulamada toplayan bir l
 
 `vulu-launcher-setup.exe` dosyasını indirip çalıştır. Launcher her açılışta kendini günceller; güncellemeler imzalıdır, imzası tutmayan sürüm kurulmaz. Kaldırmak için Windows'un "Uygulamalar" listesini kullanabilirsin.
 
-Hesap ücretsiz: giriş ekranından ya da [siteden](https://vuluvulu.com.tr/kayit) kayıt ol, e-postana gelen bağlantıyı aç; hesabın hemen açılır.
+Hesaplar şimdilik admin onayıyla açılıyor: giriş ekranından ya da [siteden](https://vuluvulu.com.tr/kayit) kayıt ol, e-postana gelen bağlantıyı aç; bir admin onaylayınca hesabın açılır.
 
 Windows ilk seferde SmartScreen uyarısı verebilir: *Ek bilgi → Yine de çalıştır*.
 
