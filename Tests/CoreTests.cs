@@ -412,5 +412,57 @@ namespace VuluLauncher.Tests
 
             Assert.Equal(new[] { "file/eski.zip" }, PackOptions.ReadIncompatiblePacks(_dir));
         }
+
+        private static MemoryStream KeysPack(params (string Name, string Value)[] keys) =>
+            new(PackOptions.Serialize(null, null, keys.ToDictionary(k => k.Name, k => k.Value)));
+
+        [Fact]
+        public void ApplyKeys_FixesClashesButKeepsPersonalChoices()
+        {
+            // Mod varsayılanları: V iki eyleme bağlı. Kullanıcı sesli sohbeti kendisi G'ye almış (çakışmasız).
+            File.WriteAllText(Path.Combine(_dir, "options.txt"),
+                "fov:0.5\nkey_key.voice_chat:key.keyboard.v\nkey_key.punchy_moves.camera_toggle_v:key.keyboard.v\n" +
+                "key_key.jump:key.keyboard.g\nkey_key.debug.showHitboxes:key.keyboard.b\nkey_key.diorama.new_waypoint:key.keyboard.b\n");
+            using var json = KeysPack(("key.voice_chat", "key.keyboard.v"), ("key.punchy_moves.camera_toggle_v", "key.keyboard.f9"),
+                ("key.jump", "key.keyboard.space"), ("key.diorama.new_waypoint", "key.keyboard.n"), ("key.new_mod", "key.keyboard.y"));
+
+            PackOptions.Apply(_dir, json);
+
+            var keys = PackOptions.ReadKeys(_dir)!;
+            Assert.Equal("key.keyboard.f9", keys["key.punchy_moves.camera_toggle_v"]);   // çakışıyordu → düzeldi
+            Assert.Equal("key.keyboard.g", keys["key.jump"]);                             // kişisel seçim, çakışmıyor → kaldı
+            Assert.Equal("key.keyboard.b", keys["key.diorama.new_waypoint"]);              // yalnızca F3 kombinasyonuyla ortak → kaldı
+            Assert.Equal("key.keyboard.y", keys["key.new_mod"]);                           // hiç yoktu → eklendi
+            Assert.Contains("fov:0.5", File.ReadAllText(Path.Combine(_dir, "options.txt")));
+        }
+
+        [Fact]
+        public void ApplyKeys_UpdatesWhatThePackSetUntilTheUserChangesIt()
+        {
+            File.WriteAllText(Path.Combine(_dir, "options.txt"), "key_key.a:key.keyboard.v\nkey_key.b:key.keyboard.v\n");
+            using (var first = KeysPack(("key.b", "key.keyboard.f9"))) PackOptions.Apply(_dir, first);
+            Assert.Equal("key.keyboard.f9", PackOptions.ReadKeys(_dir)!["key.b"]);
+
+            using (var second = KeysPack(("key.b", "key.keyboard.f8"))) PackOptions.Apply(_dir, second);
+            Assert.Equal("key.keyboard.f8", PackOptions.ReadKeys(_dir)!["key.b"]);         // kullanıcı dokunmamış → güncellendi
+
+            File.WriteAllText(Path.Combine(_dir, "options.txt"), "key_key.a:key.keyboard.v\nkey_key.b:key.keyboard.z\n");
+            using (var third = KeysPack(("key.b", "key.keyboard.f7"))) PackOptions.Apply(_dir, third);
+            Assert.Equal("key.keyboard.z", PackOptions.ReadKeys(_dir)!["key.b"]);          // kullanıcı değiştirmiş → kaldı
+        }
+
+        [Fact]
+        public void ApplyKeys_IgnoresMalformedEntries()
+        {
+            File.WriteAllText(Path.Combine(_dir, "options.txt"), "fov:0.5\n");
+            using var json = KeysPack(("key.ok", "key.keyboard.y"), ("bad\nname", "key.keyboard.y"), ("key.evil", "x\nfov:1"));
+
+            PackOptions.Apply(_dir, json);
+
+            string text = File.ReadAllText(Path.Combine(_dir, "options.txt"));
+            Assert.Contains("key_key.ok:key.keyboard.y", text);
+            Assert.DoesNotContain("evil", text);
+            Assert.DoesNotContain("fov:1", text);
+        }
     }
 }

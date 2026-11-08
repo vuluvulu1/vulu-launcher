@@ -16,7 +16,7 @@ namespace VuluLauncher
         {
             "instance.json", "saves", "logs", "crash-reports", "screenshots", "natives", "libraries", "versions",
             "assets", "downloads", "debug", ".fabric", ".mixin.out", ".cache", ".update", "local",
-            "command_history.txt", "usercache.json", "usernamecache.json", "realms_persistence.json"
+            "command_history.txt", "usercache.json", "usernamecache.json", "realms_persistence.json", PackOptions.AppliedKeysFile
         };
 
         // Varsayılan olarak işaretli gelenler: modpack'in kendisini oluşturan klasörler (görev kitabı config ve kubejs'te)
@@ -591,7 +591,7 @@ namespace VuluLauncher
         {
             "resourcepacks" => "Modrinth'te bulunanlar bağlantı olur · açık olanlar kuranlarda da açık gelir",
             "shaderpacks" => "Modrinth'te bulunanlar bağlantı olur · seçili shader config/ ile gider",
-            "options.txt" => "Kişisel ayarlar; genelde paylaşılmaz",
+            "options.txt" => "Kişisel ayarlar; genelde paylaşılmaz · tuş atamaları zaten pakete ayrıca girer",
             _ when ContentFolders.Contains(entry, StringComparer.OrdinalIgnoreCase) => "Modrinth'te bulunanlar bağlantı olur",
             _ => null
         };
@@ -652,7 +652,9 @@ namespace VuluLauncher
                 // Kaynak paketleri paylaşılıyorsa hangilerinin açık olduğu da gider (kuranda da açık gelsin)
                 var resourcePacks = includes.Contains("resourcepacks", StringComparer.OrdinalIgnoreCase) ? PackOptions.ReadResourcePacks(dir) : null;
                 var incompatiblePacks = resourcePacks == null ? null : PackOptions.ReadIncompatiblePacks(dir);
-                int fileCount = await Task.Run(() => BuildOverridesZip(zipPath, dir, includes, tracked, fallbackFiles, resourcePacks, incompatiblePacks));
+                // Tuş atamaları her zaman gider: kuranların modlardan gelen çakışmaları düzelir, kendi seçtikleri korunur
+                var keys = PackOptions.ReadKeys(dir);
+                int fileCount = await Task.Run(() => BuildOverridesZip(zipPath, dir, includes, tracked, fallbackFiles, resourcePacks, incompatiblePacks, keys));
                 if (new FileInfo(zipPath).Length > MaxOverridesBytes)
                     throw new InvalidOperationException("Paket dosyaları 200 MB'ı aşıyor. Büyük klasörleri (ör. resourcepacks) çıkarmayı dene.");
 
@@ -858,7 +860,7 @@ namespace VuluLauncher
 
         /// <summary>Seçilen klasör/dosyaları zip'ler. Modrinth'ten bağlantı olarak gidecek içerikler hariç tutulur.</summary>
         private static int BuildOverridesZip(string zipPath, string dir, List<string> includes, HashSet<string> tracked, List<string> fallbackFiles,
-            List<string>? resourcePacks, List<string>? incompatiblePacks)
+            List<string>? resourcePacks, List<string>? incompatiblePacks, Dictionary<string, string>? keys)
         {
             int count = 0;
             using var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create);
@@ -882,10 +884,10 @@ namespace VuluLauncher
                 if (path != null && File.Exists(path)) Add(path);
             }
 
-            if (resourcePacks is { Count: > 0 })
+            if (resourcePacks is { Count: > 0 } || keys is { Count: > 0 })
             {
                 using var stream = zip.CreateEntry(PackOptions.FileName).Open();
-                stream.Write(PackOptions.Serialize(resourcePacks, incompatiblePacks));
+                stream.Write(PackOptions.Serialize(resourcePacks is { Count: > 0 } ? resourcePacks : null, incompatiblePacks, keys));
             }
             return count;
         }
