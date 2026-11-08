@@ -16,8 +16,51 @@
         <Grid RowDefinitions="50,*">
 
             <!-- ── Başlık çubuğu: sürükleme buradan ───────────────────── -->
-            <Border x:Name="TitleBar" Grid.Row="0" Background="{StaticResource Panel}"
-                    BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+            <!-- Meşale: Oyna'da paketin resmi başlık çubuğunun altına uzanır, çubuk üstünde saydamlaşır -->
+            <Border x:Name="TitleBar" Grid.Row="0" ZIndex="3" Classes.overlay="{Binding HomeOverlay}">
+                <Border.Styles>
+                    <Style Selector="Border#TitleBar">
+                        <Setter Property="Background" Value="#E60B0A09" />
+                        <Setter Property="BoxShadow" Value="0 1 0 0 #12FFD8A0" />
+                    </Style>
+                    <Style Selector="Border#TitleBar.overlay">
+                        <Setter Property="Background">
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0" Color="#C7080706" />
+                                <GradientStop Offset="1" Color="#00080706" />
+                            </LinearGradientBrush>
+                        </Setter>
+                        <Setter Property="BoxShadow" Value="none" />
+                    </Style>
+                    <!-- Küçük düğmeler resmin üstünde de kaybolmasın (mesale.css .tb-btn) -->
+                    <Style Selector="Button.tb">
+                        <Setter Property="Width" Value="38" />
+                        <Setter Property="Height" Value="34" />
+                    </Style>
+                    <Style Selector="Button.tb:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="#24FFE2BA" />
+                    </Style>
+                    <Style Selector="Button.tb Path.icon">
+                        <Setter Property="Stroke" Value="{StaticResource Text}" />
+                    </Style>
+                    <Style Selector="Button.tb.big Path.icon">
+                        <Setter Property="Width" Value="19" />
+                        <Setter Property="Height" Value="19" />
+                        <Setter Property="StrokeThickness" Value="2" />
+                    </Style>
+                    <Style Selector="Button.tb.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="#B33A2B" />
+                    </Style>
+                    <Style Selector="Button.chip">
+                        <Setter Property="BorderThickness" Value="1" />
+                        <Setter Property="BorderBrush" Value="#4DFFD8A0" />
+                        <Setter Property="Background" Value="#CC14100C" />
+                    </Style>
+                    <Style Selector="Button.chip:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="#CC14100C" />
+                        <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+                    </Style>
+                </Border.Styles>
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <StackPanel Orientation="Horizontal" Spacing="9" Margin="14,0" VerticalAlignment="Center">
                         <Image Source="avares://vulu Launcher/Assets/logo.png" Width="20" Height="20" />
@@ -104,12 +147,12 @@
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,6,0" VerticalAlignment="Center">
                         <!-- Hızlı arama -->
-                        <Button Classes="flat" IsVisible="{Binding LoggedIn}" Width="40" Height="34" Command="{Binding OpenPaletteCommand}" AutomationProperties.Name="Hızlı arama"
+                        <Button Classes="flat tb big" IsVisible="{Binding LoggedIn}" Command="{Binding OpenPaletteCommand}" AutomationProperties.Name="Hızlı arama"
                                 ToolTip.Tip="Hızlı arama (Ctrl+K): paket, sayfa ya da kişi">
                             <Path Classes="icon" Data="M11 4.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 0 0 0-13zM16 16l4.5 4.5" />
                         </Button>
                         <!-- Geri bildirim: hata bildir ya da öneri yaz -->
-                        <Button Classes="flat" IsVisible="{Binding LoggedIn}" Width="40" Height="34" Command="{Binding OpenLauncherFeedbackCommand}"
+                        <Button Classes="flat tb big" IsVisible="{Binding LoggedIn}" Command="{Binding OpenLauncherFeedbackCommand}"
                                 ToolTip.Tip="Geri bildirim: hata bildir ya da öneri yaz" AutomationProperties.Name="Geri bildirim">
                             <Panel>
                                 <Path Classes="icon" Data="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12zM9 10.5h6M9 13.5h4" />
@@ -121,7 +164,7 @@
                             </Panel>
                         </Button>
                         <!-- Bildirim merkezi -->
-                        <Button Classes="flat" IsVisible="{Binding LoggedIn}" Width="40" Height="34" ToolTip.Tip="Bildirimler" AutomationProperties.Name="Bildirimler">
+                        <Button Classes="flat tb big" IsVisible="{Binding LoggedIn}" ToolTip.Tip="Bildirimler" AutomationProperties.Name="Bildirimler">
                             <Panel>
                                 <Path Classes="icon" Data="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
                                 <Border IsVisible="{Binding Notifications.HasUnread}" Background="{StaticResource Accent}" MinWidth="15" Height="15" CornerRadius="8"
@@ -139,11 +182,8 @@
                                                 <TextBlock Text="Bildirimler" FontWeight="Bold" VerticalAlignment="Center" />
                                                 <Button Grid.Column="1" Classes="flat" Content="Tümünü okundu say" FontSize="12" Padding="6,2" Command="{Binding MarkSeenCommand}" />
                                             </Grid>
-                                            <StackPanel DockPanel.Dock="Top" IsVisible="{Binding IsEmpty}" Margin="16,10,16,20" Spacing="4">
-                                                <TextBlock Text="Bildirim yok" FontWeight="Bold" HorizontalAlignment="Center" />
-                                                <TextBlock Text="Mesajlar, arkadaşlık istekleri, paket güncellemeleri ve oyuna giren arkadaşların burada görünür."
-                                                           Classes="dim" FontSize="12.5" TextWrapping="Wrap" TextAlignment="Center" />
-                                            </StackPanel>
+                                            <v:EmptyState DockPanel.Dock="Top" IsVisible="{Binding IsEmpty}" Dashed="False" Margin="0,0,0,8" Icon="🔔"
+                                                          Title="Bildirim yok" Text="Mesajlar, arkadaşlık istekleri, paket güncellemeleri ve oyuna giren arkadaşların burada görünür." />
                                             <ScrollViewer>
                                                 <ItemsControl ItemsSource="{Binding Items}">
                                                     <ItemsControl.ItemTemplate>
@@ -158,7 +198,10 @@
                                                                         </Grid>
                                                                     </Border>
                                                                     <StackPanel Grid.Column="1" Spacing="2">
-                                                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap" />
+                                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="13" TextWrapping="Wrap" MaxWidth="250" />
+                                                                            <Ellipse Width="7" Height="7" Fill="{StaticResource Accent}" IsVisible="{Binding IsNew}" VerticalAlignment="Center" />
+                                                                        </StackPanel>
                                                                         <TextBlock Text="{Binding Body}" IsVisible="{Binding HasBody}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" MaxLines="2" />
                                                                         <TextBlock Text="{Binding When}" Classes="dim" FontSize="11.5" />
                                                                     </StackPanel>
@@ -167,7 +210,7 @@
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                     <ItemsControl.Styles>
-                                                        <Style Selector="Button.notif.new"><Setter Property="Background" Value="{StaticResource AccentSoft}" /></Style>
+                                                        <Style Selector="Button.notif.new"><Setter Property="Background" Value="#17F2A33A" /></Style>
                                                     </ItemsControl.Styles>
                                                 </ItemsControl>
                                             </ScrollViewer>
@@ -176,7 +219,7 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                        <Button Classes="flat" IsVisible="{Binding LoggedIn}" Command="{Binding OpenMyProfileCommand}"
+                        <Button Classes="flat chip" IsVisible="{Binding LoggedIn}" Command="{Binding OpenMyProfileCommand}"
                                 ToolTip.Tip="Profilim" Padding="8,4" Margin="0,0,6,0">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <Border Width="24" Height="24" Background="{StaticResource Raised}"
@@ -190,10 +233,10 @@
                                 <TextBlock Text="{Binding Username}" FontWeight="SemiBold" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
-                        <Button Classes="flat" Command="{Binding MinimizeCommand}" ToolTip.Tip="Küçült" Width="40" Height="34">
+                        <Button Classes="flat tb" Command="{Binding MinimizeCommand}" ToolTip.Tip="Küçült">
                             <Path Classes="icon" Data="M1 6h10" Width="12" Height="12" Stretch="None" />
                         </Button>
-                        <Button Classes="flat close" Command="{Binding CloseCommand}" ToolTip.Tip="Kapat" Width="40" Height="34">
+                        <Button Classes="flat tb close" Command="{Binding CloseCommand}" ToolTip.Tip="Kapat">
                             <Path Classes="icon" Data="M1.5 1.5l9 9M10.5 1.5l-9 9" Width="12" Height="12" Stretch="None" StrokeThickness="1.4" />
                         </Button>
                     </StackPanel>
@@ -203,16 +246,19 @@
             <!-- ── İçerik: giriş ya da seçili sekme ──────────────────── -->
             <v:LoginView Grid.Row="1" DataContext="{Binding Login}" IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).LoggedIn}" />
             <!-- Sayfa değişince yeni sayfa yumuşakça belirir (web: .view animation view-in .18s) -->
-            <ContentControl Grid.Row="1" Classes="pages" Content="{Binding SelectedTab.Page}" IsVisible="{Binding LoggedIn}">
+            <!-- Sayfa değişince yeni sayfa hafifçe aşağıdan yükselerek belirir (web: .page-enter .18s); MainWindow.axaml.cs -->
+            <!-- Oyna dışındaki sayfaların zemini: seçili paketin dünyası, bulanık ve karartılmış (mesale.css #view-main::before) -->
+            <Panel Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding ShowBackdrop}" IsHitTestVisible="False" ClipToBounds="True">
+                <Image Source="{Binding Home.Background}" Stretch="UniformToFill" Margin="-40">
+                    <Image.Effect><BlurEffect Radius="26" /></Image.Effect>
+                </Image>
+                <Border Background="#D9080706" />
+            </Panel>
+            <ContentControl x:Name="PageHost" Grid.Row="0" Grid.RowSpan="2" Classes.home="{Binding IsHomePage}"
+                            Content="{Binding SelectedTab.Page}" IsVisible="{Binding LoggedIn}">
                 <ContentControl.Styles>
-                    <Style Selector="ContentControl.pages /template/ ContentPresenter#PART_ContentPresenter > :is(Control)">
-                        <Style.Animations>
-                            <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
-                                <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /></KeyFrame>
-                                <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /></KeyFrame>
-                            </Animation>
-                        </Style.Animations>
-                    </Style>
+                    <Style Selector="ContentControl#PageHost"><Setter Property="Margin" Value="0,50,0,0" /></Style>
+                    <Style Selector="ContentControl#PageHost.home"><Setter Property="Margin" Value="0" /></Style>
                 </ContentControl.Styles>
             </ContentControl>
             <!-- ── Açılış perdesi: giriş ve ana ekran arkasında hazırlanır ── -->
@@ -226,9 +272,17 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ToastItem">
-                        <Button Classes="flat toast" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Command="{Binding OpenCommand}">
+                        <Button Classes="flat toast" Classes.leaving="{Binding Leaving}" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Command="{Binding OpenCommand}">
                             <!-- Sağdan kayarak gelir (web: toast-in .34s) -->
                             <Button.Styles>
+                                <Style Selector="Button.toast.leaving">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:0.26" Easing="0.7,0,0.84,0" FillMode="Forward">
+                                            <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="0" /></KeyFrame>
+                                            <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="380" /></KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
                                 <Style Selector="Button.toast">
                                     <Style.Animations>
                                         <Animation Duration="0:0:0.34" Easing="0.16,1,0.3,1" FillMode="Backward">

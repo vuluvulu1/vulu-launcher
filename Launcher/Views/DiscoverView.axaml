@@ -43,6 +43,10 @@
         <Style Selector="Border.card:pointerover">
             <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
         </Style>
+        <!-- Sonuç kartı: üstüne gelince zemin de açılır (web: .mr-hit:hover) -->
+        <Style Selector="Border.card.hit:pointerover">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+        </Style>
         <!-- Filtre kategorisi -->
         <Style Selector="Button.chip">
             <Setter Property="Padding" Value="9,3" />
@@ -75,7 +79,7 @@
         <!-- ── Başlık: kaynak, tür, süren işlem ─────────────────────────── -->
         <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="28,22,28,14">
             <StackPanel Spacing="10">
-                <TextBlock Text="Keşfet" FontSize="24" FontWeight="Bold" />
+                <TextBlock Text="Keşfet" Classes="page-title" />
                 <ItemsControl Classes="segmented" ItemsSource="{Binding Sources}">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -158,8 +162,9 @@
 
             <!-- ── CurseForge / Modrinth ──────────────────────────────── -->
             <Grid IsVisible="{Binding !$parent[UserControl].((vm:DiscoverViewModel)DataContext).IsPacks}" DataContext="{Binding Content}" x:DataType="vm:ContentSearchViewModel"
-                  ColumnDefinitions="*,260" Margin="28,0,28,0">
-                <DockPanel>
+                  ColumnDefinitions="208,*" Margin="28,0,28,0">
+                <!-- Sonuçlar: iki sütunlu ızgara (mesale.css .mr-results); filtreler solda (.mr-side) -->
+                <DockPanel Grid.Column="1" Margin="16,0,0,0">
                     <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" Margin="0,0,0,8">
                         <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding ShowTarget}" Margin="0,0,10,0"
                                     ToolTip.Tip="İçeriğin kurulacağı instance; seçilince yalnızca ona uyanlar görünür">
@@ -171,20 +176,21 @@
                     <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Classes="dim" FontSize="12.5" Margin="0,0,0,8" TextWrapping="Wrap" />
                     <ScrollViewer x:Name="HitScroll">
                         <StackPanel Margin="0,0,14,24" Spacing="8">
-                            <ItemsControl ItemsSource="{Binding Hits}">
+                            <ItemsControl ItemsSource="{Binding Hits}" Margin="0,0,-9,0">
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:ContentHit">
-                                        <Border Classes="card" Padding="12" Margin="0,0,0,8">
-                                            <Grid ColumnDefinitions="64,*,Auto">
-                                                <Button Classes="flat" Padding="0" VerticalAlignment="Top" Command="{Binding DetailsCommand}" ToolTip.Tip="Ayrıntıları göster">
-                                                    <Border Width="64" Height="64" Background="{StaticResource Raised}" ClipToBounds="True">
+                                        <Border Classes="card hit" Padding="14,12" Margin="0,0,9,9">
+                                            <Grid ColumnDefinitions="52,*,Auto">
+                                                <Button Classes="flat" Padding="0" VerticalAlignment="Center" Command="{Binding DetailsCommand}" ToolTip.Tip="Ayrıntıları göster">
+                                                    <Border Width="52" Height="52" Background="{StaticResource Surface}" ClipToBounds="True">
                                                         <Image Source="{Binding Icon}" Stretch="UniformToFill" />
                                                     </Border>
                                                 </Button>
                                                 <StackPanel Grid.Column="1" Margin="14,0,14,0" Spacing="4">
                                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                                         <Button Classes="link" Command="{Binding DetailsCommand}" ToolTip.Tip="Ayrıntıları göster" Foreground="{StaticResource Text}">
-                                                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="Bold" />
+                                                            <TextBlock Text="{Binding Title}" FontSize="14.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="220" />
                                                         </Button>
                                                         <TextBlock Text="{Binding Author}" Classes="dim" FontSize="12" VerticalAlignment="Bottom" />
                                                         <Border Classes="tag" IsVisible="{Binding ManualOnly}" Margin="0" VerticalAlignment="Center"
@@ -192,18 +198,18 @@
                                                             <TextBlock Text="Elle indirilir" />
                                                         </Border>
                                                     </StackPanel>
-                                                    <TextBlock Text="{Binding Description}" Classes="muted" FontSize="12.5" TextWrapping="Wrap"
+                                                    <TextBlock Text="{Binding Description}" Foreground="#C9BFB3" FontSize="13" TextWrapping="Wrap"
                                                                MaxLines="2" TextTrimming="CharacterEllipsis" />
-                                                    <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" />
+                                                    <TextBlock Text="{Binding Meta}" Classes="muted" FontSize="11.5" Margin="0,4,0,0" />
                                                     <ItemsControl ItemsSource="{Binding Tags}" ItemTemplate="{StaticResource TagTemplate}">
                                                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                                     </ItemsControl>
                                                 </StackPanel>
-                                                <StackPanel Grid.Column="2" Spacing="8" HorizontalAlignment="Right" MinWidth="130">
+                                                <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Center" MinWidth="128">
                                                     <Button Classes="sm" Classes.primary="{Binding IsPrimary}" Content="{Binding ButtonText}"
                                                             Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" HorizontalAlignment="Stretch"
                                                             HorizontalContentAlignment="Center" />
-                                                    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Right">
+                                                    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center" Margin="0,4,0,0">
                                                         <Button Classes="link" Content="Sürüm seç" Command="{Binding PickVersionCommand}" />
                                                         <Button Classes="link" Content="Sayfa ↗" Command="{Binding OpenPageCommand}" />
                                                     </StackPanel>
@@ -219,9 +225,11 @@
                     </ScrollViewer>
                 </DockPanel>
 
-                <!-- Sıralama ve filtreler -->
-                <ScrollViewer Grid.Column="1" Margin="10,0,0,0">
-                    <StackPanel Spacing="14" Margin="6,0,4,24">
+                <!-- Sıralama ve filtreler: solda çerçeveli kart -->
+                <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                        VerticalAlignment="Top" Margin="0,0,0,24">
+                <ScrollViewer MaxHeight="680">
+                    <StackPanel Spacing="14" Margin="14">
                         <StackPanel>
                             <TextBlock Classes="field" Text="Sırala" />
                             <ComboBox ItemsSource="{Binding Sorts}" SelectedItem="{Binding Sort}" />
@@ -258,6 +266,7 @@
                         <Button Classes="link" Content="{Binding ClearText}" IsEnabled="{Binding CanClear}" Command="{Binding ClearFiltersCommand}" />
                     </StackPanel>
                 </ScrollViewer>
+                </Border>
             </Grid>
         </Panel>
     </DockPanel>

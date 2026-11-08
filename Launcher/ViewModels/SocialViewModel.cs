@@ -308,7 +308,14 @@ namespace VuluLauncher.ViewModels
         private async Task RefreshPresenceAsync()
         {
             try { _presence = (await _core.Call("community.presence")).Clone(); } catch { /* eski kalır */ }
+            Main.Home.UpdatePlayingHere();
         }
+
+        /// <summary>Şu an bu pakette oynayanlar (kendin hariç; web: playingHere).</summary>
+        public IEnumerable<string> PlayingIn(string? packId, string instanceName) =>
+            _presence.Items().Where(p => p.Text("username") != Main.Username && p.Text("state") == "playing"
+                    && ((packId != null && p.Text("packId") == packId) || p.Text("instance") == instanceName))
+                .Select(p => p.Text("username") ?? "").Where(n => n.Length > 0);
 
         private JsonElement PresenceOf(string name) => _presence.Items().FirstOrDefault(p => p.Text("username") == name);
 
@@ -435,12 +442,15 @@ namespace VuluLauncher.ViewModels
 
         [RelayCommand] private Task MoreShotsLoad() => LoadShotsAsync(true);
 
+        /// <summary>İlk yüklemede görüntülerin yerinde parlayan kutular durur.</summary>
+        [ObservableProperty] private bool _shotSkeleton;
+
         private async Task LoadShotsAsync(bool append)
         {
             if (_shotsLoading && append) return;
             _shotsLoading = true;
             int request = ++_shotsRequest;
-            if (!append) { Shots.Clear(); ShotsEmpty = false; ShotsStatus = "Yükleniyor…"; }
+            if (!append) { Shots.Clear(); ShotsEmpty = false; ShotsStatus = ""; ShotSkeleton = true; }
             try
             {
                 var result = await _core.Call("social.feed", new { before = append && Shots.Count > 0 ? Shots[^1].CreatedAt : "", author = IsMine ? Main.Username : "" });
@@ -455,7 +465,7 @@ namespace VuluLauncher.ViewModels
             {
                 if (request == _shotsRequest) ShotsStatus = "Ekran görüntüleri alınamadı: " + ex.Message;
             }
-            finally { if (request == _shotsRequest) _shotsLoading = false; }
+            finally { if (request == _shotsRequest) { _shotsLoading = false; ShotSkeleton = false; } }
         }
 
         /// <summary>Canlı kartlar: duyuru, açık sunucular (içerideki oyuncularla), oyundaki arkadaşlar.</summary>

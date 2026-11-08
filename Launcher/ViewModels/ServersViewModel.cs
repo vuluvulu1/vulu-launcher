@@ -148,6 +148,8 @@ namespace VuluLauncher.ViewModels
         public ObservableCollection<PersonItem> Online { get; } = new();
         [ObservableProperty] private string _status = "";
         [ObservableProperty] private bool _isEmpty;
+        /// <summary>İlk yükleme sürüyor: kartların yerinde parlayan kutular durur.</summary>
+        [ObservableProperty] private bool _firstLoad;
         [ObservableProperty] private string _onlineCount = "";
         [ObservableProperty] private bool _nobodyOnline;
         public bool IsAdmin => _main.IsAdmin;
@@ -157,6 +159,7 @@ namespace VuluLauncher.ViewModels
         {
             if (_loading) return;
             _loading = true;
+            FirstLoad = Servers.Count == 0;
             Status = "";
             OnPropertyChanged(nameof(IsAdmin));
             try
@@ -183,7 +186,7 @@ namespace VuluLauncher.ViewModels
                 _timer.Start();
             }
             catch (Exception ex) { Status = "Sunucular alınamadı: " + ex.Message; }
-            finally { _loading = false; }
+            finally { _loading = false; FirstLoad = false; }
         }
 
         private async Task RefreshPresenceAsync()

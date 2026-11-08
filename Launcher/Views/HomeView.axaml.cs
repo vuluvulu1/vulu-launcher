@@ -12,6 +12,16 @@ namespace VuluLauncher.Views
             if (TopLevel.GetTopLevel(this)?.DataContext is MainViewModel main) _ = main.Radio.OpenMenuAsync();
         }
 
+        /// <summary>Sağ tıklanan paket seçilir; menüdeki işlemler seçili pakete uygulanır.</summary>
+        private void OnPackContextRequested(object? sender, Avalonia.Input.ContextRequestedEventArgs e)
+        {
+            if (sender is not Control { DataContext: InstanceItem item } target || DataContext is not HomeViewModel vm) return;
+            if (vm.Selected != item) vm.Selected = item;
+            // Menü ayrı bir katmanda açılır; öğeler komutlarını doğrudan Oyna modelinden alır
+            if (target.ContextFlyout is MenuFlyout menu)
+                foreach (var entry in menu.Items.OfType<Control>()) entry.DataContext = vm;
+        }
+
         public HomeView()
         {
             InitializeComponent();

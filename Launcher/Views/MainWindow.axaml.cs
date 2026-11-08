@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -17,6 +17,12 @@ namespace VuluLauncher.Views
             {
                 if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !IsOnButton(e.Source as Visual))
                     BeginMoveDrag(e);
+            };
+            // Sekme değişince yeni sayfa belirir: 0,18 sn'de saydamdan görünüre, 6 piksel aşağıdan yerine (web: page-enter)
+            PageHost.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == ContentControl.ContentProperty && e.OldValue != null && e.NewValue != null && e.OldValue != e.NewValue)
+                    _ = PageEnter.RunAsync(PageHost);
             };
             // İndirme paneli: üstüne gelindiyse tamamlanınca kapanmaz
             DownloadsPanel.PointerEntered += (_, _) => { if (DataContext is MainViewModel m) m.Downloads.Hovered = true; };
@@ -48,6 +54,26 @@ namespace VuluLauncher.Views
         {
             if (DataContext is MainViewModel vm) vm.Notifications.IsOpen = false;
         }
+
+        private static readonly Avalonia.Animation.Animation PageEnter = new()
+        {
+            Duration = TimeSpan.FromMilliseconds(180),
+            Easing = new Avalonia.Animation.Easings.CubicEaseOut(),
+            FillMode = Avalonia.Animation.FillMode.None,
+            Children =
+            {
+                new Avalonia.Animation.KeyFrame
+                {
+                    Cue = new Avalonia.Animation.Cue(0),
+                    Setters = { new Avalonia.Styling.Setter(OpacityProperty, 0.0), new Avalonia.Styling.Setter(TranslateTransform.YProperty, 6.0) },
+                },
+                new Avalonia.Animation.KeyFrame
+                {
+                    Cue = new Avalonia.Animation.Cue(1),
+                    Setters = { new Avalonia.Styling.Setter(OpacityProperty, 1.0), new Avalonia.Styling.Setter(TranslateTransform.YProperty, 0.0) },
+                },
+            },
+        };
 
         private static bool IsOnButton(Visual? visual)
         {

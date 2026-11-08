@@ -32,6 +32,8 @@ namespace VuluLauncher.ViewModels
         public string Body { get; } = body;
         public bool HasBody => Body.Length > 0;
         [ObservableProperty] private Avalonia.Media.Imaging.Bitmap? _avatar;
+        /// <summary>Kapanıyor: sağa kayarak çıkar (web: .toast.leaving .26s).</summary>
+        [ObservableProperty] private bool _leaving;
         public async Task LoadAsync() => Avatar = await Images.LoadAsync(avatar, 64);
         [RelayCommand]
         private async Task Open()
@@ -63,7 +65,16 @@ namespace VuluLauncher.ViewModels
         /// <summary>Açık kutular; sonuncusu en üstte.</summary>
         public ObservableCollection<ModalViewModel> Modals { get; } = new();
 
-        [ObservableProperty] private bool _loggedIn;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HomeOverlay), nameof(ShowBackdrop))]
+        private bool _loggedIn;
+        /// <summary>Oyna açık: paketin resmi başlık çubuğunun altına kadar uzanır (Meşale).</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HomeOverlay), nameof(ShowBackdrop))]
+        private bool _isHomePage = true;
+        public bool HomeOverlay => LoggedIn && IsHomePage;
+        /// <summary>Oyna dışındaki sayfaların zemini: seçili paketin resmi, bulanık ve karartılmış.</summary>
+        public bool ShowBackdrop => LoggedIn && !IsHomePage;
         [ObservableProperty] private string _username = "";
         [ObservableProperty] private string _userInitial = "";
         [ObservableProperty] private string _version = "";
@@ -416,6 +427,7 @@ namespace VuluLauncher.ViewModels
         partial void OnSelectedTabChanged(PageTab? value)
         {
             foreach (var tab in Tabs) tab.IsActive = tab == value;
+            IsHomePage = value?.Page is HomeViewModel;
             // Ayarlar her açılışta baştan okunur (başka yerden değişen ayarlar da görünsün)
             if (value?.Page is SettingsViewModel settings) _ = settings.LoadAsync();
             if (value?.Page is DiscoverViewModel discover) _ = discover.OpenAsync();
@@ -432,7 +444,11 @@ namespace VuluLauncher.ViewModels
             _ = toast.LoadAsync();
             Toasts.Add(toast);
             while (Toasts.Count > 3) Toasts.RemoveAt(0);
-            DispatcherTimer.RunOnce(() => Toasts.Remove(toast), TimeSpan.FromSeconds(6));
+            DispatcherTimer.RunOnce(() =>
+            {
+                toast.Leaving = true;
+                DispatcherTimer.RunOnce(() => Toasts.Remove(toast), TimeSpan.FromMilliseconds(260));
+            }, TimeSpan.FromSeconds(6));
         }
 
         private void OnCoreEvent(string name, JsonElement data)

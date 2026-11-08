@@ -28,6 +28,7 @@ namespace VuluLauncher.ViewModels
         public bool HasCustomBackground { get; init; }
         public bool BackgroundAsIcon { get; init; } = true;
         public string? SharedPackId { get; init; }
+        public string? PackId { get; init; }
 
         public bool IsCustom => Kind == "custom";
         public string Initial => Name.Length > 0 ? Name[..1].ToUpper(CultureInfo.GetCultureInfo("tr-TR")) : "?";
@@ -57,6 +58,7 @@ namespace VuluLauncher.ViewModels
             HasCustomBackground = e.Bool("hasCustomBackground"),
             BackgroundAsIcon = e.Get("backgroundAsIcon").ValueKind != JsonValueKind.False,
             SharedPackId = e.Text("sharedPackId"),
+            PackId = e.Text("packId"),
         };
     }
 
@@ -109,6 +111,59 @@ namespace VuluLauncher.ViewModels
 
         /// <summary>Kutular ve sayfa geçişleri için; MainViewModel kurulurken bağlanır.</summary>
         public MainViewModel Main { get; set; } = null!;
+
+        // ── Paketin sunucusu ve orada oynayanlar (web: renderPackServer, m-heads, m-join) ──
+        /// <summary>Seçili paketin bağlı olduğu vulu sunucusu; yoksa null.</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasPackServer), nameof(ShowBarJoin))]
+        private ServerCard? _packServer;
+        public bool HasPackServer => PackServer != null;
+        /// <summary>Sunucu açıksa alt çubukta "Sunucuya bağlan" ana düğme olur, OYNA küçülür.</summary>
+        public bool ShowBarJoin => PackServer is { IsOnline: true } && CanPlay;
+        public ObservableCollection<PersonItem> PlayingHere { get; } = new();
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasPlayingHere))]
+        private string _playingHereText = "";
+        public bool HasPlayingHere => PlayingHereText.Length > 0;
+
+        partial void OnPackServerChanged(ServerCard? oldValue, ServerCard? newValue)
+        {
+            if (oldValue != null) oldValue.PropertyChanged -= OnPackServerStateChanged;
+            if (newValue != null) newValue.PropertyChanged += OnPackServerStateChanged;
+        }
+
+        private void OnPackServerStateChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ServerCard.State)) OnPropertyChanged(nameof(ShowBarJoin));
+        }
+
+        private async Task UpdatePackServerAsync(InstanceItem item)
+        {
+            if (Main == null) return;
+            if (Main.Servers.Servers.Count == 0)
+            {
+                try { await Main.Servers.LoadAsync(); } catch { /* sunucu listesi alınamadı */ }
+                // Liste o sırada başka yerden yükleniyorduysa bitmesi beklenir
+                for (int i = 0; i < 10 && Main.Servers.Servers.Count == 0 && Main.Servers.FirstLoad; i++) await Task.Delay(300);
+            }
+            if (Selected != item) return;
+            var server = Main.Servers.Servers.FirstOrDefault(s => s.InstanceId == item.Id || (item.SharedPackId != null && s.PackId == item.SharedPackId));
+            PackServer = server;
+            if (server != null) _ = server.PingAsync();
+        }
+
+        /// <summary>Bu pakette oynayan arkadaşlar (en çok üç avatar ve "N kişi burada oynuyor").</summary>
+        public void UpdatePlayingHere()
+        {
+            PlayingHere.Clear();
+            if (Main == null || Selected is not { } item) { PlayingHereText = ""; return; }
+            var names = Main.Social.PlayingIn(item.SharedPackId ?? item.PackId, item.Name).ToList();
+            foreach (var name in names.Take(3)) PlayingHere.Add(Main.Social.Person(name));
+            PlayingHereText = names.Count > 0 ? $"{names.Count} kişi burada oynuyor" : "";
+        }
+
+        [RelayCommand]
+        private Task JoinPackServer() => PackServer is { } s ? Main.Servers.JoinAsync(s) : Task.CompletedTask;
 
         public ObservableCollection<InstanceItem> Instances { get; } = new();
         public ObservableCollection<LogLine> Console { get; } = new();
@@ -172,7 +227,9 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private double _progress;
         [ObservableProperty] private bool _indeterminate;
         [ObservableProperty] private string _playLabel = "OYNA";
-        [ObservableProperty] private bool _canPlay;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowBarJoin))]
+        private bool _canPlay;
 
         /// <summary>Alt bilgi alanında açık sekme: worlds, shots, content, log.</summary>
         [ObservableProperty]
@@ -307,6 +364,9 @@ namespace VuluLauncher.ViewModels
             if (value == null) { Refresh(); return; }
 
             UiState.Set("lastPack", value.Id);
+            PackServer = null;
+            _ = UpdatePackServerAsync(value);
+            UpdatePlayingHere();
             // Pakete ayrıca seçilen RAM; yoksa Ayarlar'daki varsayılan; o da "Önerilen"se paketin önerdiği
             int fallback = RamOptions.Contains(AppSettings.Current.DefaultRamGb) ? AppSettings.Current.DefaultRamGb
                 : Math.Max(RamOptions.FirstOrDefault(4), RamOptions.LastOrDefault(gb => gb <= value.RecommendedRamGb));

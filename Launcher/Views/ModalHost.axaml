@@ -1293,21 +1293,31 @@
             <DataTemplate DataType="vm:TourModal">
                 <StackPanel>
                     <StackPanel Margin="26,24,26,18" Spacing="10">
-                        <TextBlock Text="vulu Launcher'a hoş geldin" Classes="dim" FontSize="12" FontWeight="SemiBold" LetterSpacing="0.5" />
-                        <Border Width="54" Height="54" Background="{StaticResource AccentSoft}" HorizontalAlignment="Left" Margin="0,4,0,0">
-                            <Path Data="{Binding Icon}" Stroke="{StaticResource Accent}" StrokeThickness="1.8" Width="26" Height="26" Stretch="Uniform"
+                        <TextBlock Text="VULU LAUNCHER'A HOŞ GELDİN" Classes="dim" FontSize="11.5" FontWeight="SemiBold" LetterSpacing="0.9" HorizontalAlignment="Center" />
+                        <Border Width="60" Height="60" CornerRadius="30" Background="{StaticResource AccentSoft}" HorizontalAlignment="Center" Margin="0,4,0,0">
+                            <Path Data="{Binding Icon}" Stroke="{StaticResource AccentHi}" StrokeThickness="1.8" Width="26" Height="26" Stretch="Uniform"
                                   StrokeLineCap="Round" StrokeJoin="Round" />
                         </Border>
-                        <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold" />
-                        <TextBlock Text="{Binding Text}" TextWrapping="Wrap" LineHeight="21" Foreground="{StaticResource Muted}" MinHeight="84" />
-                        <ItemsControl ItemsSource="{Binding Dots}" Margin="0,4,0,0">
+                        <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" />
+                        <TextBlock Text="{Binding Text}" TextWrapping="Wrap" LineHeight="21" Foreground="{StaticResource Muted}" MinHeight="84" TextAlignment="Center" />
+                        <ItemsControl ItemsSource="{Binding Dots}" Margin="0,4,0,0" HorizontalAlignment="Center">
                             <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:Choice">
                                     <Border Height="7" CornerRadius="4" Classes.on="{Binding IsSelected}">
                                         <Border.Styles>
-                                            <Style Selector="Border"><Setter Property="Background" Value="{StaticResource LineStrong}" /><Setter Property="Width" Value="7" /></Style>
-                                            <Style Selector="Border.on"><Setter Property="Background" Value="{StaticResource Accent}" /><Setter Property="Width" Value="18" /></Style>
+                                            <Style Selector="Border">
+                                                <Setter Property="Background" Value="{StaticResource LineStrong}" />
+                                                <Setter Property="Width" Value="7" />
+                                                <!-- Nokta genişleyerek değişir (web: .tour-dots transition .2s) -->
+                                                <Setter Property="Transitions">
+                                                    <Transitions>
+                                                        <DoubleTransition Property="Width" Duration="0:0:0.2" />
+                                                        <BrushTransition Property="Background" Duration="0:0:0.2" />
+                                                    </Transitions>
+                                                </Setter>
+                                            </Style>
+                                            <Style Selector="Border.on"><Setter Property="Background" Value="{StaticResource Accent}" /><Setter Property="Width" Value="20" /></Style>
                                         </Border.Styles>
                                     </Border>
                                 </DataTemplate>

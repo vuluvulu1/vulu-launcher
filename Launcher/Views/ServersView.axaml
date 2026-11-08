@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
              xmlns:native="using:VuluLauncher.Native"
              x:Class="VuluLauncher.Views.ServersView"
              x:DataType="vm:ServersViewModel">
@@ -47,7 +48,7 @@
             <StackPanel Margin="28,22,24,28" Spacing="14">
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Sunucular" FontSize="24" FontWeight="Bold" />
+                        <TextBlock Text="Sunucular" Classes="page-title" />
                         <TextBlock Text="vulu sunucuları. &quot;Bağlan&quot; doğru paketi açar ve oyunu doğrudan sunucuya sokar." Classes="muted" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
@@ -56,9 +57,12 @@
                     </StackPanel>
                 </Grid>
                 <TextBlock Text="{Binding Status}" Foreground="{StaticResource Error}" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                <StackPanel IsVisible="{Binding IsEmpty}" Margin="0,30,0,0" Spacing="6" HorizontalAlignment="Center">
-                    <TextBlock Text="Henüz sunucu yok" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
-                    <TextBlock Text="Admin bir sunucu eklediğinde burada görünecek." Classes="muted" HorizontalAlignment="Center" />
+                <v:EmptyState IsVisible="{Binding IsEmpty}" Margin="0,30,0,0" Icon="🗄" Title="Henüz sunucu yok"
+                              Text="Admin bir sunucu eklediğinde burada görünecek." />
+                <!-- İlk yüklemede yer tutucular (web: .server-skel) -->
+                <StackPanel Spacing="12" IsVisible="{Binding FirstLoad}">
+                    <v:Skeleton Height="150" />
+                    <v:Skeleton Height="150" />
                 </StackPanel>
 
                 <ItemsControl ItemsSource="{Binding Servers}">

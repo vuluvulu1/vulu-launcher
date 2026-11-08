@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
+             xmlns:native="using:VuluLauncher.Native"
              x:Class="VuluLauncher.Views.HomeView"
              x:DataType="vm:HomeViewModel">
     <UserControl.Styles>
@@ -10,49 +12,110 @@
             <Setter Property="Padding" Value="0" />
         </Style>
         <Style Selector="ListBox.rail ListBoxItem">
+            <!-- Seçili paketin halkası ve parıltısı öğenin dışına taşar; kırpılmasın -->
+            <Setter Property="ClipToBounds" Value="False" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Margin" Value="0,0,0,10" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="ListBox.rail ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
+            <Setter Property="ClipToBounds" Value="False" />
+        </Style>
+        <Style Selector="ListBox.rail ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.rail ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter, ListBox.rail ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <!-- Paket şeridi (mesale.css .pack-card): resimler sönük; üstüne gelince ya da seçiliyken parlar -->
+        <Style Selector="ListBox.rail ListBoxItem Border.dim">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Transitions">
+                <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.15" /></Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ListBox.rail ListBoxItem:pointerover Border.dim, ListBox.rail ListBoxItem:selected Border.dim">
+            <Setter Property="Opacity" Value="0" />
         </Style>
         <Style Selector="ListBox.rail ListBoxItem Border.thumb">
-            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
-        </Style>
-        <Style Selector="ListBox.rail ListBoxItem:pointerover Border.thumb">
-            <Setter Property="BorderBrush" Value="{StaticResource AccentHi}" />
+            <Setter Property="Transitions">
+                <Transitions><BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.15" /></Transitions>
+            </Setter>
         </Style>
         <Style Selector="ListBox.rail ListBoxItem:selected Border.thumb">
-            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
-            <Setter Property="BoxShadow" Value="0 0 18 1 #61F2A33A" />
+            <Setter Property="BoxShadow" Value="0 0 0 1 #B8FFC873, 0 0 24 1 #61F2A33A" />
         </Style>
 
+        <!-- Etiketler ve sayılar resmin üstünde kenarsız, yarı saydam kutular (mesale.css .tag, .stat) -->
         <Style Selector="Border.stat">
-            <Setter Property="Background" Value="{StaticResource Card}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="12,8" />
-            <Setter Property="MinWidth" Value="104" />
+            <Setter Property="Background" Value="#940C0A08" />
+            <Setter Property="Padding" Value="14,9" />
+            <Setter Property="MinWidth" Value="108" />
         </Style>
         <Style Selector="Border.chip">
-            <Setter Property="Background" Value="{StaticResource Glass}" />
-            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="Background" Value="#940C0A08" />
+            <Setter Property="Padding" Value="9,3" />
         </Style>
+        <!-- Paket işlemleri (mesale.css #page-home .pack-actions .btn) -->
+        <Style Selector="Button.hero">
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="BorderBrush" Value="#61FFD8A0" />
+            <Setter Property="Background" Value="#E614100C" />
+            <Setter Property="FontSize" Value="13.5" />
+        </Style>
+        <Style Selector="Button.hero:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Background" Value="#F53A2A1A" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <!-- Resmin üstündeki kart (mesale.css m-card ve m-edge) -->
+        <Style Selector="Border.mcard">
+            <Setter Property="Background" Value="#D61A140F" />
+            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #17FFD8A0" />
+        </Style>
+        <Style Selector="Ellipse.sdot"><Setter Property="Fill" Value="{StaticResource Muted}" /><Setter Property="Opacity" Value="0.5" /></Style>
+        <Style Selector="Ellipse.sdot.online"><Setter Property="Fill" Value="#4CAF6A" /><Setter Property="Opacity" Value="1" /></Style>
+        <Style Selector="Ellipse.sdot.offline"><Setter Property="Fill" Value="{StaticResource Error}" /><Setter Property="Opacity" Value="1" /></Style>
 
         <Style Selector="Button.play">
             <Setter Property="Background" Value="{StaticResource PrimaryFill}" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="LetterSpacing" Value="1.8" />
             <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
-            <Setter Property="FontSize" Value="17" />
+            <Setter Property="FontSize" Value="15.5" />
             <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Width" Value="200" />
+            <Setter Property="MinWidth" Value="132" />
+            <Setter Property="Height" Value="52" />
+            <Setter Property="Padding" Value="28,0" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <!-- Sunucu açıkken "Sunucuya bağlan" ana düğmedir, OYNA küçülür (mesale.css #m-bar.has-join) -->
+        <Style Selector="Button.play.small">
+            <Setter Property="MinWidth" Value="76" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="Background" Value="#17FFE2BA" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+        </Style>
+        <Style Selector="Button.play.small /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BoxShadow" Value="inset 0 0 0 1 #61FFD8A0" />
+        </Style>
+        <Style Selector="Button.play.small:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#24FFE2BA" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+            <Setter Property="BoxShadow" Value="inset 0 0 0 1 #F2A33A" />
+        </Style>
+        <Style Selector="Button.play.small Path"><Setter Property="Fill" Value="{StaticResource Text}" /></Style>
+        <!-- Alt çubuktaki RAM ve sürüm seçicileri (mesale.css #m-bar .ram-btn) -->
+        <Style Selector="ComboBox.bar">
+            <Setter Property="Background" Value="#12FFE2BA" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="ComboBox.bar /template/ Border#Background">
+            <Setter Property="BoxShadow" Value="inset 0 0 0 1 #42FFD8A0" />
         </Style>
         <Style Selector="Button.play /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="BoxShadow" Value="inset 0 1 0 0 #4DFFECC8" />
@@ -68,8 +131,8 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0,0,0,2" />
             <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource Muted}" />
-            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="Padding" Value="6,0" />
             <Setter Property="Height" Value="39" />
             <Setter Property="FontSize" Value="12.5" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -114,41 +177,52 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid RowDefinitions="*,76">
+    <Grid RowDefinitions="*,78">
         <!-- ── Seçili paketin arka planı ──────────────────────────────── -->
         <!-- Arka planı olmayan pakette: karanlıkta sıcak bir ışık -->
+        <!-- Arka planı olmayan pakette: karanlıkta sıcak bir ışık (mesale.css .stage-bg.plain) -->
         <Border Grid.Row="0">
             <Border.Background>
-                <RadialGradientBrush Center="62%,40%" GradientOrigin="62%,40%" RadiusX="65%" RadiusY="70%">
-                    <GradientStop Color="#3A2410" Offset="0" />
-                    <GradientStop Color="#160F09" Offset="0.6" />
-                    <GradientStop Color="#0B0A09" Offset="1" />
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#241A14" Offset="0" />
+                    <GradientStop Color="#0B0A09" Offset="0.78" />
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+        <Border Grid.Row="0">
+            <Border.Background>
+                <RadialGradientBrush Center="58%,58%" GradientOrigin="58%,58%" RadiusX="46%" RadiusY="52%">
+                    <GradientStop Color="#33F2A33A" Offset="0" />
+                    <GradientStop Color="#00F2A33A" Offset="1" />
                 </RadialGradientBrush>
             </Border.Background>
         </Border>
         <Image Grid.Row="0" Source="{Binding Background}" Stretch="UniformToFill" />
-        <!-- Yazılar okunsun: soldan ve alttan karartma -->
+        <!-- Yazılar okunsun: kenarlardan ve alttan karartma (mesale.css .stage-bg::after) -->
         <Border Grid.Row="0" IsHitTestVisible="False">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                    <GradientStop Color="#E60B0A09" Offset="0" />
-                    <GradientStop Color="#800B0A09" Offset="0.45" />
-                    <GradientStop Color="#1A0B0A09" Offset="1" />
+                    <GradientStop Color="#9E080706" Offset="0" />
+                    <GradientStop Color="#00080706" Offset="0.22" />
+                    <GradientStop Color="#00080706" Offset="0.6" />
+                    <GradientStop Color="#AD080706" Offset="1" />
                 </LinearGradientBrush>
             </Border.Background>
         </Border>
         <Border Grid.Row="0" IsHitTestVisible="False">
             <Border.Background>
-                <LinearGradientBrush StartPoint="0%,40%" EndPoint="0%,100%">
-                    <GradientStop Color="#000B0A09" Offset="0" />
-                    <GradientStop Color="#F00B0A09" Offset="1" />
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#94080706" Offset="0" />
+                    <GradientStop Color="#00080706" Offset="0.15" />
+                    <GradientStop Color="#00080706" Offset="0.52" />
+                    <GradientStop Color="#E6080706" Offset="1" />
                 </LinearGradientBrush>
             </Border.Background>
         </Border>
 
         <!-- Duyuru: paketin üstünde, kapatılabilir -->
-        <Border Grid.Row="0" IsVisible="{Binding HasAnnouncement}" ZIndex="2" Margin="94,18,400,0" VerticalAlignment="Top" HorizontalAlignment="Left"
-                MaxWidth="560" Background="{StaticResource Glass}" BorderBrush="{StaticResource Accent}" BorderThickness="2,1,1,1" Padding="14,10">
+        <Border Grid.Row="0" IsVisible="{Binding HasAnnouncement}" ZIndex="2" Margin="100,58,394,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                MaxWidth="560" Classes="mcard" BoxShadow="inset 3 0 0 0 #F2A33A" Padding="14,10">
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <TextBlock Text="📣" FontSize="16" VerticalAlignment="Top" Margin="0,0,10,0" />
                 <StackPanel Grid.Column="1" Spacing="2">
@@ -160,44 +234,69 @@
             </Grid>
         </Border>
 
-        <Grid Grid.Row="0" ColumnDefinitions="76,*,380">
+        <!-- Resim başlık çubuğunun altına uzanır; içerik çubuğun altından başlar -->
+        <Grid Grid.Row="0" ColumnDefinitions="94,*,356" Margin="0,50,0,0">
             <!-- ── Sol şerit: paketler ─────────────────────────────── -->
-            <Border Grid.Column="0" Background="#B314100C" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0">
                 <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                  <StackPanel Margin="0,14,0,14">
-                    <ListBox Classes="rail" ItemsSource="{Binding Instances}" SelectedItem="{Binding Selected}">
+                  <StackPanel Margin="0,0,0,10">
+                    <ListBox Classes="rail" ItemsSource="{Binding Instances}" SelectedItem="{Binding Selected}" Padding="18,10,12,0">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:InstanceItem">
-                                <StackPanel Spacing="4" Width="64" ToolTip.Tip="{Binding Name}">
-                                    <Border Classes="thumb" Width="46" Height="46" BorderThickness="2" Background="{StaticResource Raised}"
-                                            HorizontalAlignment="Center" ClipToBounds="True">
-                                        <Grid>
-                                            <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="17"
+                                <!-- Sağ tıkta paketin sık kullanılan işlemleri (web: instanceMenu); tıklanan paket önce seçilir -->
+                                <StackPanel Spacing="2" Width="58" Height="76" ToolTip.Tip="{Binding Name}" Background="Transparent"
+                                            ContextRequested="OnPackContextRequested">
+                                    <StackPanel.ContextFlyout>
+                                        <MenuFlyout x:DataType="vm:HomeViewModel">
+                                            <MenuItem Header="▶ Oyna" Command="{Binding PlayCommand}" />
+                                            <MenuItem Header="Dünyalar" Command="{Binding SelectInfoTabCommand}" CommandParameter="worlds" />
+                                            <MenuItem Header="Ekran görüntüleri" Command="{Binding SelectInfoTabCommand}" CommandParameter="shots" />
+                                            <MenuItem Header="İçerik" IsVisible="{Binding SelectedIsCustom}" Command="{Binding SelectInfoTabCommand}" CommandParameter="content" />
+                                            <MenuItem Header="Klasörü aç" Command="{Binding OpenFolderCommand}" />
+                                            <Separator />
+                                            <MenuItem Header="Görünüm" Command="{Binding AppearanceCommand}" />
+                                            <MenuItem Header="Düzenle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding EditInstanceCommand}" />
+                                            <MenuItem Header="Çoğalt" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DuplicateCommand}" />
+                                            <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
+                                            <Separator IsVisible="{Binding SelectedIsCustom}" />
+                                            <MenuItem Header="Sil" IsVisible="{Binding SelectedIsCustom}" Classes="danger" Command="{Binding DeleteInstanceCommand}" />
+                                        </MenuFlyout>
+                                    </StackPanel.ContextFlyout>
+                                    <Border Classes="thumb" Width="58" Height="58" Background="#EB261E17">
+                                        <Panel ClipToBounds="True">
+                                            <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="18" Foreground="{StaticResource Muted}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                                            <Border Classes="dim" Background="#52000000" IsHitTestVisible="False" />
                                             <Ellipse Width="9" Height="9" Fill="{StaticResource Accent}" IsVisible="{Binding HasUpdate}"
                                                      HorizontalAlignment="Right" VerticalAlignment="Top" Margin="3" ToolTip.Tip="Güncelleme var" />
-                                        </Grid>
+                                        </Panel>
                                     </Border>
-                                    <TextBlock Text="{Binding Name}" FontSize="10" Classes="muted" TextTrimming="CharacterEllipsis"
-                                               HorizontalAlignment="Center" MaxWidth="64" />
+                                    <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="Medium" TextTrimming="CharacterEllipsis"
+                                               HorizontalAlignment="Center" MaxWidth="70" Margin="-6,0">
+                                        <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="1" BlurRadius="6" Color="Black" Opacity="1" /></TextBlock.Effect>
+                                    </TextBlock>
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                    <Button Classes="flat" Content="+ Yeni" FontSize="11" HorizontalAlignment="Center" Width="52" Height="46" Padding="0" VerticalContentAlignment="Center"
-                            HorizontalContentAlignment="Center" BorderThickness="1" BorderBrush="{StaticResource LineStrong}"
+                    <Button Classes="flat" Content="+ Yeni" FontSize="12" HorizontalAlignment="Left" Margin="18,0,0,0" Width="58" Height="58" Padding="0" VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center" BorderThickness="1" BorderBrush="#52FFD8A0" Background="#800C0A08" Foreground="{StaticResource Text}"
                             Command="{Binding NewInstanceCommand}" ToolTip.Tip="Yeni instance" />
                   </StackPanel>
                 </ScrollViewer>
             </Border>
 
             <!-- ── Paket bilgileri (sol alt) ──────────────────────── -->
-            <StackPanel Grid.Column="1" VerticalAlignment="Bottom" Margin="28,0,20,22" Spacing="10">
-                <Image Source="{Binding Logo}" IsVisible="{Binding HasLogo}" MaxWidth="420" MaxHeight="140"
+            <!-- Paket adı: ince ve çok büyük (mesale.css .pack-title) -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Bottom" Margin="6,0,20,18" Spacing="10">
+                <Image Source="{Binding Logo}" IsVisible="{Binding HasLogo}" MaxWidth="480" MaxHeight="130"
                        HorizontalAlignment="Left" Stretch="Uniform" />
-                <TextBlock Text="{Binding Selected.Name}" IsVisible="{Binding !HasLogo}" FontSize="40" FontWeight="Bold" />
-                <TextBlock Text="{Binding Selected.Description}" Classes="muted" FontSize="14" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Left" />
+                <TextBlock Text="{Binding Selected.Name}" IsVisible="{Binding !HasLogo}" FontSize="96" FontWeight="Light" LetterSpacing="-4.2"
+                           TextTrimming="CharacterEllipsis" Margin="-4,0,0,0">
+                    <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="2" BlurRadius="34" Color="Black" Opacity="0.62" /></TextBlock.Effect>
+                </TextBlock>
+                <TextBlock Text="{Binding Selected.Description}" FontSize="15.5" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Left" />
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <Border Classes="chip">
                         <TextBlock FontSize="11.5" FontWeight="SemiBold">
@@ -208,17 +307,19 @@
                         <TextBlock Text="{Binding Selected.LoaderLabel}" FontSize="11.5" FontWeight="SemiBold" />
                     </Border>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="6">
                     <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Modlar" Classes="label" /><TextBlock Text="{Binding ModCount}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
                     <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Boyut" Classes="label" /><TextBlock Text="{Binding Size}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
                     <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Güncelleme" Classes="label" /><TextBlock Text="{Binding Updated}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
                     <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Oynama" Classes="label" /><TextBlock Text="{Binding PlayTime}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                    <Button Classes="primary" Content="Paketi güncelle" IsVisible="{Binding HasPackUpdate}" Command="{Binding UpdatePackCommand}"
+                <!-- İşlemler, paketin sunucusu ve orada oynayanlar (mesale.css .hero-row) -->
+                <WrapPanel Margin="0,4,0,0" ItemSpacing="16" LineSpacing="10">
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Button Classes="primary hero" Content="Paketi güncelle" IsVisible="{Binding HasPackUpdate}" Command="{Binding UpdatePackCommand}"
                             ToolTip.Tip="{Binding PackUpdateText}" />
-                    <Button Content="Mod ekle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding AddContentCommand}" />
-                    <Button Content="⋯" Padding="12,7" ToolTip.Tip="Diğer işlemler">
+                    <Button Classes="hero" Content="Mod ekle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding AddContentCommand}" />
+                    <Button Classes="hero" Content="⋯" ToolTip.Tip="Diğer işlemler">
                         <Button.Flyout>
                             <MenuFlyout Placement="TopEdgeAlignedLeft">
                                 <MenuItem Header="Düzenle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding EditInstanceCommand}" />
@@ -237,11 +338,60 @@
                         </Button.Flyout>
                     </Button>
                 </StackPanel>
+                <Border Classes="mcard" IsVisible="{Binding HasPackServer}" Padding="10,8" MinWidth="280" MaxWidth="460" VerticalAlignment="Center">
+                    <Grid ColumnDefinitions="Auto,*,Auto" DataContext="{Binding PackServer}" x:DataType="vm:ServerCard">
+                        <Border Width="44" Height="44" Background="#0DFFFFFF" ClipToBounds="True" VerticalAlignment="Center">
+                            <Panel>
+                                <TextBlock Text="{Binding Initial}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource Muted}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Image Source="{Binding Favicon}" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="None" />
+                            </Panel>
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="12,0" Spacing="3" VerticalAlignment="Center">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Ellipse Classes="sdot" Classes.online="{Binding IsOnline}" Classes.offline="{Binding IsOffline}" Width="10" Height="10" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" Margin="7,0,10,0" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="2" FontFamily="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource Muted}" VerticalAlignment="Center"
+                                           Text="{Binding Players, StringFormat='{}{0} oyuncu'}" IsVisible="{Binding IsOnline}" ToolTip.Tip="{Binding Sample}" />
+                                <TextBlock Grid.Column="2" FontFamily="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource Muted}" VerticalAlignment="Center"
+                                           Text="kapalı" IsVisible="{Binding IsOffline}" />
+                            </Grid>
+                            <TextBlock native:RichText.Parts="{Binding Motd}" IsVisible="{Binding HasMotd}" FontFamily="{StaticResource Mono}" FontSize="12"
+                                       Foreground="#AAAAAA" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                            <TextBlock Text="{Binding Address}" IsVisible="{Binding !HasMotd}" FontFamily="{StaticResource Mono}" FontSize="12"
+                                       Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <Button Grid.Column="2" Classes="sm" Classes.primary="{Binding IsOnline}" Content="Sunucuya gir" VerticalAlignment="Center"
+                                Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).JoinPackServerCommand}"
+                                ToolTip.Tip="{Binding Address, StringFormat='Oyunu açıp {0} adresine bağlanır'}" />
+                    </Grid>
+                </Border>
+                <Border Classes="mcard" IsVisible="{Binding HasPlayingHere}" Padding="14,8" MinHeight="60" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <ItemsControl ItemsSource="{Binding PlayingHere}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PersonItem">
+                                    <Border Width="34" Height="34" CornerRadius="17" ClipToBounds="True" Background="{StaticResource Raised}" ToolTip.Tip="{Binding Username}"
+                                            BoxShadow="0 0 0 2 #0C0A08, 0 0 0 3 #F2A33A, 0 0 14 2 #75F2A33A">
+                                        <Panel>
+                                            <TextBlock Text="{Binding Initial}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
+                                        </Panel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding PlayingHereText}" FontSize="13" Margin="4,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                </WrapPanel>
             </StackPanel>
 
             <!-- ── Sağ panel: dünyalar, ekran görüntüleri, içerik, konsol ── -->
-            <Border Grid.Column="2" Margin="0,18,18,18" Background="{StaticResource Glass}"
-                    BorderBrush="{StaticResource Line}" BorderThickness="1">
+            <!-- Sağ sütun: kenarsız, gölgeli kart; en fazla 560 yüksekliğinde, alta yaslı (mesale.css #console) -->
+            <Border Grid.Column="2" Margin="0,8,18,16" Classes="mcard" MaxHeight="560" VerticalAlignment="Bottom"
+                    BoxShadow="inset 0 1 0 0 #17FFD8A0, 0 14 34 0 #5C000000">
                 <Grid RowDefinitions="40,*">
                     <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="6,0">
                         <Grid ColumnDefinitions="*,Auto">
@@ -313,7 +463,7 @@
                                         <DataTemplate x:DataType="vm:ShotTile">
                                             <Button Classes="flat" Padding="0" Margin="0,0,6,6"
                                                     Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenShotsCommand}">
-                                                <Border Width="164" Height="92" Background="{StaticResource Raised}" ClipToBounds="True">
+                                                <Border Classes="zoom" Width="164" Height="92" Background="{StaticResource Raised}" ClipToBounds="True">
                                                     <Image Source="{Binding Image}" Stretch="UniformToFill" />
                                                 </Border>
                                             </Button>
@@ -346,24 +496,31 @@
         </Grid>
 
         <!-- ── Alt çubuk: seçili paket, RAM, durum, OYNA ──────────────── -->
-        <Border Grid.Row="1" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
-            <Grid ColumnDefinitions="220,Auto,*,Auto,Auto" Margin="16,0,0,0">
+        <!-- Oyun çubuğu (mesale.css #m-bar) -->
+        <Border Grid.Row="1" BoxShadow="0 -1 0 0 #1AFFD8A0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#F7100D0A" Offset="0" />
+                    <GradientStop Color="#0C0A08" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid ColumnDefinitions="210,Auto,*,Auto,Auto,Auto" Margin="18,0">
                 <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <Border Width="40" Height="40" Background="{StaticResource Raised}" BorderBrush="{StaticResource LineStrong}"
-                            BorderThickness="1" ClipToBounds="True">
-                        <Image Source="{Binding Selected.Thumbnail}" Stretch="UniformToFill" />
+                    <Border Width="52" Height="52" Background="{StaticResource Raised}" BoxShadow="0 0 0 1 #B8FFC873, 0 0 24 1 #61F2A33A">
+                        <Panel ClipToBounds="True">
+                            <TextBlock Text="{Binding Selected.Initial}" FontWeight="Bold" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Image Source="{Binding Selected.Thumbnail}" Stretch="UniformToFill" />
+                        </Panel>
                     </Border>
-                    <StackPanel VerticalAlignment="Center" Spacing="1">
-                        <TextBlock Text="{Binding Selected.Name}" FontWeight="Bold" TextTrimming="CharacterEllipsis" MaxWidth="150" />
-                        <TextBlock Text="{Binding Selected.Subtitle}" Classes="dim" FontSize="11.5" />
-                    </StackPanel>
+                    <TextBlock Text="{Binding Selected.Name, FallbackValue=Paket seçilmedi}" FontSize="14.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                               MaxWidth="140" VerticalAlignment="Center" />
                 </StackPanel>
 
 
                 <!-- Radyo: çal/durdur, ses, istasyon (tıklayınca türler ve istasyonlar) -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="8,0,0,0"
                             DataContext="{Binding $parent[Window].((vm:MainViewModel)DataContext).Radio}" x:DataType="vm:RadioViewModel">
-                    <Button Classes="primary" Width="34" Height="34" Padding="0" CornerRadius="17" HorizontalContentAlignment="Center"
+                    <Button Classes="primary" Width="32" Height="32" Padding="0" CornerRadius="16" HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center" Command="{Binding ToggleCommand}" ToolTip.Tip="Radyoyu çal / durdur"
                             AutomationProperties.Name="Radyo">
                         <Panel>
@@ -371,19 +528,23 @@
                             <Path Data="M6 4h4v16H6zM14 4h4v16h-4z" Fill="{StaticResource AccentInk}" Width="10" Height="11" Stretch="Uniform" IsVisible="{Binding Playing}" />
                         </Panel>
                     </Button>
-                    <Button Classes="flat" Width="30" Height="30" Padding="0" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="Sesi kapat / aç" AutomationProperties.Name="Sesi kapat">
+                    <Button Classes="flat" Width="32" Height="32" Padding="0" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="Sesi kapat / aç" AutomationProperties.Name="Sesi kapat">
                         <Panel>
                             <Path Classes="icon" Data="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6" IsVisible="{Binding !Muted}" Width="14" Height="14" />
                             <Path Classes="icon" Data="M4 9h4l5-4v14l-5-4H4zM16 9l5 6M21 9l-5 6" IsVisible="{Binding Muted}" Width="14" Height="14" />
                         </Panel>
                     </Button>
-                    <Slider Width="80" Minimum="0" Maximum="100" Value="{Binding Volume}" VerticalAlignment="Center" ToolTip.Tip="Ses düzeyi" />
+                    <Slider Width="76" Minimum="0" Maximum="100" Value="{Binding Volume}" VerticalAlignment="Center" ToolTip.Tip="Ses düzeyi" />
                     <Button Classes="flat" Padding="6,2" MaxWidth="190" HorizontalContentAlignment="Left" ToolTip.Tip="İstasyon seç">
                         <StackPanel>
-                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12.5" TextTrimming="CharacterEllipsis" />
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <!-- Çalarken ses çubukları (web: .music-eq) -->
+                                <v:EqBars IsVisible="{Binding Playing}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12.5" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="5">
-                                <Border IsVisible="{Binding Live}" Background="{StaticResource Error}" Padding="4,0" VerticalAlignment="Center">
-                                    <TextBlock Text="CANLI" FontSize="9" FontWeight="Bold" Foreground="White" />
+                                <Border IsVisible="{Binding Live}" Background="#C43C3C" CornerRadius="4" Padding="5,0" Height="15" VerticalAlignment="Center">
+                                    <TextBlock Text="CANLI" FontSize="9.5" FontWeight="Bold" LetterSpacing="0.5" Foreground="White" VerticalAlignment="Center" />
                                 </Border>
                                 <TextBlock Text="{Binding Subtitle}" Classes="dim" FontSize="11" TextTrimming="CharacterEllipsis" />
                             </StackPanel>
@@ -454,11 +615,11 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="3" Orientation="Horizontal">
-                <ComboBox ItemsSource="{Binding McVersions}" SelectedItem="{Binding McVersion}" IsVisible="{Binding CanPickVersion}"
+                <ComboBox Classes="bar" ItemsSource="{Binding McVersions}" SelectedItem="{Binding McVersion}" IsVisible="{Binding CanPickVersion}"
                           IsEnabled="{Binding CanPlay}" VerticalAlignment="Center" Margin="0,0,10,0" MinWidth="100" MaxDropDownHeight="360"
                           ToolTip.Tip="Minecraft sürümü" />
-                <ComboBox ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}"
-                          VerticalAlignment="Center" Margin="0,0,14,0" MinWidth="96" ToolTip.Tip="Oyuna ayrılacak bellek">
+                <ComboBox Classes="bar" ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}"
+                          VerticalAlignment="Center" Margin="0,0,10,0" MinWidth="96" ToolTip.Tip="Oyuna ayrılacak bellek">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="x:Int32">
                             <TextBlock Text="{Binding StringFormat='{}{0} GB'}" />
@@ -467,12 +628,14 @@
                 </ComboBox>
                 </StackPanel>
 
-                <Button Grid.Column="4" Classes="play" Command="{Binding PlayCommand}" Height="76" BorderThickness="0">
+                <Button Grid.Column="4" Classes="play" Classes.small="{Binding ShowBarJoin}" Command="{Binding PlayCommand}" BorderThickness="0" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="14" Height="14" Stretch="Uniform" />
-                        <TextBlock Text="{Binding PlayLabel}" FontSize="17" FontWeight="Bold" />
+                        <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="13" Height="13" Stretch="Uniform" />
+                        <TextBlock Text="{Binding PlayLabel}" />
                     </StackPanel>
                 </Button>
+                <Button Grid.Column="5" Classes="primary" IsVisible="{Binding ShowBarJoin}" Content="Sunucuya bağlan" Height="52" Padding="24,0" FontSize="15"
+                        FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" Command="{Binding JoinPackServerCommand}" />
             </Grid>
         </Border>
     </Grid>

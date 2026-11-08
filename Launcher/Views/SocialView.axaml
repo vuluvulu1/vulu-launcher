@@ -1,9 +1,17 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
              x:Class="VuluLauncher.Views.SocialView"
              x:DataType="vm:SocialViewModel">
     <UserControl.Styles>
+        <!-- Bölüm başlığı: küçük, büyük harf, aralıklı (web: .feed-section-title) -->
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="LetterSpacing" Value="0.7" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+        </Style>
         <Style Selector="Button.sm">
             <Setter Property="Padding" Value="11,5" />
             <Setter Property="FontSize" Value="12.5" />
@@ -73,7 +81,7 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="14,20,14,10" Spacing="10">
                     <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Text="Sosyal" FontSize="22" FontWeight="Bold" />
+                        <TextBlock Text="Sosyal" Classes="page-title" />
                         <Button Grid.Column="1" Classes="sm" Content="Yeni mesaj" Command="{Binding NewMessageCommand}" ToolTip.Tip="Birine yeni mesaj yaz" />
                     </Grid>
                     <TextBox Text="{Binding Search}" Watermark="Arkadaş ya da üye ara…" />
@@ -138,7 +146,7 @@
             <StackPanel Margin="26,22,26,28" Spacing="14">
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Akış" FontSize="22" FontWeight="Bold" />
+                        <TextBlock Text="Akış" Classes="page-title" />
                         <TextBlock Text="Oyuncuların paylaştığı ekran görüntüleri. Yalnızca vulu üyeleri görebilir." Classes="muted" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Bottom">
@@ -154,9 +162,10 @@
 
                 <!-- Şimdi: duyuru, açık sunucular, oyundaki arkadaşlar -->
                 <StackPanel IsVisible="{Binding HasLive}" Spacing="8">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
-                        <Ellipse Width="8" Height="8" Fill="#5FC46A" VerticalAlignment="Center" />
-                        <TextBlock Text="Şimdi" FontWeight="Bold" />
+                    <!-- Bölüm başlığı (web: .feed-section-title) ve nabız gibi atan canlı noktası (.live-dot) -->
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,2">
+                        <v:LiveDot VerticalAlignment="Center" />
+                        <TextBlock Text="ŞİMDİ" Classes="section" />
                     </StackPanel>
                     <ItemsControl ItemsSource="{Binding Live}">
                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
@@ -210,12 +219,15 @@
                     </ItemsControl>
                 </StackPanel>
 
-                <TextBlock Text="Ekran görüntüleri" FontWeight="Bold" />
+                <TextBlock Text="EKRAN GÖRÜNTÜLERİ" Classes="section" Margin="0,10,0,0" />
                 <TextBlock Text="{Binding ShotsStatus}" Classes="dim" FontSize="12.5" IsVisible="{Binding ShotsStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                <StackPanel IsVisible="{Binding ShotsEmpty}" Spacing="6" Margin="0,20,0,0" HorizontalAlignment="Center">
-                    <TextBlock Text="Akış şimdilik boş" FontSize="17" FontWeight="Bold" HorizontalAlignment="Center" />
-                    <TextBlock Text="Oyunda F2 ile ekran görüntüsü al, sonra buradan paylaş. Bütün vulu üyeleri görür, beğenip yorum yapabilir."
-                               Classes="muted" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420" />
+                <v:EmptyState IsVisible="{Binding ShotsEmpty}" Margin="0,30,0,0" Icon="🖼" Title="Akış şimdilik boş"
+                              Text="Oyunda F2 ile ekran görüntüsü al, sonra buradan paylaş. Bütün vulu üyeleri görür, beğenip yorum yapabilir." />
+                <!-- Yüklenirken yer tutucular (web: .shot-skel) -->
+                <StackPanel Orientation="Horizontal" Spacing="14" IsVisible="{Binding ShotSkeleton}">
+                    <v:Skeleton Width="300" Height="225" />
+                    <v:Skeleton Width="300" Height="225" />
+                    <v:Skeleton Width="300" Height="225" />
                 </StackPanel>
                 <ItemsControl ItemsSource="{Binding Shots}">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
@@ -224,7 +236,7 @@
                             <Border Classes="card" Width="300" Margin="0,0,14,14">
                                 <StackPanel>
                                     <Button Classes="flat" Padding="0" Command="{Binding OpenCommand}" ToolTip.Tip="Büyük gör">
-                                        <Border Width="298" Height="168" Background="{StaticResource Raised}" ClipToBounds="True">
+                                        <Border Classes="zoom" Width="298" Height="168" Background="{StaticResource Raised}" ClipToBounds="True">
                                             <Image Source="{Binding Thumb}" Stretch="UniformToFill" />
                                         </Border>
                                     </Button>
