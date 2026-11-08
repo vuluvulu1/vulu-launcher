@@ -41,6 +41,8 @@
     <!-- Yazı tipleri ve arayüz görselleri programın içine gömülür -->
     <AvaloniaResource Include="..\Shared\Assets\fonts\*.ttf" Link="Assets\Fonts\%(Filename)%(Extension)" />
     <AvaloniaResource Include="..\Shared\Assets\assets\logo.png" Link="Assets\logo.png" />
+    <!-- Görev çubuğu simgesi: kenarı amber çerçeveli, her zeminde seçilen .ico -->
+    <AvaloniaResource Include="logo.ico" Link="Assets\logo.ico" />
     <Content Include="logo.ico" CopyToOutputDirectory="PreserveNewest" />
     <!-- Açık kaynak lisansları (Ayarlar → Açık kaynak lisansları) -->
     <Content Include="..\Shared\Assets\licenses\**" Link="licenses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

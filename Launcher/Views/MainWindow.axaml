@@ -5,7 +5,7 @@
         x:Class="VuluLauncher.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="vulu Launcher"
-        Icon="avares://vulu Launcher/Assets/logo.png"
+        Icon="avares://vulu Launcher/Assets/logo.ico"
         WindowDecorations="None"
         CanResize="False"
         WindowStartupLocation="CenterScreen"
