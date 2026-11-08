@@ -151,7 +151,7 @@ namespace VuluLauncher.ViewModels
             if (instanceId != null)
             {
                 _watch = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-                _watch.Tick += async (_, _) => { if (!Checking) await CheckCore(quiet: true); };
+                _watch.Tick += async (_, _) => { if (!_busy) await CheckCore(quiet: true); };
                 _watch.Start();
                 _ = Result.ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() => _watch.Stop()));
             }
@@ -184,9 +184,13 @@ namespace VuluLauncher.ViewModels
             foreach (var row in Rows.Where(r => !r.Placed)) await row.OpenCommand.ExecuteAsync(null);
         }
 
+        /// <summary>Bir tarama sürüyor: zamanlayıcı yenisini başlatmaz (sessiz taramalarda Checking açılmaz).</summary>
+        private bool _busy;
+
         private async Task CheckCore(bool quiet)
         {
-            if (_instanceId == null || AllPlaced) return;
+            if (_instanceId == null || AllPlaced || _busy) return;
+            _busy = true;
             Checking = !quiet;
             try
             {
@@ -213,7 +217,7 @@ namespace VuluLauncher.ViewModels
                 }
             }
             catch (Exception ex) { if (!quiet) Note = ex.Message; }
-            finally { Checking = false; }
+            finally { Checking = false; _busy = false; }
         }
 
         [ObservableProperty] private string? _done;

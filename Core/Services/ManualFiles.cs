@@ -22,12 +22,19 @@ namespace VuluLauncher
     internal static class ManualFiles
     {
         public const string BackupFolder = "mods-yedek";
+        /// <summary>Aynı anda tek yerleştirme: arayüz İndirilenler'i birkaç saniyede bir tarar, iki tur aynı dosyayı kopyalamasın.</summary>
+        private static readonly object PlaceGate = new();
 
         /// <summary>
         /// Bekleyen dosyaları İndirilenler'de arar; doğru olanları yerine koyar, instance'ın içerik listesine ekler ve
         /// bekleyenlerden çıkarır. Kullanıcı dosyayı instance klasörüne kendisi koyduysa o da doğrulanıp sayılır.
         /// </summary>
         public static List<ManualPlacement> Place(InstanceMeta instance, string? downloadsDir)
+        {
+            lock (PlaceGate) return PlaceLocked(instance, downloadsDir);
+        }
+
+        private static List<ManualPlacement> PlaceLocked(InstanceMeta instance, string? downloadsDir)
         {
             string instanceDir = InstanceStore.PathOf(instance.Folder);
             var candidates = downloadsDir != null && Directory.Exists(downloadsDir)
@@ -46,13 +53,30 @@ namespace VuluLauncher
                 if (!placed)
                 {
                     // Aynı boyuttakiler hash'le doğrulanır; adı tutup içeriği tutmayanlar neden uymadığıyla bildirilir
-                    var source = candidates.FirstOrDefault(c => c.Length == file.Length && Matches(c, file));
+                    FileInfo? source = null;
+                    try { source = candidates.FirstOrDefault(c => c.Length == file.Length && Matches(c, file)); }
+                    catch (IOException) { /* tarayıcı dosyayı hâlâ yazıyor: bir sonraki turda */ }
                     if (source != null)
                     {
-                        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-                        File.Copy(source.FullName, target, overwrite: true);
-                        placed = true;
+                        // Önce yanına kopyalanır, sonra tek hamlede yerine konur; yarım dosya oluşmaz
+                        string part = target + ".vulu-part";
+                        try
+                        {
+                            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                            File.Copy(source.FullName, part, overwrite: true);
+                            File.Move(part, target, overwrite: true);
+                            placed = true;
+                        }
+                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                        {
+                            try { File.Delete(part); } catch { }
+                            // Kilitli bir dosyanın üstüne taşıma Windows'ta "erişim engellendi" de verebilir
+                            problem = File.Exists(target) || ex is IOException
+                                ? "Dosya şu an kullanımda (oyun ya da başka bir program açık olabilir); kapanınca kendiliğinden yerine konur."
+                                : "Dosya yerine konamadı: klasöre yazma izni yok.";
+                        }
                     }
+                    else if (problem != null) { }
                     else if (candidates.FirstOrDefault(c => SameName(c.Name, file.FileName)) is { } named)
                         problem = named.Length == 0 ? $"İndirilenler'deki {named.Name} boş: indirme yarım kalmış, yeniden indir."
                             : $"İndirilenler'deki {named.Name} beklenen dosya değil; bozuk ya da başka bir sürüm.";
