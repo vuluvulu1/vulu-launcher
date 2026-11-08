@@ -10,51 +10,79 @@ Minecraft'ı kurmayı, modlamayı ve oynamayı tek bir uygulamada toplayan bir l
 <a href="https://vuluvulu.com.tr/launcher"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fvuluvulu.com.tr%2Fapi%2Fstats&query=%24.downloads.total&label=indirme&color=9c704c&labelColor=1a1410" alt="İndirme"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/lisans-AGPL--3.0-654127?labelColor=1a1410" alt="Lisans: AGPL-3.0"></a>
 <img src="https://img.shields.io/badge/.NET-10-c9a992?logo=dotnet&logoColor=white&labelColor=1a1410" alt=".NET 10">
-<img src="https://img.shields.io/badge/platform-Windows%20%7C%20Android-654127?labelColor=1a1410" alt="Windows, Android">
+<img src="https://img.shields.io/badge/aray%C3%BCz-Avalonia-654127?labelColor=1a1410" alt="Arayüz: Avalonia">
 
 **[İndir (vulu-launcher-setup.exe)](https://vuluvulu.com.tr/api/download/windows)** · [vuluvulu.com.tr](https://vuluvulu.com.tr/launcher)
 
 <br>
 
-<img src="docs/screenshots/home.png" alt="Ana ekran" width="860" />
+<img src="docs/screenshots/home.png" alt="Oyna sayfası" width="860" />
 
 </div>
 
 ## Kurulum
 
-`vulu-launcher-setup.exe` dosyasını indirip çalıştır. Launcher her açılışta kendini günceller. Kaldırmak için Windows'un "Uygulamalar" listesini kullanabilirsin.
+`vulu-launcher-setup.exe` dosyasını indirip çalıştır. Launcher her açılışta kendini günceller; güncellemeler imzalıdır, imzası tutmayan sürüm kurulmaz. Kaldırmak için Windows'un "Uygulamalar" listesini kullanabilirsin.
 
-Hesaplar davetle açılır: giriş ekranından ya da [siteden](https://vuluvulu.com.tr/kayit) katılma isteği gönderilir, bir admin onaylar.
+Hesap ücretsiz: giriş ekranından ya da [siteden](https://vuluvulu.com.tr/kayit) kayıt ol, e-postana gelen bağlantıyı aç; hesabın hemen açılır.
 
 Windows ilk seferde SmartScreen uyarısı verebilir: *Ek bilgi → Yine de çalıştır*.
 
-### Android
-
-**[APK'yı indir](https://vuluvulu.com.tr/api/download/android)** · Android 8 ve üstü. Aynı hesap, sosyal akış, mesajlar, paketler ve sunucular, telefon ekranına göre tasarlanmış haliyle. Minecraft da uygulamanın içinden açılır (oyun motoru: Amethyst); paketler ve modlar telefona kurulabilir. İlk açılışta oyun dosyaları ve Java bir kez iner (1.20.1 için yaklaşık 700 MB). Yeni sürüm çıkınca uygulama haber verir.
-
-Telefonda henüz olmayanlar: Forge ve NeoForge paketleri açılmıyor; sunucuya doğrudan katılma ve oynama süresi çalışmıyor.
-
-Geliştirme: Windows arayüzü native'dir (Avalonia, `Launcher/`); Android uygulaması (`Android/`, .NET MAUI) web arayüzünü (`Android/wwwroot`) kullanır. İkisi aynı komutları (`Core/`) ve ortak yazı tipi, görsel ve lisans dosyalarını (`Shared/Assets`) paylaşır. `tools/android-build.ps1` derler, `tools/publish-android.ps1` yayınlar.
-
 ## Neler var
 
-- Vanilla ve kendi instance'ların (Fabric, Quilt, Forge, NeoForge); Java kendiliğinden indirilir
-- CurseForge'dan mod, kaynak paketi, shader ve modpack kurma (bağımlılıklarıyla birlikte); Modrinth de alternatif kaynak olarak duruyor
-- vulu Packs: paylaşılan paketlerin tek tıkla kurulumu ve güncellemesi; her güncellemede neyin değiştiği görünür
-- Sunucular sekmesi: vulu sunucularının durumu ve tek tıkla bağlanma
-- Sosyal: ekran görüntüsü paylaşma ve yorumlar, uçtan uca şifreli mesajlar, arkadaş listesi, profil bannerı
-- Bildirimler: yeni mesaj, beğeni, yorum ve paket güncellemeleri için Windows bildirimi; adminden duyurular
-- Çökme yardımcısı ve eksik mod denetimi
-- Dünya yedekleri, oynama süresi, skinler, Discord durumu
-- Masaüstü kısayolları: bir paketi ya da sunucuyu tek tıkla açan kısayol
-- Üç tema: Classic, Neon, Atlas
+**Oyun**
+- Vanilla ve kendi instance'ların (Fabric, Quilt, Forge, NeoForge); doğru Java sürümü kendiliğinden iner
+- Hızlı açılış: oyun açılırken hangi aşamada olduğu ve genelde ne kadar sürdüğü görünür
+- Çökme yardımcısı: suçlu modu söyler, tek tıkla kapatır; eksik bağımlılık ve bozuk dosya denetimi
+- Dünya yedekleri, oynama süresi, oyunun konsolu, masaüstü kısayolları (bir paketi ya da sunucuyu tek tıkla açar)
+
+**İçerik**
+- CurseForge ve Modrinth'ten mod, kaynak paketi, shader ve modpack kurma, bağımlılıklarıyla birlikte
+- Yapımcısının başka uygulamalara kapattığı CurseForge dosyaları: tarayıcıdan indirirsin, launcher yerine koyar
+- vulu Packs: ekibin paylaştığı paketleri tek tıkla kurma ve güncelleme; her güncellemede neyin değiştiği görünür, açık kaynak paketleri ve sıraları da paketle gelir
+
+**Topluluk**
+- Sunucular: canlı durum, sunucu simgesi ve renkli MOTD, tek tıkla bağlanma
+- Sosyal: arkadaşlar, ekran görüntüsü akışı ve yorumlar, uçtan uca şifreli mesajlar
+- Skinler, profil ve banner, Discord durumu, bildirim merkezi ve Windows bildirimleri
+
+**Arayüz**
+- Meşale teması ve yanan açılış animasyonu; seçili paketin dünyası bütün sayfaların arkasında
+- Paketleri sürükleyerek sıralama, sağ tık menüleri, hızlı arama (Ctrl+K)
+- İndirme paneli (hız, kalan süre, duraklat), internet radyosu, arayüz boyutu ayarı
+
+## Geliştirme
+
+| Klasör | İçerik |
+| --- | --- |
+| `Core/` | Launcher'ın bütün işi: oyun kurma ve açma, paketler, hesap, sunucu istekleri. Arayüz bunu komutlarla çağırır. |
+| `Launcher/` | Windows arayüzü (Avalonia, MVVM) |
+| `Updater/`, `Installer/` | Güncelleyici ve kurulum programı |
+| `Shared/` | Ortak kod; yazı tipleri, görseller ve lisans dosyaları |
+| `Tests/` | Birim testleri |
+| `Android/` | Android uygulaması (.NET MAUI, `Android/wwwroot` web arayüzü) |
+| `tools/` | Yayın ve test betikleri |
+
+Derlemek için .NET 10 SDK yeterli:
+
+```
+dotnet build Launcher
+dotnet test Tests
+```
+
+Yayın `tools/publish-release.ps1` ile yapılır: Launcher, Updater ve kurulum programı derlenir, sürüm bilgisi imzalanır ve sunucuya yüklenir. `tools/local-test.ps1` kurulumu ve güncellemeyi sunucuya yüklemeden bu bilgisayarda denemeyi sağlar.
+
+### Android
+
+Android uygulaması ([APK](https://vuluvulu.com.tr/api/download/android), Android 8 ve üstü) şu an geliştirilmiyor; son sürümü çalışıyor ama Windows'taki yenilikler ona gelmiyor. Aynı `Core/` komutlarını web arayüzüyle kullanır; Minecraft'ı [Amethyst](https://github.com/AngelAuraMC/Amethyst-Android) motoruyla telefonda açar.
 
 ## Teşekkürler
 
-- **[Amethyst](https://github.com/AngelAuraMC/Amethyst-Android)** (AngelAuraMC) ve onun temeli **[PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher)**: Android'de Minecraft'ı açan oyun motoru. GNU LGPL 3.0 ile dağıtılır; vulu için yapılan değişiklikler [vulu-amethyst](https://github.com/vuluvulu1/vulu-amethyst) deposunda.
-- **[CmlLib.Core](https://github.com/CmlLib/CmlLib.Core)**: Windows'ta oyunu ve mod yükleyicilerini kuran ve başlatan kütüphane (MIT).
+- **[CmlLib.Core](https://github.com/CmlLib/CmlLib.Core)**: oyunu ve mod yükleyicilerini kuran ve başlatan kütüphane (MIT).
+- **[Avalonia](https://avaloniaui.net)**: Windows arayüzünün çizildiği kütüphane (MIT).
 - **[authlib-injector](https://github.com/yushijinhun/authlib-injector)**: skinlerin vulu üzerinden çalışmasını sağlayan Java ajanı (AGPL 3.0). Launcher pakete gömmez; ilk ihtiyaçta resmî adresinden indirir.
 - **[CurseForge](https://www.curseforge.com/minecraft)** ve **[Modrinth](https://modrinth.com)**: mod, kaynak paketi, shader ve modpack'lerin kaynağı. İçerikler yapımcılarına aittir; launcher onları bu platformların kendi sunucularından indirir.
+- **[Amethyst](https://github.com/AngelAuraMC/Amethyst-Android)** (AngelAuraMC) ve onun temeli **[PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher)**: Android'de Minecraft'ı açan oyun motoru (GNU LGPL 3.0); vulu için yapılan değişiklikler [vulu-amethyst](https://github.com/vuluvulu1/vulu-amethyst) deposunda.
 
 Bütün bileşenlerin listesi ve lisansları: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
@@ -64,4 +92,4 @@ Bütün bileşenlerin listesi ve lisansları: [THIRD-PARTY-NOTICES.md](THIRD-PAR
 
 "vulu" adı ve VL logosu lisansa dahil değildir: kendi sürümünüzü dağıtırken farklı bir ad ve logo kullanın.
 
-Kullanılan üçüncü taraf bileşenler ve lisansları: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+Minecraft, Mojang Studios'un ticari markasıdır; vulu Launcher resmî bir Minecraft ürünü değildir ve Mojang ya da Microsoft ile bağlantılı değildir.
