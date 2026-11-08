@@ -108,9 +108,30 @@ namespace VuluLauncher.Views
             _dragging = false;
         }
 
+        private bool _heroLeft;
+
+        /// <summary>
+        /// Paket şeridinin son düğmesi ("+ Yeni") paket bilgisinin üstünde bitiyorsa bilgi sola, şeridin altına kayar;
+        /// şerit uzayınca ya da pencere alçalınca geri çekilir (web: syncHeroInset, .m-hero-left).
+        /// </summary>
+        private void SyncHeroInset()
+        {
+            if (!Hero.IsVisible || Hero.Bounds.Height <= 0 || !NewButton.IsVisible) return;
+            var last = NewButton.TranslatePoint(new Point(0, NewButton.Bounds.Height), this);
+            var top = Hero.TranslatePoint(new Point(0, 0), this);
+            if (last is null || top is null) return;
+            bool free = last.Value.Y + 14 < top.Value.Y;
+            if (free == _heroLeft) return;
+            _heroLeft = free;
+            Grid.SetColumn(Hero, free ? 0 : 1);
+            Grid.SetColumnSpan(Hero, free ? 2 : 1);
+            Hero.Margin = free ? new Thickness(18, 0, 20, 18) : new Thickness(6, 0, 20, 18);
+        }
+
         public HomeView()
         {
             InitializeComponent();
+            LayoutUpdated += (_, _) => SyncHeroInset();
             // Konsol en alttayken yeni satırlar gelince alta kayar; kullanıcı yukarı kaydırdıysa yerinde kalır
             DataContextChanged += (_, _) =>
             {

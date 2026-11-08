@@ -292,7 +292,7 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                    <Button Classes="flat" Content="+ Yeni" FontSize="12" HorizontalAlignment="Left" Margin="18,0,0,0" Width="58" Height="58" Padding="0" VerticalContentAlignment="Center"
+                    <Button x:Name="NewButton" Classes="flat" Content="+ Yeni" FontSize="12" HorizontalAlignment="Left" Margin="18,0,0,0" Width="58" Height="58" Padding="0" VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center" BorderThickness="1" BorderBrush="#52FFD8A0" Background="#800C0A08" Foreground="{StaticResource Text}"
                             Command="{Binding NewInstanceCommand}" ToolTip.Tip="Yeni instance" />
                   </StackPanel>
@@ -301,7 +301,8 @@
 
             <!-- ── Paket bilgileri (sol alt) ──────────────────────── -->
             <!-- Paket adı: ince ve çok büyük (mesale.css .pack-title) -->
-            <StackPanel Grid.Column="1" VerticalAlignment="Bottom" Margin="6,0,20,18" Spacing="10">
+            <!-- Şerit paket bilgisine ulaşmıyorsa bilgi sola, şeridin altına yaslanır (web: syncHeroInset); HomeView.axaml.cs -->
+            <StackPanel x:Name="Hero" Grid.Column="1" VerticalAlignment="Bottom" Margin="6,0,20,18" Spacing="10">
                 <Image Source="{Binding Logo}" IsVisible="{Binding HasLogo}" MaxWidth="480" MaxHeight="130"
                        HorizontalAlignment="Left" Stretch="Uniform" />
                 <TextBlock Text="{Binding Selected.Name}" IsVisible="{Binding !HasLogo}" FontSize="96" FontWeight="Light" LetterSpacing="-4.2"
