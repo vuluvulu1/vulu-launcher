@@ -694,7 +694,15 @@ namespace VuluLauncher.ViewModels
         private void Refresh()
         {
             Indeterminate = false;
-            if (Launching)
+            if (_boot is { } boot && GameRunning)
+            {
+                // Oyun süreci başladı, penceresi henüz açılmadı: aşama, geçen süre ve önceki açılışa göre ilerleme
+                long seconds = boot.ElapsedMs / 1000;
+                StatusText = $"{boot.Phase}… {seconds} sn" + (boot.ExpectedMs > 0 ? $" / genelde {Math.Max(1, (boot.ExpectedMs + 500) / 1000)} sn" : "");
+                if (boot.ExpectedMs > 0) Progress = Math.Min(95, boot.ElapsedMs * 100.0 / boot.ExpectedMs);
+                else Indeterminate = true;
+            }
+            else if (Launching)
             {
                 StatusText = _activityText.Length > 0 ? _activityText : "Başlatılıyor…";
                 var pct = ProgressOf(StatusText);
@@ -708,7 +716,7 @@ namespace VuluLauncher.ViewModels
             else if (Installed == false) { StatusText = "İlk açılışta oyun dosyaları indirilecek"; Progress = 0; }
             else { StatusText = "Hazır"; Progress = 100; }
 
-            PlayLabel = Launching ? "Başlatılıyor…" : GameRunning ? "Oyun çalışıyor" : !CanLaunchGame ? "Telefonda oyun yakında" : "OYNA";
+            PlayLabel = Launching ? "Başlatılıyor…" : _boot != null && GameRunning ? "Açılıyor…" : GameRunning ? "Oyun çalışıyor" : !CanLaunchGame ? "Telefonda oyun yakında" : "OYNA";
             CanPlay = !Launching && !GameRunning && CanLaunchGame && Selected != null;
             PlayCommand.NotifyCanExecuteChanged();
         }
@@ -828,15 +836,29 @@ namespace VuluLauncher.ViewModels
             _lastLineWasProgress = false;
         }
 
+        /// <summary>Oyunun açılış durumu (süreç başladı, pencere açılmadı); null: açılış bitti ya da yok.</summary>
+        private sealed record BootInfo(string Phase, long ElapsedMs, long ExpectedMs);
+        private BootInfo? _boot;
+
         public void OnCoreEvent(string name, JsonElement data)
         {
             switch (name)
             {
+                case "gameBoot":
+                    _boot = new BootInfo(data.Text("phase") ?? "Oyun açılıyor", (long)data.Num("elapsedMs"), (long)data.Num("expectedMs"));
+                    if (GameRunning) Refresh();
+                    break;
+                case "gameReady":
+                    _boot = null;
+                    Progress = 100;
+                    Refresh();
+                    break;
                 case "log":
                     foreach (var line in data.Items())
                         AppendLog(line.Text("text") ?? "", line.Text("level") ?? "info", line.Bool("replace"), line.Text("time"));
                     break;
                 case "gameExited":
+                    _boot = null;
                     GameRunning = false;
                     _infoCache.Clear();
                     InfoTab = UiState.Get("infoTab") is { } t && InfoTabs.Contains(t) ? t : "worlds";

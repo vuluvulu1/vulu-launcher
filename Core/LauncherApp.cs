@@ -36,8 +36,11 @@ namespace VuluLauncher
             _modrinth = new ModrinthService(Log);
             _curseforge = new CurseForgeService(_api, Log);
             _game = new GameLauncher(Log, _java, host.GameRunner);
+            _game.BootProgress += status => _bridge.Emit("gameBoot", new { phase = status.Phase, elapsedMs = status.ElapsedMs, expectedMs = status.ExpectedMs });
+            _game.Ready += ms => { _bridge.Emit("gameReady", new { ms }); OnGameWindow(); };
             _game.Exited += () =>
             {
+                Interlocked.Exchange(ref _afterWindow, null);
                 StopPlayTime(); _bridge.Emit("gameExited"); _discord.ShowIdle(); PresenceIdle(); _ = ReportCrashIfAnyAsync();
                 // Bellek için simge durumuna alındıysa oyun kapanınca launcher geri gelir
                 if (Interlocked.Exchange(ref _hidForMemory, 0) == 1) _host.BringToFront();
@@ -486,19 +489,35 @@ namespace VuluLauncher
             catch (Exception) { return null; }
         }
 
+        /// <summary>Oyunun penceresi açılınca yapılacak (simge durumu, kapanma); bir kez çalışır.</summary>
+        private Action? _afterWindow;
+
+        private void OnGameWindow()
+        {
+            var action = Interlocked.Exchange(ref _afterWindow, null);
+            if (action == null || !_game.IsRunning) return;
+            try { action(); } catch (Exception ex) { LogFile.Write("[açılış] " + ex.Message); }
+        }
+
         private async Task<object?> PlayAsync(string instanceId, int ramGb, string mcVersion, bool ignoreMissing = false, string? join = null, bool ignoreFiles = false)
         {
             RequireLogin();
             if (!_host.CanLaunchGame)
                 return new { started = false, error = "Bu cihazda oyun başlatma henüz desteklenmiyor." };
 
+            var timer = new PhaseTimer("Oyun açılışı");
+            // Skin oturumu (iki sunucu isteği) denetimlerle aynı anda hazırlanır
+            var skinsTask = PrepareSkinsAsync();
             try
             {
                 var (target, recommendedRamGb) = ResolveTarget(instanceId);
+                timer.Mark("paket");
                 if (!ignoreFiles && await FileProblemsAsync(instanceId, target) is { } files)
                     return new { started = false, error = (string?)null, files };
+                timer.Mark("dosya kontrolü");
                 if (!ignoreMissing && await MissingDependenciesAsync(instanceId, target) is { } missing)
                     return new { started = false, error = (string?)null, missing };
+                timer.Mark("bağımlılıklar");
 
                 // Sunucunun Vanilla paketinde kullanıcı Minecraft sürümünü seçebilir; modlu paketlerin sürümü sabittir
                 if (!string.IsNullOrWhiteSpace(mcVersion) && mcVersion != target.McVersion &&
@@ -512,36 +531,44 @@ namespace VuluLauncher
                 if (!PackCatalog.RamOptionsGb.Contains(ramGb))
                     ramGb = PackCatalog.FitRam(AppSettings.Current.DefaultRamGb > 0 ? AppSettings.Current.DefaultRamGb : recommendedRamGb);
 
-                var skins = await PrepareSkinsAsync();
+                var skins = await skinsTask;
+                timer.Mark("skin");
                 if (string.IsNullOrWhiteSpace(join)) join = null;
                 else if (!System.Text.RegularExpressions.Regex.IsMatch(join, @"^[A-Za-z0-9](?:[A-Za-z0-9.\-]{0,118}[A-Za-z0-9])?(?::\d{1,5})?$"))
                     throw new InvalidOperationException("Sunucu adresi geçersiz.");
 
-                await _game.LaunchAsync(target, _login.Username, ramGb, skins, join);
+                await _game.LaunchAsync(target, _login.Username, ramGb, skins, join, timer);
+                timer.Write();
                 StartPlayTime(instanceId);
                 if (!_game.IsRunning) StopPlayTime();   // oyun hemen kapandıysa kapanış olayı sayaçtan önce gelmiş olabilir
                 string? packId = instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(instanceId[InstancePrefix.Length..])?.SharedPackId : null;
                 PresencePlaying(target, packId, join);
                 _discord.ShowPlaying(target.Name, target.McVersion, target.Loader, await PackImageUrlAsync(instanceId), await ServerNameAsync(join), join != null);
 
-                // Bellek sıkışıksa launcher kendi tarayıcı süreçlerini kapatıp simge durumuna geçer (oyuna ~0,5 GB kalır)
+                // Bellek sıkışıksa launcher oyun süresince simge durumuna geçer (oyuna ~0,5 GB kalır). Bu ve ayarlardaki
+                // "oyun açılınca" davranışı oyunun penceresi açılınca uygulanır; o ana kadar launcher açılışı gösterir.
                 var memory = _game.LastMemory;
                 if (memory != null) emitMemoryWarning(memory);
+                Action? afterWindow = null;
                 if (memory is { Tight: true } && AppSettings.Current.OnGameStart != "close" && _host.CanHideToTray)
                 {
-                    Interlocked.Exchange(ref _hidForMemory, 1);
-                    Log("Bellek az olduğu için launcher oyun süresince simge durumuna geçiyor; oyun kapanınca geri gelir.", "muted");
-                    _ = Task.Delay(1500).ContinueWith(_ => _host.HideToTray());
+                    afterWindow = () =>
+                    {
+                        Interlocked.Exchange(ref _hidForMemory, 1);
+                        Log("Bellek az olduğu için launcher oyun süresince simge durumuna geçiyor; oyun kapanınca geri gelir.", "muted");
+                        _host.HideToTray();
+                    };
                 }
-                // Ayarlardaki "oyun açılınca" davranışı
                 else switch (AppSettings.Current.OnGameStart)
                 {
-                    case "minimize":
-                        _host.Minimize();
-                        break;
-                    case "close":
-                        _ = Task.Delay(1500).ContinueWith(_ => _host.Close());
-                        break;
+                    case "minimize": afterWindow = _host.Minimize; break;
+                    case "close": afterWindow = _host.Close; break;
+                }
+                if (afterWindow != null)
+                {
+                    Interlocked.Exchange(ref _afterWindow, afterWindow);
+                    // Pencere hiç algılanamazsa (eski sürüm, tam ekran geçişi) yine de bir süre sonra uygulanır
+                    _ = Task.Delay(TimeSpan.FromSeconds(90)).ContinueWith(_ => OnGameWindow());
                 }
 
                 return new { started = true, error = (string?)null };

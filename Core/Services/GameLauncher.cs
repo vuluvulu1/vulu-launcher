@@ -31,6 +31,17 @@ namespace VuluLauncher
         /// </summary>
         private const string EnglishLocaleArgs = "-Duser.language=en -Duser.country=US";
 
+        /// <summary>
+        /// Minecraft açılışta sistem raporu için çalışan süreçleri OSHI ile sorgular. İngilizce olmayan Windows'ta (Türkçe
+        /// dahil) performans sayaçlarının İngilizce adları çoğu zaman bulunamaz; OSHI yedek yollara düşüp her açılışta
+        /// ~8-12 saniye bekler. Kayıt defteri ve süreç sayaçları kapatılınca bu bekleme olmaz; yalnızca çökme raporundaki
+        /// "süreç yükü/bellek" satırları boş kalır.
+        /// </summary>
+        private const string SkipPerfCounterArgs = "-Doshi.os.windows.hkeyperfdata=false -Doshi.os.windows.perfproc.disabled=true";
+
+        /// <summary>Sürümlerin istediği Java (sürüm adı → ana sürüm); her açılışta sürüm bilgisini yeniden okumamak için.</summary>
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, int> RequiredJava = new();
+
         private static readonly Regex UsernameRegex = new(@"^[a-zA-Z0-9_]{1,16}$", RegexOptions.Compiled);
 
         private readonly Action<string, string> _log;
@@ -140,10 +151,18 @@ namespace VuluLauncher
         /// <summary>Sürümün istediği Java ana sürümü; eski sürümler belirtmez, onlar Java 8 ister.</summary>
         public static async Task<int> GetRequiredJavaAsync(MinecraftLauncher launcher, string versionName)
         {
+            if (RequiredJava.TryGetValue(versionName, out int known)) return known;
             var version = await launcher.GetVersionAsync(versionName);
             string? major = version.GetInheritedProperty(v => v.JavaVersion)?.MajorVersion;
-            return int.TryParse(major, out int parsed) && parsed > 0 ? parsed : 8;
+            int result = int.TryParse(major, out int parsed) && parsed > 0 ? parsed : 8;
+            RequiredJava[versionName] = result;
+            return result;
         }
+
+        /// <summary>Oyunun açılış durumu (süreç başladı, pencere henüz açılmadı).</summary>
+        public event Action<BootStatus>? BootProgress;
+        /// <summary>Oyunun penceresi açıldı (ms: süreç başlangıcından beri).</summary>
+        public event Action<long>? Ready;
 
         /// <summary>
         /// Gerekli Java'yı, oyun dosyalarını ve mod yükleyiciyi kurup oyunu başlatır.
@@ -151,7 +170,8 @@ namespace VuluLauncher
         /// </summary>
         /// <param name="skins">Verilirse oyun vulu skin sistemiyle (authlib-injector) açılır; null ise eskisi gibi çevrimdışı.</param>
         /// <param name="serverAddress">Verilirse oyun açılınca doğrudan bu sunucuya bağlanır (host ya da host:port).</param>
-        public async Task LaunchAsync(LaunchTarget target, string username, int ramGb, SkinSession? skins = null, string? serverAddress = null)
+        public async Task LaunchAsync(LaunchTarget target, string username, int ramGb, SkinSession? skins = null, string? serverAddress = null,
+            PhaseTimer? timer = null)
         {
             if (!UsernameRegex.IsMatch(username))
                 throw new InvalidOperationException(
@@ -180,11 +200,15 @@ namespace VuluLauncher
 
                 job.Phase = "Java hazırlanıyor";
                 int javaMajor = await GetRequiredJavaAsync(launcher, target.McVersion);
+                timer?.Mark("sürüm bilgisi");
                 string javaPath = await _java.EnsureAsync(javaMajor);
+                timer?.Mark("java");
 
                 job.Phase = target.Loader == "vanilla" ? "Minecraft hazırlanıyor" : "Mod yükleyici hazırlanıyor";
                 string versionName = await EnsureLoaderAsync(launcher, target, javaPath);
+                timer?.Mark("mod yükleyici");
                 await RemoveBrokenLibrariesAsync(launcher, versionName);
+                timer?.Mark("kütüphane denetimi");
                 // Bir dosya inmeye başlarsa ByteProgress bunu "indiriliyor" yapar
                 job.Phase = "Oyun dosyaları kontrol ediliyor";
 
@@ -217,15 +241,19 @@ namespace VuluLauncher
                     option.ScreenHeight = settings.GameHeight;
                 }
                 // Kullanıcının kendi argümanları sonra eklendiği için isterse yerel ayarı değiştirebilir
-                var jvmArgs = MLaunchOption.DefaultExtraJvmArguments.Append(MArgument.FromCommandLine(EnglishLocaleArgs));
+                var jvmArgs = MLaunchOption.DefaultExtraJvmArguments
+                    .Append(MArgument.FromCommandLine(EnglishLocaleArgs))
+                    .Append(MArgument.FromCommandLine(SkipPerfCounterArgs));
                 if (!string.IsNullOrWhiteSpace(settings.JvmArgs))
                     jvmArgs = jvmArgs.Append(MArgument.FromCommandLine(settings.JvmArgs));
                 option.ExtraJvmArguments = jvmArgs;
 
                 // CmlLib'in indirmesi duraklatılamaz, yalnızca iptal edilebilir
                 job.Pausable = false;
+                timer?.Mark("bellek");
                 var process = await launcher.InstallAndBuildProcessAsync(
                     versionName, option, FileProgress(), ByteProgress(), job.Token);
+                timer?.Mark("oyun dosyaları");
 
                 if (skins != null) AddSkinAgent(process.StartInfo, skins);
 
@@ -245,8 +273,9 @@ namespace VuluLauncher
                         while (_output.Count > OutputKeep) _output.Dequeue();
                     }
                 }
-                process.OutputDataReceived += (_, ev) => { if (ev.Data != null) { Keep(ev.Data); _log(ev.Data, "game"); } };
-                process.ErrorDataReceived += (_, ev) => { if (ev.Data != null) { Keep(ev.Data); _log(ev.Data, "gameError"); } };
+                var boot = new GameBoot(process, target.Folder);
+                process.OutputDataReceived += (_, ev) => { if (ev.Data != null) { Keep(ev.Data); boot.OnOutput(ev.Data); _log(ev.Data, "game"); } };
+                process.ErrorDataReceived += (_, ev) => { if (ev.Data != null) { Keep(ev.Data); boot.OnOutput(ev.Data); _log(ev.Data, "gameError"); } };
 
                 var startedUtc = DateTime.UtcNow;
                 process.EnableRaisingEvents = true;
@@ -266,9 +295,23 @@ namespace VuluLauncher
                     process.BeginOutputReadLine();
                     process.BeginErrorReadLine();
                 }
+                timer?.Mark("süreç");
 
-                _log("Oyun başlatıldı! İyi oyunlar.", "ok");
+                _log("Minecraft başlatıldı; açılıyor…", "accent");
                 job.Complete("Oyun başlatıldı");
+
+                // Pencere açılana kadar açılış durumu bildirilir; açılınca "oyunda"
+                _ = Task.Run(async () =>
+                {
+                    BootProgress?.Invoke(boot.Status);
+                    if (await boot.WaitForWindowAsync(status => BootProgress?.Invoke(status)))
+                    {
+                        long ms = boot.Status.ElapsedMs;
+                        _log($"Oyun açıldı ({ms / 1000.0:0.#} sn). İyi oyunlar!", "ok");
+                        LogFile.Write($"[açılış] Oyun penceresi {ms} ms'de açıldı ({target.Name})");
+                        Ready?.Invoke(ms);
+                    }
+                });
             }
             catch (Exception ex)
             {
