@@ -442,29 +442,58 @@ namespace VuluLauncher
 
                 case "forge":
                 {
-                    _log($"Forge {loaderVersion} kontrol ediliyor...", "accent");
                     // Aynı adla kurulmuş eski NeoForge profili Forge sanılmasın
                     bool reuse = !LegacyNeoForge.ProfileIsNeoForge(launcher, mc, loaderVersion);
-                    return await new ForgeInstaller(launcher, Downloader.Http).Install(mc, loaderVersion, InstallOptions(javaPath, reuse));
+                    if (reuse && InstalledBefore(launcher, $"{mc}-forge-{loaderVersion}") is { } installed) return installed;
+                    _log($"Forge {loaderVersion} kontrol ediliyor...", "accent");
+                    return MarkInstalled(launcher,
+                        await new ForgeInstaller(launcher, Downloader.Http).Install(mc, loaderVersion, InstallOptions(javaPath, reuse)));
                 }
 
                 case "neoforge" when LegacyNeoForge.IsLegacy(mc):
                 {
-                    _log($"NeoForge {loaderVersion} kontrol ediliyor...", "accent");
                     bool reuse = LegacyNeoForge.ProfileIsNeoForge(launcher, mc, loaderVersion);
-                    return await new ForgeInstaller(launcher, Downloader.Http)
-                        .Install(LegacyNeoForge.CreateVersion(mc, loaderVersion), InstallOptions(javaPath, reuse));
+                    if (reuse && InstalledBefore(launcher, $"{mc}-forge-{loaderVersion}") is { } installed) return installed;
+                    _log($"NeoForge {loaderVersion} kontrol ediliyor...", "accent");
+                    return MarkInstalled(launcher, await new ForgeInstaller(launcher, Downloader.Http)
+                        .Install(LegacyNeoForge.CreateVersion(mc, loaderVersion), InstallOptions(javaPath, reuse)));
                 }
 
                 case "neoforge":
                 {
+                    if (InstalledBefore(launcher, $"neoforge-{loaderVersion}") is { } installed) return installed;
                     _log($"NeoForge {loaderVersion} kontrol ediliyor...", "accent");
-                    return await new NeoForgeInstaller(launcher, Downloader.Http).Install(mc, loaderVersion, InstallOptions(javaPath));
+                    return MarkInstalled(launcher,
+                        await new NeoForgeInstaller(launcher, Downloader.Http).Install(mc, loaderVersion, InstallOptions(javaPath)));
                 }
 
                 default:
                     throw new InvalidOperationException($"Bilinmeyen mod yükleyici: {target.Loader}");
             }
+        }
+
+        /// <summary>
+        /// Forge/NeoForge kurucusu, kurulu olsa bile her seferinde sürüm listesini internetten alır (açılışa 0,5-2 sn ekler,
+        /// internet yoksa oyun hiç açılmaz). Launcher'ın kurulumunu bitirdiği sürüm bir işaret dosyasıyla hatırlanır;
+        /// işaret ve sürüm dosyası yerindeyse kurucu hiç çalıştırılmaz. Eksik kütüphaneleri sonraki adım yine tamamlar.
+        /// </summary>
+        private static string? InstalledBefore(MinecraftLauncher launcher, string versionName)
+        {
+            string json = launcher.MinecraftPath.GetVersionJsonPath(versionName);
+            return File.Exists(json) && File.Exists(Path.Combine(Path.GetDirectoryName(json)!, InstalledMarker)) ? versionName : null;
+        }
+
+        private const string InstalledMarker = ".vulu-installed";
+
+        private static string MarkInstalled(MinecraftLauncher launcher, string versionName)
+        {
+            try
+            {
+                string json = launcher.MinecraftPath.GetVersionJsonPath(versionName);
+                if (File.Exists(json)) File.WriteAllText(Path.Combine(Path.GetDirectoryName(json)!, InstalledMarker), DateTime.UtcNow.ToString("O"));
+            }
+            catch { /* işaret yazılamazsa bir dahaki açılışta kurucu yine denetler */ }
+            return versionName;
         }
 
         private ForgeInstallOptions InstallOptions(string javaPath, bool skipIfInstalled = true) => new()

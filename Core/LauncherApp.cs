@@ -531,7 +531,10 @@ namespace VuluLauncher
                 if (!PackCatalog.RamOptionsGb.Contains(ramGb))
                     ramGb = PackCatalog.FitRam(AppSettings.Current.DefaultRamGb > 0 ? AppSettings.Current.DefaultRamGb : recommendedRamGb);
 
-                var skins = await skinsTask;
+                // Sunucu yavaşsa açılış takılmasın: skin oturumu en fazla birkaç saniye beklenir
+                SkinSession? skins = null;
+                if (await Task.WhenAny(skinsTask, Task.Delay(TimeSpan.FromSeconds(6))) == skinsTask) skins = await skinsTask;
+                else Log("Skin sunucusu yanıt vermedi; oyun varsayılan skinlerle açılıyor.", "warn");
                 timer.Mark("skin");
                 if (string.IsNullOrWhiteSpace(join)) join = null;
                 else if (!System.Text.RegularExpressions.Regex.IsMatch(join, @"^[A-Za-z0-9](?:[A-Za-z0-9.\-]{0,118}[A-Za-z0-9])?(?::\d{1,5})?$"))
@@ -561,7 +564,8 @@ namespace VuluLauncher
                 }
                 else switch (AppSettings.Current.OnGameStart)
                 {
-                    case "minimize": afterWindow = _host.Minimize; break;
+                    // Küçültülen launcher oyun kapanınca geri gelir
+                    case "minimize": afterWindow = () => { Interlocked.Exchange(ref _hidForMemory, 1); _host.Minimize(); }; break;
                     case "close": afterWindow = _host.Close; break;
                 }
                 if (afterWindow != null)
