@@ -131,11 +131,18 @@ namespace VuluLauncher.ViewModels
 
         [RelayCommand] private Task SelectTab(Choice tab) => SelectAsync(tab.Key);
 
+        /// <summary>Sekme yükleniyor: özet kartlarının yerinde parlayan kutular durur (web: .admin-card.skeleton).</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowOverviewSkeleton))]
+        private bool _loading;
+        public bool ShowOverviewSkeleton => Loading && IsOverview && Cards.Count == 0;
+
         private async Task SelectAsync(string key)
         {
             Tab = key;
             foreach (var t in Tabs) t.IsSelected = t.Key == key;
             Status = "Yükleniyor…";
+            Loading = true;
             try
             {
                 switch (key)
@@ -151,6 +158,7 @@ namespace VuluLauncher.ViewModels
                 Status = "";
             }
             catch (Exception ex) { Status = "Hata: " + ex.Message; }
+            finally { Loading = false; }
         }
 
         // ── Özet ─────────────────────────────────────────────────────────

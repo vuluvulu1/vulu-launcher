@@ -38,6 +38,8 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private Bitmap? _thumbnail;
         /// <summary>Paketin yeni revizyonu var (vulu Packs).</summary>
         [ObservableProperty] private bool _hasUpdate;
+        /// <summary>Şeritteki ipucu: adı; o pakette oynayan varsa "Şu an oynayan: …" (web: pack-card title).</summary>
+        [ObservableProperty] private string _tip = "";
 
         public static InstanceItem From(JsonElement e) => new()
         {
@@ -152,9 +154,27 @@ namespace VuluLauncher.ViewModels
             if (server != null) _ = server.PingAsync();
         }
 
+        /// <summary>Kişisel instance'ı şeritte başka yere taşır (sürükle bırak); sıra bu bilgisayarda hatırlanır.</summary>
+        public void MoveInstance(InstanceItem item, InstanceItem target)
+        {
+            if (!item.IsCustom || !target.IsCustom || item == target) return;
+            int from = Instances.IndexOf(item), to = Instances.IndexOf(target);
+            if (from < 0 || to < 0) return;
+            Instances.Move(from, to);
+        }
+
+        public void SaveInstanceOrder() =>
+            UiState.Set("instanceOrder", string.Join(",", Instances.Where(i => i.IsCustom).Select(i => i.Id)));
+
         /// <summary>Bu pakette oynayan arkadaşlar (en çok üç avatar ve "N kişi burada oynuyor").</summary>
         public void UpdatePlayingHere()
         {
+            if (Main != null)
+                foreach (var instance in Instances)
+                {
+                    var here = Main.Social.PlayingIn(instance.SharedPackId ?? instance.PackId, instance.Name).ToList();
+                    instance.Tip = here.Count > 0 ? $"{instance.Name}\nŞu an oynayan: {string.Join(", ", here)}" : instance.Name;
+                }
             PlayingHere.Clear();
             if (Main == null || Selected is not { } item) { PlayingHereText = ""; return; }
             var names = Main.Social.PlayingIn(item.SharedPackId ?? item.PackId, item.Name).ToList();
@@ -335,13 +355,19 @@ namespace VuluLauncher.ViewModels
 
             Instances.Clear();
             _infoCache.Clear();
-            foreach (var e in list.Items())
+            // Sunucu paketleri üstte; kişisel instance'lar kullanıcının sürükleyerek verdiği sırayla (web: orderedCustoms)
+            var items = list.Items().Select(InstanceItem.From).ToList();
+            var order = (UiState.Get("instanceOrder") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+            int Rank(InstanceItem i) { int k = order.IndexOf(i.Id); return k < 0 ? int.MaxValue : k; }
+            var ordered = items.Where(i => !i.IsCustom).Concat(items.Where(i => i.IsCustom).OrderBy(Rank));
+            foreach (var item in ordered)
             {
-                var item = InstanceItem.From(e);
                 item.HasUpdate = _packUpdates.ContainsKey(item.Id);
+                item.Tip = item.Name;
                 Instances.Add(item);
                 _ = LoadThumbnailAsync(item);
             }
+            UpdatePlayingHere();
             var select = Instances.FirstOrDefault(i => i.Id == selectId) ?? Instances.FirstOrDefault();
             if (select != null && select.Id == Selected?.Id) OnSelectedChanged(select);   // aynı paket: bilgiler yenilensin
             Selected = select;

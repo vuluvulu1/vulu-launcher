@@ -43,6 +43,7 @@
             <Setter Property="BorderThickness" Value="2,0,0,0" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource Muted}" />
+            <Setter Property="FontSize" Value="13" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="Padding" Value="12,8" />
@@ -50,20 +51,24 @@
         <Style Selector="Button.nav:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource Hover}" />
             <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
         </Style>
         <Style Selector="Button.nav.current">
             <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
-            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="Background" Value="{StaticResource Hover}" />
         </Style>
         <Style Selector="Button.nav.current:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
-            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="Background" Value="{StaticResource Hover}" />
         </Style>
     </UserControl.Styles>
 
     <Grid ColumnDefinitions="240,*">
         <!-- ── Sol: başlık, arama, bölümler ───────────────────────────── -->
-        <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+        <!-- Web'deki gibi zeminsiz: arkada paketin bulanık resmi görünür (web: .settings-nav) -->
+        <Border Background="Transparent">
             <DockPanel Margin="16,22,16,16">
                 <TextBlock DockPanel.Dock="Top" Text="Ayarlar" Classes="page-title" Margin="0,0,0,14" />
                 <TextBox DockPanel.Dock="Top" Text="{Binding Search}" Watermark="Ayarlarda ara" Margin="0,0,0,14" />

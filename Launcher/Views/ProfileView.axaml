@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
              x:Class="VuluLauncher.Views.ProfileView"
              x:DataType="vm:ProfileViewModel">
     <UserControl.Styles>
@@ -22,7 +23,9 @@
 
     <Grid ColumnDefinitions="*,280">
         <ScrollViewer>
-            <StackPanel Margin="28,22,28,30" MaxWidth="820" Spacing="18">
+            <Panel>
+            <v:Skeleton Height="420" Margin="28,22,28,30" MaxWidth="820" VerticalAlignment="Top" IsVisible="{Binding ShowSkeleton}" />
+            <StackPanel Margin="28,22,28,30" MaxWidth="820" Spacing="18" IsVisible="{Binding !ShowSkeleton}">
                 <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
 
                 <!-- Banner -->
@@ -197,6 +200,7 @@
 
                 <Button Classes="sm danger" Content="Çıkış yap" IsVisible="{Binding IsOwn}" Command="{Binding LogoutCommand}" HorizontalAlignment="Left" />
             </StackPanel>
+            </Panel>
         </ScrollViewer>
 
         <!-- Üyeler -->

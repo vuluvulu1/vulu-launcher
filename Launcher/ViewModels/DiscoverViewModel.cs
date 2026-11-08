@@ -250,12 +250,16 @@ namespace VuluLauncher.ViewModels
             await LoadAsync();
         }
 
+        /// <summary>İlk yüklemede kartların yerinde parlayan kutular durur (web: .pack-tile.skeleton).</summary>
+        [ObservableProperty] private bool _skeleton;
+
         [RelayCommand]
         public async Task LoadAsync()
         {
             if (_loading) return;
             _loading = true;
-            Status = "Yükleniyor…";
+            Skeleton = Cards.Count == 0;
+            Status = Skeleton ? "" : "Yükleniyor…";
             StatusIsError = false;
             try
             {
@@ -274,7 +278,7 @@ namespace VuluLauncher.ViewModels
                 Status = "Paketler alınamadı: " + ex.Message;
                 StatusIsError = true;
             }
-            finally { _loading = false; }
+            finally { _loading = false; Skeleton = false; }
         }
 
         /// <summary>Oyna sayfasından "Paketi güncelle": paket listesi alınıp değişikliklerle birlikte güncellenir.</summary>

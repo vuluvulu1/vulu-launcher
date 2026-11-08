@@ -31,8 +31,14 @@ namespace VuluLauncher.ViewModels
         public ObservableCollection<PersonItem> Members { get; } = new();
 
         [ObservableProperty] private string _username = "";
-        [ObservableProperty] private string? _error;
-        [ObservableProperty] private bool _loaded;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowSkeleton))]
+        private string? _error;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowSkeleton))]
+        private bool _loaded;
+        /// <summary>Profil yükleniyor: kartın yerinde parlayan kutu durur (web: .profile-card.skeleton).</summary>
+        public bool ShowSkeleton => !Loaded && Error == null;
         [ObservableProperty] private Bitmap? _avatar;
         [ObservableProperty] private Bitmap? _banner;
         [ObservableProperty] private Bitmap? _skin;

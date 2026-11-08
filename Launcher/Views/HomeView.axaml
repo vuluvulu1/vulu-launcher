@@ -244,8 +244,10 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:InstanceItem">
                                 <!-- Sağ tıkta paketin sık kullanılan işlemleri (web: instanceMenu); tıklanan paket önce seçilir -->
-                                <StackPanel Spacing="2" Width="58" Height="76" ToolTip.Tip="{Binding Name}" Background="Transparent"
-                                            ContextRequested="OnPackContextRequested">
+                                <!-- Kişisel instance'lar sürüklenerek sıralanır (web: wireCardDrag) -->
+                                <StackPanel Spacing="2" Width="58" Height="76" ToolTip.Tip="{Binding Tip}" Background="Transparent"
+                                            ContextRequested="OnPackContextRequested" PointerPressed="OnPackPressed" PointerMoved="OnPackMoved"
+                                            PointerReleased="OnPackReleased" PointerCaptureLost="OnPackCaptureLost">
                                     <StackPanel.ContextFlyout>
                                         <MenuFlyout x:DataType="vm:HomeViewModel">
                                             <MenuItem Header="▶ Oyna" Command="{Binding PlayCommand}" />

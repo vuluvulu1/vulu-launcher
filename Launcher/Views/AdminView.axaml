@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
              x:Class="VuluLauncher.Views.AdminView"
              x:DataType="vm:AdminViewModel">
     <UserControl.Styles>
@@ -52,6 +53,11 @@
 
         <ScrollViewer>
             <Panel Margin="0,0,0,28">
+                <WrapPanel IsVisible="{Binding ShowOverviewSkeleton}" VerticalAlignment="Top">
+                    <v:Skeleton Width="290" Height="130" Margin="0,0,12,12" />
+                    <v:Skeleton Width="290" Height="130" Margin="0,0,12,12" />
+                    <v:Skeleton Width="290" Height="130" Margin="0,0,12,12" />
+                </WrapPanel>
                 <!-- Özet -->
                 <ItemsControl ItemsSource="{Binding Cards}" IsVisible="{Binding IsOverview}">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
