@@ -1,63 +1,39 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
              xmlns:sh="using:VuluShared"
              x:Class="VuluLauncher.Views.SplashView"
              x:DataType="vm:SplashViewModel"
              ClipToBounds="True">
-    <!-- Perde, saçak, spot ve yazı; hepsi kod tarafında karelerle canlandırılır (SplashView.axaml.cs) -->
+    <!-- Meşale açılışı (web: css/mesale.css + js/mesale.js): karanlıkta yazı tutuşur, kor ışığı titrer, kıvılcımlar uçar;
+         launcher hazır olunca karanlık yazıdan dışa doğru yanarak açılır. Kareler SplashView.axaml.cs'de. -->
     <Panel x:Name="Stage" Background="Transparent">
-        <!-- Perdeler: neredeyse siyah kadife, kıvrımlar yalnızca ışıkta seçilir -->
-        <Border x:Name="CurtainLeft" HorizontalAlignment="Left" Background="#0D0A08" BoxShadow="inset -30 0 50 -12 #000000">
-            <Border x:Name="FoldsLeft" />
+        <v:EmberSheet x:Name="Sheet" />
+
+        <!-- Kor ışığı: yazının arkasında amber bir hale -->
+        <Border x:Name="Glow" IsHitTestVisible="False" Opacity="0">
+            <Border.Background>
+                <RadialGradientBrush Center="50%,47%" GradientOrigin="50%,47%" RadiusX="46%" RadiusY="34%">
+                    <GradientStop Offset="0" Color="#33F2822A" />
+                    <GradientStop Offset="0.55" Color="#0FF26E1E" />
+                    <GradientStop Offset="0.78" Color="#00F26E1E" />
+                </RadialGradientBrush>
+            </Border.Background>
         </Border>
-        <Border x:Name="CurtainRight" HorizontalAlignment="Right" Background="#0D0A08" BoxShadow="inset 30 0 50 -12 #000000">
-            <Border x:Name="FoldsRight" />
-        </Border>
 
-        <!-- Spot: ortadaki ışık havuzu ve yukarıdan inen huzme; gerisi karanlık -->
-        <Panel x:Name="Vignette" IsHitTestVisible="False">
-            <Border x:Name="Pool" />
-            <Border x:Name="Dark" />
-            <Path x:Name="Beam" Stretch="Fill" Data="M47,0 L53,0 L66,100 L34,100 Z">
-                <Path.Fill>
-                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                        <GradientStop Offset="0" Color="#17FFE4BA" />
-                        <GradientStop Offset="0.55" Color="#06FFE4BA" />
-                        <GradientStop Offset="0.8" Color="#00FFE4BA" />
-                    </LinearGradientBrush>
-                </Path.Fill>
-            </Path>
-        </Panel>
-
-        <!-- Üst saçak: dalgalı kenarı kod çizer -->
-        <Path x:Name="Valance" VerticalAlignment="Top" Fill="#080605" IsHitTestVisible="False" />
-
-        <!-- Başlık: harfler sırayla kalemle çizilip altın-bakırla dolar -->
-        <StackPanel x:Name="Title" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
-            <sh:ScriptTitle x:Name="Letters" Width="500" />
-            <Panel x:Name="Ornament" Width="160" Height="9" Margin="0,8,0,0" Opacity="0">
-                <Border Height="1" VerticalAlignment="Center">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                            <GradientStop Offset="0" Color="#00C27E3E" />
-                            <GradientStop Offset="0.3" Color="#CCC27E3E" />
-                            <GradientStop Offset="0.7" Color="#CCC27E3E" />
-                            <GradientStop Offset="1" Color="#00C27E3E" />
-                        </LinearGradientBrush>
-                    </Border.Background>
-                </Border>
-                <Border Width="6" Height="6" Background="#E3B37A" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Border.RenderTransform><RotateTransform Angle="45" /></Border.RenderTransform>
-                </Border>
-            </Panel>
-            <TextBlock x:Name="GreetingText" Text="{Binding Greeting}" Margin="0,10,0,0" HorizontalAlignment="Center" Opacity="0"
-                       FontSize="13.5" FontWeight="Medium" LetterSpacing="1" Foreground="#CCE3B37A" />
+        <StackPanel x:Name="Title" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" RenderTransformOrigin="50%,50%">
+            <sh:ScriptTitle x:Name="Letters" Width="500">
+                <sh:ScriptTitle.Effect>
+                    <DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="18" Color="#FF9632" Opacity="0.55" />
+                </sh:ScriptTitle.Effect>
+            </sh:ScriptTitle>
+            <TextBlock x:Name="GreetingText" Text="{Binding Greeting}" Margin="0,14,0,0" HorizontalAlignment="Center" Opacity="0"
+                       FontSize="13.5" FontWeight="Medium" LetterSpacing="0.4" Foreground="#E9DCCB" />
             <TextBlock Text="{Binding Status}" MinHeight="18" Margin="0,16,0,0" HorizontalAlignment="Center"
-                       FontSize="12" FontWeight="Medium" LetterSpacing="0.5" Foreground="#8CE3B37A" />
+                       FontSize="12" FontWeight="Medium" LetterSpacing="0.5" Foreground="#C9BDAF" />
         </StackPanel>
 
-        <!-- Başta her yer karanlık; spot yanınca bu örtü kalkar -->
-        <Border x:Name="Blackout" Background="#000000" IsHitTestVisible="False" />
+        <v:EmberSparks x:Name="Sparks" />
     </Panel>
 </UserControl>

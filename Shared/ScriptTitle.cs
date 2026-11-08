@@ -93,6 +93,42 @@ namespace VuluShared
             }
         }
 
+        private List<SolidColorBrush>? _ember;
+        private static readonly (double At, Color Color)[] EmberStops =
+        {
+            (0, Color.Parse("#FFFFFF")), (0.18, Color.Parse("#FFF0C4")), (0.5, Color.Parse("#FFBE5E")), (1, Color.Parse("#F2A33A")),
+        };
+
+        /// <summary>
+        /// Meşale açılışı: kalem yok; harfler sırayla akkor beyazdan ambere tutuşur (web: m-catch, harf başına 85 ms arayla 1,1 sn).
+        /// </summary>
+        /// <param name="ms">Tutuşmanın başından beri geçen süre.</param>
+        public void RenderEmber(double ms)
+        {
+            if (_ember == null)
+            {
+                _ember = new();
+                foreach (var (path, _, _, _) in _letters)
+                {
+                    var brush = new SolidColorBrush(Colors.White) { Opacity = 0 };
+                    path.Fill = brush;
+                    path.Stroke = null;
+                    _ember.Add(brush);
+                }
+            }
+            for (int i = 0; i < _ember.Count; i++)
+            {
+                double p = InkEase.Ease(Progress(ms, i * 85, 1100));
+                _ember[i].Opacity = Math.Min(1, p / 0.18);
+                int k = 1;
+                while (k < EmberStops.Length - 1 && p > EmberStops[k].At) k++;
+                var (a, ca) = EmberStops[k - 1];
+                var (b, cb) = EmberStops[k];
+                double f = b > a ? Math.Clamp((p - a) / (b - a), 0, 1) : 1;
+                _ember[i].Color = Color.FromRgb((byte)(ca.R + (cb.R - ca.R) * f), (byte)(ca.G + (cb.G - ca.G) * f), (byte)(ca.B + (cb.B - ca.B) * f));
+            }
+        }
+
         /// <summary>Kendi başına oynar (kurulum programı gibi dışarıdan zamanlanmayan yerler için).</summary>
         public void Play(double delayMs = 0)
         {

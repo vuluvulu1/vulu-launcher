@@ -216,7 +216,7 @@
                 </ContentControl.Styles>
             </ContentControl>
             <!-- ── Açılış perdesi: giriş ve ana ekran arkasında hazırlanır ── -->
-            <v:SplashView Grid.Row="1" DataContext="{Binding Splash}" IsVisible="{Binding IsVisible}" />
+            <v:SplashView Grid.Row="0" Grid.RowSpan="2" DataContext="{Binding Splash}" IsVisible="{Binding IsVisible}" />
 
             <!-- ── Bildirim kartları (sağ alt) ──────────────────────── -->
             <ItemsControl Grid.Row="1" ItemsSource="{Binding Toasts}" HorizontalAlignment="Right" VerticalAlignment="Bottom"
