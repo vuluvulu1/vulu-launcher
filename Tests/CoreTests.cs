@@ -54,6 +54,18 @@ namespace VuluLauncher.Tests
     public class MemoryCheckTests
     {
         [Fact]
+        public void GrowablePagefileCounts()
+        {
+            // Bu bilgisayarda ölçülen: 2,8 GB pagefile, boş commit ~5,5 GB, C:'de 7,6 GB boş (büyüme payı ~5,6 GB)
+            var withGrowth = MemoryCheck.Fit(8, modded: true, new MemoryCheck.Status(TotalGb: 15.9, AvailCommitGb: 5.5, GrowableGb: 5.6), systemDriveFreeGb: 7.6, modCount: 200);
+            Assert.Equal(8, withGrowth.RamGb);
+            Assert.Null(withGrowth.Warning);
+
+            var withoutGrowth = MemoryCheck.Fit(8, modded: true, new MemoryCheck.Status(TotalGb: 15.9, AvailCommitGb: 5.5), systemDriveFreeGb: 7.6, modCount: 200);
+            Assert.Equal(3, withoutGrowth.RamGb);
+        }
+
+        [Fact]
         public void EnoughMemoryKeepsTheChoice()
         {
             var result = MemoryCheck.Fit(8, modded: true, new MemoryCheck.Status(TotalGb: 32, AvailCommitGb: 20), systemDriveFreeGb: 100);
