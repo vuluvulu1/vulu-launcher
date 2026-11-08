@@ -274,8 +274,17 @@ namespace VuluLauncher
                     }
                 }
                 var boot = new GameBoot(process, target.Folder);
-                process.OutputDataReceived += (_, ev) => { if (ev.Data != null) { Keep(ev.Data); boot.OnOutput(ev.Data); _log(ev.Data, "game"); } };
-                process.ErrorDataReceived += (_, ev) => { if (ev.Data != null) { Keep(ev.Data); boot.OnOutput(ev.Data); _log(ev.Data, "gameError"); } };
+                // Oyunun XML günlük olayları düz satırlara çevrilir (konsol, çökme yardımcısı ve açılış aşamaları için)
+                void Line(string text, bool error)
+                {
+                    Keep(text);
+                    boot.OnOutput(text);
+                    _log(text, error ? "gameError" : "game");
+                }
+                var outReader = new Log4jXml(Line);
+                var errReader = new Log4jXml((text, _) => Line(text, true));
+                process.OutputDataReceived += (_, ev) => { if (ev.Data != null) lock (outReader) outReader.Feed(ev.Data); };
+                process.ErrorDataReceived += (_, ev) => { if (ev.Data != null) lock (errReader) errReader.Feed(ev.Data); };
 
                 var startedUtc = DateTime.UtcNow;
                 process.EnableRaisingEvents = true;
