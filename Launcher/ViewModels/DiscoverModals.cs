@@ -137,12 +137,24 @@ namespace VuluLauncher.ViewModels
     internal sealed partial class ManualDownloadsModal : ModalViewModel
     {
         private readonly string? _instanceId;
+        private readonly Avalonia.Threading.DispatcherTimer? _watch;
 
         public ManualDownloadsModal(JsonElement manual, string? instanceId)
         {
             _instanceId = instanceId;
             foreach (var m in manual.Items())
-                Rows.Add(new ManualRow(m.Get("fileId").ToString(), m.Text("title") ?? "", $"{m.Text("folder")}/ · tam olarak bu dosya: {m.Text("fileName")}", m.Text("url") ?? ""));
+                Rows.Add(new ManualRow(m.Get("fileId").ToString(), m.Text("title") ?? "", $"{m.Text("folder")}/ · tam olarak bu dosya: {m.Text("fileName")}", m.Text("url") ?? "")
+                {
+                    Status = instanceId != null ? "İndirilmesi bekleniyor…" : "",
+                });
+            // İndirilenler klasörü izlenir: inen her dosya kendiliğinden doğrulanıp yerine konur (Prism gibi)
+            if (instanceId != null)
+            {
+                _watch = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+                _watch.Tick += async (_, _) => { if (!Checking) await CheckCore(quiet: true); };
+                _watch.Start();
+                _ = Result.ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() => _watch.Stop()));
+            }
             Title = Rows.Count == 1 ? $"{Rows[0].Title} elle indirilmeli" : $"{Rows.Count} dosya elle indirilmeli";
             Intro = Rows.Count == 1
                 ? "Bu modun yapımcısı, modun başka uygulamalardan indirilmesine izin vermiyor. CurseForge sayfasından yazan dosyayı indir; sayfadaki en yeni sürümü değil, tam olarak bu dosyayı."
@@ -155,18 +167,27 @@ namespace VuluLauncher.ViewModels
         public ObservableCollection<ManualRow> Rows { get; } = new();
         public bool HasInstance => _instanceId != null;
         public string Help => HasInstance
-            ? "İndirdikten sonra \"İndirilenleri kontrol et\"e bas: launcher dosyaları İndirilenler klasöründe bulur, doğru dosya olduklarını kontrol eder ve yerlerine koyar."
+            ? "Dosyaları indirmen yeterli: launcher İndirilenler klasörünü izliyor, inen her dosyanın doğru dosya olduğunu kontrol edip kendiliğinden yerine koyuyor."
             : "Dosyaları instance klasöründe yazan klasöre koy.";
+        public bool HasMany => Rows.Count > 1;
 
         [ObservableProperty] private string? _note;
         [ObservableProperty] private bool _allPlaced;
         [ObservableProperty] private bool _checking;
 
+        [RelayCommand] private Task Check() => CheckCore(quiet: false);
+
+        /// <summary>Bütün sayfaları tarayıcıda açar; her biri dosyayı kendiliğinden indirmeye başlar.</summary>
         [RelayCommand]
-        private async Task Check()
+        private async Task OpenAll()
         {
-            if (_instanceId == null) return;
-            Checking = true;
+            foreach (var row in Rows.Where(r => !r.Placed)) await row.OpenCommand.ExecuteAsync(null);
+        }
+
+        private async Task CheckCore(bool quiet)
+        {
+            if (_instanceId == null || AllPlaced) return;
+            Checking = !quiet;
             try
             {
                 var r = await CoreClient.Instance.Call("cf.manualPlace", new { instanceId = _instanceId });
@@ -176,16 +197,29 @@ namespace VuluLauncher.ViewModels
                     if (row == null) continue;
                     string status = res.Text("status") ?? "";
                     row.Placed = status == "placed";
-                    row.Status = status == "placed" ? "✓ Yerine kondu" : status == "problem" ? res.Text("problem") ?? "" : "İndirilenler'de henüz yok";
+                    row.Status = status == "placed" ? "✓ Yerine kondu" : status == "problem" ? res.Text("problem") ?? "" : "İndirilmesi bekleniyor…";
                     row.IsProblem = status == "problem";
                 }
                 Note = r.Get("downloads").ValueKind is JsonValueKind.Null or JsonValueKind.Undefined or JsonValueKind.False
                     ? "İndirilenler klasörü bulunamadı; dosyaları instance klasöründe yazan klasöre kendin koy." : null;
                 AllPlaced = Rows.All(x => x.Placed);
+                if (AllPlaced)
+                {
+                    _watch?.Stop();
+                    Note = null;
+                    Done = CloseWhenDone ? (Rows.Count == 1 ? "Dosya yerine kondu; oyun açılıyor…" : "Hepsi yerine kondu; oyun açılıyor…")
+                        : Rows.Count == 1 ? "Dosya yerine kondu; kapatıp devam edebilirsin." : "Hepsi yerine kondu; kapatıp devam edebilirsin.";
+                    if (CloseWhenDone) Avalonia.Threading.DispatcherTimer.RunOnce(() => Close(null), TimeSpan.FromMilliseconds(1200));
+                }
             }
-            catch (Exception ex) { Note = ex.Message; }
+            catch (Exception ex) { if (!quiet) Note = ex.Message; }
             finally { Checking = false; }
         }
+
+        [ObservableProperty] private string? _done;
+
+        /// <summary>Oyun açılışından gelindiyse: hepsi yerine konunca pencere kendiliğinden kapanır, açılış sürer.</summary>
+        public bool CloseWhenDone { get; init; }
 
         [RelayCommand]
         private async Task OpenFolder()

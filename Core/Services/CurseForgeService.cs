@@ -445,7 +445,7 @@ namespace VuluLauncher
     {
         internal static ManualDownload Of(CfMod? mod, CfFile file, string folder) => new(
             mod?.Name ?? file.DisplayName,
-            mod != null ? $"{CurseForgeService.PageUrl(mod)}/files/{file.Id}" : "https://www.curseforge.com/minecraft",
+            mod != null ? $"{CurseForgeService.PageUrl(mod)}/download/{file.Id}" : "https://www.curseforge.com/minecraft",
             folder, Path.GetFileName(file.FileName),
             file.Hashes.FirstOrDefault(h => h.Algo == 1)?.Value?.ToLowerInvariant(), file.FileLength,
             file.ModId.ToString(), file.Id.ToString(), CurseForgeService.TypeOf(mod?.ClassId ?? 6) ?? "mod", mod?.Logo?.ThumbnailUrl);

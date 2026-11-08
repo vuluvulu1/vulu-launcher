@@ -109,9 +109,14 @@ namespace VuluLauncher.ViewModels
             }
             foreach (var m in _manual.Items()) Manual.Add(new HealthItem(m.Text("title") ?? "", m.Text("fileName"), iconUrl: m.Text("iconUrl")));
 
-            Title = severe ? "Mod dosyalarında sorun var" : "Gereksiz mod dosyası var";
-            Intro = (severe ? "Oyun bu dosyalarla büyük ihtimalle açılmaz." : "Oyun açılır, ama bu dosyalar boşuna yükleniyor.")
-                + " Sorunlu dosyalar silinmez, instance klasöründeki mods-yedek klasörüne taşınır.";
+            // Yalnızca elle indirilecek dosya varsa bozuk dosya anlatımı yerine ne yapılacağı söylenir
+            bool onlyManual = Bad.Count == 0 && Manual.Count > 0;
+            Title = onlyManual ? (Manual.Count == 1 ? "Bir mod elle indirilmeli" : $"{Manual.Count} mod elle indirilmeli")
+                : severe ? "Mod dosyalarında sorun var" : "Gereksiz mod dosyası var";
+            Intro = onlyManual
+                ? "Yapımcıları bu modların başka uygulamalardan indirilmesine izin vermiyor. \"Elle indir…\"e bas, açılan sayfalardan indir; launcher dosyaları kendiliğinden yerine koyar ve oyun açılmaya devam eder."
+                : (severe ? "Oyun bu dosyalarla büyük ihtimalle açılmaz." : "Oyun açılır, ama bu dosyalar boşuna yükleniyor.")
+                  + " Sorunlu dosyalar silinmez, instance klasöründeki mods-yedek klasörüne taşınır.";
             CanMove = instance.Kind == "custom" && Bad.Count > 0;
 
             void Add(string file, string? text)
@@ -147,9 +152,12 @@ namespace VuluLauncher.ViewModels
         [RelayCommand]
         private async Task OpenManual()
         {
-            var modal = new ManualDownloadsModal(_manual, _instance.Kind == "custom" ? _instance.Id : null);
+            var modal = new ManualDownloadsModal(_manual, _instance.Kind == "custom" ? _instance.Id : null) { CloseWhenDone = true };
             await _main.ShowAsync(modal);
-            if (modal.AllPlaced) ManualText = "✓ Hepsi yerinde";
+            if (!modal.AllPlaced) return;
+            ManualText = "✓ Hepsi yerinde";
+            // Başka sorun kalmadıysa oyun kendiliğinden açılmaya devam eder (Prism gibi)
+            if (Bad.Count == 0) Close("retry");
         }
 
         [RelayCommand] private void Retry() => Close("retry");

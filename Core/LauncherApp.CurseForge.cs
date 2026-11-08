@@ -163,7 +163,14 @@ namespace VuluLauncher
         }
 
         private static object ManualList(IEnumerable<ManualDownload> manual) =>
-            manual.Select(m => new { title = m.Title, url = m.Url, folder = m.Folder, fileName = m.FileName, fileId = m.FileId, iconUrl = m.IconUrl }).ToList();
+            manual.Select(m => new { title = m.Title, url = DirectDownloadUrl(m.Url), folder = m.Folder, fileName = m.FileName, fileId = m.FileId, iconUrl = m.IconUrl }).ToList();
+
+        /// <summary>
+        /// CurseForge'da dosya sayfası yerine indirme sayfası: tarayıcıda açılınca indirme kendiliğinden başlar. Eski
+        /// sürümlerin kaydettiği ".../files/123" bağlantıları da ".../download/123" olur.
+        /// </summary>
+        private static string DirectDownloadUrl(string url) =>
+            System.Text.RegularExpressions.Regex.Replace(url, @"^(https://www\.curseforge\.com/.+)/files/(\d+)$", "$1/download/$2");
 
         private async Task<object?> CurseForgeInstallAsync(string instanceId, string projectId, string versionId)
         {

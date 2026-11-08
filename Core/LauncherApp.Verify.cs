@@ -76,7 +76,7 @@ namespace VuluLauncher
                         var mods = (await _curseforge.ModsAsync(manualChecks.Select(m => int.Parse(m.Content.ProjectId)))).ToDictionary(m => m.Id.ToString());
                         foreach (var check in manualChecks)
                             QueueManual(meta, check, mods.TryGetValue(check.Content.ProjectId, out var mod)
-                                ? $"{CurseForgeService.PageUrl(mod)}/files/{check.Content.VersionId}" : "https://www.curseforge.com/minecraft");
+                                ? $"{CurseForgeService.PageUrl(mod)}/download/{check.Content.VersionId}" : "https://www.curseforge.com/minecraft");
                     }
                     InstanceStore.Save(meta);
                 }
