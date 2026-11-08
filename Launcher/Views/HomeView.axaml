@@ -44,6 +44,16 @@
         <Style Selector="ListBox.rail ListBoxItem:selected Border.thumb">
             <Setter Property="BoxShadow" Value="0 0 0 1 #B8FFC873, 0 0 24 1 #61F2A33A" />
         </Style>
+        <!-- Sürüklenen paket: imleci takip eder, amber halkayla parlar; bırakılacağı paket amber çerçeveyle işaretlenir -->
+        <Style Selector="ListBox.rail StackPanel.dragging Border.thumb">
+            <Setter Property="BoxShadow" Value="0 0 0 2 #FFC873, 0 0 28 4 #99F2A33A, 0 10 24 0 #B3000000" />
+        </Style>
+        <Style Selector="ListBox.rail StackPanel.dragging Border.dim"><Setter Property="Opacity" Value="0" /></Style>
+        <Style Selector="ListBox.rail StackPanel.drop Border.thumb">
+            <Setter Property="BoxShadow" Value="0 0 0 2 #F2A33A" />
+        </Style>
+        <Style Selector="ListBox.rail StackPanel.drop Border.dim"><Setter Property="Opacity" Value="0" /></Style>
+        <Style Selector="ListBox.rail StackPanel.drop TextBlock"><Setter Property="Foreground" Value="{StaticResource AccentHi}" /></Style>
 
         <!-- Etiketler ve sayılar resmin üstünde kenarsız, yarı saydam kutular (mesale.css .tag, .stat) -->
         <Style Selector="Border.stat">
