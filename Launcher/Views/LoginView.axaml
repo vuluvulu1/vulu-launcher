@@ -18,7 +18,23 @@
         <Border Width="380" HorizontalAlignment="Center" VerticalAlignment="Center"
                 Background="{StaticResource Card}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
                 Padding="34,30" BoxShadow="0 18 44 0 #9E000000">
-            <StackPanel Spacing="14">
+            <Panel>
+            <Panel.Styles>
+                <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                <Style Selector="Button.link">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Padding" Value="2,0" />
+                    <Setter Property="Foreground" Value="{StaticResource Accent}" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                </Style>
+                <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+                </Style>
+            </Panel.Styles>
+            <StackPanel Spacing="14" IsVisible="{Binding IsLogin}">
                 <Image Source="avares://vulu Launcher/Assets/logo.png" Width="52" Height="52" HorizontalAlignment="Center" />
                 <TextBlock Text="vulu Launcher" FontFamily="{StaticResource Script}" FontSize="44"
                            Foreground="{StaticResource Accent}" HorizontalAlignment="Center" Margin="0,-6,0,-8">
@@ -39,15 +55,83 @@
                 <CheckBox IsChecked="{Binding Remember}" Content="Beni hatırla" />
 
                 <Button Classes="primary" Content="Giriş yap" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                        Padding="0,10" IsDefault="True" Command="{Binding LoginCommand}" />
+                        Padding="0,10" IsDefault="{Binding IsLogin}" Command="{Binding LoginCommand}" />
 
                 <TextBlock Text="{Binding Status}" TextWrapping="Wrap" TextAlignment="Center" FontSize="12.5"
-                           Classes="muted" Classes.error="{Binding IsError}" MinHeight="18">
-                    <TextBlock.Styles>
-                        <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
-                    </TextBlock.Styles>
-                </TextBlock>
+                           Classes="muted" Classes.error="{Binding IsError}" MinHeight="18" />
+                <Button Classes="link" HorizontalAlignment="Center" Margin="0,-8,0,0" FontSize="12.5"
+                        Content="Bağlantı gelmedi mi, adresi yanlış mı yazdın?" IsVisible="{Binding NeedsVerify}" Command="{Binding OpenVerifyCommand}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+                    <TextBlock Text="Hesabın yok mu?" Classes="muted" FontSize="12.5" VerticalAlignment="Center" />
+                    <Button Classes="link" FontSize="12.5" Content="Kayıt ol" Command="{Binding ShowRegisterCommand}" />
+                </StackPanel>
             </StackPanel>
+
+            <!-- Kayıt: istek sunucuda bekler; e-posta doğrulaması ve admin onayından sonra hesap açılır -->
+            <StackPanel Spacing="12" IsVisible="{Binding IsRegister}">
+                <TextBlock Text="Kayıt ol" FontFamily="{StaticResource Script}" FontSize="40"
+                           Foreground="{StaticResource Accent}" HorizontalAlignment="Center" Margin="0,-6,0,-6" />
+                <TextBlock Text="İsteğin bir admin onayladığında hesabın açılır." Classes="muted" HorizontalAlignment="Center"
+                           TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,4" />
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Kullanıcı adı" Classes="label" />
+                    <TextBox Text="{Binding RegUsername}" MaxLength="16" Watermark="Oyunda görünecek ad" />
+                </StackPanel>
+                <StackPanel Spacing="5">
+                    <TextBlock Text="E-posta" Classes="label" />
+                    <TextBox Text="{Binding RegEmail}" MaxLength="254" />
+                </StackPanel>
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Şifre" Classes="label" />
+                    <TextBox Text="{Binding RegPassword}" PasswordChar="•" Watermark="En az 6 karakter" />
+                </StackPanel>
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Şifre tekrar" Classes="label" />
+                    <TextBox Text="{Binding RegPassword2}" PasswordChar="•" />
+                </StackPanel>
+                <Button Classes="primary" Content="Kayıt isteği gönder" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Padding="0,10" IsDefault="{Binding IsRegister}" IsEnabled="{Binding !Sending}" Command="{Binding RegisterCommand}" />
+                <TextBlock Text="{Binding RegStatus}" TextWrapping="Wrap" TextAlignment="Center" FontSize="12.5"
+                           Classes="muted" Classes.error="{Binding RegError}" MinHeight="18" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+                    <TextBlock Text="Zaten hesabın var mı?" Classes="muted" FontSize="12.5" VerticalAlignment="Center" />
+                    <Button Classes="link" FontSize="12.5" Content="Giriş yap" Command="{Binding ShowLoginCommand}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Kayıt gönderildi: postayı kontrol et, gelmezse yeniden gönder, adres yanlışsa düzelt -->
+            <StackPanel Spacing="14" IsVisible="{Binding IsSent}">
+                <Border Width="54" Height="54" CornerRadius="27" HorizontalAlignment="Center"
+                        Background="{StaticResource AccentSoft}" BorderBrush="{StaticResource Accent}" BorderThickness="1">
+                    <TextBlock Text="✉" FontSize="24" Foreground="{StaticResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <TextBlock Text="{Binding SentTitle}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding SentText}" Classes="muted" TextWrapping="Wrap" TextAlignment="Center" />
+
+                <StackPanel Spacing="8" IsVisible="{Binding Fixing}">
+                    <TextBlock Text="Doğru e-posta adresi" Classes="label" />
+                    <TextBox Text="{Binding FixEmail}" MaxLength="254" />
+                    <Button Classes="primary" Content="Bağlantıyı bu adrese gönder" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Padding="0,9" IsDefault="{Binding Fixing}" IsEnabled="{Binding !Sending}" Command="{Binding SendFixCommand}" />
+                    <Button Content="Vazgeç" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            IsVisible="{Binding CanResend}" Command="{Binding CancelFixCommand}" />
+                </StackPanel>
+
+                <StackPanel Spacing="8" IsVisible="{Binding !Fixing}">
+                    <Button Content="Bağlantıyı tekrar gönder" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            IsVisible="{Binding CanResend}" IsEnabled="{Binding !Sending}" Command="{Binding ResendCommand}" />
+                    <Button Content="Adresi yanlış mı yazdın? Düzelt" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            IsVisible="{Binding CanFix}" IsEnabled="{Binding !Sending}" Command="{Binding StartFixCommand}" />
+                </StackPanel>
+
+                <TextBlock Text="{Binding SentStatus}" TextWrapping="Wrap" TextAlignment="Center" FontSize="12.5"
+                           Classes="muted" Classes.error="{Binding SentError}" MinHeight="18" />
+                <Button Classes="primary" Content="Giriş ekranına dön" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Padding="0,10" IsVisible="{Binding !Fixing}" Command="{Binding BackToLoginCommand}" />
+                <Button Classes="link" HorizontalAlignment="Center" FontSize="12.5" Content="Giriş ekranına dön"
+                        IsVisible="{Binding Fixing}" Command="{Binding BackToLoginCommand}" />
+            </StackPanel>
+            </Panel>
         </Border>
     </Grid>
 </UserControl>

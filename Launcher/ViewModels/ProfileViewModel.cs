@@ -61,6 +61,67 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private string _repeatPassword = "";
         [ObservableProperty] private string? _passwordNote;
         [ObservableProperty] private bool _passwordOk;
+        // E-posta
+        [ObservableProperty] private string? _currentEmail;
+        [ObservableProperty] private string? _pendingEmail;
+        [ObservableProperty] private string _newEmail = "";
+        [ObservableProperty] private string _emailPassword = "";
+        [ObservableProperty] private string? _emailNote;
+        [ObservableProperty] private bool _emailOk;
+        public string CurrentEmailText => string.IsNullOrEmpty(CurrentEmail) ? "Kayıtlı bir e-posta adresin yok." : "Şu anki adresin: " + CurrentEmail;
+        public bool HasPendingEmail => !string.IsNullOrEmpty(PendingEmail);
+        public string PendingEmailText => $"{PendingEmail} adresine bir onay bağlantısı gönderdik. Bağlantı açılınca adresin değişir.";
+        partial void OnCurrentEmailChanged(string? value) => OnPropertyChanged(nameof(CurrentEmailText));
+        partial void OnPendingEmailChanged(string? value) { OnPropertyChanged(nameof(HasPendingEmail)); OnPropertyChanged(nameof(PendingEmailText)); }
+
+        partial void OnEditingChanged(bool value)
+        {
+            OnPropertyChanged(nameof(ShowBioView));
+            if (value && IsOwn) _ = LoadEmailAsync();
+        }
+
+        /// <summary>Düzenleme açılınca hesabın adresi (ve onay bekleyen yeni adres) sunucudan alınır.</summary>
+        private async Task LoadEmailAsync()
+        {
+            try
+            {
+                EmailNote = null;
+                var me = await _core.Call("profile.me");
+                CurrentEmail = me.Text("email");
+                PendingEmail = me.Text("pendingEmail");
+            }
+            catch { /* bölüm adres olmadan da çalışır */ }
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex EmailPattern = new(@"^[^\s@]+@[^\s@]+\.[^\s@]+$");
+
+        [RelayCommand]
+        private async Task ChangeEmail()
+        {
+            EmailOk = false;
+            string email = NewEmail.Trim();
+            if (!EmailPattern.IsMatch(email)) { EmailNote = "Geçerli bir e-posta adresi gir."; return; }
+            if (EmailPassword.Length == 0) { EmailNote = "Şifreni gir."; return; }
+            EmailNote = "Gönderiliyor…";
+            try
+            {
+                var result = await _core.Call("profile.changeEmail", new { email, password = EmailPassword });
+                NewEmail = EmailPassword = "";
+                EmailOk = true;
+                if (result.Bool("pending"))
+                {
+                    PendingEmail = email.ToLowerInvariant();
+                    EmailNote = "Onay bağlantısı gönderildi ✓";
+                }
+                else
+                {
+                    CurrentEmail = email.ToLowerInvariant();
+                    PendingEmail = null;
+                    EmailNote = "E-posta adresin değişti ✓";
+                }
+            }
+            catch (Exception ex) { EmailNote = ex.Message; }
+        }
 
         public bool IsOwn => Username == main.Username;
         public bool IsOther => !IsOwn;
@@ -83,7 +144,6 @@ namespace VuluLauncher.ViewModels
         public string SkinButton => HasSkin ? "Skini değiştir" : "Skin yükle";
 
         partial void OnBioDraftChanged(string value) { OnPropertyChanged(nameof(BioCounter)); OnPropertyChanged(nameof(CanSaveBio)); BioNote = null; }
-        partial void OnEditingChanged(bool value) => OnPropertyChanged(nameof(ShowBioView));
         partial void OnMemberSearchChanged(string value) => _ = LoadMembersAsync(false);
         partial void OnFriendStateChanged(string? value) { OnPropertyChanged(nameof(FriendText)); OnPropertyChanged(nameof(IsIncoming)); }
 

@@ -179,9 +179,31 @@
                     </StackPanel>
                 </Border>
 
+                <!-- E-posta değiştir: yeni adrese giden bağlantı açılınca geçerli olur -->
+                <Border Classes="section" IsVisible="{Binding Editing}">
+                    <StackPanel Spacing="6" Width="360" HorizontalAlignment="Left">
+                        <TextBlock Classes="h2" Text="E-posta adresi" />
+                        <TextBlock Text="{Binding CurrentEmailText}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding PendingEmailText}" Foreground="{StaticResource Accent}" FontSize="12.5" TextWrapping="Wrap"
+                                   IsVisible="{Binding HasPendingEmail}" />
+                        <TextBox Text="{Binding NewEmail}" MaxLength="254" Watermark="Yeni e-posta adresi" Margin="0,4,0,0" />
+                        <TextBox Text="{Binding EmailPassword}" PasswordChar="•" Watermark="Şifren" />
+                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding EmailNote}" FontSize="12" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="220"
+                                       Classes.ok="{Binding EmailOk}" Classes.err="{Binding !EmailOk}">
+                                <TextBlock.Styles>
+                                    <Style Selector="TextBlock.ok"><Setter Property="Foreground" Value="{StaticResource Ok}" /></Style>
+                                    <Style Selector="TextBlock.err"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                                </TextBlock.Styles>
+                            </TextBlock>
+                            <Button Classes="sm primary" Content="Adresi değiştir" Command="{Binding ChangeEmailCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
                 <!-- Şifre değiştir -->
                 <Border Classes="section" IsVisible="{Binding Editing}">
-                    <StackPanel Spacing="6" MaxWidth="360" HorizontalAlignment="Left">
+                    <StackPanel Spacing="6" Width="360" HorizontalAlignment="Left">
                         <TextBlock Classes="h2" Text="Şifre değiştir" />
                         <TextBox Text="{Binding CurrentPassword}" PasswordChar="•" Watermark="Mevcut şifre" />
                         <TextBox Text="{Binding NewPassword}" PasswordChar="•" Watermark="Yeni şifre" />

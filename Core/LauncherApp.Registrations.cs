@@ -31,6 +31,31 @@ namespace VuluLauncher
                 return result;
             });
 
+            // Doğrulama bağlantısını (yeniden) gönderir. Adres yanlış yazıldıysa düzeltilir; aynı adres girildiyse
+            // bağlantı yeniden gönderilir. Kaydın şifresiyle yapılır; giriş ekranındaki kayıtlı şifre de kullanılabilir.
+            _bridge.On("auth.sendVerification", async args =>
+            {
+                string username = args.Str("username").Trim();
+                string email = args.Str("email").Trim();
+                string password = args.Str("password");
+                if (args.Bool("useSaved"))
+                {
+                    var saved = CredentialManager.Load();
+                    if (string.Equals(saved.Username, username, StringComparison.OrdinalIgnoreCase)) password = saved.Password ?? "";
+                }
+                if (username.Length == 0 || password.Length == 0)
+                    throw new InvalidOperationException("Kullanıcı adı ve şifre gerekli.");
+                try
+                {
+                    return await _api.PostAsync<JsonElement>("/auth/registration/email", new { username, password, email });
+                }
+                catch (ApiException ex) when (ex.Status == HttpStatusCode.BadRequest && ex.Message.Contains("zaten bu"))
+                {
+                    // Adres doğruymuş: bağlantı aynı adrese yeniden gider
+                    return await _api.PostAsync<JsonElement>("/auth/resend-verification", new { email });
+                }
+            });
+
             _bridge.On("admin.registrations", async _ =>
             {
                 RequireAdmin();

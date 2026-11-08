@@ -35,6 +35,12 @@ namespace VuluLauncher
             _bridge.On("profile.uploadBanner", async args => await UploadBannerAsync(args.Str("dataUrl")));
             _bridge.On("profile.removeBanner", async _ => { RequireLogin(); return await _api.DeleteAsync<JsonElement>("/users/me/banner"); });
             _bridge.On("profile.changePassword", async args => await ChangePasswordAsync(args));
+            // E-posta değişikliği: sunucu posta gönderebiliyorsa yeni adrese giden bağlantı açılınca geçerli olur
+            _bridge.On("profile.changeEmail", async args =>
+            {
+                RequireLogin();
+                return await _api.PostAsync<JsonElement>("/users/me/email", new { email = args.Str("email").Trim(), password = args.Str("password") });
+            });
 
             // Skin: 64×64 PNG; beden tipi "default" (Klasik/Steve) ya da "slim" (İnce/Alex)
             _bridge.On("profile.pickSkin", async args => await PickSkinAsync(args.Str("model") == "slim" ? "slim" : "default"));

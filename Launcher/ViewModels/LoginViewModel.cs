@@ -24,6 +24,184 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
         private bool _busy;
+        /// <summary>Giriş "önce e-postanı doğrula" dediyse: bağlantıyı yeniden gönderme / adresi düzeltme yolu görünür.</summary>
+        [ObservableProperty] private bool _needsVerify;
+
+        // ── Kart: giriş, kayıt ya da "postanı kontrol et" ────────────────
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsLogin), nameof(IsRegister), nameof(IsSent))]
+        private string _card = "login";
+        public bool IsLogin => Card == "login";
+        public bool IsRegister => Card == "register";
+        public bool IsSent => Card == "sent";
+
+        // Kayıt formu
+        [ObservableProperty] private string _regUsername = "";
+        [ObservableProperty] private string _regEmail = "";
+        [ObservableProperty] private string _regPassword = "";
+        [ObservableProperty] private string _regPassword2 = "";
+        [ObservableProperty] private string _regStatus = "";
+        [ObservableProperty] private bool _regError;
+
+        // "Postanı kontrol et" kartı. Şifre yalnızca bu kart açıkken bellekte durur: adres düzeltmek için gerekir.
+        private string _sentUsername = "", _sentPassword = "", _sentEmail = "";
+        private bool _sentUseSaved;
+        [ObservableProperty] private string _sentTitle = "";
+        [ObservableProperty] private string _sentText = "";
+        [ObservableProperty] private bool _canResend;
+        [ObservableProperty] private bool _canFix;
+        [ObservableProperty] private bool _fixing;
+        [ObservableProperty] private string _fixEmail = "";
+        [ObservableProperty] private string _sentStatus = "";
+        [ObservableProperty] private bool _sentError;
+        [ObservableProperty] private bool _sending;
+
+        partial void OnRegUsernameChanged(string value)
+        {
+            string clean = Regex.Replace(value, "[^a-zA-Z0-9_]", "");
+            if (clean != value) RegUsername = clean;
+        }
+
+        private static readonly Regex EmailPattern = new(@"^[^\s@]+@[^\s@]+\.[^\s@]+$");
+
+        [RelayCommand]
+        private void ShowRegister()
+        {
+            RegStatus = "";
+            Card = "register";
+        }
+
+        [RelayCommand]
+        private void ShowLogin()
+        {
+            _sentPassword = "";
+            Card = "login";
+        }
+
+        [RelayCommand]
+        private async Task RegisterAsync()
+        {
+            string name = RegUsername.Trim(), mail = RegEmail.Trim();
+            void Fail(string text) { RegStatus = text; RegError = true; }
+            if (name.Length < 3) { Fail("Kullanıcı adı en az 3 karakter olmalı."); return; }
+            if (!EmailPattern.IsMatch(mail)) { Fail("Geçerli bir e-posta adresi gir."); return; }
+            if (RegPassword.Length < 6) { Fail("Şifre en az 6 karakter olmalı."); return; }
+            if (RegPassword != RegPassword2) { Fail("Şifreler aynı değil."); return; }
+
+            Sending = true;
+            RegStatus = "Gönderiliyor…";
+            RegError = false;
+            try
+            {
+                var result = await _core.Call("auth.register", new { username = name, email = mail, password = RegPassword });
+                _sentUsername = name;
+                _sentPassword = RegPassword;
+                _sentUseSaved = false;
+                _sentEmail = mail.ToLowerInvariant();
+                RegUsername = RegEmail = RegPassword = RegPassword2 = "";
+                RegStatus = "";
+                OpenSent(result.Bool("verifyEmail"));
+            }
+            catch (Exception ex) { Fail(ex.Message); }
+            finally { Sending = false; }
+        }
+
+        private string SentToText() =>
+            $"{_sentEmail} adresine bir doğrulama bağlantısı gönderdik. Kaydını tamamlamak için bağlantıyı aç; birkaç dakika içinde gelmezse spam klasörüne de bak.";
+
+        private void OpenSent(bool verify)
+        {
+            Fixing = false;
+            FixEmail = "";
+            SentStatus = "";
+            SentError = false;
+            CanResend = verify && _sentEmail.Length > 0;
+            CanFix = verify;
+            if (verify)
+            {
+                SentTitle = "Postanı kontrol et";
+                SentText = _sentEmail.Length > 0 ? SentToText()
+                    : "Kaydını tamamlamak için e-postana gönderdiğimiz bağlantıyı açman gerekiyor.";
+            }
+            else
+            {
+                SentTitle = "İsteğin gönderildi";
+                SentText = $"{_sentUsername} için isteğin bize ulaştı. Bir admin onayladığında giriş yapabilirsin.";
+            }
+            Card = "sent";
+        }
+
+        /// <summary>Giriş "önce doğrula" dediğinde: bağlantıyı yeniden göndermek ya da adresi düzeltmek için.</summary>
+        [RelayCommand]
+        private void OpenVerify()
+        {
+            _sentUsername = Username.Trim();
+            _sentUseSaved = _useSaved;
+            _sentPassword = _useSaved ? "" : Password;
+            _sentEmail = "";
+            OpenSent(true);
+            StartFix();
+            SentStatus = "Adresi yanlış yazdıysan doğrusunu gir; doğru yazdıysan aynısını gir, bağlantıyı yeniden göndeririz.";
+        }
+
+        [RelayCommand]
+        private void StartFix()
+        {
+            Fixing = true;
+            FixEmail = _sentEmail;
+            SentStatus = "";
+            SentError = false;
+        }
+
+        [RelayCommand]
+        private void CancelFix()
+        {
+            Fixing = false;
+            SentStatus = "";
+            SentError = false;
+        }
+
+        [RelayCommand]
+        private Task Resend() => SendVerificationAsync(_sentEmail);
+
+        [RelayCommand]
+        private Task SendFix() => SendVerificationAsync(FixEmail.Trim());
+
+        private async Task SendVerificationAsync(string email)
+        {
+            if (!EmailPattern.IsMatch(email)) { SentStatus = "Geçerli bir e-posta adresi gir."; SentError = true; return; }
+            Sending = true;
+            SentStatus = "Gönderiliyor…";
+            SentError = false;
+            try
+            {
+                await _core.Call("auth.sendVerification", new
+                {
+                    username = _sentUsername,
+                    password = _sentPassword,
+                    useSaved = _sentUseSaved,
+                    email,
+                });
+                _sentEmail = email.ToLowerInvariant();
+                Fixing = false;
+                CanResend = true;
+                SentText = SentToText();
+                SentStatus = "Bağlantı gönderildi ✓";
+            }
+            catch (Exception ex) { SentStatus = ex.Message; SentError = true; }
+            finally { Sending = false; }
+        }
+
+        /// <summary>"Giriş ekranına dön": kayıttaki kullanıcı adı giriş alanına gelir.</summary>
+        [RelayCommand]
+        private void BackToLogin()
+        {
+            if (_sentUsername.Length > 0 && !_sentUseSaved) { _useSaved = false; SetFields(_sentUsername, ""); }
+            _sentPassword = "";
+            NeedsVerify = false;
+            SetStatus("");
+            Card = "login";
+        }
 
         partial void OnUsernameChanged(string value)
         {
@@ -84,6 +262,8 @@ namespace VuluLauncher.ViewModels
 
         private bool CanLogin() => !Busy;
 
+        private static bool IsVerifyError(string message) => message.Contains("e-posta adresini doğrula", StringComparison.OrdinalIgnoreCase);
+
         [RelayCommand(CanExecute = nameof(CanLogin))]
         private async Task LoginAsync()
         {
@@ -94,6 +274,7 @@ namespace VuluLauncher.ViewModels
             }
 
             Busy = true;
+            NeedsVerify = false;
             SetStatus("Giriş yapılıyor, lütfen bekleyin...");
             // Bağlantı yavaşsa kullanıcı beklediğini bilsin
             using var slow = new CancellationTokenSource();
@@ -117,6 +298,7 @@ namespace VuluLauncher.ViewModels
             {
                 slow.Cancel();
                 Busy = false;
+                NeedsVerify = IsVerifyError(ex.Message);
                 SetStatus(ex.Message, true);
                 return;
             }
@@ -125,7 +307,9 @@ namespace VuluLauncher.ViewModels
 
             if (!result.Bool("success"))
             {
-                SetStatus(result.Text("error") ?? "Giriş başarısız.", true);
+                string error = result.Text("error") ?? "Giriş başarısız.";
+                NeedsVerify = IsVerifyError(error);
+                SetStatus(error, true);
                 return;
             }
             SetFields(Username, "");
