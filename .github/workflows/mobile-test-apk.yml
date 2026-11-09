@@ -50,10 +50,25 @@ jobs:
           dotnet build Mobile/Vulu.Mobile.Android/Vulu.Mobile.Android.csproj -t:InstallAndroidDependencies
           -p:AndroidSdkDirectory="$ANDROID_HOME" -p:JavaSdkDirectory="$JAVA_HOME" -p:AcceptAndroidSDKLicenses=True
 
+      # İmza: SOCIAL_TEST_KEYSTORE sırrı varsa onunla (her derleme aynı anahtar: yeni APK eskisinin üstüne kurulur,
+      # uygulama içi güncelleme çalışır). Yoksa SDK'nın o derlemeye özel geçici anahtarı (her seferinde silip kurmak gerekir).
+      # Sürüm numarası derleme sırasıdır: uygulama social.json'daki numara kendisininkinden büyükse güncelleme önerir.
       - name: Release APK
-        run: >
-          dotnet publish Mobile/Vulu.Mobile.Android/Vulu.Mobile.Android.csproj -c Release -o out
-          -p:AndroidSdkDirectory="$ANDROID_HOME" -p:JavaSdkDirectory="$JAVA_HOME"
+        env:
+          KEYSTORE_B64: ${{ secrets.SOCIAL_TEST_KEYSTORE }}
+          KEYSTORE_PASSWORD: ${{ secrets.SOCIAL_TEST_KEYSTORE_PASSWORD }}
+        run: |
+          SIGN=""
+          if [ -n "$KEYSTORE_B64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+            printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/social-test.keystore"
+            SIGN="-p:AndroidKeyStore=true -p:AndroidSigningKeyStore=$RUNNER_TEMP/social-test.keystore -p:AndroidSigningKeyAlias=vulusosyaltest -p:AndroidSigningKeyPass=env:KEYSTORE_PASSWORD -p:AndroidSigningStorePass=env:KEYSTORE_PASSWORD"
+            echo "Sabit test anahtarıyla imzalanıyor."
+          else
+            echo "::warning::SOCIAL_TEST_KEYSTORE sırrı yok; geçici anahtarla imzalanıyor (güncelleme için eskisini silmek gerekir)."
+          fi
+          dotnet publish Mobile/Vulu.Mobile.Android/Vulu.Mobile.Android.csproj -c Release -o out \
+            -p:AndroidSdkDirectory="$ANDROID_HOME" -p:JavaSdkDirectory="$JAVA_HOME" \
+            -p:ApplicationVersion=$((100 + GITHUB_RUN_NUMBER)) -p:ApplicationDisplayVersion=0.2.$GITHUB_RUN_NUMBER $SIGN
 
       - uses: actions/upload-artifact@v4
         with:
@@ -67,7 +82,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp out/*-Signed.apk vulu-sosyal-test.apk
+          # Uygulama içi güncellemenin okuduğu bilgi: sürüm numarası, SHA-256 ve indirme adresi
+          SHA=$(sha256sum vulu-sosyal-test.apk | cut -d' ' -f1)
+          printf '{"versionCode": %d, "version": "0.2.%d", "sha256": "%s", "url": "https://github.com/%s/releases/download/social-test/vulu-sosyal-test.apk"}\n' \
+            $((100 + GITHUB_RUN_NUMBER)) "$GITHUB_RUN_NUMBER" "$SHA" "$GITHUB_REPOSITORY" > social.json
           gh release delete social-test --yes --cleanup-tag || true
-          gh release create social-test vulu-sosyal-test.apk --prerelease --latest=false --target "$GITHUB_SHA" \
+          gh release create social-test vulu-sosyal-test.apk social.json --prerelease --latest=false --target "$GITHUB_SHA" \
             --title "vulu Sosyal test" \
             --notes "Telefonda denemek için vulu Sosyal APK'sı ($GITHUB_REF_NAME, ${GITHUB_SHA::7}). Geçici test anahtarıyla imzalı; yayın sürümü değildir."

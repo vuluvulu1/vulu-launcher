@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Avalonia.Threading;
@@ -16,8 +16,16 @@ namespace VuluMobile.Services
     /// (launcher'daki mesaj geçmişini okunmaz hâle getirirdi); yalnızca hiç anahtar yoksa üretir.
     /// Kişilerin anahtar kimlikleri telefonda hatırlanır: değişirse sohbette uyarı çıkar.
     /// </summary>
-    internal sealed class Messenger(ApiClient api)
+    internal sealed class Messenger
     {
+        private readonly ApiClient api;
+
+        public Messenger(ApiClient api)
+        {
+            this.api = api;
+            PushHub.MessagePushed += () => _wake.TrySetResult();
+        }
+
         private const int MaxLength = 2000;
         private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
         private static string KnownFile => Path.Combine(
@@ -25,9 +33,10 @@ namespace VuluMobile.Services
 
         private readonly object _gate = new();
         private ECDiffieHellman? _key;
-        private string? _keyId, _me;
+        private string? _keyId, _me, _public;
         private readonly Dictionary<string, (string PublicKey, string KeyId, DateTime At)> _peers = new(StringComparer.OrdinalIgnoreCase);
         private CancellationTokenSource? _poll;
+        private TaskCompletionSource _wake = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private DateTime? _since;
 
         public bool Ready => _key != null;
@@ -45,6 +54,8 @@ namespace VuluMobile.Services
             public string PublicKey { get; set; } = "";
             public List<string> Previous { get; set; } = new();
             public bool Changed { get; set; }
+            /// <summary>Güvenlik kodu karşı tarafla karşılaştırılıp onaylandı.</summary>
+            public bool Verified { get; set; }
         }
 
         public async Task SetUpAsync(string username, string password)
@@ -77,7 +88,8 @@ namespace VuluMobile.Services
                 {
                     _key?.Dispose();
                     _key = key;
-                    _keyId = MessageCrypto.KeyId(MessageCrypto.PublicKeyOf(key));
+                    _public = MessageCrypto.PublicKeyOf(key);
+                    _keyId = MessageCrypto.KeyId(_public);
                     _me = username;
                     _peers.Clear();
                 }
@@ -92,7 +104,7 @@ namespace VuluMobile.Services
         {
             _poll?.Cancel();
             _poll = null;
-            lock (_gate) { _key?.Dispose(); _key = null; _keyId = null; _me = null; }
+            lock (_gate) { _key?.Dispose(); _key = null; _keyId = null; _me = null; _public = null; }
             _since = null;
             Unread = 0;
         }
@@ -140,7 +152,7 @@ namespace VuluMobile.Services
             else if (k.KeyId != keyId)
             {
                 if (!k.Previous.Contains(k.PublicKey)) k.Previous.Add(k.PublicKey);
-                k.KeyId = keyId; k.PublicKey = pub; k.Changed = true;
+                k.KeyId = keyId; k.PublicKey = pub; k.Changed = true; k.Verified = false;
             }
             SaveKnown(known);
             return (pub, keyId, k);
@@ -153,8 +165,27 @@ namespace VuluMobile.Services
             if (known.TryGetValue(user, out var k)) { k.Changed = false; SaveKnown(known); }
         }
 
+        /// <summary>
+        /// İki kişinin karşılaştıracağı güvenlik kodu (launcher'dakiyle aynı: 30 rakam, 6 grup). Aynıysa araya giren
+        /// biri yoktur; kullanıcı onaylayınca kişi "doğrulandı" sayılır.
+        /// </summary>
+        public async Task<(string Code, bool Verified)> SafetyAsync(string user)
+        {
+            var (pub, _, known) = await PeerKeyAsync(user, fresh: true);
+            string mine = _public ?? throw new InvalidOperationException(Error ?? "Mesajlaşma hazır değil.");
+            return (MessageCrypto.SafetyCode(mine, pub), known.Verified);
+        }
+
+        public void Verify(string user)
+        {
+            var known = LoadKnown();
+            if (!known.TryGetValue(user, out var k)) return;
+            k.Verified = true; k.Changed = false;
+            SaveKnown(known);
+        }
+
         // ── Yazışmalar ────────────────────────────────────────────────────
-        public sealed record History(List<ChatMessage> Messages, string? PeerError, bool KeyChanged, bool More);
+        public sealed record History(List<ChatMessage> Messages, string? PeerError, bool KeyChanged, bool More, bool Verified = false);
 
         public async Task<History> HistoryAsync(string user, DateTime? before = null)
         {
@@ -165,7 +196,7 @@ namespace VuluMobile.Services
             try { peer = await PeerKeyAsync(user); }
             catch (ApiException ex) { peerError = ex.Message; }
             var list = raw.Select(m => Decrypt(m, user, peer?.Known)).Reverse().ToList();
-            return new History(list, peerError, peer?.Known.Changed ?? false, raw.Count >= 50);
+            return new History(list, peerError, peer?.Known.Changed ?? false, raw.Count >= 50, peer?.Known.Verified ?? false);
         }
 
         public async Task<ChatMessage> SendAsync(string user, string text)
@@ -222,7 +253,7 @@ namespace VuluMobile.Services
                     else text = ReadPayload(plain);
                 }
             }
-            m.GetProperty("createdAt").TryGetDateTime(out var at);
+            m.GetProperty("createdAt").TryDate(out var at);
             bool read = m.TryGetProperty("readAt", out var r) && r.ValueKind == JsonValueKind.String;
             return new ChatMessage(m.GetProperty("id").GetString()!, from, to, mine, text, problem, at.ToLocalTime(), read, peerName);
         }
@@ -263,7 +294,7 @@ namespace VuluMobile.Services
                         string query = _since is { } since ? $"?since={Uri.EscapeDataString(since.ToString("o"))}" : "";
                         var update = await api.GetAsync<JsonElement>("/messages/updates" + query);
                         if (cts.IsCancellationRequested) break;
-                        if (update.TryGetProperty("now", out var now) && now.TryGetDateTime(out var at)) _since = at.ToUniversalTime();
+                        if (update.TryGetProperty("now", out var now) && now.TryDate(out var at)) _since = at.ToUniversalTime();
                         var views = new List<ChatMessage>();
                         foreach (var group in update.GetProperty("messages").EnumerateArray().GroupBy(m => m.GetProperty("from").GetString()!))
                         {
@@ -281,7 +312,13 @@ namespace VuluMobile.Services
                         });
                     }
                     catch { /* bağlantı yoksa bir sonraki turda */ }
-                    try { await Task.Delay(TimeSpan.FromSeconds(PushHub.InForeground ? 4 : 30), cts.Token); }
+                    try
+                    {
+                        // Push gelince (ya da süre dolunca) bir sonraki tur
+                        var wake = _wake.Task;
+                        await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(PushHub.InForeground ? 4 : 30), cts.Token), wake);
+                        if (wake.IsCompleted) _wake = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                    }
                     catch (OperationCanceledException) { }
                 }
             });

@@ -30,7 +30,7 @@ namespace VuluMobile.Services
         public static IPushPlatform? Platform { get; set; }
 
         private static readonly object Gate = new();
-        private static string? _pendingOpen;
+        private static (string Kind, string Id)? _pendingOpen;
 
         internal static event Action<string>? TokenRefreshed;
         internal static event Action? OpenRequested;
@@ -51,16 +51,26 @@ namespace VuluMobile.Services
         /// <summary>FCM token'ı değişti (Firebase'in kendi yenilemesi); giriş yapılmışsa sunucuya yeniden kaydedilir.</summary>
         public static void OnNewToken(string token) => Dispatcher.UIThread.Post(() => TokenRefreshed?.Invoke(token));
 
-        /// <summary>Bildirime dokunuldu: ör. "registration" → Admin sekmesi. Giriş yapılmadıysa girişten sonra açılır.</summary>
-        public static void OnNotificationOpened(string kind)
+        /// <summary>
+        /// Bildirime dokunuldu: "registration" → Admin, "message" → o kişiyle sohbet, "friend.*" → Arkadaşlar,
+        /// "shot" → o ekran görüntüsü. Giriş yapılmadıysa girişten sonra açılır.
+        /// </summary>
+        public static void OnNotificationOpened(string kind, string? id = null)
         {
-            lock (Gate) _pendingOpen = kind;
+            lock (Gate) _pendingOpen = (kind, id ?? "");
             Dispatcher.UIThread.Post(() => OpenRequested?.Invoke());
         }
 
-        internal static string? TakePendingOpen()
+        internal static (string Kind, string Id)? TakePendingOpen()
         {
-            lock (Gate) { var kind = _pendingOpen; _pendingOpen = null; return kind; }
+            lock (Gate) { var open = _pendingOpen; _pendingOpen = null; return open; }
         }
+
+        /// <summary>Şu an ekranda açık sohbetin kişisi: o kişiden gelen mesaj bildirim olarak gösterilmez.</summary>
+        public static string? OpenChatPeer { get; internal set; }
+
+        /// <summary>Yeni mesaj push'u geldi: yoklama beklemeden hemen sorulur.</summary>
+        internal static event Action? MessagePushed;
+        public static void OnMessagePushed() => Dispatcher.UIThread.Post(() => MessagePushed?.Invoke());
     }
 }

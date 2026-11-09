@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 
 namespace VuluMobile.Services
@@ -36,7 +36,7 @@ namespace VuluMobile.Services
             catch { /* hatırlanmazsa bir sonraki açılışta yeniden giriş istenir */ }
         }
 
-        internal static (string Username, string Password)? Load()
+        public static (string Username, string Password)? Load()
         {
             if (Protector == null) return null;
             try

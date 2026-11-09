@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -33,6 +33,23 @@ namespace VuluMobile.Views
         }
 
         public string? Username { get => GetValue(UsernameProperty); set => SetValue(UsernameProperty, value); }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            Images.AvatarChanged += OnAvatarChanged;
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            Images.AvatarChanged -= OnAvatarChanged;
+            base.OnDetachedFromVisualTree(e);
+        }
+
+        private void OnAvatarChanged(string username)
+        {
+            if (string.Equals(username, Username, StringComparison.OrdinalIgnoreCase)) Apply();
+        }
         public double Size { get => GetValue(SizeProperty); set => SetValue(SizeProperty, value); }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

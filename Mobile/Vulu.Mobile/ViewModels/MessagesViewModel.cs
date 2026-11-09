@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -67,7 +67,7 @@ namespace VuluMobile.ViewModels
                 foreach (var c in list.EnumerateArray())
                 {
                     var item = new ConversationItem(c.GetProperty("username").GetString() ?? "") { Unread = c.GetProperty("unread").GetInt32() };
-                    if (c.TryGetProperty("lastAt", out var at) && at.TryGetDateTime(out var t)) item.LastAt = t.ToLocalTime();
+                    if (c.TryGetProperty("lastAt", out var at) && at.TryDate(out var t)) item.LastAt = t.ToLocalTime();
                     Conversations.Add(item);
                 }
                 Status = null;
@@ -87,6 +87,8 @@ namespace VuluMobile.ViewModels
 
         partial void OnChatChanged(ChatViewModel? value)
         {
+            PushHub.OpenChatPeer = value?.Peer;
+            if (value != null) AppPlatform.Current?.CancelNotification("message-" + value.Peer);
             if (value == null) _ = RefreshAsync();
         }
 
@@ -140,6 +142,10 @@ namespace VuluMobile.ViewModels
         [ObservableProperty] private bool _keyChanged;
         [ObservableProperty] private bool _loading = true;
         [ObservableProperty] private bool _canLoadOlder;
+        /// <summary>Güvenlik kodu karşı tarafla karşılaştırılıp onaylandı.</summary>
+        [ObservableProperty] private bool _verified;
+        [ObservableProperty] private string? _safetyCode;
+        [ObservableProperty] private bool _safetyOpen;
 
         /// <summary>Yeni mesaj eklendi: görünüm en alta kayar.</summary>
         public event Action? ScrollToEnd;
@@ -155,6 +161,7 @@ namespace VuluMobile.ViewModels
                 Messages.Clear();
                 foreach (var m in h.Messages) Messages.Add(new MessageItem(m));
                 KeyChanged = h.KeyChanged;
+                Verified = h.Verified;
                 Status = h.PeerError;
                 _more = h.More;
                 CanLoadOlder = _more;
@@ -221,5 +228,30 @@ namespace VuluMobile.ViewModels
         }
 
         [RelayCommand] private void Close() => _close();
+
+        [RelayCommand]
+        private async Task ShowSafetyAsync()
+        {
+            if (SafetyOpen) { SafetyOpen = false; return; }
+            try
+            {
+                var (code, verified) = await _session.Messages.SafetyAsync(Peer);
+                // 30 rakam: 5'erli 6 grup, iki satır
+                var groups = Enumerable.Range(0, code.Replace(" ", "").Length / 5).Select(i => code.Replace(" ", "").Substring(i * 5, 5)).ToList();
+                SafetyCode = groups.Count == 6 ? string.Join("  ", groups.Take(3)) + "\n" + string.Join("  ", groups.Skip(3)) : code;
+                Verified = verified;
+                SafetyOpen = true;
+            }
+            catch (Exception ex) { Status = ex.Message; }
+        }
+
+        [RelayCommand]
+        private void ConfirmSafety()
+        {
+            _session.Messages.Verify(Peer);
+            Verified = true;
+            KeyChanged = false;
+            SafetyOpen = false;
+        }
     }
 }

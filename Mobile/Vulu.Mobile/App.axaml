@@ -12,6 +12,7 @@
         <DataTemplate DataType="vm:ProfileViewModel"><v:ProfileView /></DataTemplate>
         <DataTemplate DataType="vm:PlaceholderViewModel"><v:PlaceholderView /></DataTemplate>
         <DataTemplate DataType="vm:FriendsViewModel"><v:FriendsView /></DataTemplate>
+        <DataTemplate DataType="vm:ActivityViewModel"><v:ActivityView /></DataTemplate>
         <DataTemplate DataType="vm:MessagesViewModel"><v:MessagesView /></DataTemplate>
         <DataTemplate DataType="vm:ChatViewModel"><v:ChatView /></DataTemplate>
         <DataTemplate DataType="vm:FeedViewModel"><v:FeedView /></DataTemplate>
@@ -115,6 +116,19 @@
         </Style>
         <Style Selector="Button.row:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource Surface}" />
+        </Style>
+        <!-- Bölüm seçici (Admin: Kayıtlar / Kullanıcılar / Ayarlar) -->
+        <Style Selector="Button.seg">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0,0,0,2" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="Foreground" Value="{StaticResource Dim}" />
+            <Setter Property="Padding" Value="6,10" />
+        </Style>
+        <Style Selector="Button.seg.selected">
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
         </Style>
         <Style Selector="Button.link">
             <Setter Property="Background" Value="Transparent" />

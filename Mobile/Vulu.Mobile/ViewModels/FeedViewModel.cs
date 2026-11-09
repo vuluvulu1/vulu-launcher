@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -24,7 +24,7 @@ namespace VuluMobile.ViewModels
             _liked = s.GetProperty("liked").GetBoolean();
             _commentCount = s.GetProperty("commentCount").GetInt32();
             CanDelete = s.TryGetProperty("canDelete", out var d) && d.ValueKind == JsonValueKind.True;
-            if (s.TryGetProperty("createdAt", out var c) && c.TryGetDateTime(out var at)) CreatedAt = at;
+            if (s.TryGetProperty("createdAt", out var c) && c.TryDate(out var at)) CreatedAt = at;
         }
 
         private static string Str(JsonElement e, string n) => e.TryGetProperty(n, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
@@ -70,7 +70,7 @@ namespace VuluMobile.ViewModels
         public string Id { get; } = c.GetProperty("id").GetString() ?? "";
         public string Author { get; } = c.GetProperty("author").GetString() ?? "";
         public string Text { get; } = c.GetProperty("text").GetString() ?? "";
-        public string When { get; } = c.TryGetProperty("createdAt", out var a) && a.TryGetDateTime(out var t) ? ViewModels.When.Short(t.ToLocalTime()) : "";
+        public string When { get; } = c.TryGetProperty("createdAt", out var a) && a.TryDate(out var t) ? ViewModels.When.Short(t.ToLocalTime()) : "";
     }
 
     /// <summary>
@@ -158,8 +158,91 @@ namespace VuluMobile.ViewModels
 
         [RelayCommand] private void CloseDetail() => Open = null;
 
+        /// <summary>Bildirimden: o ekran görüntüsü listede yoksa sunucudan alınır.</summary>
+        public async Task OpenByIdAsync(string id)
+        {
+            var shot = Shots.FirstOrDefault(s => s.Id == id);
+            if (shot == null)
+            {
+                try { shot = new ShotItem(await session.Api.GetAsync<JsonElement>($"/shots/{Uri.EscapeDataString(id)}")); }
+                catch (Exception ex) { Status = ex.Message; return; }
+            }
+            Open = new ShotDetailViewModel(session, shot, this);
+        }
+
+        // ── Paylaşma ──────────────────────────────────────────────────────
+        [ObservableProperty] private bool _sharing;
+        [ObservableProperty] private Bitmap? _sharePreview;
+        [ObservableProperty] private string _shareCaption = "";
+        [ObservableProperty] private string? _shareStatus;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ShareSendCommand))]
+        private bool _shareBusy;
+        private byte[]? _shareImage, _shareThumb;
+        private int _shareWidth, _shareHeight;
+
+        /// <summary>Galeriden resim seçilir, sunucunun sınırlarına göre küçültülür ve önizlenir.</summary>
+        [RelayCommand]
+        private async Task ShareAsync()
+        {
+            try
+            {
+                byte[]? picked = await Picker.PickImageAsync("Paylaşılacak ekran görüntüsü");
+                if (picked == null) return;
+                ShareBusy = true;
+                Sharing = true;
+                ShareStatus = "Hazırlanıyor…";
+                var (image, thumb) = await Task.Run(() => (ImageTools.Jpeg(picked, 1920, 1_150_000), ImageTools.Jpeg(picked, 480, 150_000)));
+                _shareImage = image.Data; _shareThumb = thumb.Data;
+                _shareWidth = image.Width; _shareHeight = image.Height;
+                using (var ms = new MemoryStream(thumb.Data)) SharePreview = new Bitmap(ms);
+                ShareStatus = null;
+            }
+            catch (Exception ex) { ShareStatus = ex.Message; }
+            finally { ShareBusy = false; }
+        }
+
+        private bool CanShareSend => !ShareBusy && _shareImage != null;
+
+        [RelayCommand(CanExecute = nameof(CanShareSend))]
+        private async Task ShareSendAsync()
+        {
+            ShareBusy = true;
+            ShareStatus = "Gönderiliyor…";
+            try
+            {
+                var shot = await session.Api.PostAsync<JsonElement>("/shots", new
+                {
+                    image = Convert.ToBase64String(_shareImage!),
+                    thumb = Convert.ToBase64String(_shareThumb!),
+                    caption = ShareCaption.Trim(),
+                    packName = "",
+                    mcVersion = "",
+                    width = _shareWidth,
+                    height = _shareHeight,
+                });
+                Shots.Insert(0, new ShotItem(shot));
+                OnPropertyChanged(nameof(IsEmpty));
+                ShareCancel();
+            }
+            catch (Exception ex) { ShareStatus = ex.Message; }
+            finally { ShareBusy = false; }
+        }
+
+        [RelayCommand]
+        private void ShareCancel()
+        {
+            Sharing = false;
+            SharePreview = null;
+            ShareCaption = "";
+            ShareStatus = null;
+            _shareImage = _shareThumb = null;
+            ShareSendCommand.NotifyCanExecuteChanged();
+        }
+
         public bool GoBack()
         {
+            if (Sharing) { ShareCancel(); return true; }
             if (Open == null) return false;
             Open = null;
             return true;

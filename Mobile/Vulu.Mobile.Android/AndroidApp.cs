@@ -18,6 +18,8 @@ namespace VuluMobile.Android
             Notifications.CreateChannels(this);
             PushHub.Platform = new AndroidPush(this);
             SavedLogin.Protector = new AndroidProtector();
+            AppPlatform.Current = new AndroidPlatform(this);
+            BackgroundCheck.Schedule(this);
         }
     }
 }

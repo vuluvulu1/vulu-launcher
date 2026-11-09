@@ -11,7 +11,10 @@
                     <TextBlock Classes="title" Text="Akış" />
                     <TextBlock Classes="dim" FontSize="13" Text="Launcher'dan paylaşılan ekran görüntüleri." />
                 </StackPanel>
-                <Button Grid.Column="1" Content="Yenile" Command="{Binding RefreshCommand}" VerticalAlignment="Top" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+                    <Button Classes="primary" Content="Paylaş" Command="{Binding ShareCommand}" />
+                    <Button Content="Yenile" Command="{Binding RefreshCommand}" />
+                </StackPanel>
             </Grid>
             <TextBlock Grid.Row="1" Margin="20,12,20,0" Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}"
                        Foreground="{StaticResource Error}" TextWrapping="Wrap" />
@@ -56,5 +59,30 @@
         </Grid>
 
         <ContentControl Content="{Binding Open}" IsVisible="{Binding Open, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+        <!-- Paylaşma -->
+        <Border IsVisible="{Binding Sharing}" Background="{StaticResource Bg}">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="8,24,16,8">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Button Classes="link" Content="‹ Vazgeç" Command="{Binding ShareCancelCommand}" />
+                        <TextBlock Grid.Column="1" Text="Ekran görüntüsü paylaş" FontWeight="SemiBold" FontSize="17" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    </Grid>
+                </Border>
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel Spacing="12" Margin="16">
+                        <Image Source="{Binding SharePreview}" Stretch="Uniform" MaxHeight="420" />
+                        <TextBox Text="{Binding ShareCaption}" PlaceholderText="Açıklama (isteğe bağlı)" MaxLength="200" TextWrapping="Wrap" AcceptsReturn="False" />
+                        <TextBlock Text="{Binding ShareStatus}" IsVisible="{Binding ShareStatus, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                   Classes="muted" TextWrapping="Wrap" />
+                        <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap"
+                                   Text="Herkes görebilir. Saatte en fazla 20 paylaşım; resim gönderilmeden önce küçültülür." />
+                    </StackPanel>
+                </ScrollViewer>
+                <Border Grid.Row="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="10">
+                    <Button Classes="primary" Content="Paylaş" HorizontalAlignment="Stretch" Command="{Binding ShareSendCommand}" />
+                </Border>
+            </Grid>
+        </Border>
     </Panel>
 </UserControl>

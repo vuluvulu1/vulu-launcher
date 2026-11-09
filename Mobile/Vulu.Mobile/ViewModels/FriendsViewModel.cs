@@ -91,7 +91,7 @@ namespace VuluMobile.ViewModels
                     f.Online = true;
                     f.Playing = p.TryGetProperty("state", out var s) && s.GetString() == "playing";
                     string where = Str(p, "server") is { Length: > 0 } server ? server : Str(p, "instance");
-                    string since = p.TryGetProperty("since", out var si) && si.TryGetDateTime(out var at) ? When.Since(at.ToLocalTime()) : "";
+                    string since = p.TryGetProperty("since", out var si) && si.TryDate(out var at) ? When.Since(at.ToLocalTime()) : "";
                     f.Status = f.Playing
                         ? "Oynuyor" + (where.Length > 0 ? " · " + where : "") + (since.Length > 0 ? " · " + since : "")
                         : "Çevrimiçi · launcher açık";

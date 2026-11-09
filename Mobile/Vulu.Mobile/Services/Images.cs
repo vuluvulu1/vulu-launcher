@@ -1,4 +1,4 @@
-using Avalonia.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
 using VuluLauncher;
 
 namespace VuluMobile.Services
@@ -25,6 +25,18 @@ namespace VuluMobile.Services
                 return Cache[path] = LoadAsync(path, decodeWidth);
             }
         }
+
+        /// <summary>Resim değişti (ör. profil fotoğrafı yüklendi): bir dahaki istekte yeniden indirilir.</summary>
+        public static void Forget(string path) { lock (Cache) Cache.Remove(path); }
+
+        public static void ForgetAvatar(string username)
+        {
+            Forget($"/users/{Uri.EscapeDataString(username)}/avatar");
+            AvatarChanged?.Invoke(username);
+        }
+
+        /// <summary>Bir kullanıcının fotoğrafı değişti: ekrandaki <c>Avatar</c>'lar yeniden yükler.</summary>
+        public static event Action<string>? AvatarChanged;
 
         private static async Task<Bitmap?> LoadAsync(string path, int decodeWidth)
         {

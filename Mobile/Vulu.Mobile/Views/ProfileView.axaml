@@ -1,23 +1,76 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluMobile.ViewModels"
+             xmlns:v="using:VuluMobile.Views"
              x:Class="VuluMobile.Views.ProfileView"
              x:DataType="vm:ProfileViewModel">
     <ScrollViewer>
-        <StackPanel Margin="20,32,20,20" Spacing="14">
-            <TextBlock Classes="title" Text="{Binding Username}" />
-            <TextBlock Classes="muted" Text="{Binding Role}" />
+        <StackPanel Margin="20,32,20,24" Spacing="14">
+            <!-- Kimlik -->
+            <Grid ColumnDefinitions="Auto,*">
+                <v:Avatar Username="{Binding Username}" Size="76" />
+                <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Classes="title" Text="{Binding Username}" FontSize="26" />
+                    <TextBlock Classes="muted" Text="{Binding Role}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+            <Button Content="Fotoğrafı değiştir" Command="{Binding ChangeAvatarCommand}" IsEnabled="{Binding !AvatarBusy}" HorizontalAlignment="Left" />
 
-            <Border Classes="card" Margin="0,8,0,0">
+            <Border Classes="card">
                 <StackPanel Spacing="10">
+                    <TextBlock Classes="label" Text="AÇIKLAMA" />
+                    <TextBox Text="{Binding Bio}" PlaceholderText="Kendinden kısaca bahset" TextWrapping="Wrap" AcceptsReturn="True" MaxLength="300" MinHeight="72" />
+                    <Button Classes="primary" Content="Kaydet" Command="{Binding SaveBioCommand}" IsVisible="{Binding BioChanged}" HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" IsVisible="{Binding Playtime, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="label" Text="OYNAMA SÜRESİ" />
+                    <TextBlock Text="{Binding Playtime}" FontSize="22" FontWeight="Light" />
+                    <ItemsControl ItemsSource="{Binding TopGames}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String"><TextBlock Text="{Binding}" Classes="muted" FontSize="13" /></DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding ProfileStatus}" IsVisible="{Binding ProfileStatus, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       Classes="muted" FontSize="13" TextWrapping="Wrap" />
+
+            <!-- Bildirimler -->
+            <Border Classes="card">
+                <StackPanel Spacing="12">
                     <TextBlock Classes="label" Text="BİLDİRİMLER" />
                     <TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap" Text="{Binding PushState}" />
                     <Button Classes="primary" Content="Bildirimlere izin ver" Command="{Binding AskPermissionCommand}"
                             IsVisible="{Binding CanAskPermission}" HorizontalAlignment="Left" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="Mesajlar" FontWeight="SemiBold" />
+                            <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" Text="Kimden geldiği görünür, içerik görünmez." />
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding MessageNotifications}" OnContent="" OffContent="" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="Arkadaşlık istekleri" FontWeight="SemiBold" />
+                            <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" Text="Yeni istek ve kabul edilen istek." />
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding FriendNotifications}" OnContent="" OffContent="" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="Beğeni ve yorumlar" FontWeight="SemiBold" />
+                            <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" Text="Paylaştığın ekran görüntülerine." />
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding ShotNotifications}" OnContent="" OffContent="" />
+                    </Grid>
                     <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsAdmin}">
                         <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Kayıt isteği bildirimi" FontWeight="SemiBold" />
-                            <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" Text="E-postasını doğrulamış yeni bir kayıt isteği gelince." />
+                            <TextBlock Text="Kayıt istekleri" FontWeight="SemiBold" />
+                            <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" Text="Adminler için; bildirimden onaylanabilir." />
                         </StackPanel>
                         <ToggleSwitch Grid.Column="1" IsChecked="{Binding RegistrationNotifications}" OnContent="" OffContent="" />
                     </Grid>
@@ -26,7 +79,23 @@
                 </StackPanel>
             </Border>
 
-            <Button Classes="danger" Content="Çıkış yap" Command="{Binding LogoutCommand}" HorizontalAlignment="Left" Margin="0,12,0,0" />
+            <!-- Sürüm -->
+            <Border Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="label" Text="UYGULAMA" />
+                    <TextBlock Text="{Binding Version}" />
+                    <TextBlock Text="{Binding UpdateText}" IsVisible="{Binding UpdateText, Converter={x:Static ObjectConverters.IsNotNull}}"
+                               Classes="muted" FontSize="13" TextWrapping="Wrap" />
+                    <ProgressBar Value="{Binding UpdateProgress}" Maximum="100" IsVisible="{Binding UpdateBusy}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Classes="primary" Content="Güncellemeyi kur" Command="{Binding InstallUpdateCommand}"
+                                IsVisible="{Binding UpdateAvailable}" IsEnabled="{Binding !UpdateBusy}" />
+                        <Button Content="Güncellemeleri denetle" Command="{Binding CheckUpdateCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Button Classes="danger" Content="Çıkış yap" Command="{Binding LogoutCommand}" HorizontalAlignment="Left" Margin="0,8,0,0" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

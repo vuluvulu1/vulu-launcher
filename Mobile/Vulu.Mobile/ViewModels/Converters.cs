@@ -14,6 +14,9 @@ namespace VuluMobile.ViewModels
         /// <summary>true → italik (çözülemeyen mesaj).</summary>
         public static readonly IValueConverter ItalicIf = new FuncValueConverter<bool, FontStyle>(v => v ? FontStyle.Italic : FontStyle.Normal);
 
+        public static readonly IValueConverter ActiveText = new FuncValueConverter<bool, string>(v => v ? "Hesabı kapat" : "Hesabı aç");
+        public static readonly IValueConverter AdminText = new FuncValueConverter<bool, string>(v => v ? "Adminliği al" : "Admin yap");
+
         private static readonly IBrush Accent = new SolidColorBrush(Color.Parse("#F2A33A"));
         /// <summary>true → turuncu (oyunda), false → soluk.</summary>
         public static readonly IValueConverter AccentOrDim = new FuncValueConverter<bool, IBrush>(v => v ? Accent : Dim);

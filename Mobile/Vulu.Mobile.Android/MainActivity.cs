@@ -67,8 +67,10 @@ namespace VuluMobile.Android
         {
             string? kind = intent?.GetStringExtra(Notifications.KindExtra);
             if (string.IsNullOrEmpty(kind)) return;
-            intent!.RemoveExtra(Notifications.KindExtra);
-            PushHub.OnNotificationOpened(kind);
+            string? id = intent!.GetStringExtra(Notifications.IdExtra);
+            intent.RemoveExtra(Notifications.KindExtra);
+            intent.RemoveExtra(Notifications.IdExtra);
+            PushHub.OnNotificationOpened(kind, id);
         }
     }
 }

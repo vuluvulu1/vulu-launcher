@@ -1,27 +1,30 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluMobile.ViewModels"
+             xmlns:v="using:VuluMobile.Views"
              x:Class="VuluMobile.Views.AdminView"
              x:DataType="vm:AdminViewModel">
     <Grid RowDefinitions="Auto,Auto,*" Margin="20,32,20,0">
         <Grid ColumnDefinitions="*,Auto">
-            <StackPanel Spacing="2">
-                <TextBlock Classes="title" Text="Kayıt istekleri" />
-                <TextBlock Classes="dim" FontSize="13" Text="Onaylanınca hesap açılır; red geri alınamaz." />
-            </StackPanel>
-            <Button Grid.Column="1" Content="Yenile" Command="{Binding RefreshCommand}" VerticalAlignment="Top" />
+            <TextBlock Classes="title" Text="Admin" />
+            <Button Grid.Column="1" Content="Yenile" Command="{Binding RefreshCommand}" VerticalAlignment="Center" />
         </Grid>
 
-        <TextBlock Grid.Row="1" Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}"
-                   Classes="muted" TextWrapping="Wrap" Margin="0,12,0,0" />
+        <!-- Bölümler -->
+        <UniformGrid Grid.Row="1" Rows="1" Margin="0,14,0,0">
+            <Button Classes="seg" Classes.selected="{Binding OnRegistrations}" Content="Kayıtlar" Command="{Binding ShowSectionCommand}" CommandParameter="0" />
+            <Button Classes="seg" Classes.selected="{Binding OnUsers}" Content="Kullanıcılar" Command="{Binding ShowSectionCommand}" CommandParameter="1" />
+            <Button Classes="seg" Classes.selected="{Binding OnSettings}" Content="Ayarlar" Command="{Binding ShowSectionCommand}" CommandParameter="2" />
+        </UniformGrid>
 
-        <ScrollViewer Grid.Row="2" Margin="0,16,0,0">
+        <!-- Kayıt istekleri -->
+        <ScrollViewer Grid.Row="2" Margin="0,16,0,0" IsVisible="{Binding OnRegistrations}">
             <StackPanel Spacing="10" Margin="0,0,0,20">
+                <TextBlock Classes="dim" FontSize="13" Text="Onaylanınca hesap açılır; red geri alınamaz." />
+                <TextBlock Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="muted" TextWrapping="Wrap" />
                 <TextBlock IsVisible="{Binding IsEmpty}" Classes="muted" Text="Bekleyen istek yok." />
                 <ItemsControl ItemsSource="{Binding Registrations}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate><StackPanel Spacing="10" /></ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="10" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:RegistrationItem">
                             <Border Classes="card">
@@ -31,22 +34,109 @@
                                         <TextBlock Grid.Column="1" Classes="dim" FontSize="12" Text="{Binding When}" VerticalAlignment="Center" />
                                     </Grid>
                                     <TextBlock Classes="muted" Text="{Binding Email}" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock FontSize="12" Text="{Binding State}"
-                                               Foreground="{Binding Verified, Converter={x:Static vm:Converters.OkOrDim}}" />
+                                    <TextBlock FontSize="12" Text="{Binding State}" Foreground="{Binding Verified, Converter={x:Static vm:Converters.OkOrDim}}" />
                                     <Grid ColumnDefinitions="*,10,*" Margin="0,6,0,0">
-                                        <Button Classes="primary" Content="Onayla" HorizontalAlignment="Stretch"
-                                                IsEnabled="{Binding Verified}"
-                                                Command="{Binding $parent[ItemsControl].((vm:AdminViewModel)DataContext).ApproveCommand}"
-                                                CommandParameter="{Binding}" />
+                                        <Button Classes="primary" Content="Onayla" HorizontalAlignment="Stretch" IsEnabled="{Binding Verified}"
+                                                Command="{Binding $parent[ItemsControl].((vm:AdminViewModel)DataContext).ApproveCommand}" CommandParameter="{Binding}" />
                                         <Button Grid.Column="2" Classes="danger" Content="{Binding RejectText}" HorizontalAlignment="Stretch"
-                                                Command="{Binding $parent[ItemsControl].((vm:AdminViewModel)DataContext).RejectCommand}"
-                                                CommandParameter="{Binding}" />
+                                                Command="{Binding $parent[ItemsControl].((vm:AdminViewModel)DataContext).RejectCommand}" CommandParameter="{Binding}" />
                                     </Grid>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Kullanıcılar -->
+        <ScrollViewer Grid.Row="2" Margin="0,16,0,0" IsVisible="{Binding OnUsers}">
+            <StackPanel Spacing="10" Margin="0,0,0,20">
+                <TextBox Text="{Binding Search}" PlaceholderText="kullanıcı adı ya da e-posta ara" />
+                <TextBlock Text="{Binding UsersSummary}" Classes="dim" FontSize="12" />
+                <TextBlock Text="{Binding UsersStatus}" IsVisible="{Binding UsersStatus, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="muted" TextWrapping="Wrap" />
+                <ItemsControl ItemsSource="{Binding Users}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:UserItem">
+                            <Border Classes="card" Padding="0">
+                                <StackPanel>
+                                    <Button Classes="row" Command="{Binding $parent[ItemsControl].((vm:AdminViewModel)DataContext).ToggleUserCommand}" CommandParameter="{Binding}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <v:Avatar Username="{Binding Username}" Size="38" />
+                                            <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center" Spacing="1">
+                                                <TextBlock Text="{Binding Username}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Email}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                <TextBlock Text="{Binding Badges}" FontSize="12" HorizontalAlignment="Right"
+                                                           Foreground="{Binding IsAdmin, Converter={x:Static vm:Converters.AccentOrDim}}" />
+                                                <TextBlock Text="{Binding Seen}" Classes="dim" FontSize="11" HorizontalAlignment="Right" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                    <StackPanel Spacing="8" Margin="12,0,12,12" IsVisible="{Binding Expanded}">
+                                        <Grid ColumnDefinitions="*,10,*">
+                                            <Button Content="{Binding IsActive, Converter={x:Static vm:Converters.ActiveText}}" HorizontalAlignment="Stretch" IsEnabled="{Binding !Busy}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:AdminViewModel)DataContext).ToggleActiveCommand}" CommandParameter="{Binding}" />
+                                            <Button Grid.Column="2" Content="{Binding IsAdmin, Converter={x:Static vm:Converters.AdminText}}" HorizontalAlignment="Stretch" IsEnabled="{Binding !Busy}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:AdminViewModel)DataContext).ToggleAdminCommand}" CommandParameter="{Binding}" />
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBox Text="{Binding NewPassword}" PasswordChar="●" PlaceholderText="yeni şifre" />
+                                            <Button Grid.Column="1" Content="Şifreyi değiştir" IsEnabled="{Binding !Busy}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:AdminViewModel)DataContext).ResetPasswordCommand}" CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Ayarlar ve duyuru -->
+        <ScrollViewer Grid.Row="2" Margin="0,16,0,0" IsVisible="{Binding OnSettings}">
+            <StackPanel Spacing="12" Margin="0,0,0,20">
+                <TextBlock Text="{Binding SettingsStatus}" IsVisible="{Binding SettingsStatus, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="muted" TextWrapping="Wrap" />
+                <Border Classes="card">
+                    <StackPanel Spacing="12">
+                        <TextBlock Classes="label" Text="KAYIT" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="Kayıtları admin onaylasın" FontWeight="SemiBold" />
+                                <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" Text="Kapalıysa e-postasını doğrulayan herkesin hesabı hemen açılır." />
+                            </StackPanel>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding ApprovalByAdmin}" OnContent="" OffContent="" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="Minecraft sahipliği şartı" FontWeight="SemiBold" />
+                                <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" Text="Oyuna girmek için Microsoft hesabıyla Minecraft'a sahip olmak gerekir." />
+                            </StackPanel>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding RequireOwnership}" OnContent="" OffContent="" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                <Border Classes="card">
+                    <StackPanel Spacing="10">
+                        <TextBlock Classes="label" Text="DUYURU" />
+                        <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" Text="Launcher ana ekranında görünür. Yenisi eskisinin yerine geçer." />
+                        <Border Background="{StaticResource Surface}" Padding="10" IsVisible="{Binding Announcement, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{Binding Announcement}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Classes="danger" Content="Kaldır" Command="{Binding RemoveAnnouncementCommand}" Margin="8,0,0,0" />
+                            </Grid>
+                        </Border>
+                        <TextBox Text="{Binding AnnouncementDraft}" PlaceholderText="Yeni duyuru" TextWrapping="Wrap" AcceptsReturn="True" MaxLength="500" MinHeight="64" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Text="{Binding AnnouncementHours}" PlaceholderText="kaç saat kalsın (boş: süresiz)" />
+                            <Button Grid.Column="1" Classes="primary" Content="Yayınla" Command="{Binding PublishAnnouncementCommand}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" Text="Paket yükleme, radyo, depolama ve rol oluşturma launcher'ın Admin sekmesinde." />
             </StackPanel>
         </ScrollViewer>
     </Grid>
