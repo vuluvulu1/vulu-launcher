@@ -25,10 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AndroidResource Include="..\..\docs\logo-512.png" Link="Resources\drawable\icon.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Vulu.Mobile\Vulu.Mobile.csproj" />
   </ItemGroup>
 
