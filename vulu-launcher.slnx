@@ -1,8 +1,14 @@
 <Solution>
+  <Project Path="Social/Vulu.Social.csproj" />
   <Project Path="Core/Vulu.Core.csproj" />
   <Project Path="Launcher/vuluLauncher.csproj" />
   <Project Path="Android/vuluLauncher.Android.csproj" />
   <Project Path="Updater/Updater.csproj" Id="a5507476-417e-477c-a9f5-a562b8d163df" />
   <Project Path="Installer/Installer.csproj" />
   <Project Path="Tests/Vulu.Tests.csproj" />
+  <Folder Name="/Mobile/">
+    <Project Path="Mobile/Vulu.Mobile/Vulu.Mobile.csproj" />
+    <Project Path="Mobile/Vulu.Mobile.Desktop/Vulu.Mobile.Desktop.csproj" />
+    <Project Path="Mobile/Vulu.Mobile.Android/Vulu.Mobile.Android.csproj" />
+  </Folder>
 </Solution>

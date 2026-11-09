@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Launcher'ın ve mobil uygulamanın ortak kullandığı, oyundan bağımsız kısım: vulu-api istemcisi, giriş ve uçtan uca
+    şifreli mesajların kriptografisi. İşletim sistemine ve Minecraft'a bağlı hiçbir şey burada olmaz; böylece aynı kod
+    Windows'ta da Android'de de birebir çalışır (masaüstünde şifrelenen mesaj telefonda açılır).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Vulu.Social</AssemblyName>
+    <RootNamespace>VuluLauncher</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>0.9.0</Version>
+    <Authors>vuluvulu1</Authors>
+    <Company>vuluvulu1</Company>
+    <Product>vulu</Product>
+    <Copyright>Copyright (c) 2026 vuluvulu1. Licensed under AGPL-3.0.</Copyright>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Vulu.Core" />
+    <InternalsVisibleTo Include="vulu Launcher" />
+    <InternalsVisibleTo Include="vuluLauncher.Android" />
+    <InternalsVisibleTo Include="Vulu.Mobile" />
+    <InternalsVisibleTo Include="Vulu.Mobile.Android" />
+    <InternalsVisibleTo Include="Vulu.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- vuluvulu.com.tr'ye yedekli bağlanma (DNS çözülemezse DoH ve sabit IP) -->
+    <Compile Include="..\Shared\ServerConnection.cs" Link="Shared\ServerConnection.cs" />
+  </ItemGroup>
+
+</Project>

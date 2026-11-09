@@ -27,7 +27,11 @@
   <ItemGroup>
     <!-- Updater ile ortak: release bilgisi ve sürüm karşılaştırma -->
     <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
-    <Compile Include="..\Shared\ServerConnection.cs" Link="Shared\ServerConnection.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- API istemcisi, giriş ve mesaj şifrelemesi: mobil uygulamayla ortak -->
+    <ProjectReference Include="..\Social\Vulu.Social.csproj" />
   </ItemGroup>
 
   <ItemGroup>

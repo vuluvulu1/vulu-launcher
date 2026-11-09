@@ -9,6 +9,7 @@ on:
     paths:
       - "Android/**"
       - "Core/**"
+      - "Social/**"
       - "Shared/**"
       - "Launcher/wwwroot/**"
       - ".github/workflows/android-test-apk.yml"

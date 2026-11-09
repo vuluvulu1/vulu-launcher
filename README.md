@@ -56,11 +56,13 @@ Windows ilk seferde SmartScreen uyarısı verebilir: *Ek bilgi → Yine de çal�
 | Klasör | İçerik |
 | --- | --- |
 | `Core/` | Launcher'ın bütün işi: oyun kurma ve açma, paketler, hesap, sunucu istekleri. Arayüz bunu komutlarla çağırır. |
+| `Social/` | Launcher'la mobil uygulamanın ortak kodu: sunucu istemcisi, giriş, uçtan uca şifreli mesajlar |
 | `Launcher/` | Windows arayüzü (Avalonia, MVVM) |
 | `Updater/`, `Installer/` | Güncelleyici ve kurulum programı |
 | `Shared/` | Ortak kod; yazı tipleri, görseller ve lisans dosyaları |
 | `Tests/` | Birim testleri |
 | `Android/` | Android uygulaması (.NET MAUI, `Android/wwwroot` web arayüzü) |
+| `Mobile/` | vulu Sosyal: telefondaki sosyal uygulama (Avalonia), [plan](docs/mobile-plan.md) |
 | `tools/` | Yayın ve test betikleri |
 
 Derlemek için .NET 10 SDK yeterli:
