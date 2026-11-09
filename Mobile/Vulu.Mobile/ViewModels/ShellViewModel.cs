@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using VuluMobile.Services;
 
 namespace VuluMobile.ViewModels
@@ -10,7 +10,7 @@ namespace VuluMobile.ViewModels
 
         [ObservableProperty] private ObservableObject _current;
 
-        public ShellViewModel() => _current = new LoginViewModel(_session, OnLoggedIn);
+        public ShellViewModel() => _current = new LoginViewModel(_session, OnLoggedIn, autoLogin: true);
 
         private void OnLoggedIn() => Current = new MainViewModel(_session, OnLoggedOut);
 

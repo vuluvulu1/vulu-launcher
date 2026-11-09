@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluMobile.ViewModels"
              x:Class="VuluMobile.Views.LoginView"
@@ -9,6 +9,12 @@
             <TextBlock Classes="title" Text="vulu Sosyal" Margin="0,8,0,0" />
             <TextBlock Classes="muted" TextWrapping="Wrap" Text="Launcher'daki vulu hesabınla giriş yap." Margin="0,0,0,12" />
 
+            <StackPanel Spacing="10" IsVisible="{Binding Restoring}" Margin="0,12,0,0">
+                <ProgressBar IsIndeterminate="True" />
+                <TextBlock Classes="muted" Text="{Binding Username, StringFormat='{}{0} olarak oturum açılıyor…'}" />
+            </StackPanel>
+
+            <StackPanel Spacing="14" IsVisible="{Binding !Restoring}">
             <TextBlock Classes="label" Text="KULLANICI ADI" />
             <TextBox Text="{Binding Username}" PlaceholderText="kullanıcı adı" />
             <TextBlock Classes="label" Text="ŞİFRE" Margin="0,4,0,0" />
@@ -20,6 +26,7 @@
             <Button Classes="primary" Content="Giriş yap" Command="{Binding LoginCommand}" HorizontalAlignment="Stretch" Margin="0,8,0,0" />
             <TextBlock Classes="dim" FontSize="13" TextWrapping="Wrap"
                        Text="Hesabın yoksa launcher'dan ya da vuluvulu.com.tr/kayit adresinden kayıt olabilirsin." />
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

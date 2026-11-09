@@ -1,4 +1,4 @@
-using Android.App;
+﻿using Android.App;
 using Android.Runtime;
 using Avalonia.Android;
 using VuluMobile.Services;
@@ -17,6 +17,7 @@ namespace VuluMobile.Android
             base.OnCreate();
             Notifications.CreateChannels(this);
             PushHub.Platform = new AndroidPush(this);
+            SavedLogin.Protector = new AndroidProtector();
         }
     }
 }

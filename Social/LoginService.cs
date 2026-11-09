@@ -39,7 +39,9 @@ namespace VuluLauncher
                 else
                 {
                     var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-                    return new LoginResult(false, error?.Error ?? "Giriş başarısız.");
+                    // 401/403: şifre yanlış ya da hesap kapalı/onay bekliyor; kayıtlı giriş bilgisi artık işe yaramaz
+                    bool rejected = response.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden;
+                    return new LoginResult(false, error?.Error ?? "Giriş başarısız.", rejected);
                 }
             }
             catch (Exception ex)
@@ -50,7 +52,8 @@ namespace VuluLauncher
 
     }
 
-    public record LoginResult(bool Success, string? ErrorMessage);
+    /// <param name="Rejected">Sunucu girişi reddetti (yanlış şifre, kapalı hesap); ağ hatasında false.</param>
+    public record LoginResult(bool Success, string? ErrorMessage, bool Rejected = false);
 
     internal class LoginResponse
     {

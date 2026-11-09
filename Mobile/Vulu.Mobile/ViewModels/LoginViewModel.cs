@@ -1,11 +1,31 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VuluMobile.Services;
 
 namespace VuluMobile.ViewModels
 {
-    internal sealed partial class LoginViewModel(Session session, Action loggedIn) : ObservableObject
+    internal sealed partial class LoginViewModel : ObservableObject
     {
+        private readonly Session session;
+        private readonly Action loggedIn;
+
+        /// <param name="autoLogin">Uygulama açılırken: kayıtlı giriş bilgisi varsa kendiliğinden giriş yapılır.</param>
+        public LoginViewModel(Session session, Action loggedIn, bool autoLogin = false)
+        {
+            this.session = session;
+            this.loggedIn = loggedIn;
+            if (autoLogin && session.Saved is { } saved)
+            {
+                _username = saved.Username;
+                _password = saved.Password;
+                Restoring = true;
+                _ = LoginAsync();
+            }
+        }
+
+        /// <summary>Kayıtlı bilgiyle giriş sürüyor: form yerine "Oturum açılıyor" gösterilir.</summary>
+        [ObservableProperty] private bool _restoring;
+
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
         private string _username = "";
@@ -35,8 +55,10 @@ namespace VuluMobile.ViewModels
                     Password = "";
                     loggedIn();
                 }
+                // Kayıtlı şifre reddedildiyse (bilgi silindi) eski şifre formda kalmasın; ağ hatasında kalır, "Giriş yap" yeniden dener
+                else if (Restoring && session.Saved == null) Password = "";
             }
-            finally { Busy = false; }
+            finally { Busy = false; Restoring = false; }
         }
     }
 }

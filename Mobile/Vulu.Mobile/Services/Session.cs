@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using VuluLauncher;
 
 namespace VuluMobile.Services
@@ -6,7 +6,7 @@ namespace VuluMobile.Services
     /// <summary>
     /// Giriş yapan kullanıcının oturumu ve sunucuya istek atan istemci. Launcher'la aynı Vulu.Social kodunu kullanır.
     /// Girişten sonra telefon push bildirimi için sunucuya kaydedilir, çıkışta kaydı silinir.
-    /// Şimdilik oturum bellekte durur; Faz 1'de token Android Keystore ile şifrelenip saklanacak.
+    /// Giriş bilgisi şifrelenip saklanır (<see cref="SavedLogin"/>); uygulama açılınca oturum kendiliğinden açılır.
     /// </summary>
     internal sealed class Session
     {
@@ -32,12 +32,21 @@ namespace VuluMobile.Services
         public string? PushError { get; private set; }
         public event Action? PushStateChanged;
 
+        /// <summary>Kayıtlı giriş bilgisi (açılışta otomatik giriş için); yoksa null.</summary>
+        public (string Username, string Password)? Saved => SavedLogin.Load();
+
         public async Task<string?> LoginAsync(string username, string password)
         {
             var login = new LoginService();
             var result = await login.LoginAsync(username.Trim(), password);
-            if (!result.Success) return result.ErrorMessage ?? "Giriş başarısız.";
+            if (!result.Success)
+            {
+                // Şifre değişmiş ya da hesap kapanmışsa kayıtlı bilgi silinir; ağ hatasında kalır (sonra yeniden denenir)
+                if (result.Rejected) SavedLogin.Clear();
+                return result.ErrorMessage ?? "Giriş başarısız.";
+            }
             _login = login;
+            SavedLogin.Save(login.Username, password);
             PushHub.Platform?.RequestPermission();
             _ = RegisterDeviceAsync(null);
             return null;
@@ -54,6 +63,7 @@ namespace VuluMobile.Services
             }
             _deviceToken = null;
             _login = new LoginService();
+            SavedLogin.Clear();
         }
 
         private async Task RegisterDeviceAsync(string? token)
