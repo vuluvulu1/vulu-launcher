@@ -17,6 +17,8 @@ namespace VuluMobile.Services
         {
             Api = new ApiClient(() => _login.Token);
             PushHub.TokenRefreshed += token => { if (IsLoggedIn) _ = RegisterDeviceAsync(token); };
+            // Ayarlardan dönülünce ya da ilk denemede ağ yoksa: kayıt olmamışsa yeniden denenir
+            PushHub.Resumed += () => { if (IsLoggedIn && !PushReady) _ = RegisterDeviceAsync(null); PushStateChanged?.Invoke(); };
         }
 
         public ApiClient Api { get; }
@@ -24,8 +26,10 @@ namespace VuluMobile.Services
         /// <summary>Admin sekmesini göstermek için. Yetkiyi sunucu her istekte ayrıca denetler.</summary>
         public bool IsAdmin => _login.IsAdmin;
         public bool IsLoggedIn => !string.IsNullOrEmpty(_login.Token);
-        /// <summary>Bu telefon bildirim alabiliyor mu (Firebase hazır ve sunucuya kaydedildi).</summary>
+        /// <summary>Bu telefon sunucuya bildirim almak için kaydedildi mi (Firebase token'ı alındı ve gönderildi).</summary>
         public bool PushReady => _deviceToken != null;
+        /// <summary>Kayıt olmadıysa nedeni: Firebase token'ı alınamadı ya da sunucu kabul etmedi.</summary>
+        public string? PushError { get; private set; }
         public event Action? PushStateChanged;
 
         public async Task<string?> LoginAsync(string username, string password)
@@ -56,13 +60,16 @@ namespace VuluMobile.Services
         {
             try
             {
-                token ??= PushHub.Platform == null ? null : await PushHub.Platform.GetTokenAsync();
-                if (token == null || !IsLoggedIn) return;
+                if (PushHub.Platform == null) { PushError = "Bu cihazda push desteklenmiyor."; return; }
+                token ??= await PushHub.Platform.GetTokenAsync();
+                if (token == null) { PushError = "Firebase'e bağlanılamadı: " + (PushHub.Platform.LastError ?? "bilinmeyen hata"); return; }
+                if (!IsLoggedIn) return;
                 await Api.PostAsync<JsonElement>("/users/me/devices", new { token, platform = "android" });
                 _deviceToken = token;
+                PushError = null;
             }
-            catch { /* push olmadan da uygulama çalışır; bir sonraki girişte yeniden denenir */ }
-            PushStateChanged?.Invoke();
+            catch (Exception ex) { PushError = "Sunucuya kaydedilemedi: " + ex.Message; }
+            finally { PushStateChanged?.Invoke(); }
         }
     }
 }

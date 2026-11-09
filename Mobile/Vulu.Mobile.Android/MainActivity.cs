@@ -15,11 +15,33 @@ namespace VuluMobile.Android
         /// <summary>Bildirim izni sormak için açık olan ekran.</summary>
         internal static MainActivity? Current { get; private set; }
 
+        /// <summary>
+        /// Bu açılışta izin penceresi gösterildi mi. Kullanıcı reddederse "İzin ver" düğmesi bir sonraki seferde
+        /// pencere yerine ayarları açar (Android art arda redlerden sonra pencereyi hiç göstermez).
+        /// </summary>
+        internal static bool PermissionAsked { get; private set; }
+
         protected override void OnCreate(Bundle? savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             Current = this;
             HandleNotification(Intent);
+            // Android 13+: izin uygulama açılınca sorulur (girişi beklemeden). Bazı telefonlarda uygulama hiç
+            // sormadıysa ayarlardaki bildirim anahtarı da kilitli kalır.
+            PushHub.Platform?.RequestPermission();
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
+            PushHub.OnResumed();
+        }
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+        {
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            PermissionAsked = true;
+            PushHub.OnResumed();
         }
 
         protected override void OnNewIntent(Intent? intent)

@@ -95,16 +95,26 @@ namespace VuluMobile.ViewModels
         {
             _session = session;
             _logout = logout;
-            session.PushStateChanged += () => OnPropertyChanged(nameof(PushState));
+            session.PushStateChanged += () => { OnPropertyChanged(nameof(PushState)); OnPropertyChanged(nameof(CanAskPermission)); };
             if (session.IsAdmin) _ = LoadPrefsAsync();
         }
 
         public string Username => _session.Username;
         public string Role => _session.IsAdmin ? "Admin" : "Üye";
         public bool IsAdmin => _session.IsAdmin;
-        public string PushState => _session.PushReady
-            ? "Bu telefon bildirim alıyor."
-            : "Bu telefon şu an bildirim alamıyor (bildirim izni ya da Google Play Hizmetleri gerekli).";
+
+        private static bool Permitted => PushHub.Platform?.NotificationsEnabled == true;
+        /// <summary>İki ayrı koşul: Android'in bildirim izni ve sunucuya kayıt. İkisi de gerekir.</summary>
+        public string PushState => (Permitted, _session.PushReady) switch
+        {
+            (true, true) => "Bu telefon bildirim alıyor.",
+            (false, true) => "Sunucuya kayıtlı ama bildirim izni kapalı: bildirimler gelir ama gösterilemez.",
+            (true, false) => _session.PushError ?? "Sunucuya kaydediliyor…",
+            (false, false) => "Bildirim izni kapalı. " + (_session.PushError ?? "Sunucuya kaydediliyor…"),
+        };
+        public bool CanAskPermission => !Permitted && PushHub.Platform != null;
+
+        [RelayCommand] private void AskPermission() => PushHub.Platform?.AskOrOpenSettings();
 
         /// <summary>Adminler: yeni kayıt isteği telefona bildirim olarak gelsin mi (sunucuda saklanır).</summary>
         [ObservableProperty] private bool _registrationNotifications = true;

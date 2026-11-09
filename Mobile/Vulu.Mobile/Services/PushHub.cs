@@ -9,6 +9,15 @@ namespace VuluMobile.Services
         Task<string?> GetTokenAsync();
         /// <summary>Android 13 ve üstünde bildirim izni ister (verilmişse bir şey yapmaz).</summary>
         void RequestPermission();
+        /// <summary>Bildirimler bu telefonda gösterilebiliyor mu (izin verilmiş ve kullanıcı kapatmamış).</summary>
+        bool NotificationsEnabled { get; }
+        /// <summary>
+        /// "İzin ver" düğmesi: izin henüz sorulabiliyorsa sorar, kullanıcı daha önce reddettiyse (Android ikinci
+        /// kez sormaz) uygulamanın bildirim ayarlarını açar.
+        /// </summary>
+        void AskOrOpenSettings();
+        /// <summary>Firebase token'ı alınamadıysa nedeni (ekranda gösterilir).</summary>
+        string? LastError { get; }
     }
 
     /// <summary>
@@ -25,6 +34,10 @@ namespace VuluMobile.Services
 
         internal static event Action<string>? TokenRefreshed;
         internal static event Action? OpenRequested;
+        /// <summary>Uygulama öne geldi (ör. ayarlardan izin verilip dönüldü): bildirim durumu yeniden okunur.</summary>
+        internal static event Action? Resumed;
+
+        public static void OnResumed() => Dispatcher.UIThread.Post(() => Resumed?.Invoke());
 
         /// <summary>FCM token'ı değişti (Firebase'in kendi yenilemesi); giriş yapılmışsa sunucuya yeniden kaydedilir.</summary>
         public static void OnNewToken(string token) => Dispatcher.UIThread.Post(() => TokenRefreshed?.Invoke(token));

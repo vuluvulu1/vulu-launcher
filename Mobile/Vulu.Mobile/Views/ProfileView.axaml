@@ -12,6 +12,8 @@
                 <StackPanel Spacing="10">
                     <TextBlock Classes="label" Text="BİLDİRİMLER" />
                     <TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap" Text="{Binding PushState}" />
+                    <Button Classes="primary" Content="Bildirimlere izin ver" Command="{Binding AskPermissionCommand}"
+                            IsVisible="{Binding CanAskPermission}" HorizontalAlignment="Left" />
                     <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsAdmin}">
                         <StackPanel Spacing="2" VerticalAlignment="Center">
                             <TextBlock Text="Kayıt isteği bildirimi" FontWeight="SemiBold" />
