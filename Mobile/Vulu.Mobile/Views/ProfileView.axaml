@@ -3,9 +3,28 @@
              xmlns:vm="using:VuluMobile.ViewModels"
              x:Class="VuluMobile.Views.ProfileView"
              x:DataType="vm:ProfileViewModel">
-    <StackPanel Margin="20,32,20,20" Spacing="14">
-        <TextBlock Classes="title" Text="{Binding Username}" />
-        <TextBlock Classes="muted" Text="{Binding Role}" />
-        <Button Classes="danger" Content="Çıkış yap" Command="{Binding LogoutCommand}" HorizontalAlignment="Left" Margin="0,12,0,0" />
-    </StackPanel>
+    <ScrollViewer>
+        <StackPanel Margin="20,32,20,20" Spacing="14">
+            <TextBlock Classes="title" Text="{Binding Username}" />
+            <TextBlock Classes="muted" Text="{Binding Role}" />
+
+            <Border Classes="card" Margin="0,8,0,0">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="label" Text="BİLDİRİMLER" />
+                    <TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap" Text="{Binding PushState}" />
+                    <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsAdmin}">
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="Kayıt isteği bildirimi" FontWeight="SemiBold" />
+                            <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" Text="E-postasını doğrulamış yeni bir kayıt isteği gelince." />
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding RegistrationNotifications}" OnContent="" OffContent="" />
+                    </Grid>
+                    <TextBlock Text="{Binding PrefsError}" IsVisible="{Binding PrefsError, Converter={x:Static ObjectConverters.IsNotNull}}"
+                               Foreground="{StaticResource Error}" FontSize="13" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Button Classes="danger" Content="Çıkış yap" Command="{Binding LogoutCommand}" HorizontalAlignment="Left" Margin="0,12,0,0" />
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

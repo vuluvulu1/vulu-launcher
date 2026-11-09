@@ -1,6 +1,7 @@
 using Android.App;
 using Android.Runtime;
 using Avalonia.Android;
+using VuluMobile.Services;
 
 namespace VuluMobile.Android
 {
@@ -9,6 +10,13 @@ namespace VuluMobile.Android
     {
         public AndroidApp(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
+        }
+
+        public override void OnCreate()
+        {
+            base.OnCreate();
+            Notifications.CreateChannels(this);
+            PushHub.Platform = new AndroidPush(this);
         }
     }
 }

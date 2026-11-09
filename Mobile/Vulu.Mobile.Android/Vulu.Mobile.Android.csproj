@@ -22,6 +22,16 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Android" Version="12.1.4" />
+    <!-- Push bildirimleri (Firebase Cloud Messaging) -->
+    <PackageReference Include="Xamarin.Firebase.Messaging" Version="125.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Firebase projesinin ayarı (Firebase Console → Proje ayarları → Android uygulaması com.vuluvulu.social).
+      Repoda değil: GitHub'da GOOGLE_SERVICES_JSON sırrından yazılır. Yoksa uygulama yine derlenir, push çalışmaz.
+    -->
+    <GoogleServicesJson Include="google-services.json" Condition="Exists('google-services.json')" />
   </ItemGroup>
 
   <ItemGroup>

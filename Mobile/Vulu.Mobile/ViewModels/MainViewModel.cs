@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VuluMobile.Services;
@@ -31,6 +32,8 @@ namespace VuluMobile.ViewModels
         public MainViewModel(Session session, Action logout)
         {
             _session = session;
+            var signOut = logout;
+            logout = () => { PushHub.OpenRequested -= OpenPending; signOut(); };
             Tabs.Add(new NavTab("feed", "Akış", Icons.Feed, new PlaceholderViewModel("Akış", "Arkadaşlarının ekran görüntüleri burada olacak.")));
             Tabs.Add(new NavTab("messages", "Mesajlar", Icons.Messages, new PlaceholderViewModel("Mesajlar", "Uçtan uca şifreli mesajlar burada olacak.")));
             Tabs.Add(new NavTab("friends", "Arkadaşlar", Icons.Friends, new PlaceholderViewModel("Arkadaşlar", "Kim ne oynuyor, arkadaşlık istekleri burada olacak.")));
@@ -45,6 +48,16 @@ namespace VuluMobile.ViewModels
             }
             _selected = Tabs[0];
             _selected.IsSelected = true;
+
+            // Bildirime dokunularak açıldıysa (ya da açıkken dokunulursa) ilgili sekme
+            PushHub.OpenRequested += OpenPending;
+            OpenPending();
+        }
+
+        private void OpenPending()
+        {
+            if (PushHub.TakePendingOpen() is "registration" && Tabs.FirstOrDefault(t => t.Key == "admin") is { } admin)
+                Selected = admin;
         }
 
         partial void OnSelectedChanged(NavTab value)
@@ -72,10 +85,60 @@ namespace VuluMobile.ViewModels
         public string Text { get; } = text;
     }
 
-    internal sealed partial class ProfileViewModel(Session session, Action logout) : ObservableObject
+    internal sealed partial class ProfileViewModel : ObservableObject
     {
-        public string Username { get; } = session.Username;
-        public string Role { get; } = session.IsAdmin ? "Admin" : "Üye";
-        [RelayCommand] private void Logout() => logout();
+        private readonly Session _session;
+        private readonly Action _logout;
+        private bool _loadingPrefs;
+
+        public ProfileViewModel(Session session, Action logout)
+        {
+            _session = session;
+            _logout = logout;
+            session.PushStateChanged += () => OnPropertyChanged(nameof(PushState));
+            if (session.IsAdmin) _ = LoadPrefsAsync();
+        }
+
+        public string Username => _session.Username;
+        public string Role => _session.IsAdmin ? "Admin" : "Üye";
+        public bool IsAdmin => _session.IsAdmin;
+        public string PushState => _session.PushReady
+            ? "Bu telefon bildirim alıyor."
+            : "Bu telefon şu an bildirim alamıyor (bildirim izni ya da Google Play Hizmetleri gerekli).";
+
+        /// <summary>Adminler: yeni kayıt isteği telefona bildirim olarak gelsin mi (sunucuda saklanır).</summary>
+        [ObservableProperty] private bool _registrationNotifications = true;
+        [ObservableProperty] private string? _prefsError;
+
+        private async Task LoadPrefsAsync()
+        {
+            try
+            {
+                var me = await _session.Api.GetAsync<JsonElement>("/users/me");
+                _loadingPrefs = true;
+                if (me.TryGetProperty("notifications", out var n) && n.TryGetProperty("registrations", out var r))
+                    RegistrationNotifications = r.GetBoolean();
+            }
+            catch (Exception ex) { PrefsError = ex.Message; }
+            finally { _loadingPrefs = false; }
+        }
+
+        partial void OnRegistrationNotificationsChanged(bool value)
+        {
+            if (_loadingPrefs) return;
+            _ = SavePrefAsync(value);
+        }
+
+        private async Task SavePrefAsync(bool value)
+        {
+            try
+            {
+                await _session.Api.PutAsync<JsonElement>("/users/me/notifications", new { registrations = value });
+                PrefsError = null;
+            }
+            catch (Exception ex) { PrefsError = ex.Message; }
+        }
+
+        [RelayCommand] private void Logout() => _logout();
     }
 }

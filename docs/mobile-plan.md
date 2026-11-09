@@ -65,6 +65,19 @@ Kayıt (/auth/register) ──► e-posta doğrulaması (/auth/verify-email)
 sorulur; e-postasını doğrulamış yeni istek Windows bildirimi olur, tıklayınca Admin › Kayıt istekleri açılır. Admin
 sekmesinin rozeti de güncel kalır. Ayarlar › Launcher › "Kayıt isteği bildirimi" ile kapatılabilir.
 
+## Push kurulumu (bir kez)
+
+Kod hazır (vulu-api ve Mobile); çalışması için bir Firebase projesi gerekir:
+
+1. [Firebase Console](https://console.firebase.google.com) → proje oluştur (Analytics gerekmez).
+2. Projeye **Android uygulaması** ekle, paket adı `com.vuluvulu.social`. İnen `google-services.json`'un içeriğini
+   vulu-launcher reposunda **Settings → Secrets and variables → Actions → New repository secret** ile
+   `GOOGLE_SERVICES_JSON` adıyla kaydet. Test APK'sı bundan sonra push'lu derlenir.
+3. **Proje ayarları → Hizmet hesapları → Yeni özel anahtar oluştur**. İnen JSON'u VDS'e koy (ör.
+   `/etc/vulu/firebase-service-account.json`, yalnızca API servisinin okuyabileceği izinlerle) ve `.env`'e
+   `FCM_SERVICE_ACCOUNT_FILE=/etc/vulu/firebase-service-account.json` ekle. Bu dosya gizlidir; repoya girmez.
+4. vulu-api'deki değişiklik `main`'e alınınca sunucuya yüklenir.
+
 ## Sunucu (vulu-api) değişiklikleri
 
 vulu-api: Node.js + Express 5 + MongoDB (mongoose). Oturum JWT (HS256, 7 gün, `tokenVersion` ile şifre değişince

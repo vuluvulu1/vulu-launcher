@@ -33,6 +33,18 @@ jobs:
       - name: Android workload
         run: dotnet workload install android
 
+      # Firebase ayarı (push bildirimleri): repoda değil, GOOGLE_SERVICES_JSON sırrında. Yoksa APK push'suz derlenir.
+      - name: Firebase ayarı
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > Mobile/Vulu.Mobile.Android/google-services.json
+            echo "Firebase ayarı eklendi."
+          else
+            echo "::warning::GOOGLE_SERVICES_JSON sırrı yok; APK push bildirimi olmadan derleniyor."
+          fi
+
       - name: Android SDK paketleri
         run: >
           dotnet build Mobile/Vulu.Mobile.Android/Vulu.Mobile.Android.csproj -t:InstallAndroidDependencies

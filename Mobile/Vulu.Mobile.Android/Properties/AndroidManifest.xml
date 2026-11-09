@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto">
     <uses-permission android:name="android.permission.INTERNET" />
-    <application android:label="vulu Sosyal" android:icon="@drawable/icon" android:allowBackup="false" />
+    <!-- Android 13 ve üstü: bildirim göstermek için izin (girişten sonra sorulur) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <application android:label="vulu Sosyal" android:icon="@drawable/icon" android:allowBackup="false">
+        <!-- Uygulama arka plandayken Firebase'in kendi gösterdiği bildirimler için simge ve varsayılan kanal -->
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_notification" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="registrations" />
+    </application>
 </manifest>
