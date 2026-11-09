@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluMobile.ViewModels"
+             xmlns:v="using:VuluMobile.Views"
+             x:Class="VuluMobile.Views.FeedView"
+             x:DataType="vm:FeedViewModel">
+    <Panel>
+        <Grid RowDefinitions="Auto,Auto,*" Margin="0,32,0,0" IsVisible="{Binding Open, Converter={x:Static ObjectConverters.IsNull}}">
+            <Grid ColumnDefinitions="*,Auto" Margin="20,0">
+                <StackPanel Spacing="2">
+                    <TextBlock Classes="title" Text="Akış" />
+                    <TextBlock Classes="dim" FontSize="13" Text="Launcher'dan paylaşılan ekran görüntüleri." />
+                </StackPanel>
+                <Button Grid.Column="1" Content="Yenile" Command="{Binding RefreshCommand}" VerticalAlignment="Top" />
+            </Grid>
+            <TextBlock Grid.Row="1" Margin="20,12,20,0" Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       Foreground="{StaticResource Error}" TextWrapping="Wrap" />
+
+            <ScrollViewer Grid.Row="2" Margin="0,12,0,0" x:Name="Scroller">
+                <StackPanel Spacing="14" Margin="0,0,0,24">
+                    <ProgressBar IsIndeterminate="True" IsVisible="{Binding Loading}" Margin="20,0" />
+                    <TextBlock IsVisible="{Binding IsEmpty}" Classes="muted" TextWrapping="Wrap" Margin="20,0"
+                               Text="Henüz paylaşılan ekran görüntüsü yok. Oyunda F2 ile çekip launcher'ın Sosyal sekmesinden paylaşabilirsin." />
+                    <ItemsControl ItemsSource="{Binding Shots}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="14" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ShotItem">
+                                <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,1">
+                                    <StackPanel>
+                                        <Grid ColumnDefinitions="Auto,*,Auto" Margin="14,10">
+                                            <v:Avatar Username="{Binding Author}" Size="32" />
+                                            <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Author}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Where}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2" Text="{Binding When}" Classes="dim" FontSize="12" VerticalAlignment="Center" />
+                                        </Grid>
+                                        <Button Classes="row" Padding="0" Command="{Binding $parent[ItemsControl].((vm:FeedViewModel)DataContext).ShowCommand}" CommandParameter="{Binding}">
+                                            <v:ShotImage Shot="{Binding}" />
+                                        </Button>
+                                        <TextBlock Text="{Binding Caption}" IsVisible="{Binding HasCaption}" TextWrapping="Wrap" Margin="14,10,14,0" />
+                                        <StackPanel Orientation="Horizontal" Spacing="4" Margin="6,4,6,6">
+                                            <Button Classes="link" Content="{Binding LikeText}" Foreground="{Binding Liked, Converter={x:Static vm:Converters.AccentOrDim}}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:FeedViewModel)DataContext).LikeCommand}" CommandParameter="{Binding}" />
+                                            <Button Classes="link" Content="{Binding CommentText}" Foreground="{StaticResource Muted}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:FeedViewModel)DataContext).ShowCommand}" CommandParameter="{Binding}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Content="Daha fazla" HorizontalAlignment="Center" IsVisible="{Binding More}" Command="{Binding LoadMoreCommand}" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <ContentControl Content="{Binding Open}" IsVisible="{Binding Open, Converter={x:Static ObjectConverters.IsNotNull}}" />
+    </Panel>
+</UserControl>

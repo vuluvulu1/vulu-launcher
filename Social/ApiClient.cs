@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -45,6 +45,17 @@ namespace VuluLauncher
             SendAsync<T>(HttpMethod.Patch, path, JsonContent.Create(body, options: Json));
 
         public Task<T> DeleteAsync<T>(string path) => SendAsync<T>(HttpMethod.Delete, path, null);
+
+        /// <summary>Resim gibi ikili yanıt; yoksa (404) null.</summary>
+        public async Task<byte[]?> GetBytesAsync(string path)
+        {
+            try
+            {
+                using var response = await RawAsync(HttpMethod.Get, path, null, HttpCompletionOption.ResponseContentRead);
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            catch (ApiException ex) when (ex.Status == HttpStatusCode.NotFound) { return null; }
+        }
 
         /// <summary>Dosyayı akış halinde gönderir (belleğe tamamı alınmaz).</summary>
         public async Task<T> UploadFileAsync<T>(string path, string filePath)

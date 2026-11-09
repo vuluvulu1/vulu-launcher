@@ -1,4 +1,4 @@
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
@@ -35,6 +35,12 @@ namespace VuluMobile.Android
         {
             base.OnResume();
             PushHub.OnResumed();
+        }
+
+        protected override void OnPause()
+        {
+            PushHub.OnPaused();
+            base.OnPause();
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)

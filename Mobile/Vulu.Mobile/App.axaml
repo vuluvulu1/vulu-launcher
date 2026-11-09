@@ -1,4 +1,4 @@
-<Application xmlns="https://github.com/avaloniaui"
+﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluMobile.ViewModels"
              xmlns:v="using:VuluMobile.Views"
@@ -11,6 +11,11 @@
         <DataTemplate DataType="vm:AdminViewModel"><v:AdminView /></DataTemplate>
         <DataTemplate DataType="vm:ProfileViewModel"><v:ProfileView /></DataTemplate>
         <DataTemplate DataType="vm:PlaceholderViewModel"><v:PlaceholderView /></DataTemplate>
+        <DataTemplate DataType="vm:FriendsViewModel"><v:FriendsView /></DataTemplate>
+        <DataTemplate DataType="vm:MessagesViewModel"><v:MessagesView /></DataTemplate>
+        <DataTemplate DataType="vm:ChatViewModel"><v:ChatView /></DataTemplate>
+        <DataTemplate DataType="vm:FeedViewModel"><v:FeedView /></DataTemplate>
+        <DataTemplate DataType="vm:ShotDetailViewModel"><v:ShotDetailView /></DataTemplate>
     </Application.DataTemplates>
 
     <Application.Resources>
@@ -96,6 +101,26 @@
             <Setter Property="Foreground" Value="{StaticResource Dim}" />
         </Style>
         <Style Selector="Button.tab.selected">
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
+        </Style>
+
+        <!-- Dokunulabilir liste satırı: düğme gibi davranır ama kart gibi görünür -->
+        <Style Selector="Button.row">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="FontWeight" Value="Normal" />
+        </Style>
+        <Style Selector="Button.row:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+        </Style>
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="MinHeight" Value="36" />
             <Setter Property="Foreground" Value="{StaticResource Accent}" />
         </Style>
 

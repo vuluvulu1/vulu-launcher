@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluMobile.ViewModels"
+             xmlns:v="using:VuluMobile.Views"
+             x:Class="VuluMobile.Views.ChatView"
+             x:DataType="vm:ChatViewModel">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- Başlık -->
+        <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="8,24,16,8">
+            <Grid ColumnDefinitions="Auto,Auto,*">
+                <Button Classes="link" Content="‹ Geri" Command="{Binding CloseCommand}" />
+                <v:Avatar Grid.Column="1" Username="{Binding Peer}" Size="34" Margin="4,0,10,0" />
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Peer}" FontWeight="SemiBold" FontSize="17" />
+                    <TextBlock Text="🔒 uçtan uca şifreli" Classes="dim" FontSize="11" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Uyarılar -->
+        <StackPanel Grid.Row="1" Spacing="6" Margin="16,8,16,0">
+            <Border Classes="card" Padding="12" IsVisible="{Binding KeyChanged}" BorderBrush="{StaticResource Error}">
+                <StackPanel Spacing="8">
+                    <TextBlock TextWrapping="Wrap" FontSize="13"
+                               Text="Bu kişinin şifreleme anahtarı değişti. Yeni bir cihazda giriş yapmış ya da şifresi sıfırlanmış olabilir. Emin değilsen önce başka bir yoldan sor." />
+                    <Button Content="Anladım, devam et" Command="{Binding AcceptKeyCommand}" HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+            <TextBlock Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       Foreground="{StaticResource Error}" TextWrapping="Wrap" FontSize="13" />
+        </StackPanel>
+
+        <!-- Mesajlar -->
+        <ScrollViewer Grid.Row="2" x:Name="Scroller" Margin="0,4,0,0">
+            <StackPanel Margin="12,4,12,12" Spacing="6">
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding Loading}" />
+                <Button Classes="link" Content="Daha eski mesajlar" HorizontalAlignment="Center"
+                        IsVisible="{Binding CanLoadOlder}" Command="{Binding LoadOlderCommand}" />
+                <ItemsControl ItemsSource="{Binding Messages}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MessageItem">
+                            <Panel>
+                                <Border IsVisible="{Binding Mine}" HorizontalAlignment="Right" MaxWidth="300" Margin="48,0,0,0"
+                                        Background="{StaticResource AccentSoft}" BorderBrush="{StaticResource Accent}" BorderThickness="1" Padding="10,7">
+                                    <StackPanel Spacing="2">
+                                        <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap" FontStyle="{Binding Failed, Converter={x:Static vm:Converters.ItalicIf}}" />
+                                        <TextBlock Text="{Binding Time}" Classes="dim" FontSize="11" HorizontalAlignment="Right" />
+                                    </StackPanel>
+                                </Border>
+                                <Border IsVisible="{Binding Theirs}" HorizontalAlignment="Left" MaxWidth="300" Margin="0,0,48,0"
+                                        Background="{StaticResource Raised}" Padding="10,7">
+                                    <StackPanel Spacing="2">
+                                        <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap" FontStyle="{Binding Failed, Converter={x:Static vm:Converters.ItalicIf}}" />
+                                        <TextBlock Text="{Binding Time}" Classes="dim" FontSize="11" />
+                                    </StackPanel>
+                                </Border>
+                            </Panel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Yazma alanı -->
+        <Border Grid.Row="3" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="10">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBox x:Name="Input" Text="{Binding Draft}" PlaceholderText="Mesaj yaz" AcceptsReturn="False" TextWrapping="Wrap" MaxHeight="120" MaxLength="2000" />
+                <Button Grid.Column="1" Classes="primary" Content="Gönder" Command="{Binding SendCommand}" Margin="8,0,0,0" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

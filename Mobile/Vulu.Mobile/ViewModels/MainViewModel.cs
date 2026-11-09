@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -34,9 +34,23 @@ namespace VuluMobile.ViewModels
             _session = session;
             var signOut = logout;
             logout = () => { PushHub.OpenRequested -= OpenPending; signOut(); };
-            Tabs.Add(new NavTab("feed", "Akış", Icons.Feed, new PlaceholderViewModel("Akış", "Arkadaşlarının ekran görüntüleri burada olacak.")));
-            Tabs.Add(new NavTab("messages", "Mesajlar", Icons.Messages, new PlaceholderViewModel("Mesajlar", "Uçtan uca şifreli mesajlar burada olacak.")));
-            Tabs.Add(new NavTab("friends", "Arkadaşlar", Icons.Friends, new PlaceholderViewModel("Arkadaşlar", "Kim ne oynuyor, arkadaşlık istekleri burada olacak.")));
+            var feed = new FeedViewModel(session);
+            var messages = new MessagesViewModel(session);
+            var messagesTab = new NavTab("messages", "Mesajlar", Icons.Messages, messages);
+            var friends = new FriendsViewModel(session, user => { Selected = messagesTab; messages.OpenWith(user); });
+            var friendsTab = new NavTab("friends", "Arkadaşlar", Icons.Friends, friends);
+            Tabs.Add(new NavTab("feed", "Akış", Icons.Feed, feed));
+            Tabs.Add(messagesTab);
+            Tabs.Add(friendsTab);
+            // Rozetler: okunmamış mesaj ve gelen arkadaşlık isteği
+            Action unread = () => messagesTab.Badge = session.Messages.Unread;
+            session.Messages.StateChanged += unread;
+            friends.IncomingChanged += count => friendsTab.Badge = count;
+            var signOut2 = logout;
+            logout = () => { session.Messages.StateChanged -= unread; signOut2(); };
+            _ = feed.EnsureLoadedAsync();
+            _ = messages.RefreshAsync();
+            _ = friends.RefreshAsync();
             Tabs.Add(new NavTab("profile", "Profil", Icons.Profile, new ProfileViewModel(session, logout)));
             if (session.IsAdmin)
             {
@@ -63,10 +77,33 @@ namespace VuluMobile.ViewModels
         partial void OnSelectedChanged(NavTab value)
         {
             foreach (var t in Tabs) t.IsSelected = t == value;
-            if (value.Page is AdminViewModel admin) _ = admin.RefreshAsync();
+            switch (value.Page)
+            {
+                case AdminViewModel admin: _ = admin.RefreshAsync(); break;
+                case FriendsViewModel friends: _ = friends.RefreshAsync(); break;
+                case MessagesViewModel messages when messages.Chat == null: _ = messages.RefreshAsync(); break;
+                case FeedViewModel feed: _ = feed.EnsureLoadedAsync(); break;
+            }
         }
 
         [RelayCommand] private void Select(NavTab tab) => Selected = tab;
+
+        /// <summary>
+        /// Android geri tuşu: açık sohbet/resim kapanır, sonra ilk sekmeye dönülür; ilk sekmedeyse uygulama
+        /// arka plana gider (false).
+        /// </summary>
+        public bool GoBack()
+        {
+            if (Selected.Page is IBackHandler page && page.GoBack()) return true;
+            if (Selected != Tabs[0]) { Selected = Tabs[0]; return true; }
+            return false;
+        }
+    }
+
+    /// <summary>Kendi içinde alt sayfası olan sekme (sohbet, tam boy resim): geri tuşu önce onu kapatır.</summary>
+    internal interface IBackHandler
+    {
+        bool GoBack();
     }
 
     internal static class Icons

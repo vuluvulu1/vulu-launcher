@@ -1,4 +1,4 @@
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 
 namespace VuluMobile.Services
 {
@@ -37,7 +37,16 @@ namespace VuluMobile.Services
         /// <summary>Uygulama öne geldi (ör. ayarlardan izin verilip dönüldü): bildirim durumu yeniden okunur.</summary>
         internal static event Action? Resumed;
 
-        public static void OnResumed() => Dispatcher.UIThread.Post(() => Resumed?.Invoke());
+        /// <summary>Uygulama ekranda mı: arka plandayken mesajlar daha seyrek sorulur.</summary>
+        public static bool InForeground { get; private set; } = true;
+
+        public static void OnResumed()
+        {
+            InForeground = true;
+            Dispatcher.UIThread.Post(() => Resumed?.Invoke());
+        }
+
+        public static void OnPaused() => InForeground = false;
 
         /// <summary>FCM token'ı değişti (Firebase'in kendi yenilemesi); giriş yapılmışsa sunucuya yeniden kaydedilir.</summary>
         public static void OnNewToken(string token) => Dispatcher.UIThread.Post(() => TokenRefreshed?.Invoke(token));

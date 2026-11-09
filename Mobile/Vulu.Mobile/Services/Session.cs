@@ -16,12 +16,16 @@ namespace VuluMobile.Services
         public Session()
         {
             Api = new ApiClient(() => _login.Token);
+            Images.Api = Api;
+            Messages = new Messenger(Api);
             PushHub.TokenRefreshed += token => { if (IsLoggedIn) _ = RegisterDeviceAsync(token); };
             // Ayarlardan dönülünce ya da ilk denemede ağ yoksa: kayıt olmamışsa yeniden denenir
             PushHub.Resumed += () => { if (IsLoggedIn && !PushReady) _ = RegisterDeviceAsync(null); PushStateChanged?.Invoke(); };
         }
 
         public ApiClient Api { get; }
+        /// <summary>Şifreli mesajlar; anahtar girişte şifreyle açılır.</summary>
+        public Messenger Messages { get; }
         public string Username => _login.Username;
         /// <summary>Admin sekmesini göstermek için. Yetkiyi sunucu her istekte ayrıca denetler.</summary>
         public bool IsAdmin => _login.IsAdmin;
@@ -47,6 +51,7 @@ namespace VuluMobile.Services
             }
             _login = login;
             SavedLogin.Save(login.Username, password);
+            _ = Messages.SetUpAsync(login.Username, password);
             PushHub.Platform?.RequestPermission();
             _ = RegisterDeviceAsync(null);
             return null;
@@ -62,6 +67,7 @@ namespace VuluMobile.Services
                 _ = Task.Run(async () => { try { await api.DeleteAsync<JsonElement>($"/users/me/devices/{Uri.EscapeDataString(device)}"); } catch { } });
             }
             _deviceToken = null;
+            Messages.Stop();
             _login = new LoginService();
             SavedLogin.Clear();
         }

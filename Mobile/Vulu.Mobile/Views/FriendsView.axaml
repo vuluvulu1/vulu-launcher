@@ -1,0 +1,105 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluMobile.ViewModels"
+             xmlns:v="using:VuluMobile.Views"
+             x:Class="VuluMobile.Views.FriendsView"
+             x:DataType="vm:FriendsViewModel">
+    <Grid RowDefinitions="Auto,*" Margin="20,32,20,0">
+        <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Classes="title" Text="Arkadaşlar" />
+            <Button Grid.Column="1" Content="Yenile" Command="{Binding RefreshCommand}" VerticalAlignment="Center" />
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" Margin="0,16,0,0">
+            <StackPanel Spacing="10" Margin="0,0,0,24">
+                <!-- İstek gönder -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Text="{Binding AddName}" PlaceholderText="kullanıcı adıyla ekle" />
+                    <Button Grid.Column="1" Classes="primary" Content="Ekle" Command="{Binding AddCommand}" />
+                </Grid>
+                <TextBlock Text="{Binding AddResult}" IsVisible="{Binding AddResult, Converter={x:Static ObjectConverters.IsNotNull}}"
+                           Classes="muted" FontSize="13" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}"
+                           Foreground="{StaticResource Error}" TextWrapping="Wrap" />
+
+                <!-- Gelen istekler -->
+                <StackPanel Spacing="8" IsVisible="{Binding HasIncoming}" Margin="0,8,0,0">
+                    <TextBlock Classes="label" Text="GELEN İSTEKLER" />
+                    <ItemsControl ItemsSource="{Binding Incoming}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FriendItem">
+                                <Border Classes="card" Padding="12">
+                                    <Grid ColumnDefinitions="Auto,*,Auto,8,Auto">
+                                        <v:Avatar Username="{Binding Username}" Size="40" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Username}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0" TextTrimming="CharacterEllipsis" />
+                                        <Button Grid.Column="2" Classes="primary" Content="Kabul" IsEnabled="{Binding !Busy}"
+                                                Command="{Binding $parent[ItemsControl].((vm:FriendsViewModel)DataContext).AcceptCommand}" CommandParameter="{Binding}" />
+                                        <Button Grid.Column="4" Content="Reddet" IsEnabled="{Binding !Busy}"
+                                                Command="{Binding $parent[ItemsControl].((vm:FriendsViewModel)DataContext).DeclineCommand}" CommandParameter="{Binding}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Arkadaşlar -->
+                <TextBlock Classes="label" Text="{Binding FriendsHeader}" Margin="0,8,0,0" />
+                <TextBlock IsVisible="{Binding NoFriends}" Classes="muted" TextWrapping="Wrap"
+                           Text="Henüz arkadaşın yok. Yukarıdan kullanıcı adıyla istek gönderebilirsin." />
+                <ItemsControl ItemsSource="{Binding Friends}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FriendItem">
+                            <Border Classes="card" Padding="0">
+                                <StackPanel>
+                                    <Button Classes="row" Command="{Binding $parent[ItemsControl].((vm:FriendsViewModel)DataContext).ToggleCommand}" CommandParameter="{Binding}">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <Panel>
+                                                <v:Avatar Username="{Binding Username}" Size="44" />
+                                                <Ellipse Width="12" Height="12" Fill="{StaticResource Ok}" Stroke="{StaticResource Panel}" StrokeThickness="2"
+                                                         HorizontalAlignment="Right" VerticalAlignment="Bottom" IsVisible="{Binding Online}" />
+                                                <Ellipse Width="12" Height="12" Fill="{StaticResource Accent}" Stroke="{StaticResource Panel}" StrokeThickness="2"
+                                                         HorizontalAlignment="Right" VerticalAlignment="Bottom" IsVisible="{Binding Playing}" />
+                                            </Panel>
+                                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Spacing="2">
+                                                <TextBlock Text="{Binding Username}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Status}" FontSize="13" TextTrimming="CharacterEllipsis"
+                                                           Foreground="{Binding Playing, Converter={x:Static vm:Converters.AccentOrDim}}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                    <Grid ColumnDefinitions="*,10,*" Margin="12,0,12,12" IsVisible="{Binding Expanded}">
+                                        <Button Classes="primary" Content="Mesaj gönder" HorizontalAlignment="Stretch"
+                                                Command="{Binding $parent[ItemsControl].((vm:FriendsViewModel)DataContext).MessageCommand}" CommandParameter="{Binding}" />
+                                        <Button Grid.Column="2" Classes="danger" Content="{Binding RemoveText}" HorizontalAlignment="Stretch" IsEnabled="{Binding !Busy}"
+                                                Command="{Binding $parent[ItemsControl].((vm:FriendsViewModel)DataContext).RemoveCommand}" CommandParameter="{Binding}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Gönderilen istekler -->
+                <StackPanel Spacing="8" IsVisible="{Binding HasOutgoing}" Margin="0,8,0,0">
+                    <TextBlock Classes="label" Text="GÖNDERDİĞİN İSTEKLER" />
+                    <ItemsControl ItemsSource="{Binding Outgoing}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FriendItem">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <v:Avatar Username="{Binding Username}" Size="32" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Username}" Classes="muted" VerticalAlignment="Center" Margin="12,0" />
+                                    <Button Grid.Column="2" Content="Geri al" IsEnabled="{Binding !Busy}"
+                                            Command="{Binding $parent[ItemsControl].((vm:FriendsViewModel)DataContext).CancelCommand}" CommandParameter="{Binding}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

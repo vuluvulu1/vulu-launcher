@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluMobile.ViewModels"
+             xmlns:v="using:VuluMobile.Views"
+             x:Class="VuluMobile.Views.MessagesView"
+             x:DataType="vm:MessagesViewModel">
+    <Panel>
+        <!-- Yazışma listesi -->
+        <Grid RowDefinitions="Auto,Auto,*" Margin="20,32,20,0" IsVisible="{Binding Chat, Converter={x:Static ObjectConverters.IsNull}}">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="2">
+                    <TextBlock Classes="title" Text="Mesajlar" />
+                    <TextBlock Classes="dim" FontSize="13" Text="Uçtan uca şifreli; sunucu içeriği göremez." />
+                </StackPanel>
+                <Button Grid.Column="1" Content="Yenile" Command="{Binding RefreshCommand}" VerticalAlignment="Top" />
+            </Grid>
+            <StackPanel Grid.Row="1" Spacing="6" Margin="0,12,0,0">
+                <TextBlock Text="{Binding SetupError}" IsVisible="{Binding SetupError, Converter={x:Static ObjectConverters.IsNotNull}}"
+                           Foreground="{StaticResource Error}" TextWrapping="Wrap" />
+                <TextBlock Text="Mesaj anahtarın hazırlanıyor…" IsVisible="{Binding Preparing}" Classes="muted" />
+                <TextBlock Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}"
+                           Foreground="{StaticResource Error}" TextWrapping="Wrap" />
+            </StackPanel>
+            <ScrollViewer Grid.Row="2" Margin="0,12,0,0">
+                <StackPanel Spacing="8" Margin="0,0,0,24">
+                    <TextBlock IsVisible="{Binding IsEmpty}" Classes="muted" TextWrapping="Wrap"
+                               Text="Henüz mesajın yok. Arkadaşlar sekmesinde birine dokunup &quot;Mesaj gönder&quot; diyebilirsin." />
+                    <ItemsControl ItemsSource="{Binding Conversations}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ConversationItem">
+                                <Border Classes="card" Padding="0">
+                                    <Button Classes="row" Command="{Binding $parent[ItemsControl].((vm:MessagesViewModel)DataContext).OpenCommand}" CommandParameter="{Binding}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <v:Avatar Username="{Binding Username}" Size="44" />
+                                            <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center" Spacing="2">
+                                                <TextBlock Text="{Binding Username}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding When}" Classes="dim" FontSize="13" />
+                                            </StackPanel>
+                                            <Border Grid.Column="2" IsVisible="{Binding HasUnread}" Background="{StaticResource Accent}" CornerRadius="11"
+                                                    MinWidth="22" Height="22" Padding="6,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Unread}" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentInk}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Button>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Sohbet -->
+        <ContentControl Content="{Binding Chat}" IsVisible="{Binding Chat, Converter={x:Static ObjectConverters.IsNotNull}}" />
+    </Panel>
+</UserControl>

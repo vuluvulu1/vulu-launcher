@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluMobile.ViewModels"
+             xmlns:v="using:VuluMobile.Views"
+             x:Class="VuluMobile.Views.ShotDetailView"
+             x:DataType="vm:ShotDetailViewModel">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="8,24,16,8">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <Button Classes="link" Content="‹ Geri" Command="{Binding Feed.CloseDetailCommand}" />
+                <v:Avatar Grid.Column="1" Username="{Binding Shot.Author}" Size="32" Margin="4,0,10,0" />
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Shot.Author}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Shot.When}" Classes="dim" FontSize="12" />
+                </StackPanel>
+                <Button Grid.Column="3" Classes="danger" Content="{Binding DeleteText}" IsVisible="{Binding Shot.CanDelete}" Command="{Binding DeleteCommand}" />
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="10" Margin="0,0,0,16">
+                <Image Source="{Binding Image}" Stretch="Uniform" />
+                <TextBlock Text="{Binding Shot.Caption}" IsVisible="{Binding Shot.HasCaption}" TextWrapping="Wrap" Margin="16,0" />
+                <TextBlock Text="{Binding Shot.Where}" Classes="dim" FontSize="12" Margin="16,0" />
+                <Button Classes="link" Content="{Binding Shot.LikeText}" Margin="8,0" HorizontalAlignment="Left"
+                        Foreground="{Binding Shot.Liked, Converter={x:Static vm:Converters.AccentOrDim}}"
+                        Command="{Binding Feed.LikeCommand}" CommandParameter="{Binding Shot}" />
+                <TextBlock Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}"
+                           Foreground="{StaticResource Error}" TextWrapping="Wrap" Margin="16,0" />
+                <TextBlock Classes="label" Text="YORUMLAR" Margin="16,6,16,0" />
+                <ItemsControl ItemsSource="{Binding Comments}" Margin="16,0">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="12" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CommentItem">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <v:Avatar Username="{Binding Author}" Size="28" VerticalAlignment="Top" />
+                                <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="2">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{Binding Author}" FontWeight="SemiBold" FontSize="14" />
+                                        <TextBlock Text="{Binding When}" Classes="dim" FontSize="12" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="14" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="10">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBox Text="{Binding Draft}" PlaceholderText="Yorum yaz" MaxLength="300" />
+                <Button Grid.Column="1" Classes="primary" Content="Gönder" Command="{Binding CommentCommand}" Margin="8,0,0,0" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
