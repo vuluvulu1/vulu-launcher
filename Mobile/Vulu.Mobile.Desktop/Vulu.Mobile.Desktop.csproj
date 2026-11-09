@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Geliştirme için: mobil arayüzü bilgisayarda telefon boyutunda bir pencerede açar. Yayınlanmaz. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Vulu.Mobile.Desktop</AssemblyName>
+    <RootNamespace>VuluMobile.Desktop</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vulu.Mobile\Vulu.Mobile.csproj" />
+  </ItemGroup>
+
+</Project>

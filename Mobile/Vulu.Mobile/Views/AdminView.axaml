@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluMobile.ViewModels"
+             x:Class="VuluMobile.Views.AdminView"
+             x:DataType="vm:AdminViewModel">
+    <Grid RowDefinitions="Auto,Auto,*" Margin="20,32,20,0">
+        <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2">
+                <TextBlock Classes="title" Text="Kayıt istekleri" />
+                <TextBlock Classes="dim" FontSize="13" Text="Onaylanınca hesap açılır; red geri alınamaz." />
+            </StackPanel>
+            <Button Grid.Column="1" Content="Yenile" Command="{Binding RefreshCommand}" VerticalAlignment="Top" />
+        </Grid>
+
+        <TextBlock Grid.Row="1" Text="{Binding Status}" IsVisible="{Binding Status, Converter={x:Static ObjectConverters.IsNotNull}}"
+                   Classes="muted" TextWrapping="Wrap" Margin="0,12,0,0" />
+
+        <ScrollViewer Grid.Row="2" Margin="0,16,0,0">
+            <StackPanel Spacing="10" Margin="0,0,0,20">
+                <TextBlock IsVisible="{Binding IsEmpty}" Classes="muted" Text="Bekleyen istek yok." />
+                <ItemsControl ItemsSource="{Binding Registrations}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><StackPanel Spacing="10" /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RegistrationItem">
+                            <Border Classes="card">
+                                <StackPanel Spacing="6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="{Binding Username}" FontSize="18" FontWeight="SemiBold" />
+                                        <TextBlock Grid.Column="1" Classes="dim" FontSize="12" Text="{Binding When}" VerticalAlignment="Center" />
+                                    </Grid>
+                                    <TextBlock Classes="muted" Text="{Binding Email}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock FontSize="12" Text="{Binding State}"
+                                               Foreground="{Binding Verified, Converter={x:Static vm:Converters.OkOrDim}}" />
+                                    <Grid ColumnDefinitions="*,10,*" Margin="0,6,0,0">
+                                        <Button Classes="primary" Content="Onayla" HorizontalAlignment="Stretch"
+                                                IsEnabled="{Binding Verified}"
+                                                Command="{Binding $parent[ItemsControl].((vm:AdminViewModel)DataContext).ApproveCommand}"
+                                                CommandParameter="{Binding}" />
+                                        <Button Grid.Column="2" Classes="danger" Content="{Binding RejectText}" HorizontalAlignment="Stretch"
+                                                Command="{Binding $parent[ItemsControl].((vm:AdminViewModel)DataContext).RejectCommand}"
+                                                CommandParameter="{Binding}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

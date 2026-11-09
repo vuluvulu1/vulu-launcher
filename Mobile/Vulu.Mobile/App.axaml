@@ -1,0 +1,117 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluMobile.ViewModels"
+             xmlns:v="using:VuluMobile.Views"
+             x:Class="VuluMobile.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.DataTemplates>
+        <DataTemplate DataType="vm:LoginViewModel"><v:LoginView /></DataTemplate>
+        <DataTemplate DataType="vm:MainViewModel"><v:MainView /></DataTemplate>
+        <DataTemplate DataType="vm:AdminViewModel"><v:AdminView /></DataTemplate>
+        <DataTemplate DataType="vm:ProfileViewModel"><v:ProfileView /></DataTemplate>
+        <DataTemplate DataType="vm:PlaceholderViewModel"><v:PlaceholderView /></DataTemplate>
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Meşale renkleri: launcher'daki App.axaml ile aynı -->
+            <SolidColorBrush x:Key="Bg" Color="#0B0A09" />
+            <SolidColorBrush x:Key="Panel" Color="#14100C" />
+            <SolidColorBrush x:Key="Surface" Color="#1B1510" />
+            <SolidColorBrush x:Key="Raised" Color="#281F17" />
+            <SolidColorBrush x:Key="Line" Color="#1AFFD8A0" />
+            <SolidColorBrush x:Key="LineStrong" Color="#33FFD8A0" />
+            <SolidColorBrush x:Key="ButtonBg" Color="#EB261E17" />
+            <SolidColorBrush x:Key="ButtonLine" Color="#4DFFD8A0" />
+            <SolidColorBrush x:Key="Text" Color="#F3ECE2" />
+            <SolidColorBrush x:Key="Muted" Color="#C9BDAF" />
+            <SolidColorBrush x:Key="Dim" Color="#A1958A" />
+            <SolidColorBrush x:Key="Accent" Color="#F2A33A" />
+            <SolidColorBrush x:Key="AccentHi" Color="#FFC873" />
+            <SolidColorBrush x:Key="AccentSoft" Color="#29F2A33A" />
+            <SolidColorBrush x:Key="AccentInk" Color="#1A0E02" />
+            <SolidColorBrush x:Key="Ok" Color="#9CC3DE" />
+            <SolidColorBrush x:Key="Error" Color="#E8693A" />
+            <LinearGradientBrush x:Key="PrimaryFill" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#EDA23A" />
+                <GradientStop Offset="1" Color="#D9852A" />
+            </LinearGradientBrush>
+            <Color x:Key="SystemAccentColor">#F2A33A</Color>
+            <FontFamily x:Key="Sans">avares://Vulu.Mobile/Assets/Fonts#IBM Plex Sans</FontFamily>
+            <FontFamily x:Key="Mono">avares://Vulu.Mobile/Assets/Fonts#IBM Plex Mono</FontFamily>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <Style Selector=":is(TopLevel)">
+            <Setter Property="FontFamily" Value="{StaticResource Sans}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="Background" Value="{StaticResource Bg}" />
+            <Setter Property="FontSize" Value="15" />
+        </Style>
+        <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{StaticResource Muted}" /></Style>
+        <Style Selector="TextBlock.dim"><Setter Property="Foreground" Value="{StaticResource Dim}" /></Style>
+        <Style Selector="TextBlock.title">
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="FontWeight" Value="Light" />
+            <Setter Property="LetterSpacing" Value="-1" />
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="{StaticResource Dim}" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+
+        <!-- Dokunmaya uygun düğmeler: en az 44 px yükseklik -->
+        <Style Selector="Button">
+            <Setter Property="Background" Value="{StaticResource ButtonBg}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ButtonLine}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="MinHeight" Value="44" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{StaticResource PrimaryFill}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+        </Style>
+        <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+        </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Foreground" Value="{StaticResource Error}" />
+        </Style>
+        <Style Selector="Button.tab">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0,8" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Foreground" Value="{StaticResource Dim}" />
+        </Style>
+        <Style Selector="Button.tab.selected">
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="MinHeight" Value="44" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
+        </Style>
+
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{StaticResource Panel}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+    </Application.Styles>
+</Application>

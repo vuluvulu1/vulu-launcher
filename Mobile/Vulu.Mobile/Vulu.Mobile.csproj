@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    vulu Sosyal: telefondaki sosyal uygulamanın arayüzü (Avalonia). Platformdan bağımsızdır; Android'de
+    Vulu.Mobile.Android, geliştirirken bilgisayarda Vulu.Mobile.Desktop çalıştırır. Sunucuyla konuşma ve mesaj
+    şifrelemesi launcher'la ortak olan Vulu.Social'dadır.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Vulu.Mobile</AssemblyName>
+    <RootNamespace>VuluMobile</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Version>0.1.0</Version>
+    <Authors>vuluvulu1</Authors>
+    <Company>vuluvulu1</Company>
+    <Product>vulu Sosyal</Product>
+    <Copyright>Copyright (c) 2026 vuluvulu1. Licensed under AGPL-3.0.</Copyright>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Launcher'la aynı yazı tipleri ve logo -->
+    <AvaloniaResource Include="..\..\Shared\Assets\fonts\IBMPlex*.ttf" Link="Assets\Fonts\%(Filename)%(Extension)" />
+    <AvaloniaResource Include="..\..\Shared\Assets\assets\logo.png" Link="Assets\logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Vulu.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Social\Vulu.Social.csproj" />
+  </ItemGroup>
+
+</Project>

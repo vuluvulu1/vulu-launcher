@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluMobile.ViewModels"
+             x:Class="VuluMobile.Views.MainView"
+             x:DataType="vm:MainViewModel">
+    <Grid RowDefinitions="*,Auto">
+        <ContentControl Content="{Binding Selected.Page}" />
+
+        <!-- Alt sekmeler -->
+        <Border Grid.Row="1" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
+            <ItemsControl ItemsSource="{Binding Tabs}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:NavTab">
+                        <Button Classes="tab" Classes.selected="{Binding IsSelected}"
+                                Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).SelectCommand}"
+                                CommandParameter="{Binding}">
+                            <Grid>
+                                <StackPanel Spacing="3" HorizontalAlignment="Center">
+                                    <PathIcon Data="{Binding Icon}" Width="22" Height="22" />
+                                    <TextBlock Text="{Binding Title}" FontSize="11" HorizontalAlignment="Center" />
+                                </StackPanel>
+                                <Border IsVisible="{Binding HasBadge}" Background="{StaticResource Accent}" CornerRadius="9"
+                                        MinWidth="18" Height="18" Padding="5,0" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="28,-4,0,0">
+                                    <TextBlock Text="{Binding Badge}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentInk}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,8 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluMobile.ViewModels"
+             x:Class="VuluMobile.Views.ShellView"
+             x:DataType="vm:ShellViewModel"
+             Background="{StaticResource Bg}">
+    <ContentControl Content="{Binding Current}" />
+</UserControl>
