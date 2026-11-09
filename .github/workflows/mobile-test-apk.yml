@@ -1,5 +1,7 @@
-# vulu Sosyal (Mobile/) için deneme APK'sı: GitHub'da derlenir, Actions sayfasından "artifact" olarak indirilir.
-# SDK'nın geçici hata ayıklama anahtarıyla imzalanır; yayınlanmaz. Yayın APK'sı kendi anahtarıyla imzalanacak.
+# vulu Sosyal (Mobile/) için deneme APK'sı: GitHub'da derlenir ve "social-test" ön sürümüne (pre-release) konur;
+# telefondan doğrudan indirilir: https://github.com/vuluvulu1/vulu-launcher/releases/download/social-test/vulu-sosyal-test.apk
+# SDK'nın geçici hata ayıklama anahtarıyla imzalanır. Yayın APK'sı kendi anahtarıyla imzalanıp siteden dağıtılacak.
+# Ön sürüm "son sürüm" sayılmaz; launcher'ların güncellemesi GitHub'a değil vuluvulu.com.tr'ye bakar.
 name: Mobile test APK
 
 on:
@@ -14,6 +16,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -44,3 +48,14 @@ jobs:
           name: vulu-social-test-apk
           path: out/*-Signed.apk
           if-no-files-found: error
+
+      # Her derlemede ön sürüm yeniden oluşturulur: indirme adresi hep aynı kalır, en yeni APK'yı verir
+      - name: Ön sürüme yükle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp out/*-Signed.apk vulu-sosyal-test.apk
+          gh release delete social-test --yes --cleanup-tag || true
+          gh release create social-test vulu-sosyal-test.apk --prerelease --latest=false --target "$GITHUB_SHA" \
+            --title "vulu Sosyal test" \
+            --notes "Telefonda denemek için vulu Sosyal APK'sı ($GITHUB_REF_NAME, ${GITHUB_SHA::7}). Geçici test anahtarıyla imzalı; yayın sürümü değildir."
