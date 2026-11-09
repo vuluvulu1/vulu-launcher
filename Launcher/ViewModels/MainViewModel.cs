@@ -342,6 +342,14 @@ namespace VuluLauncher.ViewModels
             else if (tag.StartsWith("profile:", StringComparison.Ordinal)) await OpenProfileAsync(tag[8..]);
             else if (tag.StartsWith("friend:", StringComparison.Ordinal)) SelectedTab = Tabs.First(t => t.Key == "social");
             else if (tag.StartsWith("shot:", StringComparison.Ordinal)) await Social.OpenSharedShotAsync(tag[5..]);
+            else if (tag.StartsWith("registration:", StringComparison.Ordinal) && IsAdmin)
+            {
+                // Yeni kayıt isteği bildirimi: Admin → Kayıt istekleri
+                var adminTab = Tabs.First(t => t.Key == "admin");
+                Admin.Tab = "registrations";
+                if (SelectedTab == adminTab) await Admin.OpenAsync();
+                else SelectedTab = adminTab;
+            }
             else if (tag == "crash")
             {
                 try
@@ -472,6 +480,10 @@ namespace VuluLauncher.ViewModels
                     break;
                 case "startupAction":
                     _ = RunStartupActionAsync();
+                    break;
+                case "registrations":
+                    // Bekleyen kayıt istekleri arka planda sorulur; Admin sekmesindeki rozet güncel kalsın
+                    if (IsAdmin) Tabs.First(t => t.Key == "admin").Badge = data.Int("count");
                     break;
                 case "shotEvent":
                     Home.AppendLog(data.Text("kind") == "like" ? $"♥ {data.Text("from")} ekran görüntünü beğendi." : $"💬 {data.Text("from")}: {data.Text("text")}", "accent");

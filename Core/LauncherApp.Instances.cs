@@ -669,6 +669,7 @@ namespace VuluLauncher
             _ = Task.Run(async () => { try { await api.DeleteAsync<System.Text.Json.JsonElement>("/users/me/presence"); } catch { } });
             _login = new LoginService();
             _knownFriendRequests = null;   // sonra giriş yapan kişinin istekleri açılışta bildirim olmaz
+            _knownRegistrations = null;
             ResetPlayingWatch();
             // Mesaj anahtarı bellekten silinir: bu bilgisayarda sonra giriş yapan biri önceki kullanıcının anahtarını kullanamaz
             lock (_dmGate)

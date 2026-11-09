@@ -164,7 +164,7 @@ namespace VuluLauncher.ViewModels
 
             Func<bool, Task<bool>> toggle(string key) => value => Change((key, value));
 
-            return new SettingSection("Launcher")
+            var section = new SettingSection("Launcher")
                 .Add(new ChoiceRow("Oyun açılınca", "\"Kapat\" seçilirse oyun çıktısı konsolda görünmez ve oynama süresi sayılmaz.",
                     new[] { ("keep", "Açık kalsın"), ("minimize", "Küçült"), ("close", "Kapat") }, S("onGameStart", "keep"), value => Change(("onGameStart", value))))
                 .Add(new ToggleRow("Açılış animasyonunu atla", null, B("skipSplash"), toggle("skipSplash")))
@@ -185,6 +185,15 @@ namespace VuluLauncher.ViewModels
                 .Add(new ToggleRow("Paket güncelleme bildirimi", "Kurduğun bir vulu pack güncellenince haber verir.", B("packUpdateNotifications", true), toggle("packUpdateNotifications")))
                 .Add(new ToggleRow("Discord'da durum göster", "Discord açıksa arkadaşların ne oynadığını görür: \"vulu Launcher · AGLR SMP oynuyor\".", B("discordPresence", true), toggle("discordPresence")))
                 .Add(new ToggleRow("Konsolu büyük aç", null, B("consoleExpanded"), toggle("consoleExpanded")));
+
+            // Yalnızca adminler: beğeni/yorum bildiriminin hemen altında
+            if (main.IsAdmin)
+            {
+                int at = section.Rows.ToList().FindIndex(r => r.Title == "Beğeni ve yorum bildirimi") + 1;
+                section.Rows.Insert(at > 0 ? at : section.Rows.Count, new ToggleRow("Kayıt isteği bildirimi",
+                    "Admin olarak: e-postasını doğrulamış yeni bir kayıt isteği gelince haber verir.", B("registrationNotifications", true), toggle("registrationNotifications")));
+            }
+            return section;
         }
 
         private SettingSection LookSection() =>

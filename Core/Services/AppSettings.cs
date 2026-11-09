@@ -54,6 +54,8 @@ namespace VuluLauncher
         public bool PackUpdateNotifications { get; set; } = true;
         /// <summary>Ekran görüntüm beğenilince ya da yorum gelince bildirim.</summary>
         public bool SocialNotifications { get; set; } = true;
+        /// <summary>Adminler için: e-postasını doğrulamış yeni bir kayıt isteği gelince bildirim.</summary>
+        public bool RegistrationNotifications { get; set; } = true;
         /// <summary>Toplam oynama süresi ve en çok oynanan paketler profilde görünsün mü.</summary>
         public bool ShowPlaytimeOnProfile { get; set; } = true;
 

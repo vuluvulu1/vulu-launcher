@@ -318,6 +318,7 @@ namespace VuluLauncher
             _ = SetUpMessagesAsync(_login.Username, password);
             StartPackUpdateChecks();
             StartShotEventPolling();
+            if (_login.IsAdmin) StartRegistrationPolling();
             _ = Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(_ => SyncPlaytimeAsync());
 
             return new
