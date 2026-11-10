@@ -14,7 +14,10 @@ namespace VuluLauncher
         private static readonly string Key = "vuluLauncher-" + string.Concat(Environment.UserName.Where(char.IsLetterOrDigit))
 #if DEBUG
             // Geliştirmede ayrı veri klasörüyle açılan test kopyası, açık olan gerçek launcher'a takılmasın
-            + (Environment.GetEnvironmentVariable("VULU_APP_DATA") is { Length: > 0 } test ? "-test" + (uint)test.GetHashCode() : "")
+            // (string.GetHashCode her süreçte farklıdır; aynı klasörle açılan kopyalar aynı adı bulsun diye sabit hash)
+            + (Environment.GetEnvironmentVariable("VULU_APP_DATA") is { Length: > 0 } test
+                ? "-test" + Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(test.ToLowerInvariant())))[..12]
+                : "")
 #endif
             ;
         private Mutex? _mutex;

@@ -58,6 +58,7 @@ namespace VuluLauncher
             CoreClient.Instance.Attach(bridge);
             var app = new LauncherApp(bridge, host);
             host.NotificationClicked += app.OnNotificationClicked;
+            host.WindowVisibilityChanged += app.OnWindowVisibilityChanged;
             app.RegisterCommands();
             app.SetStartupAction(action);
             single.Listen(app.OnRemoteCommand);

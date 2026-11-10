@@ -227,7 +227,6 @@ namespace VuluLauncher
         // ════════════════════════════════════════════════════════════════
         private object Init()
         {
-            _discord.SetHidden(false);   // pencere (yeniden) açıldı: Discord durumu geri gelir
             var (username, password) = CredentialManager.Load();
             return new
             {
@@ -266,6 +265,9 @@ namespace VuluLauncher
         /// Bilgisayar açılışında pencere açılmadan başlandığında: kayıtlı hesapla arka planda giriş yapılır ki mesaj ve
         /// bildirim denetimleri çalışsın. Pencere sonra açılınca arayüz bu oturumdan sürer. Kayıtlı şifre yoksa bir şey yapılmaz.
         /// </summary>
+        /// <summary>Pencere açıldı ya da bildirim alanına gizlendi: Discord durumu yalnızca pencere açıkken görünür (oyun açıksa "oynuyor" kalır).</summary>
+        public void OnWindowVisibilityChanged(bool visible) => _discord.SetHidden(!visible);
+
         public void StartInBackground()
         {
             _discord.SetHidden(true);

@@ -35,6 +35,12 @@ namespace VuluLauncher
             _tray.ExitRequested += Exit;
         }
 
+        /// <summary>
+        /// Pencere görünür oldu (true) ya da bildirim alanına gizlendi (false). Discord durumu buna uyar: launcher
+        /// simge durumundayken (bilgisayar açılışında da) Discord'da görünmez.
+        /// </summary>
+        public event Action<bool>? WindowVisibilityChanged;
+
         /// <summary>Bildirime (Windows bildirimi ya da sağ alttaki kart) tıklanınca; LauncherApp oluşturulunca bağlanır.</summary>
         public event Action<string?>? NotificationClicked
         {
@@ -78,11 +84,13 @@ namespace VuluLauncher
             {
                 _window.Show();
                 _visible = true;
+                WindowVisibilityChanged?.Invoke(true);
             }
         }
 
         private void EnterTray()
         {
+            WindowVisibilityChanged?.Invoke(false);
             Efficiency.Enter();
             _trimTimer ??= new DispatcherTimer(TimeSpan.FromMinutes(5), DispatcherPriority.Background, (_, _) => Efficiency.Trim());
             _trimTimer.Start();
@@ -90,6 +98,7 @@ namespace VuluLauncher
 
         private void LeaveTray()
         {
+            WindowVisibilityChanged?.Invoke(true);
             _trimTimer?.Stop();
             Efficiency.Leave();
         }
