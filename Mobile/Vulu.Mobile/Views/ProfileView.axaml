@@ -88,7 +88,7 @@
                                Classes="muted" FontSize="13" TextWrapping="Wrap" />
                     <ProgressBar Value="{Binding UpdateProgress}" Maximum="100" IsVisible="{Binding UpdateBusy}" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Classes="primary" Content="Güncellemeyi kur" Command="{Binding InstallUpdateCommand}"
+                        <Button Classes="primary" Content="Güncellemeyi indir" Command="{Binding InstallUpdateCommand}"
                                 IsVisible="{Binding UpdateAvailable}" IsEnabled="{Binding !UpdateBusy}" />
                         <Button Content="Güncellemeleri denetle" Command="{Binding CheckUpdateCommand}" />
                     </StackPanel>

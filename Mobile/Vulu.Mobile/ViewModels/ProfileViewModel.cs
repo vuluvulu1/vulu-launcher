@@ -164,16 +164,10 @@ namespace VuluMobile.ViewModels
         }
 
         [RelayCommand]
-        private async Task InstallUpdateAsync()
+        private void InstallUpdate()
         {
-            UpdateBusy = true;
-            UpdateText = "İndiriliyor…";
-            try
-            {
-                var error = await _update.InstallAsync(new Progress<double>(v => UpdateProgress = v * 100));
-                UpdateText = error ?? "Android'in kurulum ekranında onayla.";
-            }
-            finally { UpdateBusy = false; }
+            var error = _update.OpenDownload();
+            UpdateText = error ?? "Tarayıcıda indiriliyor. İnince bildirimden ya da İndirilenler'den dosyaya dokunup kur.";
         }
 
         [RelayCommand] private void Logout() => _logout();
