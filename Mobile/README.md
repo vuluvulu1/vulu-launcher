@@ -31,10 +31,3 @@ GitHub'da her `Mobile/` değişikliğinde deneme APK'sı derlenir (Actions → M
 
 Faz 0: giriş, alt sekmeler, profil ve admin panelinde kayıt istekleri (listele, onayla, reddet). Akış, mesajlar ve
 arkadaşlar Faz 1'de.
-
-## İmza
-
-Test APK'sı GitHub'da vulu'nun Android yayın anahtarıyla (Android launcher'la aynı anahtar) imzalanır. Anahtar
-repoda değil, `ANDROID_KEYSTORE_BASE64` ve `ANDROID_KEYSTORE_PASS` sırlarında durur; anahtarın olduğu bilgisayarda
-`tools/social-signing-secrets.ps1` ikisini panoya sırayla kopyalar. Sırlar yoksa geçici anahtarla imzalanır ve
-Play Protect APK'yı güvensiz sayabilir.
