@@ -11,10 +11,22 @@ namespace VuluShared
     ///
     /// Yalnızca TCP bağlantısının gittiği IP değişir: TLS yine vuluvulu.com.tr adına kurulur ve sertifika doğrulanır,
     /// yani yedek yol da asıl sunucu kadar güvenlidir. Diğer sitelere (Modrinth, CurseForge...) giden istekler etkilenmez.
+    ///
+    /// Bunların hiçbiri çalışmazsa (ağ sunucunun IP'sini ya da adını engelliyor) istekler Cloudflare Worker yedeğine
+    /// (<see cref="Relays"/>, vulu-api/relay/worker.js) gider: aynı yol, başka bir adres ve Cloudflare'in ağı. Bir kez
+    /// gerekince bir süre bütün istekler oradan gider, her istek zaman aşımını beklemesin.
     /// </summary>
     public static class ServerConnection
     {
         public const string Host = "vuluvulu.com.tr";
+
+        /// <summary>Cloudflare Worker yedekleri (sırayla denenir). Yol aynen iletilir: …/api/…, …/releases/….</summary>
+        public static readonly string[] Relays =
+#if DEBUG
+            // Yalnızca geliştirme derlemesinde: testler yerel bir sahte Worker verebilir
+            Environment.GetEnvironmentVariable("VULU_TEST_RELAY") is { Length: > 0 } testRelay ? new[] { testRelay } :
+#endif
+            new string[] { };
 
         /// <summary>Alan adına hiç ulaşılamazsa kullanılan sabit adresler (VDS).</summary>
         public static readonly IPAddress[] StaticAddresses = { IPAddress.Parse("185.157.46.169") };
@@ -35,6 +47,8 @@ namespace VuluShared
 
         private static readonly object Gate = new();
         private static DateTime _fallbackUntil;
+        private static DateTime _relayUntil;
+        private static string? _relay;
         private static IPAddress? _lastGood;
         private static IPAddress[]? _doh;
         private static DateTime _dohAt;
@@ -48,6 +62,34 @@ namespace VuluShared
 
         /// <summary>Şu an yedek yol kullanılıyor mu (arayüzde bilgi vermek için).</summary>
         public static bool UsingFallback { get { lock (Gate) return DateTime.UtcNow < _fallbackUntil; } }
+
+        /// <summary>Şu an Worker yedeği kullanılıyor mu; kullanılıyorsa adresi.</summary>
+        public static string? ActiveRelay { get { lock (Gate) return DateTime.UtcNow < _relayUntil ? _relay : null; } }
+
+        /// <summary>
+        /// vulu sunucusundaki bir adresin şu an ulaşılabilen hali: Worker yedeği kullanılıyorsa onun adresi. Oyuna verilen
+        /// adresler (skin sistemi) için; launcher'ın kendi istekleri bunu kendiliğinden yapar.
+        /// </summary>
+        public static string Reachable(string url)
+        {
+            string? relay = ActiveRelay;
+            if (relay == null || !Uri.TryCreate(url, UriKind.Absolute, out var uri) || !IsServer(uri.Host)) return url;
+            return relay.TrimEnd('/') + uri.PathAndQuery;
+        }
+
+        private static Uri ToRelay(Uri uri, string relay) => new(relay.TrimEnd('/') + uri.PathAndQuery);
+
+        private static void StartRelay(string relay)
+        {
+            bool first;
+            lock (Gate) { first = _relay != relay || DateTime.UtcNow >= _relayUntil; _relay = relay; _relayUntil = DateTime.UtcNow + FallbackPeriod; }
+            if (first) Log?.Invoke($"{Host} hiçbir yoldan ulaşılamadı; Cloudflare yedeği kullanılıyor ({new Uri(relay).Host}).");
+        }
+
+        private static void StopRelay()
+        {
+            lock (Gate) _relayUntil = DateTime.MinValue;
+        }
 
         /// <summary>Sunucuyla konuşan bütün HttpClient'lar bunu kullanır.</summary>
         public static HttpMessageHandler CreateHandler() => new RetryHandler(new SocketsHttpHandler
@@ -216,7 +258,21 @@ namespace VuluShared
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
             {
-                bool server = request.RequestUri != null && IsServer(request.RequestUri.Host);
+                var original = request.RequestUri;
+                bool server = original != null && IsServer(original.Host);
+                // Worker yedeği etkinse sunucu istekleri doğrudan oraya gider (gövdesi akış olanlar da)
+                if (server && ActiveRelay is { } active)
+                {
+                    request.RequestUri = ToRelay(original!, active);
+                    try { return await base.SendAsync(request, token); }
+                    catch (HttpRequestException) when (!token.IsCancellationRequested && request.Content is null or ByteArrayContent or System.Net.Http.Json.JsonContent)
+                    {
+                        // Worker de olmadı: asıl yol yeniden denenir (ağ düzelmiş olabilir)
+                        StopRelay();
+                        request.RequestUri = original;
+                    }
+                }
+
                 bool direct = server && !UsingFallback;
                 // Gövdesi bellekte olan (ya da hiç olmayan) istekler tekrar gönderilebilir
                 bool retryable = server && request.Content is null or ByteArrayContent or System.Net.Http.Json.JsonContent;
@@ -233,7 +289,24 @@ namespace VuluShared
                     // ve DoH/sabit IP ile yeniden denenir
                     if (direct) StartFallback(e);
                     else Forget();
-                    return await base.SendAsync(request, token);
+                    try { return await base.SendAsync(request, token); }
+                    catch (HttpRequestException) when (!token.IsCancellationRequested && Relays.Length > 0)
+                    {
+                        // Sunucuya hiçbir yoldan ulaşılamadı: Cloudflare Worker yedekleri
+                        foreach (string relay in Relays)
+                        {
+                            request.RequestUri = ToRelay(original!, relay);
+                            try
+                            {
+                                var response = await base.SendAsync(request, token);
+                                StartRelay(relay);
+                                return response;
+                            }
+                            catch (HttpRequestException) when (!token.IsCancellationRequested) { }
+                        }
+                        request.RequestUri = original;
+                        throw;
+                    }
                 }
             }
         }

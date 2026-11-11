@@ -607,7 +607,8 @@ namespace VuluLauncher
             try
             {
                 // Adres sunucunun cevabından değil, launcher'ın bildiği API adresinden kurulur
-                string apiRoot = ApiConfig.BaseUrl.TrimEnd('/') + "/yggdrasil";
+                // Ağ sunucuya ulaşamıyorsa (Worker yedeği) oyun da skin ve oturum isteklerini oradan yapar
+                string apiRoot = VuluShared.ServerConnection.Reachable(ApiConfig.BaseUrl.TrimEnd('/') + "/yggdrasil");
                 var session = await _api.PostAsync<JsonElement>("/users/me/game-session", new { });
                 string accessToken = session.GetProperty("accessToken").GetString() ?? "";
                 string profileId = session.GetProperty("profileId").GetString() ?? "";

@@ -14,7 +14,8 @@ namespace VuluLauncher.Native
 
         private static HttpClient CreateHttp()
         {
-            var http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            // vulu sunucusundaki resimler (profil, banner, paket kapakları) da yedek yollarla gelsin
+            var http = VuluShared.ServerConnection.CreateClient(TimeSpan.FromSeconds(30));
             http.DefaultRequestHeaders.UserAgent.ParseAdd("vulu-launcher");
             return http;
         }
