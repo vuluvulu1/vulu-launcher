@@ -115,8 +115,29 @@ namespace Installer
             var manifest = latest.Manifest;
             _report(new InstallStatus("download", $"v{version} indiriliyor…", "", 0, version));
 
+            // Asıl sunucu olmazsa GitHub'dan; hash aşağıda manifest'e karşı doğrulanır
+            Exception? last = null;
+            foreach (string url in latest.ZipUrls)
+            {
+                try
+                {
+                    await DownloadZipFromAsync(url, target, manifest, version, token);
+                    last = null;
+                    break;
+                }
+                catch (Exception e) when (Releases.IsNetworkError(e, token)) { last = e; }
+            }
+            if (last != null) throw new HttpRequestException("Launcher indirilemedi: vulu sunucusuna da yedeği GitHub'a da ulaşılamadı.", last);
+
+            if (!string.Equals(Releases.Sha256Of(target), manifest.Sha256, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("İndirilen dosya doğrulanamadı (hash uyuşmuyor). Tekrar dene.");
+            return target;
+        }
+
+        private async Task DownloadZipFromAsync(string url, string target, ReleaseManifest manifest, string version, CancellationToken token)
+        {
             using (var http = Releases.CreateHttpClient(TimeSpan.FromMinutes(30)))
-            using (var response = await http.GetAsync(latest.ZipUrl, HttpCompletionOption.ResponseHeadersRead, token))
+            using (var response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token))
             {
                 response.EnsureSuccessStatusCode();
                 long total = response.Content.Headers.ContentLength ?? manifest.Size;
@@ -140,10 +161,6 @@ namespace Installer
                         $"{amount} · {done / seconds / 1024 / 1024:F1} MB/sn", total > 0 ? (double)done / total : null, version));
                 }
             }
-
-            if (!string.Equals(Releases.Sha256Of(target), manifest.Sha256, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("İndirilen dosya doğrulanamadı (hash uyuşmuyor). Tekrar dene.");
-            return target;
         }
 
         private static string Mb(long bytes) => (bytes / 1024.0 / 1024.0).ToString("F1");

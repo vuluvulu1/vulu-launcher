@@ -66,6 +66,11 @@ namespace VuluShared
         {
             var target = context.DnsEndPoint;
             if (!IsServer(target.Host)) return await ConnectToAsync(target, token);
+#if DEBUG
+            // Yalnızca geliştirme derlemesinde: "block" sunucuya giden her yolu keser (ağ vulu'yu tamamen engelliyor)
+            if (Environment.GetEnvironmentVariable("VULU_TEST_DIRECT") == "block")
+                throw new HttpRequestException($"{Host} engellendi (test).", new SocketException((int)SocketError.ConnectionRefused));
+#endif
 
             if (!UsingFallback)
             {

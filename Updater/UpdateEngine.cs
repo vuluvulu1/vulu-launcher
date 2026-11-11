@@ -151,8 +151,36 @@ namespace Updater
             string partPath = zipPath + ".part";
             _report(new UpdateStatus("downloading", $"v{version} indiriliyor…", "", 0, version, notes));
 
+            // Asıl sunucu olmazsa GitHub'dan; hash aşağıda manifest'e karşı doğrulanır
+            Exception? last = null;
+            foreach (string url in latest.ZipUrls)
+            {
+                try
+                {
+                    await DownloadZipFromAsync(url, partPath, manifest, version, notes, token);
+                    last = null;
+                    break;
+                }
+                catch (Exception e) when (Releases.IsNetworkError(e, token)) { last = e; }
+            }
+            if (last != null) throw new HttpRequestException("Güncelleme indirilemedi: vulu sunucusuna da yedeği GitHub'a da ulaşılamadı.", last);
+
+            _report(new UpdateStatus("verifying", "Doğrulanıyor…", "", null, version, notes));
+            string actual = await Task.Run(() => Releases.Sha256Of(partPath), token);
+            if (!string.Equals(actual, manifest.Sha256, StringComparison.OrdinalIgnoreCase))
+            {
+                File.Delete(partPath);
+                throw new InvalidDataException("İndirilen dosya doğrulanamadı (hash uyuşmuyor). Tekrar dene.");
+            }
+
+            File.Move(partPath, zipPath, overwrite: true);
+            return zipPath;
+        }
+
+        private async Task DownloadZipFromAsync(string url, string partPath, ReleaseManifest manifest, string version, string notes, CancellationToken token)
+        {
             using (var http = Releases.CreateHttpClient(TimeSpan.FromMinutes(30)))
-            using (var response = await http.GetAsync(latest.ZipUrl, HttpCompletionOption.ResponseHeadersRead, token))
+            using (var response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token))
             {
                 response.EnsureSuccessStatusCode();
                 long total = response.Content.Headers.ContentLength ?? manifest.Size;
@@ -179,17 +207,6 @@ namespace Updater
                         total > 0 ? (double)done / total : null, version, notes));
                 }
             }
-
-            _report(new UpdateStatus("verifying", "Doğrulanıyor…", "", null, version, notes));
-            string actual = await Task.Run(() => Releases.Sha256Of(partPath), token);
-            if (!string.Equals(actual, manifest.Sha256, StringComparison.OrdinalIgnoreCase))
-            {
-                File.Delete(partPath);
-                throw new InvalidDataException("İndirilen dosya doğrulanamadı (hash uyuşmuyor). Tekrar dene.");
-            }
-
-            File.Move(partPath, zipPath, overwrite: true);
-            return zipPath;
         }
 
         private static string Mb(long bytes) => (bytes / 1024.0 / 1024.0).ToString("F1");

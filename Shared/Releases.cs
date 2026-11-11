@@ -12,11 +12,27 @@ namespace VuluShared
     /// release.json zip'in ve içindeki her dosyanın SHA-256'sını taşır; imzası doğrulanınca bütün paket doğrulanmış
     /// olur. İmzalayan özel anahtar yalnızca release çıkaran bilgisayardadır (tools/ReleaseSigner), bu yüzden sunucuya
     /// erişen biri tek başına kullanıcılara sahte güncelleme kuramaz.
+    ///
+    /// Yedek yol: her sürüm GitHub Releases'a da yüklenir. Kullanıcının ağı vulu sunucusuna ulaşamazsa (engel, kesinti)
+    /// release.json ve zip GitHub'dan alınır; imza ve hash aynı şekilde doğrulandığı için yedek yol da aynı güvenliktedir.
     /// </summary>
     public static class Releases
     {
         /// <summary>En son sürümün release.json'u; imza (.sig) ve zip aynı klasördedir.</summary>
         public const string FeedUrl = "https://vuluvulu.com.tr/releases/release.json";
+
+        /// <summary>Yedek: GitHub'daki en son sürüm (publish-release.ps1 -AlsoGitHub ile her sürüm oraya da yüklenir).</summary>
+        public const string GitHubRepo = "vuluvulu1/vulu-launcher";
+        public const string GitHubFeedUrl = "https://github.com/" + GitHubRepo + "/releases/latest/download/release.json";
+
+        /// <summary>Belirli bir sürümün GitHub'daki dosyası (sunucudan alınan manifest'in zip'i için yedek adres).</summary>
+        public static string GitHubAssetUrl(string version, string asset) =>
+            $"https://github.com/{GitHubRepo}/releases/download/v{Clean(version)}/{Uri.EscapeDataString(asset)}";
+
+        /// <summary>Bağlantıdan kaynaklanan (ağ, zaman aşımı, sunucu hatası) ve başka bir adres denenince geçebilecek hata.</summary>
+        public static bool IsNetworkError(Exception e, CancellationToken token) =>
+            !token.IsCancellationRequested && e is HttpRequestException or TaskCanceledException or IOException
+            && e is not InvalidDataException;
 
         /// <summary>Release imzasını doğrulayan ECDSA P-256 açık anahtarı (SubjectPublicKeyInfo, base64).</summary>
         public const string ReleasePublicKey = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3TeeU2nXv6fbTkri3BObKy19SbNBbWMMqC+D7e4JSDC8jiGZU62lz7Nvk1tZcKSQAh3Bx08rEv7wBW4XbTrxzQ==";
@@ -47,15 +63,27 @@ namespace VuluShared
         public static async Task<LatestRelease> GetLatestAsync(HttpClient http, CancellationToken token = default)
         {
             // Test için başka bir release.json adresi verilebilir (ör. yerel sunucu); yerel sürümler de imzalı olmak zorundadır.
-            string? feed = Environment.GetEnvironmentVariable("VULU_UPDATE_FEED");
-            if (string.IsNullOrWhiteSpace(feed)) feed = FeedUrl;
+            string? test = Environment.GetEnvironmentVariable("VULU_UPDATE_FEED");
+            string[] feeds = string.IsNullOrWhiteSpace(test) ? new[] { FeedUrl, GitHubFeedUrl } : new[] { test };
 
-            var manifest = await DownloadVerifiedManifestAsync(http, feed, feed + ".sig", token);
+            Exception? last = null;
+            foreach (string feed in feeds)
+            {
+                ReleaseManifest manifest;
+                try { manifest = await DownloadVerifiedManifestAsync(http, feed, feed + ".sig", token); }
+                // Ağ hatası da, imzası tutmayan (yolda değiştirilmiş) bir cevap da sonraki adresle denenir
+                catch (Exception e) when (IsNetworkError(e, token) || e is ReleaseSignatureException) { last = e; continue; }
 
-            if (string.IsNullOrWhiteSpace(manifest.Version) || string.IsNullOrWhiteSpace(manifest.Sha256) || string.IsNullOrWhiteSpace(manifest.Asset))
-                throw new InvalidDataException("release.json eksik bilgi içeriyor.");
+                if (string.IsNullOrWhiteSpace(manifest.Version) || string.IsNullOrWhiteSpace(manifest.Sha256) || string.IsNullOrWhiteSpace(manifest.Asset))
+                    throw new InvalidDataException("release.json eksik bilgi içeriyor.");
 
-            return new LatestRelease(manifest, new Uri(new Uri(feed), manifest.Asset).ToString());
+                // Zip önce manifest'in geldiği yerden, olmazsa GitHub'dan (aynı sürüm, hash'i manifest'te)
+                var zips = new List<string> { new Uri(new Uri(feed), manifest.Asset).ToString() };
+                if (string.IsNullOrWhiteSpace(test)) zips.Add(GitHubAssetUrl(manifest.Version, manifest.Asset));
+                return new LatestRelease(manifest, zips[0]) { ZipUrls = zips.Distinct().ToList(), FromMirror = feed != feeds[0] };
+            }
+            // İmza hatası, ağ hatasından daha önemli: kullanıcıya o söylenir
+            throw last is ReleaseSignatureException ? last : new HttpRequestException("vulu sunucusuna ve yedeği GitHub'a ulaşılamadı. İnternet bağlantını kontrol et.", last);
         }
 
         /// <summary>release.json'u ham bayt olarak indirir, imzasını doğrular ve ancak ondan sonra ayrıştırır.</summary>
@@ -131,7 +159,13 @@ namespace VuluShared
         }
     }
 
-    public sealed record LatestRelease(ReleaseManifest Manifest, string ZipUrl);
+    public sealed record LatestRelease(ReleaseManifest Manifest, string ZipUrl)
+    {
+        /// <summary>Zip'in denenecek adresleri, sırayla (asıl sunucu, sonra GitHub).</summary>
+        public IReadOnlyList<string> ZipUrls { get; init; } = new[] { ZipUrl };
+        /// <summary>Sürüm bilgisi yedek adresten (GitHub) alındı.</summary>
+        public bool FromMirror { get; init; }
+    }
 
     /// <summary>Release imzası eksik ya da geçersiz: güncelleme kurulmaz.</summary>
     public sealed class ReleaseSignatureException(string message) : Exception(message);
