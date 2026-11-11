@@ -4,7 +4,7 @@ using Xunit;
 namespace VuluLauncher.Tests
 {
     /// <summary>
-    /// vulu sunucusu tamamen engelliyken sürüm bilgisi ve zip GitHub'dan alınır. Gerçek ağa çıktığı için yalnızca
+    /// vulu sunucusu tamamen engelliyken sürüm bilgisi ve zip yedek yoldan (Worker ya da GitHub) alınır. Gerçek ağa çıktığı için yalnızca
     /// VULU_NET_TESTS=1 ile çalışır.
     /// </summary>
     public class ReleaseMirrorTests
@@ -18,9 +18,9 @@ namespace VuluLauncher.Tests
             {
                 using var http = Releases.CreateHttpClient(TimeSpan.FromSeconds(60));
                 var latest = await Releases.GetLatestAsync(http);
-                Assert.True(latest.FromMirror);
-                Assert.StartsWith("https://github.com/", latest.ZipUrl);
+                // Önce Cloudflare Worker yedeği (sunucu adresi yedeğe yönlenir), o da olmazsa GitHub
                 Assert.False(string.IsNullOrEmpty(latest.Manifest.Version));
+                Assert.Contains(latest.ZipUrls, u => u.StartsWith("https://github.com/"));
 
                 // Zip de GitHub'dan iner ve manifest'teki hash'le tutar
                 string path = Path.Combine(Path.GetTempPath(), "vulu-mirror-" + Guid.NewGuid().ToString("N") + ".zip");

@@ -26,7 +26,7 @@ namespace VuluShared
             // Yalnızca geliştirme derlemesinde: testler yerel bir sahte Worker verebilir
             Environment.GetEnvironmentVariable("VULU_TEST_RELAY") is { Length: > 0 } testRelay ? new[] { testRelay } :
 #endif
-            new string[] { };
+            new[] { "https://vulu-relay.ardakaradag81.workers.dev" };
 
         /// <summary>Alan adına hiç ulaşılamazsa kullanılan sabit adresler (VDS).</summary>
         public static readonly IPAddress[] StaticAddresses = { IPAddress.Parse("185.157.46.169") };
