@@ -1,5 +1,8 @@
-using Avalonia;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Media;
+using Avalonia.Styling;
 
 namespace VuluLauncher
 {
@@ -49,6 +52,17 @@ namespace VuluLauncher
             ["Warn"] = [C("#FFD77A")],
             ["Error"] = [C("#FF5A7A")],
             ["TitleBarBg"] = [C("#E60A001A")],
+            ["LoginBg"] = [C("#00000000"), C("#00000000"), C("#55000000")],
+            ["BannerFallback"] = [C("#5800FF"), C("#FF2DF1")],
+            ["TabGlow"] = [C("#4D00D7FF"), C("#0000D7FF")],
+            ["ToggleSwitchFillOn"] = [C("#FF2DF1")],
+            ["ToggleSwitchFillOnPointerOver"] = [C("#FF8CF0")],
+            ["ToggleSwitchFillOnPressed"] = [C("#B000C8")],
+            ["ToggleSwitchKnobFillOn"] = [C("#FFFFFF")],
+            ["ToggleSwitchKnobFillOnPointerOver"] = [C("#FFFFFF")],
+            ["ToggleSwitchKnobFillOnPressed"] = [C("#FFFFFF")],
+            ["ToggleSwitchStrokeOff"] = [C("#8000D7FF")],
+            ["ToggleSwitchKnobFillOff"] = [C("#D2C3EE")],
         };
 
         private static readonly Dictionary<string, Color> UfukSystem = new()
@@ -89,10 +103,25 @@ namespace VuluLauncher
             // Fluent'in vurgu renkleri Color değeridir (fırça değil): yeniden konur, DynamicResource ile bağlı olanlar güncellenir
             foreach (var (key, color) in name == Ufuk ? UfukSystem : _mesaleSystem!) res[key] = color;
 
+            // Fırça olmayan tek tük değerler (seçenek grubunun alt çizgisi BoxShadow) için temaya özel stil
+            _ufukStyles ??= UfukStyles();
+            if (name == Ufuk && !app.Styles.Contains(_ufukStyles)) app.Styles.Add(_ufukStyles);
+            else if (name != Ufuk) app.Styles.Remove(_ufukStyles);
+
             bool changed = Current != name;
             Current = name;
             if (changed) Changed?.Invoke();
         }
+
+        private static Styles? _ufukStyles;
+
+        private static Styles UfukStyles() => new()
+        {
+            new Style(x => x.OfType<Button>().Class("seg").Class("active").Template().OfType<ContentPresenter>().Name("PART_ContentPresenter"))
+            {
+                Setters = { new Setter(ContentPresenter.BoxShadowProperty, BoxShadows.Parse("inset 0 -2 0 0 #FF2DF1")) },
+            },
+        };
 
         private static Color[]? Read(object? brush) => brush switch
         {

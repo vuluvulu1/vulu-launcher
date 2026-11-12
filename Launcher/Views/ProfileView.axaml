@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
              xmlns:v="using:VuluLauncher.Views"
@@ -30,14 +30,7 @@
 
                 <!-- Banner -->
                 <Grid Height="170" Background="{StaticResource Raised}" ClipToBounds="True">
-                    <Border>
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                                <GradientStop Color="#3A2410" Offset="0" />
-                                <GradientStop Color="#14100C" Offset="1" />
-                            </LinearGradientBrush>
-                        </Border.Background>
-                    </Border>
+                    <Border Background="{StaticResource BannerFallback}" />
                     <Image Source="{Binding Banner}" Stretch="UniformToFill" />
                     <StackPanel Orientation="Horizontal" Spacing="6" Margin="12" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsVisible="{Binding Editing}">
                         <Button Classes="sm" Content="Banner ekle / değiştir" Command="{Binding ChangeBannerCommand}" />

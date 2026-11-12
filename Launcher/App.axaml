@@ -51,6 +51,22 @@
                 <GradientStop Offset="0" Color="#F5B04C" />
                 <GradientStop Offset="1" Color="#E39236" />
             </LinearGradientBrush>
+            <!-- Giriş ekranının zemini: ortada sıcak bir ışık (Ufkun öbür ucu'nda saydam: arkadaki sahne görünür) -->
+            <RadialGradientBrush x:Key="LoginBg" Center="50%,45%" GradientOrigin="50%,45%" RadiusX="60%" RadiusY="55%">
+                <GradientStop Color="#3A2410" Offset="0" />
+                <GradientStop Color="#160F09" Offset="0.55" />
+                <GradientStop Color="#0B0A09" Offset="1" />
+            </RadialGradientBrush>
+            <!-- Profil kapağı yoksa -->
+            <LinearGradientBrush x:Key="BannerFallback" StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#3A2410" Offset="0" />
+                <GradientStop Color="#14100C" Offset="1" />
+            </LinearGradientBrush>
+            <!-- Seçili sekmenin üstten gelen ışığı -->
+            <RadialGradientBrush x:Key="TabGlow" Center="50%,0%" GradientOrigin="50%,0%" RadiusX="62%" RadiusY="90%">
+                <GradientStop Offset="0" Color="#33F2A33A" />
+                <GradientStop Offset="1" Color="#00F2A33A" />
+            </RadialGradientBrush>
             <!-- Başlık çubuğu (tema değişince rengi değişir) -->
             <SolidColorBrush x:Key="TitleBarBg" Color="#E60B0A09" />
             <SolidColorBrush x:Key="Ok" Color="#9CC3DE" />

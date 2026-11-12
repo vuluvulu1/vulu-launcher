@@ -115,12 +115,7 @@
                             </Style>
                             <Style Selector="Button.tab.active">
                                 <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
-                                <Setter Property="Background">
-                                    <RadialGradientBrush Center="50%,0%" GradientOrigin="50%,0%" RadiusX="62%" RadiusY="90%">
-                                        <GradientStop Offset="0" Color="#33F2A33A" />
-                                        <GradientStop Offset="1" Color="#00F2A33A" />
-                                    </RadialGradientBrush>
-                                </Setter>
+                                <Setter Property="Background" Value="{StaticResource TabGlow}" />
                             </Style>
                             <Style Selector="Button.tab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
                                 <Setter Property="Background" Value="{Binding $parent[Button].Background}" />
