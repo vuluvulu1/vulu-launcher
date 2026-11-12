@@ -122,9 +122,9 @@ namespace VuluLauncher
             foreach (var (key, color) in name == Ufuk ? UfukSystem : _mesaleSystem!) res[key] = color;
 
             // Fırça olmayan değerler (BoxShadow ışıltıları) için temaya özel stiller (Views/UfukStyles.axaml)
-            _ufukStyles ??= new Views.UfukStyles();
-            if (name == Ufuk && !app.Styles.Contains(_ufukStyles)) app.Styles.Add(_ufukStyles);
-            else if (name != Ufuk) app.Styles.Remove(_ufukStyles);
+            if (_ufukStyles == null) { _ufukStyles = new Views.UfukStyles(); app.Styles.Add(_ufukStyles); }
+            if (app.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+                foreach (var window in desktop.Windows) window.Classes.Set("ufuk", name == Ufuk);
 
             bool changed = Current != name;
             Current = name;
@@ -136,19 +136,12 @@ namespace VuluLauncher
 
         /// <summary>
         /// Kendi stilleri olan sayfalar (Oyna) için: sayfanın stilleri uygulamanınkinden önce geldiği için temaya özel
-        /// stiller sayfanın kendi listesinin sonuna da eklenir. Sayfa açılınca bir kez çağırır; tema değişince kendiliğinden.
+        /// stiller sayfanın kendi listesinin sonuna da eklenir (pencerenin "ufuk" sınıfıyla açılıp kapanırlar).
         /// </summary>
-        public static void Attach(StyledElement element)
-        {
-            var styles = new Views.UfukStyles();
-            void Sync()
-            {
-                if (IsUfuk) { if (!element.Styles.Contains(styles)) element.Styles.Add(styles); }
-                else element.Styles.Remove(styles);
-            }
-            Changed += Sync;
-            Sync();
-        }
+        public static void Attach(StyledElement element) => element.Styles.Add(new Views.UfukStyles());
+
+        /// <summary>Pencere açılınca: tema sınıfı verilir (sonradan açılan pencereler için).</summary>
+        public static void Mark(Window window) => window.Classes.Set("ufuk", IsUfuk);
 
         private static Color[]? Read(object? brush) => brush switch
         {

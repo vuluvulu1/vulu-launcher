@@ -80,7 +80,7 @@ half4 main(float2 coord) {
     float2 q = uv - 0.5;
     col *= 1.0 - dot(q, q) * 0.9;
     // Parlaklık: 0 karanlık, 1 normal, 1'in üstü beyaza doğru parlama
-    col = bright <= 1.0 ? col * bright : mix(col, float3(1.0, 0.9, 1.0), clamp(bright - 1.0, 0.0, 1.0));
+    col = bright <= 1.0 ? col * bright : col + float3(1.0, 0.35, 0.9) * clamp(bright - 1.0, 0.0, 1.0) * 0.8;
     return half4(half3(col), 1.0);
 }";
 

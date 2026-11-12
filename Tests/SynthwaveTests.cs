@@ -1,4 +1,4 @@
-using SkiaSharp;
+﻿using SkiaSharp;
 using Xunit;
 
 namespace VuluLauncher.Tests
@@ -10,6 +10,13 @@ namespace VuluLauncher.Tests
         public void ShaderCompiles()
         {
             using var effect = SKRuntimeEffect.CreateShader(Views.SynthwaveBackdrop.Shader, out string? errors);
+            Assert.True(effect != null, errors);
+        }
+
+        [Fact]
+        public void BurnShaderCompiles()
+        {
+            using var effect = SKRuntimeEffect.CreateShader(Views.ThemeTransition.BurnShader, out string? errors);
             Assert.True(effect != null, errors);
         }
 

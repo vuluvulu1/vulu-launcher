@@ -1,52 +1,53 @@
-<Styles xmlns="https://github.com/avaloniaui"
+﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="VuluLauncher.Views.UfukStyles">
     <!--
-        "Ufkun öbür ucu" temasında fırça olmayan değerler (BoxShadow gölgeleri, ışıltılar): tema açıkken uygulama stillerine
-        eklenir, kapanınca çıkarılır (Services/Themes.cs). Renkler: pembe #FF2DF1, camgöbeği #00D7FF, mor #5800FF.
+        "Ufkun öbür ucu" temasında fırça olmayan değerler (BoxShadow gölgeleri, ışıltılar). Stiller hep yüklüdür; pencere
+        "ufuk" sınıfını taşıdığında geçerli olur (Services/Themes.cs). Stili listeden çıkarmak Avalonia'da eski değeri her
+        zaman geri getirmediği için sınıfla açılıp kapanır. Renkler: pembe #FF2DF1, camgöbeği #00D7FF, mor #5800FF.
     -->
-    <Style Selector="Button.seg.active /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Window.ufuk Button.seg.active /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="BoxShadow" Value="inset 0 -2 0 0 #FF2DF1" />
     </Style>
 
     <!-- Oyna: paket rayı -->
-    <Style Selector="ListBox.rail ListBoxItem:selected Border.thumb">
+    <Style Selector="Window.ufuk ListBox.rail ListBoxItem:selected Border.thumb">
         <Setter Property="BoxShadow" Value="0 0 0 1 #CCFF8CF0, 0 0 24 1 #80FF2DF1" />
     </Style>
-    <Style Selector="ListBox.rail StackPanel.dragging Border.thumb">
+    <Style Selector="Window.ufuk ListBox.rail StackPanel.dragging Border.thumb">
         <Setter Property="BoxShadow" Value="0 0 0 2 #9FF4FF, 0 0 28 4 #9900D7FF, 0 10 24 0 #B3000000" />
     </Style>
-    <Style Selector="ListBox.rail StackPanel.drop Border.thumb">
+    <Style Selector="Window.ufuk ListBox.rail StackPanel.drop Border.thumb">
         <Setter Property="BoxShadow" Value="0 0 0 2 #00D7FF" />
     </Style>
-    <Style Selector="Border.mcard">
+    <Style Selector="Window.ufuk Border.mcard">
         <Setter Property="BoxShadow" Value="inset 0 1 0 0 #33FF2DF1" />
     </Style>
-    <Style Selector="Border.mcard.console">
+    <Style Selector="Window.ufuk Border.mcard.console">
         <Setter Property="BoxShadow" Value="inset 0 1 0 0 #33FF2DF1, 0 14 34 0 #66000000" />
     </Style>
-    <Style Selector="Border.announce">
+    <Style Selector="Window.ufuk Border.announce">
         <Setter Property="BoxShadow" Value="inset 3 0 0 0 #FF2DF1" />
     </Style>
-    <Style Selector="Border.ring">
+    <Style Selector="Window.ufuk Border.ring">
         <Setter Property="BoxShadow" Value="0 0 0 2 #07000F, 0 0 0 3 #FF2DF1, 0 0 14 2 #80FF2DF1" />
     </Style>
-    <Style Selector="Border.barthumb">
+    <Style Selector="Window.ufuk Border.barthumb">
         <Setter Property="BoxShadow" Value="0 0 0 1 #CCFF8CF0, 0 0 24 1 #80FF2DF1" />
     </Style>
-    <Style Selector="Border.bar">
+    <Style Selector="Window.ufuk Border.bar">
         <Setter Property="BoxShadow" Value="0 -1 0 0 #66FF2DF1" />
     </Style>
-    <Style Selector="Button.play /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Window.ufuk Button.play /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="BoxShadow" Value="inset 0 1 0 0 #66FFFFFF, 0 0 22 0 #80FF2DF1" />
     </Style>
-    <Style Selector="Button.play.small:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Window.ufuk Button.play.small:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="BoxShadow" Value="inset 0 0 0 1 #FF2DF1" />
     </Style>
-    <Style Selector="Button.play.small /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Window.ufuk Button.play.small /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="BoxShadow" Value="inset 0 0 0 1 #8000D7FF" />
     </Style>
-    <Style Selector="ComboBox.bar /template/ Border#Background">
+    <Style Selector="Window.ufuk ComboBox.bar /template/ Border#Background">
         <Setter Property="BoxShadow" Value="inset 0 0 0 1 #6600D7FF" />
     </Style>
 </Styles>

@@ -46,8 +46,8 @@
                            LetterSpacing="6" Foreground="#9FF4FF" Opacity="0">
                     <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="14" Color="#00D7FF" Opacity="0.8" /></TextBlock.Effect>
                 </TextBlock>
-                <TextBlock x:Name="UfukWord" Text="VULUSAL" HorizontalAlignment="Center" FontSize="96" FontWeight="Black" FontStyle="Italic"
-                           LetterSpacing="4" Margin="0,6,0,0" Opacity="0">
+                <TextBlock x:Name="UfukWord" Text="vulu Launcher" HorizontalAlignment="Center" FontSize="104" FontFamily="{StaticResource Script}"
+                           Padding="40,0" Margin="0,0,0,-10" Opacity="0">
                     <TextBlock.Foreground>
                         <!-- Krom: koyu lacivert, mavi, beyaz ufuk çizgisi, pembe, sarı (ufuk.css .uf-krom) -->
                         <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
@@ -60,10 +60,6 @@
                         </LinearGradientBrush>
                     </TextBlock.Foreground>
                     <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="22" Color="#FF2DF1" Opacity="0.9" /></TextBlock.Effect>
-                </TextBlock>
-                <TextBlock x:Name="UfukSub" Text="LAUNCHER" HorizontalAlignment="Center" FontSize="22" FontWeight="Bold" LetterSpacing="16"
-                           Margin="16,0,0,0" Foreground="#B9F8FF" Opacity="0">
-                    <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="18" Color="#00D7FF" Opacity="0.9" /></TextBlock.Effect>
                 </TextBlock>
                 <TextBlock x:Name="UfukGreeting" Text="{Binding Greeting}" Margin="0,22,0,0" HorizontalAlignment="Center" Opacity="0"
                            FontSize="13.5" FontWeight="Medium" LetterSpacing="0.4" Foreground="#F1E8FF" />

@@ -12,6 +12,7 @@ namespace VuluLauncher.Views
         public MainWindow()
         {
             InitializeComponent();
+            Themes.Mark(this);
             // Tema geçişi animasyonu (Ayarlar › Tema)
             DataContextChanged += (_, _) =>
             {

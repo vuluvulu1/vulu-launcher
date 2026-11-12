@@ -184,7 +184,7 @@ namespace VuluLauncher.Views
             UfukScene.Time = _ufukTime;
             UfukScene.Rise = OutEase.Ease(Progress(t, 150, 1600));
             double flash = p <= 0.35 ? 0 : Math.Sin(Math.PI * Math.Clamp((p - 0.35) / 0.5, 0, 1));
-            UfukScene.Brightness = OutEase.Ease(Progress(t, 0, 900)) + flash * 0.9;
+            UfukScene.Brightness = OutEase.Ease(Progress(t, 0, 900)) + flash * 0.6;
             UfukScene.InvalidateVisual();
 
             Rise(UfukTop, Progress(t, 500, 500));
@@ -192,7 +192,6 @@ namespace VuluLauncher.Views
             UfukWord.Opacity = word;
             double s = 1.12 - 0.12 * word;
             UfukWord.RenderTransform = new ScaleTransform(s, s);
-            Rise(UfukSub, Progress(t, 1000, 500));
             Rise(UfukGreeting, Progress(t, 1650, 450));
 
             // Açılış: yazı öne doğru büyüyüp söner, sahne parlamanın ardından saydamlaşır
