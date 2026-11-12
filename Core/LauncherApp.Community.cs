@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace VuluLauncher
 {
@@ -21,6 +21,19 @@ namespace VuluLauncher
             _bridge.On("community.servers", async _ => await ListServersAsync());
             _bridge.On("community.ping", async args => await PingServerAsync(args.Str("address")));
             _bridge.On("servers.save", async args => await SaveServerAsync(args));
+            // Oyun içi sohbet (yalnızca vulu'nun kendi sunucusu; vulu-api oyun sunucusunun kaydını okur, RCON'la yazar)
+            _bridge.On("servers.chat", async args =>
+            {
+                RequireLogin();
+                string id = Uri.EscapeDataString(args.Str("id"));
+                long after = args.ValueKind == JsonValueKind.Object && args.TryGetProperty("after", out var a) && a.TryGetInt64(out var n) ? n : 0;
+                return await _api.GetAsync<JsonElement>($"/servers/{id}/chat" + (after > 0 ? $"?after={after}" : ""));
+            });
+            _bridge.On("servers.chatSend", async args =>
+            {
+                RequireLogin();
+                return await _api.PostAsync<JsonElement>($"/servers/{Uri.EscapeDataString(args.Str("id"))}/chat", new { text = args.Str("text") });
+            });
             _bridge.On("servers.delete", async args =>
             {
                 RequireAdmin();
@@ -125,6 +138,7 @@ namespace VuluLauncher
                     description = s.TryGetProperty("description", out var d) ? d.GetString() : "",
                     packId,
                     mcVersion = s.TryGetProperty("mcVersion", out var v) ? v.GetString() : "",
+                    chat = s.TryGetProperty("chat", out var c) && c.ValueKind == JsonValueKind.True,
                     // Bağlan: hangi instance açılacak (null + packId = önce paket kurulmalı)
                     instanceId = packId == null ? PackPrefix + "vanilla" : meta == null ? null : InstancePrefix + meta.Folder,
                 };

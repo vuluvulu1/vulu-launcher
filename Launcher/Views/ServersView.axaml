@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
              xmlns:v="using:VuluLauncher.Views"
@@ -105,10 +105,46 @@
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Button Classes="sm primary" Content="{Binding JoinText}" Command="{Binding JoinCommand}" />
                                         <Button Classes="sm" Content="Davet et" Command="{Binding InviteCommand}" ToolTip.Tip="Bir arkadaşını mesajla davet et" />
+                                        <Button Classes="sm" Content="{Binding ChatButton}" IsVisible="{Binding HasChat}" Command="{Binding ToggleChatCommand}"
+                                                ToolTip.Tip="Oyundaki sohbeti buradan oku ve yaz" />
                                         <Button Classes="sm" Content="Kısayol" Command="{Binding ShortcutCommand}" ToolTip.Tip="Masaüstüne tek tıkla bağlanma kısayolu koy" />
                                         <Button Classes="sm" Content="Düzenle" IsVisible="{Binding IsAdmin}" Command="{Binding EditCommand}" />
                                         <Button Classes="sm danger" Content="Sil" IsVisible="{Binding IsAdmin}" Command="{Binding DeleteCommand}" />
                                     </StackPanel>
+
+                                    <!-- Oyun içi sohbet: oyundakiler "[Launcher] ad: mesaj" olarak görür -->
+                                    <Border IsVisible="{Binding ChatOpen}" Background="{StaticResource Raised}" BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="10">
+                                        <StackPanel Spacing="8">
+                                            <ScrollViewer Height="230" native:AutoScroll.ToEnd="True">
+                                                <StackPanel>
+                                                    <TextBlock Text="Henüz sohbet yok. Yazdığın mesaj oyunda herkese görünür." IsVisible="{Binding ChatEmpty}" Classes="dim" FontSize="12.5" />
+                                                    <ItemsControl ItemsSource="{Binding Chat}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="vm:ChatLine">
+                                                                <SelectableTextBlock TextWrapping="Wrap" FontSize="13" Margin="0,1">
+                                                                    <Run Text="{Binding Time}" Foreground="{StaticResource Dim}" FontFamily="{StaticResource Mono}" FontSize="11.5" />
+                                                                    <Run Text=" " />
+                                                                    <Run Text="{Binding Tag}" Foreground="{StaticResource Accent}" FontWeight="SemiBold" />
+                                                                    <Run Text="{Binding NamePart}" FontWeight="Bold" Foreground="{StaticResource AccentHi}" />
+                                                                    <Run Text="{Binding Text}" Foreground="{Binding IsEvent, Converter={x:Static vm:ChatColors.Text}}" />
+                                                                </SelectableTextBlock>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </ScrollViewer>
+                                            <TextBlock Text="{Binding ChatStatus}" IsVisible="{Binding ChatStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                       Foreground="{StaticResource Error}" FontSize="12" TextWrapping="Wrap" />
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBox Text="{Binding ChatDraft}" Watermark="Oyundakilere yaz (Enter ile gönder)" MaxLength="200">
+                                                    <TextBox.KeyBindings>
+                                                        <KeyBinding Gesture="Enter" Command="{Binding SendChatCommand}" />
+                                                    </TextBox.KeyBindings>
+                                                </TextBox>
+                                                <Button Grid.Column="1" Classes="sm primary" Content="Gönder" Command="{Binding SendChatCommand}" Margin="8,0,0,0" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

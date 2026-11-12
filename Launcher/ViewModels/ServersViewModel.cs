@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -40,6 +40,48 @@ namespace VuluLauncher.ViewModels
         private async Task LoadAvatar(long version) => Avatar = await Images.LoadAsync(Avatars.Url(Username, version), 96);
     }
 
+    internal static class ChatColors
+    {
+        private static readonly Avalonia.Media.IBrush Normal = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#F3ECE2"));
+        private static readonly Avalonia.Media.IBrush Dim = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#A1958A"));
+        /// <summary>Giriş/çıkış satırları soluk, mesajlar normal.</summary>
+        public static readonly Avalonia.Data.Converters.IValueConverter Text =
+            new Avalonia.Data.Converters.FuncValueConverter<bool, Avalonia.Media.IBrush>(e => e ? Dim : Normal);
+    }
+
+    /// <summary>Oyun içi sohbetin bir satırı.</summary>
+    internal sealed class ChatLine
+    {
+        public ChatLine(JsonElement m)
+        {
+            Seq = m.Int("seq");
+            string kind = m.Text("kind") ?? "chat";
+            Name = m.Text("name") ?? "";
+            Time = DateTime.TryParse(m.Text("at"), null, System.Globalization.DateTimeStyles.RoundtripKind, out var at) ? at.ToLocalTime().ToString("HH:mm") : "";
+            (Tag, Text, IsEvent) = kind switch
+            {
+                "join" => ("", $"{Name} oyuna girdi", true),
+                "leave" => ("", $"{Name} oyundan çıktı", true),
+                "server" => ("[Sunucu] ", m.Text("text") ?? "", false),
+                "launcher" => ("[Launcher] ", m.Text("text") ?? "", false),
+                _ => ("", m.Text("text") ?? "", false),
+            };
+            if (IsEvent) Name = "";
+        }
+
+        public int Seq { get; }
+        public string Time { get; }
+        public string Tag { get; }
+        public string Name { get; }
+        public string Text { get; }
+        public bool IsEvent { get; }
+        public bool IsMessage => !IsEvent;
+        public bool HasTag => Tag.Length > 0;
+        public bool HasName => Name.Length > 0;
+        /// <summary>"ad: " (giriş/çıkış satırlarında boş).</summary>
+        public string NamePart => HasName ? Name + ": " : "";
+    }
+
     /// <summary>Sunucular sayfasındaki kart: oyundaki sunucu listesi gibi simge, ad, oyuncu sayısı, renkli MOTD.</summary>
     internal sealed partial class ServerCard : ObservableObject
     {
@@ -55,6 +97,7 @@ namespace VuluLauncher.ViewModels
             PackId = s.Text("packId");
             McVersion = s.Text("mcVersion") ?? "";
             InstanceId = s.Text("instanceId");
+            HasChat = s.Bool("chat");
             PackLabel = packLabel;
             _motdFallback = Description.Length > 0 ? Description : "Durum denetleniyor…";
         }
@@ -113,6 +156,90 @@ namespace VuluLauncher.ViewModels
             }
         }
 
+        // ── Oyun içi sohbet ───────────────────────────────────────────────
+        /// <summary>Bu sunucunun sohbeti launcher'a bağlı (vulu'nun kendi sunucusu).</summary>
+        public bool HasChat { get; }
+        public ObservableCollection<ChatLine> Chat { get; } = new();
+        [ObservableProperty] private bool _chatOpen;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(SendChatCommand))]
+        private string _chatDraft = "";
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(SendChatCommand))]
+        private bool _chatSending;
+        [ObservableProperty] private string? _chatStatus;
+        [ObservableProperty] private bool _chatEmpty;
+        public string ChatButton => ChatOpen ? "Sohbeti gizle" : "Oyun sohbeti";
+        private int _chatSeq;
+        private DispatcherTimer? _chatTimer;
+        private bool _chatPolling;
+        /// <summary>Yeni satır geldi: görünüm en alta kayar.</summary>
+        public event Action? ChatAdded;
+
+        partial void OnChatOpenChanged(bool value)
+        {
+            OnPropertyChanged(nameof(ChatButton));
+            if (value)
+            {
+                _chatTimer ??= new DispatcherTimer(TimeSpan.FromSeconds(3), DispatcherPriority.Background, async (_, _) =>
+                {
+                    // Sayfadan çıkılınca yoklama durur; dönülünce kart yeniden açılınca başlar
+                    if (!_owner.IsVisible) { ChatOpen = false; return; }
+                    await PollChatAsync();
+                });
+                _chatTimer.Start();
+                _ = PollChatAsync();
+            }
+            else _chatTimer?.Stop();
+        }
+
+        [RelayCommand] private void ToggleChat() => ChatOpen = !ChatOpen;
+
+        private async Task PollChatAsync()
+        {
+            if (_chatPolling) return;
+            _chatPolling = true;
+            try
+            {
+                var r = await CoreClient.Instance.Call("servers.chat", new { id = Id, after = _chatSeq });
+                bool added = false;
+                foreach (var m in r.Items("messages"))
+                {
+                    var line = new ChatLine(m);
+                    if (line.Seq <= _chatSeq && _chatSeq > 0) continue;
+                    Chat.Add(line);
+                    added = true;
+                }
+                int seq = r.Int("seq");
+                // Sunucu (API) yeniden başladıysa sayaç küçülür: baştan alınır
+                if (seq < _chatSeq) { Chat.Clear(); _chatSeq = 0; }
+                else _chatSeq = seq;
+                while (Chat.Count > 200) Chat.RemoveAt(0);
+                ChatEmpty = Chat.Count == 0;
+                ChatStatus = null;
+                if (added) ChatAdded?.Invoke();
+            }
+            catch (Exception ex) { ChatStatus = ex.Message; }
+            finally { _chatPolling = false; }
+        }
+
+        private bool CanSendChat => !ChatSending && ChatDraft.Trim().Length > 0;
+
+        [RelayCommand(CanExecute = nameof(CanSendChat))]
+        private async Task SendChat()
+        {
+            ChatSending = true;
+            try
+            {
+                await CoreClient.Instance.Call("servers.chatSend", new { id = Id, text = ChatDraft.Trim() });
+                ChatDraft = "";
+                ChatStatus = null;
+                await PollChatAsync();
+            }
+            catch (Exception ex) { ChatStatus = ex.Message; }
+            finally { ChatSending = false; }
+        }
+
         [RelayCommand] private Task Join() => _owner.JoinAsync(this);
         [RelayCommand] private Task CopyAddress() => _owner.CopyAsync(Address);
         [RelayCommand] private Task Shortcut() => _owner.ShortcutAsync(this);
@@ -153,6 +280,8 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private string _onlineCount = "";
         [ObservableProperty] private bool _nobodyOnline;
         public bool IsAdmin => _main.IsAdmin;
+        /// <summary>Sunucular sekmesi şu an açık mı (sohbet yoklaması yalnızca açıkken).</summary>
+        public bool IsVisible => _main.SelectedTab?.Page == this;
 
         [RelayCommand]
         public async Task LoadAsync()
@@ -171,6 +300,9 @@ namespace VuluLauncher.ViewModels
                 JsonElement packs = default;
                 try { packs = await packsTask; } catch { /* paket adları yerine "vulu paketi" yazar */ }
 
+                // Açık sohbetler yenilemeden sonra da açık kalır (eski kartların yoklaması durur)
+                var openChats = Servers.Where(c => c.ChatOpen).Select(c => c.Id).ToHashSet();
+                foreach (var old in Servers) old.ChatOpen = false;
                 Servers.Clear();
                 foreach (var s in servers.Items())
                 {
@@ -181,6 +313,7 @@ namespace VuluLauncher.ViewModels
                     Servers.Add(new ServerCard(this, s, label));
                 }
                 IsEmpty = Servers.Count == 0;
+                foreach (var card in Servers) if (card.HasChat && openChats.Contains(card.Id)) card.ChatOpen = true;
                 MarkFriendsHere();
                 foreach (var card in Servers) _ = card.PingAsync();
                 _timer.Start();
