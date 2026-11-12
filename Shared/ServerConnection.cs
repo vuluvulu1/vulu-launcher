@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 
@@ -19,6 +19,11 @@ namespace VuluShared
     public static class ServerConnection
     {
         public const string Host = "vuluvulu.com.tr";
+
+        /// <summary>Sunucu yerine başka bir şey (çoğunlukla ağın engelleme sayfası) cevap verdiğinde gösterilen açıklama.</summary>
+        public const string BlockedMessage =
+            "Sunucu yerine başka bir cevap geldi: bulunduğun ağ vulu'yu engelliyor olabilir (okul, iş yeri, otel ağları). " +
+            "Başka bir ağ ya da mobil veriyle dene.";
 
         /// <summary>Cloudflare Worker yedekleri (sırayla denenir). Yol aynen iletilir: …/api/…, …/releases/….</summary>
         public static readonly string[] Relays =
@@ -86,7 +91,7 @@ namespace VuluShared
             if (first) Log?.Invoke($"{Host} hiçbir yoldan ulaşılamadı; Cloudflare yedeği kullanılıyor ({new Uri(relay).Host}).");
         }
 
-        private static void StopRelay()
+        internal static void StopRelay()
         {
             lock (Gate) _relayUntil = DateTime.MinValue;
         }
@@ -101,6 +106,22 @@ namespace VuluShared
         });
 
         public static HttpClient CreateClient(TimeSpan timeout) => new(CreateHandler()) { Timeout = timeout };
+
+        /// <summary>Testler için: yedekleme mantığı verilen iç handler'ın üstünde.</summary>
+        internal static HttpMessageHandler CreateHandler(HttpMessageHandler inner) => new RetryHandler(inner);
+
+        /// <summary>
+        /// Ağın filtresi (okul, iş yeri, otel...) bağlantıyı kesmek yerine kendi "engellendi" sayfasını döndürdü mü:
+        /// sunucunun API'si ve sürüm dosyaları hiçbir zaman HTML döndürmez. Öyleyse istek Worker yedeğiyle yinelenir.
+        /// </summary>
+        internal static bool LooksBlocked(HttpResponseMessage response, Uri original)
+        {
+            if (!IsServer(original.Host)) return false;
+            string path = original.AbsolutePath;
+            if (!path.StartsWith("/api/", StringComparison.Ordinal) && !path.StartsWith("/releases/", StringComparison.Ordinal)) return false;
+            string? type = response.Content?.Headers.ContentType?.MediaType;
+            return type != null && type.Equals("text/html", StringComparison.OrdinalIgnoreCase);
+        }
 
         private static bool IsServer(string host) => string.Equals(host, Host, StringComparison.OrdinalIgnoreCase);
 
@@ -280,6 +301,13 @@ namespace VuluShared
                 try
                 {
                     var response = await base.SendAsync(request, token);
+                    if (retryable && LooksBlocked(response, original!))
+                    {
+                        // Ağ, sunucunun cevabı yerine kendi engelleme sayfasını verdi: Worker yedeği denenir
+                        if (await RelayAsync(request, original!, token) is { } relayed) { response.Dispose(); return relayed; }
+                        request.RequestUri = original;
+                        return response;
+                    }
                     if (direct && !UsingFallback) Forget();   // doğrudan yol yine çalışıyor
                     return response;
                 }
@@ -289,25 +317,40 @@ namespace VuluShared
                     // ve DoH/sabit IP ile yeniden denenir
                     if (direct) StartFallback(e);
                     else Forget();
-                    try { return await base.SendAsync(request, token); }
+                    try
+                    {
+                        var response = await base.SendAsync(request, token);
+                        if (!LooksBlocked(response, original!)) return response;
+                        if (await RelayAsync(request, original!, token) is { } relayed) { response.Dispose(); return relayed; }
+                        request.RequestUri = original;
+                        return response;
+                    }
                     catch (HttpRequestException) when (!token.IsCancellationRequested && Relays.Length > 0)
                     {
                         // Sunucuya hiçbir yoldan ulaşılamadı: Cloudflare Worker yedekleri
-                        foreach (string relay in Relays)
-                        {
-                            request.RequestUri = ToRelay(original!, relay);
-                            try
-                            {
-                                var response = await base.SendAsync(request, token);
-                                StartRelay(relay);
-                                return response;
-                            }
-                            catch (HttpRequestException) when (!token.IsCancellationRequested) { }
-                        }
+                        if (await RelayAsync(request, original!, token) is { } relayed) return relayed;
                         request.RequestUri = original;
                         throw;
                     }
                 }
+            }
+
+            /// <summary>Cloudflare Worker yedekleri sırayla; biri cevap verirse bir süre bütün istekler oradan gider.</summary>
+            private async Task<HttpResponseMessage?> RelayAsync(HttpRequestMessage request, Uri original, CancellationToken token)
+            {
+                foreach (string relay in Relays)
+                {
+                    request.RequestUri = ToRelay(original, relay);
+                    try
+                    {
+                        var response = await base.SendAsync(request, token);
+                        if (LooksBlocked(response, original)) { response.Dispose(); continue; }   // Worker da engelli
+                        StartRelay(relay);
+                        return response;
+                    }
+                    catch (HttpRequestException) when (!token.IsCancellationRequested) { }
+                }
+                return null;
             }
         }
     }

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -86,8 +86,15 @@ namespace VuluLauncher
         private async Task<T> SendAsync<T>(HttpMethod method, string path, HttpContent? content)
         {
             using var response = await RawAsync(method, path, content, HttpCompletionOption.ResponseContentRead);
-            return await response.Content.ReadFromJsonAsync<T>(Json)
-                ?? throw new InvalidDataException("Sunucu boş cevap döndü.");
+            try
+            {
+                return await response.Content.ReadFromJsonAsync<T>(Json)
+                    ?? throw new InvalidDataException("Sunucu boş cevap döndü.");
+            }
+            catch (JsonException) when (response.Content.Headers.ContentType?.MediaType is "text/html")
+            {
+                throw new InvalidOperationException(VuluShared.ServerConnection.BlockedMessage);
+            }
         }
 
         private async Task<HttpResponseMessage> RawAsync(HttpMethod method, string path, HttpContent? content, HttpCompletionOption completion)

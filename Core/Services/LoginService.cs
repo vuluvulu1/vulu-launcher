@@ -42,6 +42,11 @@ namespace VuluLauncher
                     return new LoginResult(false, error?.Error ?? "Giriş başarısız.");
                 }
             }
+            catch (System.Text.Json.JsonException)
+            {
+                // JSON yerine HTML geldi: ağın filtresi kendi sayfasını döndürdü (Worker yedeği de engelliyse buraya düşer)
+                return new LoginResult(false, VuluShared.ServerConnection.BlockedMessage);
+            }
             catch (Exception ex)
             {
                 return new LoginResult(false, "Sunucuya bağlanılamadı: " + ex.Message);
