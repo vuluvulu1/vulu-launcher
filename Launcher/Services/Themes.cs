@@ -13,6 +13,13 @@ namespace VuluLauncher
     ///   ufuk:   "Ufkun öbür ucu" (vulu-web'deki /vulusalufuk sürprizi): synthwave, mor gökyüzü, pembe ve camgöbeği neon;
     ///           sayfaların arkasında hareketli güneş ve ızgara (<see cref="Views.SynthwaveBackdrop"/>)
     /// </summary>
+    /// <summary>Arayüzden bağlanabilen tema durumu (ör. IsVisible="{Binding IsUfuk, Source={x:Static local:ThemeState.Instance}}").</summary>
+    internal sealed partial class ThemeState : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
+    {
+        public static ThemeState Instance { get; } = new();
+        [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _isUfuk;
+    }
+
     internal static class Themes
     {
         public const string Mesale = "mesale";
@@ -52,6 +59,17 @@ namespace VuluLauncher
             ["Warn"] = [C("#FFD77A")],
             ["Error"] = [C("#FF5A7A")],
             ["TitleBarBg"] = [C("#E60A001A")],
+            ["StagePlain"] = [C("#00000000"), C("#00000000")],
+            ["StageGlow"] = [C("#00000000"), C("#00000000")],
+            ["BarBg"] = [C("#F00C001E"), C("#07000F")],
+            ["ChipBg"] = [C("#A0100024")],
+            ["HeroBg"] = [C("#E6140030")],
+            ["HeroHoverBg"] = [C("#F52A0A4A")],
+            ["HeroLine"] = [C("#8000D7FF")],
+            ["TileBg"] = [C("#A0100024")],
+            ["TileLine"] = [C("#8000D7FF")],
+            ["SoftFill"] = [C("#24FF2DF1")],
+            ["SoftFillHover"] = [C("#38FF2DF1")],
             ["LoginBg"] = [C("#00000000"), C("#00000000"), C("#55000000")],
             ["BannerFallback"] = [C("#5800FF"), C("#FF2DF1")],
             ["TabGlow"] = [C("#4D00D7FF"), C("#0000D7FF")],
@@ -103,25 +121,34 @@ namespace VuluLauncher
             // Fluent'in vurgu renkleri Color değeridir (fırça değil): yeniden konur, DynamicResource ile bağlı olanlar güncellenir
             foreach (var (key, color) in name == Ufuk ? UfukSystem : _mesaleSystem!) res[key] = color;
 
-            // Fırça olmayan tek tük değerler (seçenek grubunun alt çizgisi BoxShadow) için temaya özel stil
-            _ufukStyles ??= UfukStyles();
+            // Fırça olmayan değerler (BoxShadow ışıltıları) için temaya özel stiller (Views/UfukStyles.axaml)
+            _ufukStyles ??= new Views.UfukStyles();
             if (name == Ufuk && !app.Styles.Contains(_ufukStyles)) app.Styles.Add(_ufukStyles);
             else if (name != Ufuk) app.Styles.Remove(_ufukStyles);
 
             bool changed = Current != name;
             Current = name;
+            ThemeState.Instance.IsUfuk = name == Ufuk;
             if (changed) Changed?.Invoke();
         }
 
         private static Styles? _ufukStyles;
 
-        private static Styles UfukStyles() => new()
+        /// <summary>
+        /// Kendi stilleri olan sayfalar (Oyna) için: sayfanın stilleri uygulamanınkinden önce geldiği için temaya özel
+        /// stiller sayfanın kendi listesinin sonuna da eklenir. Sayfa açılınca bir kez çağırır; tema değişince kendiliğinden.
+        /// </summary>
+        public static void Attach(StyledElement element)
         {
-            new Style(x => x.OfType<Button>().Class("seg").Class("active").Template().OfType<ContentPresenter>().Name("PART_ContentPresenter"))
+            var styles = new Views.UfukStyles();
+            void Sync()
             {
-                Setters = { new Setter(ContentPresenter.BoxShadowProperty, BoxShadows.Parse("inset 0 -2 0 0 #FF2DF1")) },
-            },
-        };
+                if (IsUfuk) { if (!element.Styles.Contains(styles)) element.Styles.Add(styles); }
+                else element.Styles.Remove(styles);
+            }
+            Changed += Sync;
+            Sync();
+        }
 
         private static Color[]? Read(object? brush) => brush switch
         {

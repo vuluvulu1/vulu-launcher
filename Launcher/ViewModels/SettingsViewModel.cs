@@ -193,8 +193,7 @@ namespace VuluLauncher.ViewModels
                     new[] { ("mesale", "Meşale"), ("ufuk", "Ufkun öbür ucu") }, S("theme", "mesale"), async value =>
                     {
                         if (!await Change(("theme", value))) return false;
-                        Themes.Apply(value);
-                        main.ThemeChanged();
+                        await main.SwitchThemeAsync(value);
                         return true;
                     }))
                 .Add(new ChoiceRow("Yazı ve arayüz boyutu", "Pencere aynı kalır, içindeki bütün yazılar ve düğmeler büyür ya da küçülür. Büyük ekranlarda \"Büyük\" daha rahat okunur.",

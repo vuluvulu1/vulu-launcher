@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Avalonia;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
@@ -27,6 +27,9 @@ namespace VuluLauncher.Views
         private TaskCompletionSource? _opened;
         private bool _running;
         private double _last;
+        /// <summary>Bu oynatma Ufkun öbür ucu açılışı mı (tema açılışta bir kez okunur).</summary>
+        private bool _ufuk;
+        private double _ufukTime;
 
         public SplashView()
         {
@@ -53,6 +56,11 @@ namespace VuluLauncher.Views
             _opened = null;
             _openClock.Reset();
             Sparks.Clear();
+            _ufuk = Themes.IsUfuk;
+            _ufukTime = 0;
+            UfukStage.IsVisible = _ufuk;
+            UfukStage.Opacity = 1;
+            Sheet.IsVisible = Glow.IsVisible = Title.IsVisible = Sparks.IsVisible = !_ufuk;
             _clock.Restart();
             _last = 0;
             Render(0, -1, 0);
@@ -108,6 +116,7 @@ namespace VuluLauncher.Views
         /// <param name="dt">Önceki kareden beri geçen süre (ms).</param>
         private void Render(double t, double open, double dt)
         {
+            if (_ufuk) { RenderUfuk(t, open, dt); return; }
             // Yazının yeri (sahneye göre)
             var size = Letters.Bounds.Size;
             var center = Letters.TranslatePoint(new Point(size.Width / 2, size.Height / 2), Stage) ?? new Point(Stage.Bounds.Width / 2, Stage.Bounds.Height / 2);
@@ -160,6 +169,37 @@ namespace VuluLauncher.Views
                 }
             }
             Sparks.Step(dt);
+        }
+
+        /// <summary>
+        /// Ufkun öbür ucu: 0,9 sn'de karanlıktan açılır, güneş 1,6 sn'de doğar, yazılar sırayla belirir. Açılırken ızgara
+        /// hızlanır, sahne beyaza doğru parlar ve söner; arkadaki launcher görünür.
+        /// </summary>
+        private void RenderUfuk(double t, double open, double dt)
+        {
+            double p = open < 0 ? 0 : Math.Min(1, open / BurnMs);
+            double speed = 1 + 16 * p * p;
+            _ufukTime += dt / 1000 * speed;
+
+            UfukScene.Time = _ufukTime;
+            UfukScene.Rise = OutEase.Ease(Progress(t, 150, 1600));
+            double flash = p <= 0.35 ? 0 : Math.Sin(Math.PI * Math.Clamp((p - 0.35) / 0.5, 0, 1));
+            UfukScene.Brightness = OutEase.Ease(Progress(t, 0, 900)) + flash * 0.9;
+            UfukScene.InvalidateVisual();
+
+            Rise(UfukTop, Progress(t, 500, 500));
+            double word = OutEase.Ease(Progress(t, 650, 700));
+            UfukWord.Opacity = word;
+            double s = 1.12 - 0.12 * word;
+            UfukWord.RenderTransform = new ScaleTransform(s, s);
+            Rise(UfukSub, Progress(t, 1000, 500));
+            Rise(UfukGreeting, Progress(t, 1650, 450));
+
+            // Açılış: yazı öne doğru büyüyüp söner, sahne parlamanın ardından saydamlaşır
+            double grow = 1 + 0.35 * OutEase.Ease(p);
+            UfukTitle.RenderTransform = new ScaleTransform(grow, grow);
+            UfukTitle.Opacity = 1 - Progress(open < 0 ? 0 : open, 150, 500);
+            UfukStage.Opacity = 1 - Math.Clamp((p - 0.6) / 0.4, 0, 1);
         }
 
         private static void Rise(Control control, double p)

@@ -1,5 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:VuluLauncher"
              xmlns:vm="using:VuluLauncher.ViewModels"
              xmlns:v="using:VuluLauncher.Views"
              xmlns:native="using:VuluLauncher.Native"
@@ -57,12 +58,12 @@
 
         <!-- Etiketler ve sayılar resmin üstünde kenarsız, yarı saydam kutular (mesale.css .tag, .stat) -->
         <Style Selector="Border.stat">
-            <Setter Property="Background" Value="#940C0A08" />
+            <Setter Property="Background" Value="{StaticResource ChipBg}" />
             <Setter Property="Padding" Value="14,9" />
             <Setter Property="MinWidth" Value="108" />
         </Style>
         <Style Selector="Border.chip">
-            <Setter Property="Background" Value="#940C0A08" />
+            <Setter Property="Background" Value="{StaticResource ChipBg}" />
             <Setter Property="Padding" Value="9,3" />
         </Style>
         <!-- Paket işlemleri (mesale.css #page-home .pack-actions .btn) -->
@@ -70,20 +71,25 @@
             <Setter Property="MinHeight" Value="36" />
             <Setter Property="Padding" Value="14,0" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="BorderBrush" Value="#61FFD8A0" />
-            <Setter Property="Background" Value="#E614100C" />
+            <Setter Property="BorderBrush" Value="{StaticResource HeroLine}" />
+            <Setter Property="Background" Value="{StaticResource HeroBg}" />
             <Setter Property="FontSize" Value="13.5" />
         </Style>
         <Style Selector="Button.hero:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
-            <Setter Property="Background" Value="#F53A2A1A" />
+            <Setter Property="Background" Value="{StaticResource HeroHoverBg}" />
             <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
         </Style>
         <!-- Resmin üstündeki kart (mesale.css m-card ve m-edge) -->
         <Style Selector="Border.mcard">
-            <Setter Property="Background" Value="#D61A140F" />
+            <Setter Property="Background" Value="{StaticResource Card}" />
             <Setter Property="BoxShadow" Value="inset 0 1 0 0 #17FFD8A0" />
         </Style>
+        <Style Selector="Border.mcard.console"><Setter Property="BoxShadow" Value="inset 0 1 0 0 #17FFD8A0, 0 14 34 0 #5C000000" /></Style>
+        <Style Selector="Border.announce"><Setter Property="BoxShadow" Value="inset 3 0 0 0 #F2A33A" /></Style>
+        <Style Selector="Border.ring"><Setter Property="BoxShadow" Value="0 0 0 2 #0C0A08, 0 0 0 3 #F2A33A, 0 0 14 2 #75F2A33A" /></Style>
+        <Style Selector="Border.barthumb"><Setter Property="BoxShadow" Value="0 0 0 1 #B8FFC873, 0 0 24 1 #61F2A33A" /></Style>
+        <Style Selector="Border.bar"><Setter Property="BoxShadow" Value="0 -1 0 0 #1AFFD8A0" /></Style>
         <Style Selector="Ellipse.sdot"><Setter Property="Fill" Value="{StaticResource Muted}" /><Setter Property="Opacity" Value="0.5" /></Style>
         <Style Selector="Ellipse.sdot.online"><Setter Property="Fill" Value="#4CAF6A" /><Setter Property="Opacity" Value="1" /></Style>
         <Style Selector="Ellipse.sdot.offline"><Setter Property="Fill" Value="{StaticResource Error}" /><Setter Property="Opacity" Value="1" /></Style>
@@ -107,21 +113,21 @@
             <Setter Property="Height" Value="40" />
             <Setter Property="Padding" Value="12,0" />
             <Setter Property="FontSize" Value="13.5" />
-            <Setter Property="Background" Value="#17FFE2BA" />
+            <Setter Property="Background" Value="{StaticResource SoftFill}" />
             <Setter Property="Foreground" Value="{StaticResource Text}" />
         </Style>
         <Style Selector="Button.play.small /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="BoxShadow" Value="inset 0 0 0 1 #61FFD8A0" />
         </Style>
         <Style Selector="Button.play.small:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#24FFE2BA" />
+            <Setter Property="Background" Value="{StaticResource SoftFillHover}" />
             <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
             <Setter Property="BoxShadow" Value="inset 0 0 0 1 #F2A33A" />
         </Style>
         <Style Selector="Button.play.small Path"><Setter Property="Fill" Value="{StaticResource Text}" /></Style>
         <!-- Alt çubuktaki RAM ve sürüm seçicileri (mesale.css #m-bar .ram-btn) -->
         <Style Selector="ComboBox.bar">
-            <Setter Property="Background" Value="#12FFE2BA" />
+            <Setter Property="Background" Value="{StaticResource Hover}" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
         <Style Selector="ComboBox.bar /template/ Border#Background">
@@ -191,22 +197,10 @@
         <!-- ── Seçili paketin arka planı ──────────────────────────────── -->
         <!-- Arka planı olmayan pakette: karanlıkta sıcak bir ışık -->
         <!-- Arka planı olmayan pakette: karanlıkta sıcak bir ışık (mesale.css .stage-bg.plain) -->
-        <Border Grid.Row="0">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#241A14" Offset="0" />
-                    <GradientStop Color="#0B0A09" Offset="0.78" />
-                </LinearGradientBrush>
-            </Border.Background>
-        </Border>
-        <Border Grid.Row="0">
-            <Border.Background>
-                <RadialGradientBrush Center="58%,58%" GradientOrigin="58%,58%" RadiusX="46%" RadiusY="52%">
-                    <GradientStop Color="#33F2A33A" Offset="0" />
-                    <GradientStop Color="#00F2A33A" Offset="1" />
-                </RadialGradientBrush>
-            </Border.Background>
-        </Border>
+        <Border Grid.Row="0" Background="{StaticResource StagePlain}" />
+        <Border Grid.Row="0" Background="{StaticResource StageGlow}" />
+        <!-- Ufkun öbür ucu teması: arka planı olmayan pakette synthwave sahnesi (resmi olan pakette resim üstünü örter) -->
+        <v:SynthwaveBackdrop Grid.Row="0" IsVisible="{Binding IsUfuk, Source={x:Static local:ThemeState.Instance}}" />
         <Image Grid.Row="0" Source="{Binding Background}" Stretch="UniformToFill" />
         <!-- Yazılar okunsun: kenarlardan ve alttan karartma (mesale.css .stage-bg::after) -->
         <Border Grid.Row="0" IsHitTestVisible="False">
@@ -232,7 +226,7 @@
 
         <!-- Duyuru: paketin üstünde, kapatılabilir -->
         <Border Grid.Row="0" IsVisible="{Binding HasAnnouncement}" ZIndex="2" Margin="100,58,394,0" VerticalAlignment="Top" HorizontalAlignment="Left"
-                MaxWidth="560" Classes="mcard" BoxShadow="inset 3 0 0 0 #F2A33A" Padding="14,10">
+                MaxWidth="560" Classes="mcard announce" Padding="14,10">
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <TextBlock Text="📣" FontSize="16" VerticalAlignment="Top" Margin="0,0,10,0" />
                 <StackPanel Grid.Column="1" Spacing="2">
@@ -274,7 +268,7 @@
                                             <MenuItem Header="Sil" IsVisible="{Binding SelectedIsCustom}" Classes="danger" Command="{Binding DeleteInstanceCommand}" />
                                         </MenuFlyout>
                                     </StackPanel.ContextFlyout>
-                                    <Border Classes="thumb" Width="58" Height="58" Background="#EB261E17">
+                                    <Border Classes="thumb" Width="58" Height="58" Background="{StaticResource ButtonBg}">
                                         <Panel ClipToBounds="True">
                                             <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="18" Foreground="{StaticResource Muted}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -293,7 +287,7 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                     <Button x:Name="NewButton" Classes="flat" Content="+ Yeni" FontSize="12" HorizontalAlignment="Left" Margin="18,0,0,0" Width="58" Height="58" Padding="0" VerticalContentAlignment="Center"
-                            HorizontalContentAlignment="Center" BorderThickness="1" BorderBrush="#52FFD8A0" Background="#800C0A08" Foreground="{StaticResource Text}"
+                            HorizontalContentAlignment="Center" BorderThickness="1" BorderBrush="{StaticResource TileLine}" Background="{StaticResource TileBg}" Foreground="{StaticResource Text}"
                             Command="{Binding NewInstanceCommand}" ToolTip.Tip="Yeni instance" />
                   </StackPanel>
                 </ScrollViewer>
@@ -386,7 +380,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:PersonItem">
                                     <Border Width="34" Height="34" CornerRadius="17" ClipToBounds="True" Background="{StaticResource Raised}" ToolTip.Tip="{Binding Username}"
-                                            BoxShadow="0 0 0 2 #0C0A08, 0 0 0 3 #F2A33A, 0 0 14 2 #75F2A33A">
+                                            Classes="ring">
                                         <Panel>
                                             <TextBlock Text="{Binding Initial}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
@@ -403,8 +397,7 @@
 
             <!-- ── Sağ panel: dünyalar, ekran görüntüleri, içerik, konsol ── -->
             <!-- Sağ sütun: kenarsız, gölgeli kart; en fazla 560 yüksekliğinde, alta yaslı (mesale.css #console) -->
-            <Border Grid.Column="2" Margin="0,8,18,16" Classes="mcard" MaxHeight="560" VerticalAlignment="Bottom"
-                    BoxShadow="inset 0 1 0 0 #17FFD8A0, 0 14 34 0 #5C000000">
+            <Border Grid.Column="2" Margin="0,8,18,16" Classes="mcard console" MaxHeight="560" VerticalAlignment="Bottom">
                 <Grid RowDefinitions="40,*">
                     <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="6,0">
                         <Grid ColumnDefinitions="*,Auto">
@@ -510,16 +503,10 @@
 
         <!-- ── Alt çubuk: seçili paket, RAM, durum, OYNA ──────────────── -->
         <!-- Oyun çubuğu (mesale.css #m-bar) -->
-        <Border Grid.Row="1" BoxShadow="0 -1 0 0 #1AFFD8A0">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#F7100D0A" Offset="0" />
-                    <GradientStop Color="#0C0A08" Offset="1" />
-                </LinearGradientBrush>
-            </Border.Background>
+        <Border Grid.Row="1" Classes="bar" Background="{StaticResource BarBg}">
             <Grid ColumnDefinitions="210,Auto,*,Auto,Auto,Auto" Margin="18,0">
                 <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <Border Width="52" Height="52" Background="{StaticResource Raised}" BoxShadow="0 0 0 1 #B8FFC873, 0 0 24 1 #61F2A33A">
+                    <Border Width="52" Height="52" Background="{StaticResource Raised}" Classes="barthumb">
                         <Panel ClipToBounds="True">
                             <TextBlock Text="{Binding Selected.Initial}" FontWeight="Bold" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <Image Source="{Binding Selected.Thumbnail}" Stretch="UniformToFill" />

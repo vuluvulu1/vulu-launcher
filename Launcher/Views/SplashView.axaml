@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
              xmlns:v="using:VuluLauncher.Views"
@@ -35,5 +35,41 @@
         </StackPanel>
 
         <v:EmberSparks x:Name="Sparks" />
+
+        <!-- Ufkun öbür ucu açılışı: karanlıktan güneş doğar, ızgara akar, krom yazı belirir; açılırken ızgara hızlanır,
+             sahne beyaza parlayıp söner (vulu-web /vulusalufuk hero'su). Kareler SplashView.axaml.cs'de. -->
+        <Panel x:Name="UfukStage" IsVisible="False">
+            <v:SynthwaveBackdrop x:Name="UfukScene" Manual="True" />
+            <StackPanel x:Name="UfukTitle" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,170,0,0"
+                        IsHitTestVisible="False" RenderTransformOrigin="50%,50%">
+                <TextBlock x:Name="UfukTop" Text="OLAY UFKUNUN ÖBÜR YANI" HorizontalAlignment="Center" FontSize="12" FontWeight="Bold"
+                           LetterSpacing="6" Foreground="#9FF4FF" Opacity="0">
+                    <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="14" Color="#00D7FF" Opacity="0.8" /></TextBlock.Effect>
+                </TextBlock>
+                <TextBlock x:Name="UfukWord" Text="VULUSAL" HorizontalAlignment="Center" FontSize="96" FontWeight="Black" FontStyle="Italic"
+                           LetterSpacing="4" Margin="0,6,0,0" Opacity="0">
+                    <TextBlock.Foreground>
+                        <!-- Krom: koyu lacivert, mavi, beyaz ufuk çizgisi, pembe, sarı (ufuk.css .uf-krom) -->
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                            <GradientStop Offset="0" Color="#0A0638" />
+                            <GradientStop Offset="0.3" Color="#3D7BFF" />
+                            <GradientStop Offset="0.47" Color="#EAF8FF" />
+                            <GradientStop Offset="0.505" Color="#2A0B2E" />
+                            <GradientStop Offset="0.72" Color="#FF3EC8" />
+                            <GradientStop Offset="1" Color="#FFD77A" />
+                        </LinearGradientBrush>
+                    </TextBlock.Foreground>
+                    <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="22" Color="#FF2DF1" Opacity="0.9" /></TextBlock.Effect>
+                </TextBlock>
+                <TextBlock x:Name="UfukSub" Text="LAUNCHER" HorizontalAlignment="Center" FontSize="22" FontWeight="Bold" LetterSpacing="16"
+                           Margin="16,0,0,0" Foreground="#B9F8FF" Opacity="0">
+                    <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="18" Color="#00D7FF" Opacity="0.9" /></TextBlock.Effect>
+                </TextBlock>
+                <TextBlock x:Name="UfukGreeting" Text="{Binding Greeting}" Margin="0,22,0,0" HorizontalAlignment="Center" Opacity="0"
+                           FontSize="13.5" FontWeight="Medium" LetterSpacing="0.4" Foreground="#F1E8FF" />
+                <TextBlock Text="{Binding Status}" MinHeight="18" Margin="0,12,0,0" HorizontalAlignment="Center"
+                           FontSize="12" FontWeight="Medium" LetterSpacing="0.5" Foreground="#D2C3EE" />
+            </StackPanel>
+        </Panel>
     </Panel>
 </UserControl>

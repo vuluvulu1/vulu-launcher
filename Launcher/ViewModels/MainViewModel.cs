@@ -78,6 +78,19 @@ namespace VuluLauncher.ViewModels
         /// <summary>Ufkun öbür ucu teması: Oyna dışındaki sayfalarda (girişte de) paket resmi yerine synthwave sahnesi.</summary>
         public bool ShowSynthwave => Themes.IsUfuk && !(LoggedIn && IsHomePage);
 
+        /// <summary>Pencere verir: geçiş animasyonu (MainWindow.Transition).</summary>
+        public Func<bool, Action, Task>? PlayThemeTransition { get; set; }
+
+        /// <summary>Temayı geçiş animasyonuyla değiştirir (Ayarlar › Tema).</summary>
+        public async Task SwitchThemeAsync(string theme)
+        {
+            theme = Themes.Normalize(theme);
+            if (theme == Themes.Current) return;
+            void Apply() { Themes.Apply(theme); ThemeChanged(); }
+            if (PlayThemeTransition != null) await PlayThemeTransition(theme == Themes.Ufuk, Apply);
+            else Apply();
+        }
+
         /// <summary>Tema değişti (Ayarlar): zeminler yeniden seçilir.</summary>
         public void ThemeChanged()
         {

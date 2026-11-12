@@ -67,6 +67,27 @@
                 <GradientStop Offset="0" Color="#33F2A33A" />
                 <GradientStop Offset="1" Color="#00F2A33A" />
             </RadialGradientBrush>
+            <!-- Oyna sayfası: arka planı olmayan paketin zemini, resmin üstündeki kutular ve alt çubuk -->
+            <LinearGradientBrush x:Key="StagePlain" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#241A14" Offset="0" />
+                <GradientStop Color="#0B0A09" Offset="0.78" />
+            </LinearGradientBrush>
+            <RadialGradientBrush x:Key="StageGlow" Center="58%,58%" GradientOrigin="58%,58%" RadiusX="46%" RadiusY="52%">
+                <GradientStop Color="#33F2A33A" Offset="0" />
+                <GradientStop Color="#00F2A33A" Offset="1" />
+            </RadialGradientBrush>
+            <LinearGradientBrush x:Key="BarBg" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#F7100D0A" Offset="0" />
+                <GradientStop Color="#0C0A08" Offset="1" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="ChipBg" Color="#940C0A08" />
+            <SolidColorBrush x:Key="HeroBg" Color="#E614100C" />
+            <SolidColorBrush x:Key="HeroHoverBg" Color="#F53A2A1A" />
+            <SolidColorBrush x:Key="HeroLine" Color="#61FFD8A0" />
+            <SolidColorBrush x:Key="TileBg" Color="#800C0A08" />
+            <SolidColorBrush x:Key="TileLine" Color="#52FFD8A0" />
+            <SolidColorBrush x:Key="SoftFill" Color="#17FFE2BA" />
+            <SolidColorBrush x:Key="SoftFillHover" Color="#24FFE2BA" />
             <!-- Başlık çubuğu (tema değişince rengi değişir) -->
             <SolidColorBrush x:Key="TitleBarBg" Color="#E60B0A09" />
             <SolidColorBrush x:Key="Ok" Color="#9CC3DE" />

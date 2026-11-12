@@ -17,7 +17,7 @@ namespace VuluLauncher.Views
     internal sealed class SynthwaveBackdrop : Control
     {
         internal const string Shader = @"
-uniform float2 size; uniform float time;
+uniform float2 size; uniform float time; uniform float rise; uniform float bright;
 float hash(float2 p) { return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
 float noise1(float x) { float i = floor(x), f = fract(x); return mix(hash(float2(i, 0.0)), hash(float2(i + 1.0, 0.0)), f * f * (3.0 - 2.0 * f)); }
 half4 main(float2 coord) {
@@ -36,7 +36,7 @@ half4 main(float2 coord) {
         float s = hash(g);
         if (s > 0.9975 && t < 0.7) col += float3(0.9, 0.85, 1.0) * (0.5 + 0.5 * sin(time * 2.0 + s * 80.0)) * (1.0 - t / 0.7);
         // Güneş: altına doğru kalınlaşan, aşağı kayan boşluklar; çevresinde pembe hale
-        float2 c = float2(0.5, hz - 0.17);
+        float2 c = float2(0.5, hz - 0.17 + (1.0 - rise) * 0.4);
         float2 d = (uv - c) * float2(aspect, 1.0);
         float r = length(d), R = 0.20;
         float glow = exp(-max(r - R, 0.0) * 9.0) * 0.55;
@@ -79,6 +79,8 @@ half4 main(float2 coord) {
     // Vinyet
     float2 q = uv - 0.5;
     col *= 1.0 - dot(q, q) * 0.9;
+    // Parlaklık: 0 karanlık, 1 normal, 1'in üstü beyaza doğru parlama
+    col = bright <= 1.0 ? col * bright : mix(col, float3(1.0, 0.9, 1.0), clamp(bright - 1.0, 0.0, 1.0));
     return half4(half3(col), 1.0);
 }";
 
@@ -94,6 +96,18 @@ half4 main(float2 coord) {
         });
 
         private readonly DispatcherTimer _timer;
+
+        /// <summary>
+        /// Elle sürülen sahne (açılış animasyonu): kendi zamanlayıcısı çalışmaz; <see cref="Time"/>, <see cref="Rise"/> ve
+        /// <see cref="Brightness"/> verilip InvalidateVisual çağrılır.
+        /// </summary>
+        public bool Manual { get; set; }
+        /// <summary>Izgaranın ve yıldızların zamanı (sn); hızlandırmak için daha hızlı artırılır.</summary>
+        public double Time { get; set; }
+        /// <summary>Güneşin doğuşu: 0 ufkun altında, 1 yerinde.</summary>
+        public double Rise { get; set; } = 1;
+        /// <summary>0 karanlık, 1 normal, 2 beyaz parlama.</summary>
+        public double Brightness { get; set; } = 1;
         private readonly DateTime _start = DateTime.UtcNow;
 
         public SynthwaveBackdrop()
@@ -101,7 +115,7 @@ half4 main(float2 coord) {
             IsHitTestVisible = false;
             _timer = new DispatcherTimer(TimeSpan.FromMilliseconds(33), DispatcherPriority.Render, (_, _) =>
             {
-                if (IsEffectivelyVisible && TopLevel.GetTopLevel(this) is Window { IsVisible: true, WindowState: not WindowState.Minimized })
+                if (!Manual && IsEffectivelyVisible && TopLevel.GetTopLevel(this) is Window { IsVisible: true, WindowState: not WindowState.Minimized })
                     InvalidateVisual();
             });
         }
@@ -119,9 +133,10 @@ half4 main(float2 coord) {
         }
 
         public override void Render(DrawingContext context) =>
-            context.Custom(new Draw(new Rect(Bounds.Size), (DateTime.UtcNow - _start).TotalSeconds));
+            context.Custom(new Draw(new Rect(Bounds.Size), Manual ? Time : (DateTime.UtcNow - _start).TotalSeconds,
+                Manual ? Rise : 1, Manual ? Brightness : 1));
 
-        private sealed class Draw(Rect bounds, double time) : ICustomDrawOperation
+        private sealed class Draw(Rect bounds, double time, double rise, double bright) : ICustomDrawOperation
         {
             public Rect Bounds => bounds;
             public bool HitTest(Point p) => false;
@@ -151,6 +166,8 @@ half4 main(float2 coord) {
                 {
                     ["size"] = new[] { (float)bounds.Width, (float)bounds.Height },
                     ["time"] = (float)(time % 3600),
+                    ["rise"] = (float)rise,
+                    ["bright"] = (float)bright,
                 };
                 using var shader = Effect.Value.ToShader(uniforms);
                 using var paint = new SKPaint { Shader = shader };

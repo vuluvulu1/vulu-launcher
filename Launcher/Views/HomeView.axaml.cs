@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
@@ -131,6 +131,8 @@ namespace VuluLauncher.Views
         public HomeView()
         {
             InitializeComponent();
+            // Ufkun öbür ucu: sayfanın kendi stillerinin üstüne temanın ışıltıları
+            Themes.Attach(this);
             LayoutUpdated += (_, _) => SyncHeroInset();
             // Konsol en alttayken yeni satırlar gelince alta kayar; kullanıcı yukarı kaydırdıysa yerinde kalır
             DataContextChanged += (_, _) =>

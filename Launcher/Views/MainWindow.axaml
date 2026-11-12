@@ -260,6 +260,8 @@
             </ContentControl>
             <!-- ── Açılış perdesi: giriş ve ana ekran arkasında hazırlanır ── -->
             <!-- Başlık çubuğu (ZIndex 3) dahil her şeyin üstünde -->
+            <!-- Tema geçişi (Ayarlar › Tema): ekranı kısa bir ışık tüneliyle örter, ortada tema değişir -->
+            <v:ThemeTransition x:Name="Transition" Grid.Row="0" Grid.RowSpan="2" ZIndex="19" />
             <v:SplashView Grid.Row="0" Grid.RowSpan="2" ZIndex="20" DataContext="{Binding Splash}" IsVisible="{Binding IsVisible}" />
 
             <!-- ── Bildirim kartları (sağ alt) ──────────────────────── -->
