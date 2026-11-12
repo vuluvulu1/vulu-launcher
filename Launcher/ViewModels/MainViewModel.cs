@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -66,15 +66,24 @@ namespace VuluLauncher.ViewModels
         public ObservableCollection<ModalViewModel> Modals { get; } = new();
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(HomeOverlay), nameof(ShowBackdrop))]
+        [NotifyPropertyChangedFor(nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave))]
         private bool _loggedIn;
         /// <summary>Oyna açık: paketin resmi başlık çubuğunun altına kadar uzanır (Meşale).</summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(HomeOverlay), nameof(ShowBackdrop))]
+        [NotifyPropertyChangedFor(nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave))]
         private bool _isHomePage = true;
         public bool HomeOverlay => LoggedIn && IsHomePage;
         /// <summary>Oyna dışındaki sayfaların zemini: seçili paketin resmi, bulanık ve karartılmış.</summary>
-        public bool ShowBackdrop => LoggedIn && !IsHomePage;
+        public bool ShowBackdrop => LoggedIn && !IsHomePage && !Themes.IsUfuk;
+        /// <summary>Ufkun öbür ucu teması: Oyna dışındaki sayfalarda (girişte de) paket resmi yerine synthwave sahnesi.</summary>
+        public bool ShowSynthwave => Themes.IsUfuk && !(LoggedIn && IsHomePage);
+
+        /// <summary>Tema değişti (Ayarlar): zeminler yeniden seçilir.</summary>
+        public void ThemeChanged()
+        {
+            OnPropertyChanged(nameof(ShowBackdrop));
+            OnPropertyChanged(nameof(ShowSynthwave));
+        }
         [ObservableProperty] private string _username = "";
         [ObservableProperty] private string _userInitial = "";
         [ObservableProperty] private string _version = "";

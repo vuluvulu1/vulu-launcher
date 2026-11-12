@@ -1,4 +1,4 @@
-<Application xmlns="https://github.com/avaloniaui"
+﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
              xmlns:v="using:VuluLauncher.Views"
@@ -51,6 +51,8 @@
                 <GradientStop Offset="0" Color="#F5B04C" />
                 <GradientStop Offset="1" Color="#E39236" />
             </LinearGradientBrush>
+            <!-- Başlık çubuğu (tema değişince rengi değişir) -->
+            <SolidColorBrush x:Key="TitleBarBg" Color="#E60B0A09" />
             <SolidColorBrush x:Key="Ok" Color="#9CC3DE" />
             <SolidColorBrush x:Key="Warn" Color="#FFC873" />
             <SolidColorBrush x:Key="Error" Color="#E8693A" />

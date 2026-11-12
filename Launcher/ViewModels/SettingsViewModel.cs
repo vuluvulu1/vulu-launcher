@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
@@ -189,6 +189,14 @@ namespace VuluLauncher.ViewModels
 
         private SettingSection LookSection() =>
             new SettingSection("Ses ve görünüm")
+                .Add(new ChoiceRow("Tema", "Ufkun öbür ucu: vulu-web'deki gizli sayfanın synthwave dünyası; sayfaların arkasında batan güneş ve neon ızgara akar.",
+                    new[] { ("mesale", "Meşale"), ("ufuk", "Ufkun öbür ucu") }, S("theme", "mesale"), async value =>
+                    {
+                        if (!await Change(("theme", value))) return false;
+                        Themes.Apply(value);
+                        main.ThemeChanged();
+                        return true;
+                    }))
                 .Add(new ChoiceRow("Yazı ve arayüz boyutu", "Pencere aynı kalır, içindeki bütün yazılar ve düğmeler büyür ya da küçülür. Büyük ekranlarda \"Büyük\" daha rahat okunur.",
                     UiScales, I("uiScale") is var scale && scale > 0 ? scale.ToString(CultureInfo.InvariantCulture) : "100",
                     value => Change(("uiScale", int.Parse(value, CultureInfo.InvariantCulture)))))

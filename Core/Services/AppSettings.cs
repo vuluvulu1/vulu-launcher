@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace VuluLauncher
 {
@@ -61,6 +61,8 @@ namespace VuluLauncher
         public bool MusicEnabled { get; set; } = true;
         public int MusicVolume { get; set; } = 40;
         public string AccentColor { get; set; } = "#c27e3e";
+        /// <summary>Launcher teması: "mesale" (varsayılan) ya da "ufuk" (Ufkun öbür ucu, synthwave).</summary>
+        public string Theme { get; set; } = "mesale";
 
         private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
         private static readonly object Gate = new();
@@ -123,6 +125,7 @@ namespace VuluLauncher
             if (OnGameStart is not ("minimize" or "close")) OnGameStart = "keep";
             MusicVolume = Math.Clamp(MusicVolume, 0, 100);
             if (!System.Text.RegularExpressions.Regex.IsMatch(AccentColor ?? "", "^#[0-9a-fA-F]{6}$")) AccentColor = "#c27e3e";
+            if (Theme != "mesale" && Theme != "ufuk") Theme = "mesale";
         }
     }
 }

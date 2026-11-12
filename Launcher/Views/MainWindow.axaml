@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:VuluLauncher.ViewModels"
         xmlns:v="using:VuluLauncher.Views"
@@ -20,7 +20,7 @@
             <Border x:Name="TitleBar" Grid.Row="0" ZIndex="3" Classes.overlay="{Binding HomeOverlay}">
                 <Border.Styles>
                     <Style Selector="Border#TitleBar">
-                        <Setter Property="Background" Value="#E60B0A09" />
+                        <Setter Property="Background" Value="{StaticResource TitleBarBg}" />
                         <Setter Property="BoxShadow" Value="0 1 0 0 #12FFD8A0" />
                     </Style>
                     <Style Selector="Border#TitleBar.overlay">
@@ -248,6 +248,8 @@
             <!-- Sayfa değişince yeni sayfa yumuşakça belirir (web: .view animation view-in .18s) -->
             <!-- Sayfa değişince yeni sayfa hafifçe aşağıdan yükselerek belirir (web: .page-enter .18s); MainWindow.axaml.cs -->
             <!-- Oyna dışındaki sayfaların zemini: seçili paketin dünyası, bulanık ve karartılmış (mesale.css #view-main::before) -->
+            <!-- Ufkun öbür ucu teması: Oyna dışındaki sayfaların (ve girişin) arkasında hareketli synthwave sahnesi -->
+            <v:SynthwaveBackdrop Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding ShowSynthwave}" />
             <Panel Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding ShowBackdrop}" IsHitTestVisible="False" ClipToBounds="True">
                 <Image Source="{Binding Home.Background}" Stretch="UniformToFill" Margin="-40">
                     <Image.Effect><BlurEffect Radius="26" /></Image.Effect>
