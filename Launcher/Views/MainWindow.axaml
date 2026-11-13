@@ -70,7 +70,7 @@
                         </Border>
                     </StackPanel>
 
-                    <ItemsControl x:Name="NavTabs" Grid.Column="1" ItemsSource="{Binding Tabs}" IsVisible="{Binding LoggedIn}" Margin="8,0,0,0">
+                    <ItemsControl x:Name="NavTabs" Grid.Column="1" ItemsSource="{Binding Tabs}" IsVisible="{Binding ShowShell}" Margin="8,0,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
@@ -142,12 +142,12 @@
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,6,0" VerticalAlignment="Center">
                         <!-- Hızlı arama -->
-                        <Button Classes="flat tb big" IsVisible="{Binding LoggedIn}" Command="{Binding OpenPaletteCommand}" AutomationProperties.Name="Hızlı arama"
+                        <Button Classes="flat tb big" IsVisible="{Binding ShowShell}" Command="{Binding OpenPaletteCommand}" AutomationProperties.Name="Hızlı arama"
                                 ToolTip.Tip="Hızlı arama (Ctrl+K): paket, sayfa ya da kişi">
                             <Path Classes="icon" Data="M11 4.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 0 0 0-13zM16 16l4.5 4.5" />
                         </Button>
                         <!-- Geri bildirim: hata bildir ya da öneri yaz -->
-                        <Button Classes="flat tb big" IsVisible="{Binding LoggedIn}" Command="{Binding OpenLauncherFeedbackCommand}"
+                        <Button Classes="flat tb big" IsVisible="{Binding ShowShell}" Command="{Binding OpenLauncherFeedbackCommand}"
                                 ToolTip.Tip="Geri bildirim: hata bildir ya da öneri yaz" AutomationProperties.Name="Geri bildirim">
                             <Panel>
                                 <Path Classes="icon" Data="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12zM9 10.5h6M9 13.5h4" />
@@ -159,7 +159,7 @@
                             </Panel>
                         </Button>
                         <!-- Bildirim merkezi -->
-                        <Button Classes="flat tb big" IsVisible="{Binding LoggedIn}" ToolTip.Tip="Bildirimler" AutomationProperties.Name="Bildirimler">
+                        <Button Classes="flat tb big" IsVisible="{Binding ShowShell}" ToolTip.Tip="Bildirimler" AutomationProperties.Name="Bildirimler">
                             <Panel>
                                 <Path Classes="icon" Data="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
                                 <Border IsVisible="{Binding Notifications.HasUnread}" Background="{StaticResource Accent}" MinWidth="15" Height="15" CornerRadius="8"
@@ -214,7 +214,7 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                        <Button Classes="flat chip" IsVisible="{Binding LoggedIn}" Command="{Binding OpenMyProfileCommand}"
+                        <Button Classes="flat chip" IsVisible="{Binding ShowShell}" Command="{Binding OpenMyProfileCommand}"
                                 ToolTip.Tip="Profilim" Padding="8,4" Margin="0,0,6,0">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <Border Width="24" Height="24" Background="{StaticResource Raised}"
@@ -239,7 +239,7 @@
             </Border>
 
             <!-- ── İçerik: giriş ya da seçili sekme ──────────────────── -->
-            <v:LoginView Grid.Row="1" DataContext="{Binding Login}" IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).LoggedIn}" />
+            <v:LoginView Grid.Row="1" DataContext="{Binding Login}" IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).ShowShell}" />
             <!-- Sayfa değişince yeni sayfa yumuşakça belirir (web: .view animation view-in .18s) -->
             <!-- Sayfa değişince yeni sayfa hafifçe aşağıdan yükselerek belirir (web: .page-enter .18s); MainWindow.axaml.cs -->
             <!-- Oyna dışındaki sayfaların zemini: seçili paketin dünyası, bulanık ve karartılmış (mesale.css #view-main::before) -->
@@ -252,7 +252,7 @@
                 <Border Background="#D9080706" />
             </Panel>
             <ContentControl x:Name="PageHost" Grid.Row="0" Grid.RowSpan="2" Classes.home="{Binding IsHomePage}"
-                            Content="{Binding SelectedTab.Page}" IsVisible="{Binding LoggedIn}">
+                            Content="{Binding SelectedTab.Page}" IsVisible="{Binding ShowShell}">
                 <ContentControl.Styles>
                     <Style Selector="ContentControl#PageHost"><Setter Property="Margin" Value="0,50,0,0" /></Style>
                     <Style Selector="ContentControl#PageHost.home"><Setter Property="Margin" Value="0" /></Style>

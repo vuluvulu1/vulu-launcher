@@ -60,7 +60,11 @@ namespace VuluLauncher.Views
             if (_ufuk) StyleSceneTitle();
             UfukStage.IsVisible = _ufuk;
             UfukStage.Opacity = 1;
-            if (_ufuk) UfukScene.StartSplash();
+            if (_ufuk)
+            {
+                if (_vm is { Holding: true }) UfukScene.HoldSplash();
+                else UfukScene.StartSplash();
+            }
             Sheet.IsVisible = Glow.IsVisible = Title.IsVisible = Sparks.IsVisible = !_ufuk;
             _clock.Restart();
             _last = 0;
@@ -88,6 +92,7 @@ namespace VuluLauncher.Views
         private void Frame(TimeSpan _)
         {
             var top = TopLevel.GetTopLevel(this);
+            if (_vm is { Holding: true }) _clock.Restart();   // perde arkasında ana ekran kuruluyor: ilk karede bekle
             double now = _clock.Elapsed.TotalMilliseconds;
             double dt = Math.Min(50, now - _last);
             _last = now;

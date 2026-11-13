@@ -243,6 +243,14 @@ half4 main(float2 local) {
             SendState();
         }
 
+        /// <summary>Açılış sahnesi karanlık ilk karesinde bekler (<see cref="StartSplash"/> gelene kadar).</summary>
+        public void HoldSplash()
+        {
+            _splashStart = Stopwatch.GetTimestamp() + Stopwatch.Frequency * 3600;
+            _splashOpen = -1;
+            SendState();
+        }
+
         /// <summary>Açılış sahnesi kapanmaya başlar (hızlanır ve saydamlaşır).</summary>
         public void OpenSplash()
         {

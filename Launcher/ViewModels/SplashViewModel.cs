@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace VuluLauncher.ViewModels
@@ -26,12 +26,26 @@ namespace VuluLauncher.ViewModels
 
         public long ElapsedMs => _clock.ElapsedMilliseconds;
 
-        public void Begin(string username)
+        /// <param name="play">false: perde görünür ama sahne karanlıkta bekler; <see cref="Play"/> ile başlar.</param>
+        public void Begin(string username, bool play = true)
         {
             Greeting = $"Hoş geldin, {username}";
             Status = "";
             _clock.Restart();
             IsVisible = true;
+            Holding = !play;
+            Played?.Invoke();
+        }
+
+        /// <summary>Sahne ilk karesinde (karanlıkta) bekliyor; <see cref="Play"/> ile başlar.</summary>
+        public bool Holding { get; private set; }
+
+        /// <summary>Bekleyen sahneyi baştan oynatır (perdenin açılış zamanı da buradan sayılır).</summary>
+        public void Play()
+        {
+            if (!Holding) return;
+            Holding = false;
+            _clock.Restart();
             Played?.Invoke();
         }
 

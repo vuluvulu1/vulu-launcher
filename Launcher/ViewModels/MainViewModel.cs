@@ -66,17 +66,26 @@ namespace VuluLauncher.ViewModels
         public ObservableCollection<ModalViewModel> Modals { get; } = new();
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave))]
+        [NotifyPropertyChangedFor(nameof(ShowShell), nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave))]
         private bool _loggedIn;
+        /// <summary>
+        /// Kayıtlı hesapla açılışta ana ekran, perdenin animasyonu başlamadan önce perdenin arkasında kurulur: kurulum arayüzü
+        /// bir süre meşgul eder ve bu, animasyonun ortası yerine henüz hiçbir şeyin oynamadığı ilk ana denk gelir.
+        /// </summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowShell), nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave))]
+        private bool _warming;
+        /// <summary>Ana ekran (sekmeler, sayfa) görünür: giriş yapıldı ya da perde arkasında önceden kuruluyor.</summary>
+        public bool ShowShell => LoggedIn || Warming;
         /// <summary>Oyna açık: paketin resmi başlık çubuğunun altına kadar uzanır (Meşale).</summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave))]
         private bool _isHomePage = true;
-        public bool HomeOverlay => LoggedIn && IsHomePage;
+        public bool HomeOverlay => ShowShell && IsHomePage;
         /// <summary>Oyna dışındaki sayfaların zemini: seçili paketin resmi, bulanık ve karartılmış.</summary>
-        public bool ShowBackdrop => LoggedIn && !IsHomePage && !Themes.HasScene;
+        public bool ShowBackdrop => ShowShell && !IsHomePage && !Themes.HasScene;
         /// <summary>Ufkun öbür ucu teması: Oyna dışındaki sayfalarda (girişte de) paket resmi yerine synthwave sahnesi.</summary>
-        public bool ShowSynthwave => Themes.HasScene && !(LoggedIn && IsHomePage);
+        public bool ShowSynthwave => Themes.HasScene && !(ShowShell && IsHomePage);
 
         /// <summary>Pencere verir: geçiş animasyonu (MainWindow.Transition).</summary>
         public Func<string, Action, Task>? PlayThemeTransition { get; set; }
@@ -171,7 +180,12 @@ namespace VuluLauncher.ViewModels
                 if (!AppSettings.Current.SkipSplash && saved.Length > 0 && init.Bool("hasSavedPassword"))
                 {
                     // Kayıtlı hesapla giriş perde kapalıyken yapılır; olmazsa perde giriş ekranına açılır
-                    Splash.Begin(saved);
+                    // Ana ekran perdenin arkasında kurulur, perde animasyonu bundan sonra başlar
+                    Splash.Begin(saved, play: false);
+                    SelectedTab = Tabs[0];
+                    Warming = true;
+                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { }, Avalonia.Threading.DispatcherPriority.Background);
+                    Splash.Play();
                     using var slow = new CancellationTokenSource();
                     _ = Task.Delay(SplashViewModel.OpenAtMs - 600, slow.Token).ContinueWith(t =>
                     {
@@ -179,6 +193,7 @@ namespace VuluLauncher.ViewModels
                     }, TaskScheduler.Default);
                     await Login.Prepare(init, auto: true);
                     slow.Cancel();
+                    Warming = false;
                     if (!LoggedIn) await Splash.OpenAsync();
                     return;
                 }
@@ -206,13 +221,23 @@ namespace VuluLauncher.ViewModels
             _members = null;
             SelectedTab = Tabs[0];
             LoggedIn = true;
-            _ = Social.StartAsync();
-            _ = RefreshMyAvatarAsync();
-            if (IsAdmin) _ = Admin.RefreshRegistrationsAsync();
-            _ = Notifications.LoadAsync();
-            _ = RefreshFeedbackCountAsync();
+            // Perde açılana kadar görünmeyen işler (sosyal akış, bildirimler, profil resmi...) açılıştan sonra başlar:
+            // sonuçları arayüzü yeniden düzenletir ve açılış animasyonunu takıltırdı
+            void StartBackground()
+            {
+                _ = Social.StartAsync();
+                _ = RefreshMyAvatarAsync();
+                if (IsAdmin) _ = Admin.RefreshRegistrationsAsync();
+                _ = Notifications.LoadAsync();
+                _ = RefreshFeedbackCountAsync();
+            }
+            if (!useSplash) StartBackground();
             await Home.LoadAsync();
-            if (useSplash) await Splash.OpenAsync();
+            if (useSplash)
+            {
+                await Splash.OpenAsync();
+                StartBackground();
+            }
             Radio.StartIfEnabled();
             // Bildirime tıklanarak ya da masaüstü kısayoluyla açıldıysa bekleyen istek şimdi yapılır
             await TakeNotificationAsync();
