@@ -357,6 +357,30 @@ half4 main(float2 local) {
         }
 
         /// <summary>Sahnenin bir parçası (gökyüzü ya da zemin); çizimi kendi compositor görseli yapar.</summary>
+        private static readonly long Origin = Stopwatch.GetTimestamp();
+        /// <summary>Sahnenin saati (saniye); çizim iş parçacığı ve ekran görüntüsü aynı saati kullanır.</summary>
+        private static double SceneSeconds() => (Stopwatch.GetTimestamp() - Origin) / (double)Stopwatch.Frequency;
+
+        /// <summary>
+        /// Tema geçişi ekranın görüntüsünü alırken açılır: sahne compositor görseli olduğu için RenderTargetBitmap'e
+        /// girmez; bu sırada katmanlar o anki kareyi bir kez de normal çizimle verir, böylece eski arka plan görüntüde kalır.
+        /// </summary>
+        internal static bool Snapshotting { get; set; }
+
+        private sealed class SnapshotDraw(SKRuntimeEffect? effect, Rect bounds, Size full, double offsetY, double time, double par) : ICustomDrawOperation
+        {
+            public Rect Bounds => bounds;
+            public bool HitTest(Point p) => false;
+            public bool Equals(ICustomDrawOperation? other) => false;
+            public void Dispose() { }
+            public void Render(ImmediateDrawingContext context)
+            {
+                SKSurface? surface = null; int w = 0, h = 0;
+                try { Draw(context, effect, bounds, full, offsetY, time, 1, 1, par, 1, 0, ref surface, ref w, ref h); }
+                finally { surface?.Dispose(); }
+            }
+        }
+
         private sealed class SynthLayer(SynthwaveBackdrop owner, bool top) : Control
         {
             private CompositionCustomVisual? _visual;
@@ -424,6 +448,14 @@ half4 main(float2 local) {
                 if (change.Property == BoundsProperty) Resize();
             }
 
+            public override void Render(DrawingContext context)
+            {
+                // Yalnızca tema geçişinin ekran görüntüsü için (normalde sahneyi compositor görseli çizer)
+                if (!Snapshotting || owner.Manual || owner._full.Width < 1 || Bounds.Width < 1 || Bounds.Height < 1) return;
+                context.Custom(new SnapshotDraw(Themes.IsDerin ? DerinEffect.Value : UfukEffect.Value, new Rect(Bounds.Size), owner._full,
+                    top ? 0 : Bounds.Y, Animated ? SceneSeconds() : 4.0, owner._parallaxTarget));
+            }
+
             private void Resize()
             {
                 EnsureVisual();
@@ -444,7 +476,6 @@ half4 main(float2 local) {
         /// </summary>
         private sealed class SceneHandler : CompositionCustomVisualHandler
         {
-            private static readonly long Origin = Stopwatch.GetTimestamp();
             private LayerMessage? _m;
             private double _par;
             private long _lastFrame, _lastRender;
@@ -523,7 +554,7 @@ half4 main(float2 local) {
                     focus = 1;
                     par = 0;
                 }
-                else time = Animated ? Ms(Origin, now) / 1000 : 4.0;
+                else time = Animated ? SceneSeconds() : 4.0;
                 Draw(context, s.Derin ? DerinEffect.Value : UfukEffect.Value, new Rect(0, 0, size.X, size.Y), _m.Full, _m.OffsetY,
                     time, rise, bright, par, fade, focus, ref _surface, ref _w, ref _h);
             }
@@ -569,13 +600,14 @@ half4 main(float2 local) {
             // Bir ara yüzeye çizilir, sonra yumuşatılarak büyütülür: üst katman tam, alt katman %60 çözünürlük
             var gr = lease.GrContext;
             float scale = canvas.TotalMatrix.ScaleX;
-            double res = offsetY <= 0 ? 1.0 : 0.6;
+            // Ekran kartı yoksa (yazılım çizimi, geçişin ekran görüntüsü) gölgelendirici işlemcide çalışır: düşük çözünürlük
+            double res = gr == null ? 0.35 : offsetY <= 0 ? 1.0 : 0.6;
             int w = Math.Max(1, (int)Math.Ceiling(bounds.Width * scale * res)), h = Math.Max(1, (int)Math.Ceiling(bounds.Height * scale * res));
-            if (gr == null) { canvas.DrawRect(rect, paint); return; }
             if (surface == null || sw != w || sh != h)
             {
                 surface?.Dispose();
-                surface = SKSurface.Create(gr, false, new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Premul));
+                var info = new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Premul);
+                surface = gr != null ? SKSurface.Create(gr, false, info) : SKSurface.Create(info);
                 sw = w; sh = h;
             }
             if (surface == null) { canvas.DrawRect(rect, paint); return; }

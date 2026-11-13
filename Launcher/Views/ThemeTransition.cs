@@ -200,10 +200,20 @@ half4 main(float2 coord) {
                 double scale = top.RenderScaling;
                 var pixels = new PixelSize(Math.Max(1, (int)(top.ClientSize.Width * scale)), Math.Max(1, (int)(top.ClientSize.Height * scale)));
                 using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(pixels, new Vector(96 * scale, 96 * scale));
-                bitmap.Render(top);
-                using var stream = new MemoryStream();
-                bitmap.Save(stream);
-                return SKImage.FromEncodedData(stream.ToArray());
+                // Tema sahnesi compositor görseli olarak çizilir ve görüntüye kendiliğinden girmez; çekim sırasında ekle
+                SynthwaveBackdrop.Snapshotting = true;
+                try { bitmap.Render(top); }
+                finally { SynthwaveBackdrop.Snapshotting = false; }
+                // Pikseller doğrudan kopyalanır (PNG'ye çevirip geri okumak yüz milisaniyeler sürüyordu)
+                int stride = pixels.Width * 4;
+                var buffer = System.Runtime.InteropServices.Marshal.AllocHGlobal(stride * pixels.Height);
+                try
+                {
+                    bitmap.CopyPixels(new PixelRect(pixels), buffer, stride * pixels.Height, stride);
+                    var info = new SKImageInfo(pixels.Width, pixels.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+                    return SKImage.FromPixelCopy(info, buffer, stride);
+                }
+                finally { System.Runtime.InteropServices.Marshal.FreeHGlobal(buffer); }
             }
             catch { return null; }
         }
