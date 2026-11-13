@@ -17,7 +17,7 @@ namespace VuluLauncher.Views
     internal sealed class SynthwaveBackdrop : Control
     {
         internal const string Shader = @"
-uniform float2 size; uniform float time; uniform float rise; uniform float bright; uniform float offsetY; uniform float par;
+uniform float2 size; uniform float time; uniform float rise; uniform float bright; uniform float offsetY; uniform float par; uniform float focus;
 float hash(float2 p) { return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
 float noise1(float x) { float i = floor(x), f = fract(x); return mix(hash(float2(i, 0.0)), hash(float2(i + 1.0, 0.0)), f * f * (3.0 - 2.0 * f)); }
 half4 main(float2 local) {
@@ -99,6 +99,98 @@ half4 main(float2 local) {
     col = bright <= 1.0 ? col * bright : col + float3(1.0, 0.35, 0.9) * clamp(bright - 1.0, 0.0, 1.0) * 0.8;
     return half4(half3(col), 1.0);
 }";
+
+        /// <summary>
+        /// Derin Karanlık: sculk mağarası. Koyu deniz yeşili mağara, tavanda sarkıtlar, zeminde iki kaya sırtı; zemindeki
+        /// sculk damarları sensörden yayılan bir dalgayla nefes alır gibi parlar, sensörden nabız halkaları çıkar, sporlar
+        /// yukarı süzülür. focus 1: sensör ekranın ortasında (açılış ekranı).
+        /// </summary>
+        internal const string DerinShader = @"
+uniform float2 size; uniform float time; uniform float rise; uniform float bright; uniform float offsetY; uniform float par; uniform float focus;
+float hash(float2 p) { return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
+float noise1(float x) { float i = floor(x), f = fract(x); return mix(hash(float2(i, 0.0)), hash(float2(i + 1.0, 0.0)), f * f * (3.0 - 2.0 * f)); }
+float noise2(float2 p) {
+    float2 i = floor(p), f = fract(p), u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + float2(1, 0)), u.x), mix(hash(i + float2(0, 1)), hash(i + float2(1, 1)), u.x), u.y);
+}
+float fbm(float2 p) { return noise2(p) * .5 + noise2(p * 2.1 + 3.0) * .27 + noise2(p * 4.3 + 7.0) * .15 + noise2(p * 9.1 + 1.0) * .08; }
+half4 main(float2 local) {
+    float2 coord = float2(local.x, local.y + offsetY);
+    float2 uv = coord / size;
+    float aspect = size.x / size.y;
+    float3 cyan = float3(0.184, 0.902, 0.847);
+    // Sensör: sahnede sağ altta, açılışta ortada
+    float2 s = mix(float2(0.6 - par * 0.02, 0.8), float2(0.5, 0.5), focus);
+    float r = length((uv - s) * float2(aspect, 1.0));
+    // Mağara: sensörün çevresi koyu deniz yeşili, uzaklar kömür siyahı; duvarda kaya dokusu
+    float3 col = mix(float3(0.043, 0.165, 0.173), float3(0.012, 0.03, 0.035), smoothstep(0.0, 0.8, r));
+    col = mix(col, float3(0.008, 0.02, 0.024), smoothstep(0.3, 1.2, r));
+    col *= 0.7 + 0.6 * fbm(uv * float2(aspect, 1.0) * 3.0 + float2(par * 0.1, 0.0));
+    // Tavan: sarkıtlar
+    float cx = (uv.x - par * 0.01) * 14.0;
+    float stal = 0.10 + 0.05 * noise1(cx) + 0.09 * pow(noise1(cx * 2.7 + 3.0), 3.0);
+    float ceiling = 1.0 - focus;
+    if (uv.y < stal * ceiling) col = float3(0.006, 0.016, 0.018) + float3(0.0, 0.05, 0.05) * smoothstep(stal - 0.012, stal, uv.y);
+    // Zemin: iki kaya sırtı
+    float fx = (uv.x + par * 0.02) * 5.0;
+    float floor1 = mix(0.80 + 0.04 * noise1(fx) - 0.03 * noise1(fx * 2.3 + 7.0), 2.0, focus);
+    float floor2 = mix(0.89 + 0.03 * noise1(fx * 1.4 + 20.0), 2.0, focus);
+    // Sculk damarları: dallanan çizgiler, sensöre yaklaştıkça sıklaşır; sensörden yayılan dalgayla parlar
+    float2 q = uv * float2(aspect, 1.0) * 4.0;
+    float v = abs(fbm(q + float2(0.0, time * 0.015)) - 0.5);
+    float reach = smoothstep(1.25, 0.15, r) * mix(smoothstep(0.3, 0.62, uv.y), 1.0, focus) * rise;
+    // Ana damarlar ince, dallar daha ince ve sık
+    float vein = (1.0 - smoothstep(0.0, 0.0065, v)) * reach * 0.8;
+    float v2 = abs(fbm(q * 2.3 + float2(5.0, time * 0.02)) - 0.5);
+    vein += (1.0 - smoothstep(0.0, 0.006, v2)) * reach * smoothstep(0.9, 0.1, r) * 0.45;
+    float halo = (1.0 - smoothstep(0.0, 0.05, v)) * reach;
+    // Uzak duvarlarda soluk damarlar (üst yarı boş kalmasın)
+    float v3 = abs(fbm(uv * float2(aspect, 1.0) * 2.2 + float2(11.0, 3.0)) - 0.5);
+    col += cyan * (1.0 - smoothstep(0.0, 0.006, v3)) * 0.065 * (1.0 - focus) * rise;
+    float breathe = 0.5 + 0.5 * sin(time * 1.7 - r * 7.0);
+    if (uv.y > floor1) {
+        col = mix(float3(0.027, 0.08, 0.09), float3(0.016, 0.05, 0.06), smoothstep(floor1, 1.0, uv.y));
+        vein *= 1.3;
+        col += cyan * exp(-(uv.y - floor1) * size.y * 0.25) * 0.25;
+        // Sculk bloğu: zeminde nabızla parlayan küçük noktalar
+        float dots = step(0.82, noise2(uv * float2(aspect, 1.0) * 70.0));
+        col += cyan * dots * 0.35 * (0.4 + 0.6 * breathe) * smoothstep(1.1, 0.2, r);
+    }
+    if (uv.y > floor2) col = float3(0.012, 0.04, 0.047);
+    col += cyan * vein * (0.35 + 0.75 * breathe);
+    col += cyan * halo * 0.12 * (0.4 + 0.6 * breathe);
+    // Sensörün kendisi ve nabız halkaları
+    col += float3(0.3, 1.0, 0.95) * exp(-r * r * 900.0) * (0.7 + 0.3 * sin(time * 3.0)) * rise;
+    for (int k = 0; k < 3; k++) {
+        float ph = fract(time / 3.6 + float(k) / 3.0);
+        float ring = exp(-abs(r - ph * 0.6) * 70.0) * (1.0 - ph) * (1.0 - ph);
+        col += cyan * ring * 0.85 * rise;
+    }
+    // Sporlar: yukarı süzülen küçük ışıklar
+    float2 g = uv * float2(22.0 * aspect, 22.0) + float2(0.0, time * 0.35);
+    float2 cell = floor(g);
+    float h = hash(cell);
+    float2 jitter = float2(hash(cell + 3.1) - 0.5, hash(cell + 7.7) - 0.5) * 0.6;
+    float sp = smoothstep(0.09, 0.0, length(fract(g) - 0.5 - jitter)) * step(0.93, h) * mix(smoothstep(0.3, 0.75, uv.y), 1.0, focus);
+    col += float3(0.5, 0.97, 0.93) * sp * (0.45 + 0.55 * sin(time * 2.0 + h * 40.0));
+    // Gren, vinyet, parlaklık (açılışta camgöbeği bir parlama)
+    col += (hash(coord + fract(time) * 91.7) - 0.5) * 0.025;
+    float2 qv = uv - 0.5;
+    col *= 1.0 - dot(qv, qv) * 1.1;
+    col = bright <= 1.0 ? col * bright : col + float3(0.45, 1.0, 0.95) * clamp(bright - 1.0, 0.0, 1.0) * 0.75;
+    return half4(half3(col), 1.0);
+}";
+
+        private static readonly Lazy<SKRuntimeEffect?> DerinEffect = new(() =>
+        {
+            try
+            {
+                var effect = SKRuntimeEffect.CreateShader(DerinShader, out string? errors);
+                if (effect == null && errors != null) System.Diagnostics.Debug.WriteLine("Derin Karanlık gölgelendirici: " + errors);
+                return effect;
+            }
+            catch { return null; }
+        });
 
         private static readonly Lazy<SKRuntimeEffect?> Effect = new(() =>
         {
@@ -199,7 +291,7 @@ half4 main(float2 local) {
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            double split = Math.Round(finalSize.Height * Horizon);
+            double split = Math.Round(finalSize.Height * (Themes.IsDerin && !Manual ? 0.45 : Horizon));
             _sky.Arrange(new Rect(0, 0, finalSize.Width, split));
             _ground.Arrange(new Rect(0, split, finalSize.Width, finalSize.Height - split));
             return finalSize;
@@ -208,6 +300,7 @@ half4 main(float2 local) {
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
+            Themes.Changed += OnThemeChanged;
             _skyTimer.Start();
             _groundTimer.Start();
             AnimatedChanged += InvalidateVisual;
@@ -220,9 +313,16 @@ half4 main(float2 local) {
             _skyTimer.Stop();
             _groundTimer.Stop();
             AnimatedChanged -= InvalidateVisual;
+            Themes.Changed -= OnThemeChanged;
             _top?.RemoveHandler(Avalonia.Input.InputElement.PointerMovedEvent, OnPointerMoved);
             _top = null;
             base.OnDetachedFromVisualTree(e);
+        }
+
+        private void OnThemeChanged()
+        {
+            InvalidateArrange();
+            InvalidateVisual();
         }
 
         private void OnPointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
@@ -240,7 +340,8 @@ half4 main(float2 local) {
             public override void Render(DrawingContext context)
             {
                 var full = owner.Bounds.Size;
-                context.Custom(new Draw(new Rect(Bounds.Size), full, top ? 0 : Bounds.Y, owner.CurrentTime,
+                context.Custom(new Draw(Themes.IsDerin ? SynthwaveBackdrop.DerinEffect.Value : SynthwaveBackdrop.Effect.Value, owner.Manual ? 1 : 0,
+                    new Rect(Bounds.Size), full, top ? 0 : Bounds.Y, owner.CurrentTime,
                     owner.CurrentRise, owner.CurrentBrightness, owner.Manual ? 0 : owner.Parallax, _holder));
             }
         }
@@ -251,7 +352,7 @@ half4 main(float2 local) {
             public int W, H;
         }
 
-        private sealed class Draw(Rect bounds, Size full, double offsetY, double time, double rise, double bright, double par, Holder holder) : ICustomDrawOperation
+        private sealed class Draw(SKRuntimeEffect? effect, double focus, Rect bounds, Size full, double offsetY, double time, double rise, double bright, double par, Holder holder) : ICustomDrawOperation
         {
             public Rect Bounds => bounds;
             public bool HitTest(Point p) => false;
@@ -265,7 +366,7 @@ half4 main(float2 local) {
                 using var lease = feature.Lease();
                 var canvas = lease.SkCanvas;
                 var rect = new SKRect(0, 0, (float)bounds.Width, (float)bounds.Height);
-                if (Effect.Value == null)
+                if (effect == null)
                 {
                     // Gölgelendirici açılamazsa sitedeki yedek gibi düz gradyan
                     using var fallback = new SKPaint
@@ -277,7 +378,7 @@ half4 main(float2 local) {
                     canvas.DrawRect(rect, fallback);
                     return;
                 }
-                var uniforms = new SKRuntimeEffectUniforms(Effect.Value)
+                var uniforms = new SKRuntimeEffectUniforms(effect)
                 {
                     ["size"] = new[] { (float)full.Width, (float)full.Height },
                     ["time"] = (float)(time % 3600),
@@ -285,8 +386,9 @@ half4 main(float2 local) {
                     ["bright"] = (float)bright,
                     ["offsetY"] = (float)offsetY,
                     ["par"] = (float)par,
+                    ["focus"] = (float)focus,
                 };
-                using var shader = Effect.Value.ToShader(uniforms);
+                using var shader = effect.ToShader(uniforms);
                 using var paint = new SKPaint { Shader = shader };
 
                 // Bir ara yüzeye çizilir, sonra yumuşatılarak büyütülür

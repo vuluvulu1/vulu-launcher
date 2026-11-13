@@ -1,36 +1,46 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Media;
 using Avalonia.Styling;
 
 namespace VuluLauncher
 {
-    /// <summary>
-    /// Launcher temaları. Arayüzün renkleri App.axaml'daki fırçalardır; tema değişince yeni fırça konmaz, aynı fırçaların
-    /// rengi değiştirilir. Böylece StaticResource ile bağlı her yer anında yeni rengi alır, yeniden başlatmak gerekmez.
-    ///   mesale: varsayılan, amber ve koyu kahve (vulu'nun kendi rengi)
-    ///   ufuk:   "Ufkun öbür ucu" (vulu-web'deki /vulusalufuk sürprizi): synthwave, mor gökyüzü, pembe ve camgöbeği neon;
-    ///           sayfaların arkasında hareketli güneş ve ızgara (<see cref="Views.SynthwaveBackdrop"/>)
-    /// </summary>
-    /// <summary>Arayüzden bağlanabilen tema durumu (ör. IsVisible="{Binding IsUfuk, Source={x:Static local:ThemeState.Instance}}").</summary>
+    /// <summary>Arayüzden bağlanabilen tema durumu (ör. IsVisible="{Binding HasScene, Source={x:Static local:ThemeState.Instance}}").</summary>
     internal sealed partial class ThemeState : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
     {
         public static ThemeState Instance { get; } = new();
         [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _isUfuk;
+        /// <summary>Temanın hareketli bir arka plan sahnesi var mı (Ufkun öbür ucu, Derin Karanlık).</summary>
+        [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _hasScene;
     }
 
+    /// <summary>
+    /// Launcher temaları. Arayüzün renkleri App.axaml'daki fırçalardır; tema değişince yeni fırça konmaz, aynı fırçaların
+    /// rengi değiştirilir. Böylece StaticResource ile bağlı her yer anında yeni rengi alır, yeniden başlatmak gerekmez.
+    ///   mesale: varsayılan, amber ve koyu kahve (vulu'nun kendi rengi)
+    ///   ufuk:   "Ufkun öbür ucu" (vulu-web'deki /vulusalufuk sürprizi): synthwave, mor gökyüzü, pembe ve camgöbeği neon
+    ///   derin:  "Derin Karanlık": Minecraft'ın sculk mağarası; neredeyse siyah zemin, biyolüminesans camgöbeği damarlar
+    /// Sahnesi olan temalarda sayfaların arkasında <see cref="Views.SynthwaveBackdrop"/> çizer (sahne temaya göre seçilir).
+    /// Fırça olmayan değerler (BoxShadow ışıltıları) her temanın stil dosyasındadır; pencere tema adıyla aynı sınıfı
+    /// taşıdığında geçerli olurlar (Views/UfukStyles.axaml, Views/DerinStyles.axaml).
+    /// </summary>
     internal static class Themes
     {
         public const string Mesale = "mesale";
         public const string Ufuk = "ufuk";
+        public const string Derin = "derin";
+        private static readonly string[] All = { Mesale, Ufuk, Derin };
 
         public static string Current { get; private set; } = Mesale;
         public static bool IsUfuk => Current == Ufuk;
+        public static bool IsDerin => Current == Derin;
+        /// <summary>Hareketli arka plan sahnesi olan tema.</summary>
+        public static bool HasScene => Current != Mesale;
         public static event Action? Changed;
 
         /// <summary>İlk uygulamada Meşale renkleri buradan alınır (App.axaml'daki değerler).</summary>
         private static Dictionary<string, Color[]>? _mesale;
+        private static Dictionary<string, Color>? _mesaleSystem;
 
         private static readonly Dictionary<string, Color[]> UfukColors = new()
         {
@@ -83,6 +93,58 @@ namespace VuluLauncher
             ["ToggleSwitchKnobFillOff"] = [C("#D2C3EE")],
         };
 
+        /// <summary>Derin Karanlık: kömür siyahı ve koyu deniz yeşili yüzeyler, sculk camgöbeği (#2FE6D8) vurgu.</summary>
+        private static readonly Dictionary<string, Color[]> DerinColors = new()
+        {
+            ["Bg"] = [C("#030809")],
+            ["Panel"] = [C("#F2061416")],
+            ["SidePanel"] = [C("#99020A0C")],
+            ["Surface"] = [C("#E6081C1F")],
+            ["Raised"] = [C("#F00C2629")],
+            ["Card"] = [C("#CC051315")],
+            ["Glass"] = [C("#E6061416")],
+            ["Hover"] = [C("#1A2FE6D8")],
+            ["Line"] = [C("#2E2FE6D8")],
+            ["LineStrong"] = [C("#5C2FE6D8")],
+            ["ButtonBg"] = [C("#D1061618")],
+            ["ButtonLine"] = [C("#662FE6D8")],
+            ["Text"] = [C("#DCF6F2")],
+            ["Muted"] = [C("#A9CBC7")],
+            ["Dim"] = [C("#7AA19D")],
+            ["Accent"] = [C("#2FE6D8")],
+            ["AccentHi"] = [C("#8FF7EE")],
+            ["AccentSoft"] = [C("#262FE6D8")],
+            ["AccentInk"] = [C("#021F1D")],
+            ["PrimaryFill"] = [C("#45F0E2"), C("#1FBFB3")],
+            ["PrimaryFillHover"] = [C("#7AF5EB"), C("#2FD6CA")],
+            ["Ok"] = [C("#8FF7EE")],
+            ["Warn"] = [C("#F2D27A")],
+            ["Error"] = [C("#FF6B6B")],
+            ["TitleBarBg"] = [C("#E6030A0C")],
+            ["StagePlain"] = [C("#00000000"), C("#00000000")],
+            ["StageGlow"] = [C("#00000000"), C("#00000000")],
+            ["BarBg"] = [C("#F0030C0E"), C("#020607")],
+            ["ChipBg"] = [C("#A6041012")],
+            ["HeroBg"] = [C("#E6061618")],
+            ["HeroHoverBg"] = [C("#F50C2A2C")],
+            ["HeroLine"] = [C("#662FE6D8")],
+            ["TileBg"] = [C("#A6041012")],
+            ["TileLine"] = [C("#662FE6D8")],
+            ["SoftFill"] = [C("#1F2FE6D8")],
+            ["SoftFillHover"] = [C("#332FE6D8")],
+            ["LoginBg"] = [C("#00000000"), C("#00000000"), C("#66000000")],
+            ["BannerFallback"] = [C("#0C3A3C"), C("#031012")],
+            ["TabGlow"] = [C("#3D2FE6D8"), C("#002FE6D8")],
+            ["ToggleSwitchFillOn"] = [C("#2FE6D8")],
+            ["ToggleSwitchFillOnPointerOver"] = [C("#8FF7EE")],
+            ["ToggleSwitchFillOnPressed"] = [C("#1FA89F")],
+            ["ToggleSwitchKnobFillOn"] = [C("#021F1D")],
+            ["ToggleSwitchKnobFillOnPointerOver"] = [C("#021F1D")],
+            ["ToggleSwitchKnobFillOnPressed"] = [C("#021F1D")],
+            ["ToggleSwitchStrokeOff"] = [C("#662FE6D8")],
+            ["ToggleSwitchKnobFillOff"] = [C("#A9CBC7")],
+        };
+
         private static readonly Dictionary<string, Color> UfukSystem = new()
         {
             ["SystemAccentColor"] = C("#FF2DF1"),
@@ -91,11 +153,27 @@ namespace VuluLauncher
             ["AccentColor"] = C("#FF2DF1"),
             ["BgColor"] = C("#07000F"),
         };
-        private static Dictionary<string, Color>? _mesaleSystem;
+
+        private static readonly Dictionary<string, Color> DerinSystem = new()
+        {
+            ["SystemAccentColor"] = C("#2FE6D8"),
+            ["SystemAccentColorLight1"] = C("#8FF7EE"),
+            ["SystemAccentColorDark1"] = C("#1FA89F"),
+            ["AccentColor"] = C("#2FE6D8"),
+            ["BgColor"] = C("#030809"),
+        };
+
+        /// <summary>Köşe yuvarlaklığı: Meşale köşeli, Ufuk yumuşak, Derin Karanlık hafif (taş gibi).</summary>
+        private static (double Control, double Overlay) Corners(string name) => name switch
+        {
+            Ufuk => (8, 12),
+            Derin => (6, 8),
+            _ => (0, 0),
+        };
 
         private static Color C(string hex) => Color.Parse(hex);
 
-        public static string Normalize(string? name) => name == Ufuk ? Ufuk : Mesale;
+        public static string Normalize(string? name) => All.Contains(name) ? name! : Mesale;
 
         public static void Apply(string? name)
         {
@@ -115,36 +193,53 @@ namespace VuluLauncher
                     if (res.TryGetResource(key, null, out var value) && value is Color c) _mesaleSystem[key] = c;
             }
 
-            var palette = name == Ufuk ? UfukColors : _mesale;
+            var (palette, system) = name switch
+            {
+                Ufuk => (UfukColors, UfukSystem),
+                Derin => (DerinColors, DerinSystem),
+                _ => (_mesale, _mesaleSystem!),
+            };
             foreach (var (key, colors) in palette)
                 if (res.TryGetResource(key, null, out var value)) Write(value, colors);
             // Fluent'in vurgu renkleri Color değeridir (fırça değil): yeniden konur, DynamicResource ile bağlı olanlar güncellenir
-            foreach (var (key, color) in name == Ufuk ? UfukSystem : _mesaleSystem!) res[key] = color;
-            // Meşale köşeli, Ufkun öbür ucu yuvarlak (sitedeki gibi); Fluent bu değerleri DynamicResource ile okur
-            res["ControlCornerRadius"] = new CornerRadius(name == Ufuk ? 8 : 0);
-            res["OverlayCornerRadius"] = new CornerRadius(name == Ufuk ? 12 : 0);
+            foreach (var (key, color) in system) res[key] = color;
+            var (control, overlay) = Corners(name);
+            res["ControlCornerRadius"] = new CornerRadius(control);
+            res["OverlayCornerRadius"] = new CornerRadius(overlay);
 
-            // Fırça olmayan değerler (BoxShadow ışıltıları) için temaya özel stiller (Views/UfukStyles.axaml)
-            if (_ufukStyles == null) { _ufukStyles = new Views.UfukStyles(); app.Styles.Add(_ufukStyles); }
+            if (_appStyles == null)
+            {
+                _appStyles = ThemeStyles();
+                app.Styles.Add(_appStyles);
+            }
             if (app.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-                foreach (var window in desktop.Windows) window.Classes.Set("ufuk", name == Ufuk);
+                foreach (var window in desktop.Windows) MarkWith(window, name);
 
             bool changed = Current != name;
             Current = name;
             ThemeState.Instance.IsUfuk = name == Ufuk;
+            ThemeState.Instance.HasScene = name != Mesale;
             if (changed) Changed?.Invoke();
         }
 
-        private static Styles? _ufukStyles;
+        private static Styles? _appStyles;
+
+        /// <summary>Bütün temaların stil dosyaları; her biri yalnızca pencere kendi sınıfını taşırken geçerlidir.</summary>
+        private static Styles ThemeStyles() => new() { new Views.UfukStyles(), new Views.DerinStyles() };
 
         /// <summary>
         /// Kendi stilleri olan sayfalar (Oyna) için: sayfanın stilleri uygulamanınkinden önce geldiği için temaya özel
-        /// stiller sayfanın kendi listesinin sonuna da eklenir (pencerenin "ufuk" sınıfıyla açılıp kapanırlar).
+        /// stiller sayfanın kendi listesinin sonuna da eklenir (pencerenin tema sınıfıyla açılıp kapanırlar).
         /// </summary>
-        public static void Attach(StyledElement element) => element.Styles.Add(new Views.UfukStyles());
+        public static void Attach(StyledElement element) => element.Styles.Add(ThemeStyles());
 
         /// <summary>Pencere açılınca: tema sınıfı verilir (sonradan açılan pencereler için).</summary>
-        public static void Mark(Window window) => window.Classes.Set("ufuk", IsUfuk);
+        public static void Mark(Window window) => MarkWith(window, Current);
+
+        private static void MarkWith(Window window, string name)
+        {
+            foreach (var theme in All) if (theme != Mesale) window.Classes.Set(theme, theme == name);
+        }
 
         private static Color[]? Read(object? brush) => brush switch
         {

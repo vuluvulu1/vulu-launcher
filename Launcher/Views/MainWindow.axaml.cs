@@ -18,7 +18,7 @@ namespace VuluLauncher.Views
             // Tema geçişi animasyonu (Ayarlar › Tema)
             DataContextChanged += (_, _) =>
             {
-                if (DataContext is MainViewModel m) m.PlayThemeTransition = (toUfuk, atMiddle) => Transition.PlayAsync(toUfuk, atMiddle);
+                if (DataContext is MainViewModel m) m.PlayThemeTransition = (theme, atMiddle) => Transition.PlayAsync(theme, atMiddle);
             };
             // Başlık çubuğundan sürükleme (düğmelerin üstünde değilse)
             TitleBar.PointerPressed += (_, e) =>

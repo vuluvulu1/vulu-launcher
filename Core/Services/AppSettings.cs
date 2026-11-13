@@ -61,7 +61,7 @@ namespace VuluLauncher
         public bool MusicEnabled { get; set; } = true;
         public int MusicVolume { get; set; } = 40;
         public string AccentColor { get; set; } = "#c27e3e";
-        /// <summary>Launcher teması: "mesale" (varsayılan) ya da "ufuk" (Ufkun öbür ucu, synthwave).</summary>
+        /// <summary>Launcher teması: "mesale" (varsayılan), "ufuk" (Ufkun öbür ucu, synthwave) ya da "derin" (Derin Karanlık, sculk).</summary>
         public string Theme { get; set; } = "mesale";
         /// <summary>Ufkun öbür ucu temasında arka plan akar mı; kapalıyken sabit bir kare (yavaş bilgisayarlar için).</summary>
         public bool AnimatedBackground { get; set; } = true;
@@ -127,7 +127,7 @@ namespace VuluLauncher
             if (OnGameStart is not ("minimize" or "close")) OnGameStart = "keep";
             MusicVolume = Math.Clamp(MusicVolume, 0, 100);
             if (!System.Text.RegularExpressions.Regex.IsMatch(AccentColor ?? "", "^#[0-9a-fA-F]{6}$")) AccentColor = "#c27e3e";
-            if (Theme != "mesale" && Theme != "ufuk") Theme = "mesale";
+            if (Theme is not ("mesale" or "ufuk" or "derin")) Theme = "mesale";
         }
     }
 }

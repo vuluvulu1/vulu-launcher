@@ -189,14 +189,14 @@ namespace VuluLauncher.ViewModels
 
         private SettingSection LookSection() =>
             new SettingSection("Ses ve görünüm")
-                .Add(new ChoiceRow("Tema", "Ufkun öbür ucu: vulu-web'deki gizli sayfanın synthwave dünyası; sayfaların arkasında batan güneş ve neon ızgara akar.",
-                    new[] { ("mesale", "Meşale"), ("ufuk", "Ufkun öbür ucu") }, S("theme", "mesale"), async value =>
+                .Add(new ChoiceRow("Tema", "Ufkun öbür ucu: vulu-web'deki gizli sayfanın synthwave dünyası. Derin Karanlık: sculk mağarası; damarlar ışıldar, sensörler nabız gibi atar.",
+                    new[] { ("mesale", "Meşale"), ("ufuk", "Ufkun öbür ucu"), ("derin", "Derin Karanlık") }, S("theme", "mesale"), async value =>
                     {
                         if (!await Change(("theme", value))) return false;
                         await main.SwitchThemeAsync(value);
                         return true;
                     }))
-                .Add(new ToggleRow("Hareketli arka plan", "Ufkun öbür ucu temasında güneş ve ızgara akar. Kapatırsan sahne sabit durur; launcher yavaşlıyorsa kapat.",
+                .Add(new ToggleRow("Hareketli arka plan", "Ufkun öbür ucu ve Derin Karanlık temalarında arka plan hareket eder. Kapatırsan sahne sabit durur; launcher yavaşlıyorsa kapat.",
                     B("animatedBackground", true), async value =>
                     {
                         if (!await Change(("animatedBackground", value))) return false;

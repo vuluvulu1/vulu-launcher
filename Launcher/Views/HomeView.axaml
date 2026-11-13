@@ -200,7 +200,7 @@
         <Border Grid.Row="0" Background="{StaticResource StagePlain}" />
         <Border Grid.Row="0" Background="{StaticResource StageGlow}" />
         <!-- Ufkun öbür ucu teması: arka planı olmayan pakette synthwave sahnesi (resmi olan pakette resim üstünü örter) -->
-        <v:SynthwaveBackdrop Grid.Row="0" IsVisible="{Binding IsUfuk, Source={x:Static local:ThemeState.Instance}}" />
+        <v:SynthwaveBackdrop Grid.Row="0" IsVisible="{Binding HasScene, Source={x:Static local:ThemeState.Instance}}" />
         <Image Grid.Row="0" Source="{Binding Background}" Stretch="UniformToFill" />
         <!-- Yazılar okunsun: kenarlardan ve alttan karartma (mesale.css .stage-bg::after) -->
         <Border Grid.Row="0" IsHitTestVisible="False">

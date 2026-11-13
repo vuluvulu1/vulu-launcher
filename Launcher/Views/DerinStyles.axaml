@@ -1,0 +1,143 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="using:VuluLauncher.Views"
+        x:Class="VuluLauncher.Views.DerinStyles">
+    <!--
+        "Derin Karanlık" temasında fırça olmayan değerler (BoxShadow gölgeleri, ışıltılar). Hep yüklüdür; pencere "derin"
+        sınıfını taşıdığında geçerli olur (Services/Themes.cs). Işık kaynağı yalnızca sculk: camgöbeği #2FE6D8, açığı
+        #8FF7EE, koyu deniz yeşili #0F6E73. Kenarlar soğuk ve ince, gölgeler derin; taş gibi hafif yuvarlak köşeler.
+    -->
+    <Style Selector="Window.derin Button.seg.active /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BoxShadow" Value="inset 0 -2 0 0 #2FE6D8" />
+    </Style>
+
+    <!-- Oyna: paket rayı ve alt çubuk -->
+    <Style Selector="Window.derin ListBox.rail ListBoxItem:selected Border.thumb">
+        <Setter Property="BoxShadow" Value="0 0 0 1 #CC8FF7EE, 0 0 22 2 #802FE6D8" />
+    </Style>
+    <Style Selector="Window.derin ListBox.rail StackPanel.dragging Border.thumb">
+        <Setter Property="BoxShadow" Value="0 0 0 2 #8FF7EE, 0 0 28 4 #992FE6D8, 0 10 24 0 #B3000000" />
+    </Style>
+    <Style Selector="Window.derin ListBox.rail StackPanel.drop Border.thumb">
+        <Setter Property="BoxShadow" Value="0 0 0 2 #2FE6D8" />
+    </Style>
+    <Style Selector="Window.derin Border.mcard">
+        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #242FE6D8" />
+    </Style>
+    <Style Selector="Window.derin Border.mcard.console">
+        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #242FE6D8, 0 14 34 0 #80000000" />
+    </Style>
+    <Style Selector="Window.derin Border.announce">
+        <Setter Property="BoxShadow" Value="inset 3 0 0 0 #2FE6D8" />
+    </Style>
+    <Style Selector="Window.derin Border.ring">
+        <Setter Property="BoxShadow" Value="0 0 0 2 #030809, 0 0 0 3 #2FE6D8, 0 0 14 2 #802FE6D8" />
+    </Style>
+    <Style Selector="Window.derin Border.barthumb">
+        <Setter Property="BoxShadow" Value="0 0 0 1 #CC8FF7EE, 0 0 22 2 #802FE6D8" />
+    </Style>
+    <Style Selector="Window.derin Border.bar">
+        <Setter Property="BoxShadow" Value="0 -1 0 0 #4D2FE6D8" />
+    </Style>
+    <Style Selector="Window.derin Button.play /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #80FFFFFF, 0 0 20 0 #802FE6D8" />
+    </Style>
+    <Style Selector="Window.derin Button.play.small:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BoxShadow" Value="inset 0 0 0 1 #2FE6D8" />
+    </Style>
+    <Style Selector="Window.derin Button.play.small /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BoxShadow" Value="inset 0 0 0 1 #662FE6D8" />
+    </Style>
+    <Style Selector="Window.derin ComboBox.bar /template/ Border#Background">
+        <Setter Property="BoxShadow" Value="inset 0 0 0 1 #4D2FE6D8" />
+    </Style>
+
+    <!-- ── Yazılar: başlıklar kalın ve sıkı, hafif biyolüminesans ışıltı ── -->
+    <Style Selector="Window.derin TextBlock.page-title">
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="32" />
+        <Setter Property="LetterSpacing" Value="-0.6" />
+        <Setter Property="Foreground" Value="#EAFFFC" />
+        <Setter Property="Effect">
+            <DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="16" Color="#2FE6D8" Opacity="0.55" />
+        </Setter>
+    </Style>
+    <Style Selector="Window.derin Button.tab.active TextBlock">
+        <Setter Property="Effect">
+            <DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="10" Color="#2FE6D8" Opacity="0.8" />
+        </Setter>
+    </Style>
+    <Style Selector="Window.derin Button.tab Border.bar">
+        <Setter Property="Background" Value="#2FE6D8" />
+        <Setter Property="BoxShadow" Value="0 0 14 2 #992FE6D8" />
+    </Style>
+
+    <!-- Başlık çubuğunun altında ince sculk çizgisi -->
+    <Style Selector="Window.derin Border#TitleBar">
+        <Setter Property="BoxShadow" Value="0 1 0 0 #592FE6D8, 0 4 20 0 #1A2FE6D8" />
+    </Style>
+
+    <!-- ── Ana düğme: parlak camgöbeği, etrafında soğuk hale ── -->
+    <Style Selector="Window.derin Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #80FFFFFF, 0 0 14 0 #702FE6D8" />
+    </Style>
+    <Style Selector="Window.derin Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #99FFFFFF, 0 0 24 2 #A62FE6D8" />
+    </Style>
+
+    <!-- ── Kartlar: koyu taş, üstten inen soğuk ışık, ince camgöbeği kenar ── -->
+    <Style Selector="Window.derin Border.card, Window.derin Border.row-card, Window.derin Border.mcard">
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#802FE6D8" />
+                <GradientStop Offset="0.6" Color="#262FE6D8" />
+                <GradientStop Offset="1" Color="#140F6E73" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="BoxShadow" Value="0 20 48 0 #99000000, inset 0 1 0 0 #148FF7EE" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="Window.derin Border.card:pointerover, Window.derin Border.row-card:pointerover">
+        <Setter Property="BoxShadow" Value="0 22 54 0 #A6000000, 0 0 28 0 #262FE6D8, inset 0 1 0 0 #1F8FF7EE" />
+    </Style>
+
+    <!-- Ayarlar bölümleri de taş kart -->
+    <Style Selector="Window.derin v|SettingsView Border.section">
+        <Setter Property="Background" Value="{StaticResource Card}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="BorderBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#802FE6D8" />
+                <GradientStop Offset="0.6" Color="#262FE6D8" />
+                <GradientStop Offset="1" Color="#140F6E73" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="BoxShadow" Value="0 20 48 0 #99000000, inset 0 1 0 0 #148FF7EE" />
+    </Style>
+
+    <!-- Sohbet: kendi mesajım koyu deniz yeşili -->
+    <Style Selector="Window.derin Border.bubble.mine">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="#CC0F5F63" />
+                <GradientStop Offset="1" Color="#CC0A3E42" />
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
+
+    <!-- Kutular (pencereler, hızlı arama) -->
+    <Style Selector="Window.derin Border.modal-box">
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="BorderBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#B32FE6D8" />
+                <GradientStop Offset="1" Color="#330F6E73" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="BoxShadow" Value="0 24 60 0 #CC000000, 0 0 36 0 #262FE6D8" />
+    </Style>
+</Styles>

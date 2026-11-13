@@ -74,12 +74,12 @@ namespace VuluLauncher.ViewModels
         private bool _isHomePage = true;
         public bool HomeOverlay => LoggedIn && IsHomePage;
         /// <summary>Oyna dışındaki sayfaların zemini: seçili paketin resmi, bulanık ve karartılmış.</summary>
-        public bool ShowBackdrop => LoggedIn && !IsHomePage && !Themes.IsUfuk;
+        public bool ShowBackdrop => LoggedIn && !IsHomePage && !Themes.HasScene;
         /// <summary>Ufkun öbür ucu teması: Oyna dışındaki sayfalarda (girişte de) paket resmi yerine synthwave sahnesi.</summary>
-        public bool ShowSynthwave => Themes.IsUfuk && !(LoggedIn && IsHomePage);
+        public bool ShowSynthwave => Themes.HasScene && !(LoggedIn && IsHomePage);
 
         /// <summary>Pencere verir: geçiş animasyonu (MainWindow.Transition).</summary>
-        public Func<bool, Action, Task>? PlayThemeTransition { get; set; }
+        public Func<string, Action, Task>? PlayThemeTransition { get; set; }
 
         /// <summary>Temayı geçiş animasyonuyla değiştirir (Ayarlar › Tema).</summary>
         public async Task SwitchThemeAsync(string theme)
@@ -87,7 +87,7 @@ namespace VuluLauncher.ViewModels
             theme = Themes.Normalize(theme);
             if (theme == Themes.Current) return;
             void Apply() { Themes.Apply(theme); ThemeChanged(); }
-            if (PlayThemeTransition != null) await PlayThemeTransition(theme == Themes.Ufuk, Apply);
+            if (PlayThemeTransition != null) await PlayThemeTransition(theme, Apply);
             else Apply();
         }
 

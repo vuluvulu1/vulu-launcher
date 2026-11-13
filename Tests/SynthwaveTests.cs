@@ -14,6 +14,40 @@ namespace VuluLauncher.Tests
         }
 
         [Fact]
+        public void DerinShaderCompilesAndDraws()
+        {
+            using var effect = SKRuntimeEffect.CreateShader(Views.SynthwaveBackdrop.DerinShader, out string? errors);
+            Assert.True(effect != null, errors);
+            var uniforms = new SKRuntimeEffectUniforms(effect!)
+            {
+                ["size"] = new[] { 1320f, 820f }, ["time"] = 2f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f, ["focus"] = 0f,
+            };
+            using var shader = effect!.ToShader(uniforms);
+            using var surface = SKSurface.Create(new SKImageInfo(1320, 820));
+            using var paint = new SKPaint { Shader = shader };
+            surface.Canvas.DrawRect(0, 0, 1320, 820, paint);
+            string? path = Environment.GetEnvironmentVariable("VULU_DERIN_PNG");
+            if (!string.IsNullOrEmpty(path))
+            {
+                using var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100);
+                File.WriteAllBytes(path, data.ToArray());
+            }
+        }
+
+        /// <summary>Launcher'ın bildiği her tema ayar doğrulamasından sağ çıkmalı (yoksa yeniden açılışta Meşale'ye döner).</summary>
+        [Theory]
+        [InlineData("mesale")]
+        [InlineData("ufuk")]
+        [InlineData("derin")]
+        public void SettingsKeepEveryTheme(string theme)
+        {
+            var settings = new AppSettings { Theme = theme };
+            typeof(AppSettings).GetMethod("Normalize", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(settings, null);
+            Assert.Equal(theme, settings.Theme);
+            Assert.Equal(theme, Themes.Normalize(theme));
+        }
+
+        [Fact]
         public void BurnShaderCompiles()
         {
             using var effect = SKRuntimeEffect.CreateShader(Views.ThemeTransition.BurnShader, out string? errors);
@@ -31,7 +65,7 @@ namespace VuluLauncher.Tests
         public void ShaderDraws()
         {
             using var effect = SKRuntimeEffect.CreateShader(Views.SynthwaveBackdrop.Shader, out _)!;
-            var uniforms = new SKRuntimeEffectUniforms(effect) { ["size"] = new[] { 320f, 200f }, ["time"] = 3f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f };
+            var uniforms = new SKRuntimeEffectUniforms(effect) { ["size"] = new[] { 320f, 200f }, ["time"] = 3f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f, ["focus"] = 0f };
             using var shader = effect.ToShader(uniforms);
             using var surface = SKSurface.Create(new SKImageInfo(320, 200));
             using var paint = new SKPaint { Shader = shader };
@@ -51,7 +85,7 @@ namespace VuluLauncher.Tests
             string? path = Environment.GetEnvironmentVariable("VULU_SYNTH_PNG");
             if (string.IsNullOrEmpty(path)) return;
             using var effect = SKRuntimeEffect.CreateShader(Views.SynthwaveBackdrop.Shader, out _)!;
-            var uniforms = new SKRuntimeEffectUniforms(effect) { ["size"] = new[] { 1320f, 820f }, ["time"] = 5f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f };
+            var uniforms = new SKRuntimeEffectUniforms(effect) { ["size"] = new[] { 1320f, 820f }, ["time"] = 5f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f, ["focus"] = 0f };
             using var shader = effect.ToShader(uniforms);
             using var surface = SKSurface.Create(new SKImageInfo(1320, 820));
             using var paint = new SKPaint { Shader = shader };

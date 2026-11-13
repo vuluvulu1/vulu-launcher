@@ -11,7 +11,7 @@ namespace VuluLauncher.Views
 {
     /// <summary>
     /// Tema geçişi: ortadan dışa doğru uzanan ışık çizgileriyle bir "olay ufku" tüneli ekranı kaplar, tam ortada tema
-    /// değişir, tünel açılarak yeni temayı gösterir (~1,4 sn). Ufkun öbür ucu'na pembe-camgöbeği, Meşale'ye amber.
+    /// değişir, tünel açılarak yeni temayı gösterir (~1,4 sn). Ufkun öbür ucu'na pembe-camgöbeği, Derin Karanlık'a sculk camgöbeği; Meşale'ye dönüş yanarak.
     /// vulu-web'deki /vulusalufuk geçişinin (vulusalGecis3d.js) hafif karşılığı; tek bir SkSL gölgelendirici.
     /// </summary>
     internal sealed class ThemeTransition : Control
@@ -99,10 +99,10 @@ half4 main(float2 coord) {
         /// Geçişi oynatır. Ufkun öbür ucu'na: ışık tüneli, perde ekranı tam örttüğünde <paramref name="atMiddle"/> çağrılır.
         /// Meşale'ye: ekranın görüntüsü alınır, tema hemen değişir, eski görüntü yanarak açılır.
         /// </summary>
-        public Task PlayAsync(bool toUfuk, Action atMiddle)
+        public Task PlayAsync(string theme, Action atMiddle)
         {
             _done?.TrySetResult();
-            if (!toUfuk && Burn.Value != null && TakeSnapshot() is { } shot)
+            if (theme == Themes.Mesale && Burn.Value != null && TakeSnapshot() is { } shot)
             {
                 _snapshot?.Dispose();
                 _snapshot = shot;
@@ -123,9 +123,12 @@ half4 main(float2 coord) {
                 atMiddle();
                 return Task.CompletedTask;
             }
-            (_a, _b) = toUfuk
-                ? ((1f, 0.18f, 0.95f), (0f, 0.84f, 1f))       // pembe çizgiler, camgöbeği halka
-                : ((1f, 0.6f, 0.2f), (1f, 0.85f, 0.5f));      // amber kor
+            (_a, _b) = theme switch
+            {
+                Themes.Ufuk => ((1f, 0.18f, 0.95f), (0f, 0.84f, 1f)),         // pembe çizgiler, camgöbeği halka
+                Themes.Derin => ((0.18f, 0.9f, 0.85f), (0.56f, 0.97f, 0.93f)), // sculk camgöbeği, açık halka
+                _ => ((1f, 0.6f, 0.2f), (1f, 0.85f, 0.5f)),                   // amber kor
+            };
             _atMiddle = atMiddle;
             _middleDone = false;
             _done = new TaskCompletionSource();

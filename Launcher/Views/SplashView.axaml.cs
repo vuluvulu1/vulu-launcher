@@ -56,7 +56,9 @@ namespace VuluLauncher.Views
             _opened = null;
             _openClock.Reset();
             Sparks.Clear();
-            _ufuk = Themes.IsUfuk;
+            // Sahnesi olan temalarda (Ufkun öbür ucu, Derin Karanlık) sahneli açılış; yazının rengi temaya göre
+            _ufuk = Themes.HasScene;
+            if (_ufuk) StyleSceneTitle();
             _ufukTime = 0;
             UfukStage.IsVisible = _ufuk;
             UfukStage.Opacity = 1;
@@ -199,6 +201,39 @@ namespace VuluLauncher.Views
             UfukTitle.RenderTransform = new ScaleTransform(grow, grow);
             UfukTitle.Opacity = 1 - Progress(open < 0 ? 0 : open, 150, 500);
             UfukStage.Opacity = 1 - Math.Clamp((p - 0.6) / 0.4, 0, 1);
+        }
+
+        private IBrush? _ufukWordBrush;
+        private Avalonia.Media.IEffect? _ufukWordEffect;
+        private string? _ufukTopText;
+        private IBrush? _ufukTopBrush;
+
+        /// <summary>Açılış yazısı: Ufuk'ta krom (axaml'daki), Derin Karanlık'ta beyazdan camgöbeğine biyolüminesans.</summary>
+        private void StyleSceneTitle()
+        {
+            _ufukWordBrush ??= UfukWord.Foreground;
+            _ufukWordEffect ??= UfukWord.Effect;
+            _ufukTopText ??= UfukTop.Text;
+            _ufukTopBrush ??= UfukTop.Foreground;
+            if (Themes.IsDerin)
+            {
+                UfukWord.Foreground = new LinearGradientBrush
+                {
+                    StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                    EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+                    GradientStops = { new GradientStop(Color.Parse("#F2FFFD"), 0), new GradientStop(Color.Parse("#8FF7EE"), 0.55), new GradientStop(Color.Parse("#2FE6D8"), 1) },
+                };
+                UfukWord.Effect = new DropShadowEffect { OffsetX = 0, OffsetY = 0, BlurRadius = 26, Color = Color.Parse("#2FE6D8"), Opacity = 0.85 };
+                UfukTop.Text = "DERİN KARANLIK";
+                UfukTop.Foreground = new SolidColorBrush(Color.Parse("#8FF7EE"));
+            }
+            else
+            {
+                UfukWord.Foreground = _ufukWordBrush;
+                UfukWord.Effect = _ufukWordEffect;
+                UfukTop.Text = _ufukTopText;
+                UfukTop.Foreground = _ufukTopBrush;
+            }
         }
 
         private static void Rise(Control control, double p)
