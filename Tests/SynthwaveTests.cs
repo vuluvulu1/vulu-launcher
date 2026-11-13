@@ -48,6 +48,13 @@ namespace VuluLauncher.Tests
         }
 
         [Fact]
+        public void SculkTransitionCompiles()
+        {
+            using var effect = SKRuntimeEffect.CreateShader(Views.ThemeTransition.SculkShader, out string? errors);
+            Assert.True(effect != null, errors);
+        }
+
+        [Fact]
         public void BurnShaderCompiles()
         {
             using var effect = SKRuntimeEffect.CreateShader(Views.ThemeTransition.BurnShader, out string? errors);

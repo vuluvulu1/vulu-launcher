@@ -224,13 +224,13 @@ namespace VuluLauncher.Views
                     GradientStops = { new GradientStop(Color.Parse("#F2FFFD"), 0), new GradientStop(Color.Parse("#8FF7EE"), 0.55), new GradientStop(Color.Parse("#2FE6D8"), 1) },
                 };
                 UfukWord.Effect = new DropShadowEffect { OffsetX = 0, OffsetY = 0, BlurRadius = 26, Color = Color.Parse("#2FE6D8"), Opacity = 0.85 };
-                UfukTop.Text = "DERİN KARANLIK";
-                UfukTop.Foreground = new SolidColorBrush(Color.Parse("#8FF7EE"));
+                UfukTop.IsVisible = false;   // üst yazı Ufkun öbür ucu'na özgü
             }
             else
             {
                 UfukWord.Foreground = _ufukWordBrush;
                 UfukWord.Effect = _ufukWordEffect;
+                UfukTop.IsVisible = true;
                 UfukTop.Text = _ufukTopText;
                 UfukTop.Foreground = _ufukTopBrush;
             }

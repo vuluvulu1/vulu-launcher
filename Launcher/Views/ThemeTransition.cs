@@ -11,7 +11,7 @@ namespace VuluLauncher.Views
 {
     /// <summary>
     /// Tema geçişi: ortadan dışa doğru uzanan ışık çizgileriyle bir "olay ufku" tüneli ekranı kaplar, tam ortada tema
-    /// değişir, tünel açılarak yeni temayı gösterir (~1,4 sn). Ufkun öbür ucu'na pembe-camgöbeği, Derin Karanlık'a sculk camgöbeği; Meşale'ye dönüş yanarak.
+    /// değişir, tünel açılarak yeni temayı gösterir (~1,4 sn). Bu tünel Ufkun öbür ucu'nun; Meşale'ye yanarak, Derin Karanlık'a sculk yayılarak geçilir.
     /// vulu-web'deki /vulusalufuk geçişinin (vulusalGecis3d.js) hafif karşılığı; tek bir SkSL gölgelendirici.
     /// </summary>
     internal sealed class ThemeTransition : Control
@@ -77,9 +77,55 @@ half4 main(float2 coord) {
             catch { return null; }
         });
 
+        /// <summary>
+        /// Derin Karanlık'a geçiş: ekran Warden'ın karanlık efekti gibi nabızla kararır; ortadan dallanan sculk damarları
+        /// eski görüntünün üstüne yayılır, önlerindeki görüntü ses dalgası gibi titrer; damarların geçtiği yerden yeni tema
+        /// çıkar. Yanma geçişiyle aynı düzen (eski görüntünün resmi + ilerleyen cephe), kendine ait bir cephe.
+        /// </summary>
+        public const string SculkShader = @"
+uniform shader img; uniform float2 size; uniform float2 imgSize; uniform float front; uniform float time;
+float hash(float2 p) { return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
+float noise(float2 p) {
+    float2 i = floor(p), f = fract(p), u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + float2(1, 0)), u.x), mix(hash(i + float2(0, 1)), hash(i + float2(1, 1)), u.x), u.y);
+}
+float fbm(float2 p) { return noise(p) * .5 + noise(p * 2.1 + 3.0) * .27 + noise(p * 4.3 + 7.0) * .15 + noise(p * 9.1 + 1.0) * .08; }
+half4 main(float2 coord) {
+    float3 cyan = float3(0.184, 0.902, 0.847);
+    float2 p = (coord - size * 0.5) / size.y;
+    float r = length(p * float2(0.75, 1.0));
+    // Damarlar: dallanan çizgiler; cephenin önüne uzanırlar (dokunaçlar)
+    float v = abs(fbm(p * 5.0 + 3.0) - 0.5);
+    float vein = 1.0 - smoothstep(0.0, 0.012, v);
+    float e = r - front - vein * 0.24 - (fbm(p * 2.0) - 0.5) * 0.14;
+    // Ses dalgası: cephenin önünde görüntü dalgalanır
+    float ripple = sin((r - front) * 90.0 - time * 22.0) * exp(-max(e, 0.0) * 10.0) * 0.005;
+    float2 dir = p / max(length(p), 0.0001);
+    float3 old = img.eval((coord + dir * ripple * size.y) * imgSize / size).rgb;
+    // Karanlık: nabızla kararır, cephe yaklaştıkça koyulaşır
+    float pulse = 0.5 + 0.5 * sin(time * 7.0);
+    old *= 1.0 - clamp(front, 0.0, 1.0) * (0.25 + 0.2 * pulse);
+    old *= 1.0 - 0.7 * exp(-max(e, 0.0) * 7.0);
+    // Cephenin önündeki bantta parlayan damarlar ve cephe çizgisi
+    float3 color = old + cyan * vein * exp(-max(e, 0.0) * 5.0) * 1.1 + cyan * exp(-abs(e) * 70.0) * 0.9;
+    float a = smoothstep(-0.006, 0.006, e);
+    color = color * a + cyan * 0.45 * exp(min(e, 0.0) * 28.0) * (1.0 - a);
+    return half4(half3(color), half(a));
+}";
+
+        private static readonly Lazy<SKRuntimeEffect?> Sculk = new(() =>
+        {
+            try { return SKRuntimeEffect.CreateShader(SculkShader, out _); }
+            catch { return null; }
+        });
+
         private const double BurnMs = 1500;
+        private const double SculkMs = 1800;
         private SKImage? _snapshot;
+        /// <summary>Eski görüntünün üstünden ilerleyen geçiş (yanma ya da sculk) sürüyor.</summary>
         private bool _burning;
+        private SKRuntimeEffect? _sheetEffect;
+        private double _sheetMs = BurnMs;
 
         private const double DurationMs = 1400;
         private readonly Stopwatch _clock = new();
@@ -96,18 +142,23 @@ half4 main(float2 coord) {
         }
 
         /// <summary>
-        /// Geçişi oynatır. Ufkun öbür ucu'na: ışık tüneli, perde ekranı tam örttüğünde <paramref name="atMiddle"/> çağrılır.
-        /// Meşale'ye: ekranın görüntüsü alınır, tema hemen değişir, eski görüntü yanarak açılır.
+        /// Geçişi oynatır; her temanın kendi geçişi vardır:
+        ///   Ufkun öbür ucu: ışık tüneli, perde ekranı tam örttüğünde <paramref name="atMiddle"/> çağrılır.
+        ///   Meşale: ekranın görüntüsü alınır, tema hemen değişir, eski görüntü yanarak açılır.
+        ///   Derin Karanlık: aynı düzen, eski görüntüyü sculk damarları yutar.
         /// </summary>
         public Task PlayAsync(string theme, Action atMiddle)
         {
             _done?.TrySetResult();
-            if (theme == Themes.Mesale && Burn.Value != null && TakeSnapshot() is { } shot)
+            var sheet = theme switch { Themes.Mesale => Burn.Value, Themes.Derin => Sculk.Value, _ => null };
+            if (sheet != null && TakeSnapshot() is { } shot)
             {
                 _snapshot?.Dispose();
                 _snapshot = shot;
+                _sheetEffect = sheet;
+                _sheetMs = theme == Themes.Derin ? SculkMs : BurnMs;
                 _burning = true;
-                atMiddle();                // altta Meşale; üstte eski görüntü yanacak
+                atMiddle();                // altta yeni tema; üstte eski görüntü yanacak / yutulacak
                 _atMiddle = null;
                 _middleDone = true;
                 _done = new TaskCompletionSource();
@@ -123,11 +174,12 @@ half4 main(float2 coord) {
                 atMiddle();
                 return Task.CompletedTask;
             }
+            // Işık tüneli Ufkun öbür ucu'nun geçişidir (öbürleri görüntü alınamazsa da buna düşer, kendi renkleriyle)
             (_a, _b) = theme switch
             {
-                Themes.Ufuk => ((1f, 0.18f, 0.95f), (0f, 0.84f, 1f)),         // pembe çizgiler, camgöbeği halka
-                Themes.Derin => ((0.18f, 0.9f, 0.85f), (0.56f, 0.97f, 0.93f)), // sculk camgöbeği, açık halka
-                _ => ((1f, 0.6f, 0.2f), (1f, 0.85f, 0.5f)),                   // amber kor
+                Themes.Derin => ((0.18f, 0.9f, 0.85f), (0.56f, 0.97f, 0.93f)),
+                Themes.Mesale => ((1f, 0.6f, 0.2f), (1f, 0.85f, 0.5f)),
+                _ => ((1f, 0.18f, 0.95f), (0f, 0.84f, 1f)),                   // pembe çizgiler, camgöbeği halka
             };
             _atMiddle = atMiddle;
             _middleDone = false;
@@ -158,7 +210,7 @@ half4 main(float2 coord) {
 
         private void Frame(TimeSpan _)
         {
-            _progress = Math.Min(1, _clock.Elapsed.TotalMilliseconds / (_burning ? BurnMs : DurationMs));
+            _progress = Math.Min(1, _clock.Elapsed.TotalMilliseconds / (_burning ? _sheetMs : DurationMs));
             if (!_middleDone && _progress >= 0.5)
             {
                 _middleDone = true;
@@ -185,13 +237,13 @@ half4 main(float2 coord) {
 
         public override void Render(DrawingContext context)
         {
-            if (_burning && _snapshot != null)
-                context.Custom(new BurnDraw(new Rect(Bounds.Size), _snapshot, Front(_progress), _clock.Elapsed.TotalSeconds));
+            if (_burning && _snapshot != null && _sheetEffect != null)
+                context.Custom(new BurnDraw(_sheetEffect, new Rect(Bounds.Size), _snapshot, Front(_progress), _clock.Elapsed.TotalSeconds));
             else
                 context.Custom(new Draw(new Rect(Bounds.Size), _progress, _clock.Elapsed.TotalSeconds, _a, _b));
         }
 
-        private sealed class BurnDraw(Rect bounds, SKImage image, double front, double time) : ICustomDrawOperation
+        private sealed class BurnDraw(SKRuntimeEffect effect, Rect bounds, SKImage image, double front, double time) : ICustomDrawOperation
         {
             public Rect Bounds => bounds;
             public bool HitTest(Point p) => false;
@@ -201,9 +253,9 @@ half4 main(float2 coord) {
             public void Render(ImmediateDrawingContext context)
             {
                 var feature = context.TryGetFeature<ISkiaSharpApiLeaseFeature>();
-                if (feature == null || Burn.Value == null) return;
+                if (feature == null) return;
                 using var lease = feature.Lease();
-                var uniforms = new SKRuntimeEffectUniforms(Burn.Value)
+                var uniforms = new SKRuntimeEffectUniforms(effect)
                 {
                     ["size"] = new[] { (float)bounds.Width, (float)bounds.Height },
                     ["imgSize"] = new[] { (float)image.Width, (float)image.Height },
@@ -211,8 +263,8 @@ half4 main(float2 coord) {
                     ["time"] = (float)time,
                 };
                 using var imageShader = image.ToShader();
-                var children = new SKRuntimeEffectChildren(Burn.Value) { ["img"] = imageShader };
-                using var shader = Burn.Value.ToShader(uniforms, children);
+                var children = new SKRuntimeEffectChildren(effect) { ["img"] = imageShader };
+                using var shader = effect.ToShader(uniforms, children);
                 using var paint = new SKPaint { Shader = shader };
                 lease.SkCanvas.DrawRect(new SKRect(0, 0, (float)bounds.Width, (float)bounds.Height), paint);
             }
