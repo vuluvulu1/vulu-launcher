@@ -38,7 +38,7 @@
                         <Setter Property="Height" Value="34" />
                     </Style>
                     <Style Selector="Button.tb:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="#24FFE2BA" />
+                        <Setter Property="Background" Value="{StaticResource SoftFillHover}" />
                     </Style>
                     <Style Selector="Button.tb Path.icon">
                         <Setter Property="Stroke" Value="{StaticResource Text}" />
@@ -53,11 +53,11 @@
                     </Style>
                     <Style Selector="Button.chip">
                         <Setter Property="BorderThickness" Value="1" />
-                        <Setter Property="BorderBrush" Value="#4DFFD8A0" />
-                        <Setter Property="Background" Value="#CC14100C" />
+                        <Setter Property="BorderBrush" Value="{StaticResource ButtonLine}" />
+                        <Setter Property="Background" Value="{StaticResource Glass}" />
                     </Style>
                     <Style Selector="Button.chip:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                        <Setter Property="Background" Value="#CC14100C" />
+                        <Setter Property="Background" Value="{StaticResource Glass}" />
                         <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
                     </Style>
                 </Border.Styles>
@@ -205,7 +205,7 @@
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                     <ItemsControl.Styles>
-                                                        <Style Selector="Button.notif.new"><Setter Property="Background" Value="#17F2A33A" /></Style>
+                                                        <Style Selector="Button.notif.new"><Setter Property="Background" Value="{StaticResource AccentSoft}" /></Style>
                                                     </ItemsControl.Styles>
                                                 </ItemsControl>
                                             </ScrollViewer>
@@ -412,9 +412,8 @@
                                     </Style.Animations>
                                 </Style>
                             </Border.Styles>
-                            <Border Width="{Binding Width}" HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="720"
-                                    Background="{StaticResource Panel}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
-                                    BoxShadow="0 18 44 0 #9E000000">
+                            <Border Classes="modal-box" Width="{Binding Width}" HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="720"
+                                    Background="{StaticResource Panel}" BorderThickness="1">
                                 <v:ModalHost />
                             </Border>
                         </Border>

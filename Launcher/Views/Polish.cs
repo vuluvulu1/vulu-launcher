@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -120,9 +120,11 @@ namespace VuluLauncher.Views
     /// <summary>Radyo çalarken zıplayan üç ses çubuğu (web: .music-eq, 0,9 sn).</summary>
     internal sealed class EqBars : Animated
     {
-        private static readonly IBrush Bar = new SolidColorBrush(Color.Parse("#FFC873"));
-
         public EqBars() { Width = 13; Height = 14; }
+
+        /// <summary>Temanın açık vurgu rengi (Meşale'de amber, Ufkun öbür ucu'nda camgöbeği).</summary>
+        private static IBrush Bar => Application.Current?.TryGetResource("AccentHi", null, out var b) == true && b is IBrush brush
+            ? brush : Brushes.Orange;
 
         public override void Render(DrawingContext context)
         {
@@ -140,8 +142,17 @@ namespace VuluLauncher.Views
     /// <summary>Yüklenirken yer tutan, üstünden ışık geçen kutu (web: .skeleton, 1,3 sn).</summary>
     internal sealed class Skeleton : Control
     {
-        private static readonly Color Base = Color.Parse("#281F17");
-        private static readonly Color Shine = Color.Parse("#3A2D21");
+        /// <summary>Temanın yükseltilmiş yüzey rengi ve ondan biraz açığı (Meşale'de kahve, Ufkun öbür ucu'nda mor).</summary>
+        private static Color Base => Application.Current?.TryGetResource("Raised", null, out var b) == true && b is SolidColorBrush s
+            ? Color.FromRgb(s.Color.R, s.Color.G, s.Color.B) : Color.Parse("#281F17");
+        private static Color Shine
+        {
+            get
+            {
+                var c = Base;
+                return Color.FromRgb((byte)Math.Min(255, c.R + 18), (byte)Math.Min(255, c.G + 14), (byte)Math.Min(255, c.B + 18));
+            }
+        }
         private readonly Stopwatch _clock = Stopwatch.StartNew();
         private bool _animating;
 

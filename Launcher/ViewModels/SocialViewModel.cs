@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
 using Avalonia.Media.Imaging;
@@ -168,7 +168,8 @@ namespace VuluLauncher.ViewModels
         public bool Read { get; }
         public DmCardItem? Card { get; }
         public bool HasCard => Card != null;
-        public bool HasBubble => Text != null || Problem != null || Card == null;
+        /// <summary>Yalnızca kart (paket/sunucu daveti) gönderilen mesajda metin boş gelir: boş balon gösterilmez.</summary>
+        public bool HasBubble => !string.IsNullOrEmpty(Text) || Problem != null || Card == null;
         public string Bubble => Text ?? Problem ?? "";
         public bool IsBroken => Problem != null && Text == null;
         public string Time => CreatedAt.ToString("HH:mm", CultureInfo.InvariantCulture) + (Mine && Read ? " · okundu" : "");

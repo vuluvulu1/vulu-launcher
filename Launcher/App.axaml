@@ -342,6 +342,12 @@
             <Setter Property="RenderTransform" Value="scale(1.04)" />
         </Style>
 
+        <!-- Kutuların (pencere içi diyaloglar, hızlı arama) çerçevesi -->
+        <Style Selector="Border.modal-box">
+            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
+            <Setter Property="BoxShadow" Value="0 18 44 0 #9E000000" />
+        </Style>
+
         <!-- Kartlar: üstüne gelince kenar yumuşakça belirginleşir -->
         <Style Selector="Border.card, Border.row-card">
             <Setter Property="Transitions">

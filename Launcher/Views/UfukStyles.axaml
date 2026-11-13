@@ -138,4 +138,18 @@
             </LinearGradientBrush>
         </Setter>
     </Style>
+
+    <!-- Kutular (pencereler, hızlı arama): yuvarlak cam, neon kenar, pembe hale -->
+    <Style Selector="Window.ufuk Border.modal-box">
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="BorderBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="#CCFF2DF1" />
+                <GradientStop Offset="0.45" Color="#1AFFFFFF" />
+                <GradientStop Offset="1" Color="#B300D7FF" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="BoxShadow" Value="0 24 60 0 #B3000000, 0 0 40 0 #33FF2DF1" />
+    </Style>
 </Styles>
