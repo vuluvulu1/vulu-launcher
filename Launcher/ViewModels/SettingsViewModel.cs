@@ -196,6 +196,13 @@ namespace VuluLauncher.ViewModels
                         await main.SwitchThemeAsync(value);
                         return true;
                     }))
+                .Add(new ToggleRow("Hareketli arka plan", "Ufkun öbür ucu temasında güneş ve ızgara akar. Kapatırsan sahne sabit durur; launcher yavaşlıyorsa kapat.",
+                    B("animatedBackground", true), async value =>
+                    {
+                        if (!await Change(("animatedBackground", value))) return false;
+                        Views.SynthwaveBackdrop.SetAnimated(value);
+                        return true;
+                    }))
                 .Add(new ChoiceRow("Yazı ve arayüz boyutu", "Pencere aynı kalır, içindeki bütün yazılar ve düğmeler büyür ya da küçülür. Büyük ekranlarda \"Büyük\" daha rahat okunur.",
                     UiScales, I("uiScale") is var scale && scale > 0 ? scale.ToString(CultureInfo.InvariantCulture) : "100",
                     value => Change(("uiScale", int.Parse(value, CultureInfo.InvariantCulture)))))

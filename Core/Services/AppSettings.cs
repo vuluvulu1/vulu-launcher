@@ -63,6 +63,8 @@ namespace VuluLauncher
         public string AccentColor { get; set; } = "#c27e3e";
         /// <summary>Launcher teması: "mesale" (varsayılan) ya da "ufuk" (Ufkun öbür ucu, synthwave).</summary>
         public string Theme { get; set; } = "mesale";
+        /// <summary>Ufkun öbür ucu temasında arka plan akar mı; kapalıyken sabit bir kare (yavaş bilgisayarlar için).</summary>
+        public bool AnimatedBackground { get; set; } = true;
 
         private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
         private static readonly object Gate = new();

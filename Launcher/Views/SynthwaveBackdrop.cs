@@ -12,15 +12,16 @@ namespace VuluLauncher.Views
     /// <summary>
     /// "Ufkun öbür ucu" temasının hareketli arka planı: vulu-web'deki /vulusalufuk sahnesinin (three.js) tek bir SkSL
     /// gölgelendiriciyle çizilen hafif karşılığı. Mor gökyüzü ve yıldızlar, çizgili batan güneş, dağ silueti ve
-    /// izleyiciye doğru akan neon ızgara. Saniyede 30 kare; pencere gizliyken ya da tema kapalıyken hiç çizmez.
+    /// izleyiciye doğru akan neon ızgara. Pencere gizliyken ya da tema kapalıyken hiç çizmez.
     /// </summary>
     internal sealed class SynthwaveBackdrop : Control
     {
         internal const string Shader = @"
-uniform float2 size; uniform float time; uniform float rise; uniform float bright;
+uniform float2 size; uniform float time; uniform float rise; uniform float bright; uniform float offsetY;
 float hash(float2 p) { return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
 float noise1(float x) { float i = floor(x), f = fract(x); return mix(hash(float2(i, 0.0)), hash(float2(i + 1.0, 0.0)), f * f * (3.0 - 2.0 * f)); }
-half4 main(float2 coord) {
+half4 main(float2 local) {
+    float2 coord = float2(local.x, local.y + offsetY);
     float2 uv = coord / size;
     float aspect = size.x / size.y;
     float hz = 0.64;                       // ufuk çizgisi
@@ -44,7 +45,7 @@ half4 main(float2 coord) {
         if (r < R) {
             float v = (uv.y - (c.y - R)) / (2.0 * R);          // 0 üst, 1 alt
             float3 sun = mix(float3(1.0, 0.85, 0.48), float3(1.0, 0.24, 0.78), smoothstep(0.1, 0.95, v));
-            float band = fract(v * 9.0 - time * 0.25);
+            float band = fract(v * 9.0 - time * 0.06);
             float gap = smoothstep(0.45, 1.0, v) * 0.55;       // üstte boşluk yok
             if (band < gap) sun = col;
             col = mix(col, sun, smoothstep(R, R - 0.004, r));
@@ -95,10 +96,24 @@ half4 main(float2 coord) {
             catch { return null; }
         });
 
-        private readonly DispatcherTimer _timer;
+        /// <summary>Ufuk çizgisi (gölgelendiricideki hz ile aynı).</summary>
+        internal const double Horizon = 0.64;
+
+        /// <summary>Hareketli arka plan açık mı (Ayarlar); kapalıyken sahne tek kare çizilip durur.</summary>
+        public static bool Animated { get; set; } = true;
+        public static event Action? AnimatedChanged;
+        public static void SetAnimated(bool value)
+        {
+            Animated = value;
+            AnimatedChanged?.Invoke();
+        }
+
+        private readonly SynthLayer _sky, _ground;
+        private readonly DispatcherTimer _skyTimer, _groundTimer;
+        private readonly DateTime _start = DateTime.UtcNow;
 
         /// <summary>
-        /// Elle sürülen sahne (açılış animasyonu): kendi zamanlayıcısı çalışmaz; <see cref="Time"/>, <see cref="Rise"/> ve
+        /// Elle sürülen sahne (açılış animasyonu): zamanlayıcılar çalışmaz; <see cref="Time"/>, <see cref="Rise"/> ve
         /// <see cref="Brightness"/> verilip InvalidateVisual çağrılır.
         /// </summary>
         public bool Manual { get; set; }
@@ -108,35 +123,97 @@ half4 main(float2 coord) {
         public double Rise { get; set; } = 1;
         /// <summary>0 karanlık, 1 normal, 2 beyaz parlama.</summary>
         public double Brightness { get; set; } = 1;
-        private readonly DateTime _start = DateTime.UtcNow;
 
+        internal double CurrentTime => Manual ? Time : Animated ? (DateTime.UtcNow - _start).TotalSeconds : 4.0;
+        internal double CurrentRise => Manual ? Rise : 1;
+        internal double CurrentBrightness => Manual ? Brightness : 1;
+
+        /// <summary>
+        /// Performans: sahne iki katmandır. Yalnızca ufkun altındaki ızgara akıcı güncellenir (pencerenin ~üçte biri);
+        /// gökyüzü, güneş ve yıldızlar saniyede birkaç kez. Bir katman yenilenince üstündeki arayüz de o bölgede yeniden
+        /// çizildiği için asıl kazanç buradan gelir. Pencere odakta değilken ikisi de yavaşlar; gizliyken durur.
+        /// </summary>
         public SynthwaveBackdrop()
         {
             IsHitTestVisible = false;
-            _timer = new DispatcherTimer(TimeSpan.FromMilliseconds(33), DispatcherPriority.Render, (_, _) =>
-            {
-                if (!Manual && IsEffectivelyVisible && TopLevel.GetTopLevel(this) is Window { IsVisible: true, WindowState: not WindowState.Minimized })
-                    InvalidateVisual();
-            });
+            ClipToBounds = true;
+            _sky = new SynthLayer(this, top: true);
+            _ground = new SynthLayer(this, top: false);
+            LogicalChildren.Add(_sky); VisualChildren.Add(_sky);
+            LogicalChildren.Add(_ground); VisualChildren.Add(_ground);
+            _skyTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(125), DispatcherPriority.Background, (_, _) => Tick(_sky));
+            _groundTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(40), DispatcherPriority.Render, (_, _) => Tick(_ground));
+        }
+
+        private void Tick(SynthLayer layer)
+        {
+            if (Manual || !Animated || !IsEffectivelyVisible) return;
+            if (TopLevel.GetTopLevel(this) is not Window { IsVisible: true, WindowState: not WindowState.Minimized } window) return;
+            // Odakta değilken yavaş: ızgara saniyede 8, gökyüzü 2 kare
+            var want = TimeSpan.FromMilliseconds(layer == _ground ? (window.IsActive ? 40 : 125) : (window.IsActive ? 125 : 500));
+            var timer = layer == _ground ? _groundTimer : _skyTimer;
+            if (timer.Interval != want) timer.Interval = want;
+            layer.InvalidateVisual();
+        }
+
+        public new void InvalidateVisual()
+        {
+            _sky.InvalidateVisual();
+            _ground.InvalidateVisual();
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            _sky.Measure(availableSize);
+            _ground.Measure(availableSize);
+            return default;
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            double split = Math.Round(finalSize.Height * Horizon);
+            _sky.Arrange(new Rect(0, 0, finalSize.Width, split));
+            _ground.Arrange(new Rect(0, split, finalSize.Width, finalSize.Height - split));
+            return finalSize;
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _timer.Start();
+            _skyTimer.Start();
+            _groundTimer.Start();
+            AnimatedChanged += InvalidateVisual;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            _timer.Stop();
+            _skyTimer.Stop();
+            _groundTimer.Stop();
+            AnimatedChanged -= InvalidateVisual;
             base.OnDetachedFromVisualTree(e);
         }
 
-        public override void Render(DrawingContext context) =>
-            context.Custom(new Draw(new Rect(Bounds.Size), Manual ? Time : (DateTime.UtcNow - _start).TotalSeconds,
-                Manual ? Rise : 1, Manual ? Brightness : 1));
+        /// <summary>Sahnenin bir parçası (gökyüzü ya da zemin).</summary>
+        private sealed class SynthLayer(SynthwaveBackdrop owner, bool top) : Control
+        {
+            /// <summary>Çizim iş parçacığının kullandığı ara yüzey (yarı çözünürlük); yalnızca orada dokunulur.</summary>
+            private readonly Holder _holder = new();
 
-        private sealed class Draw(Rect bounds, double time, double rise, double bright) : ICustomDrawOperation
+            public override void Render(DrawingContext context)
+            {
+                var full = owner.Bounds.Size;
+                context.Custom(new Draw(new Rect(Bounds.Size), full, top ? 0 : Bounds.Y, owner.CurrentTime,
+                    owner.CurrentRise, owner.CurrentBrightness, _holder));
+            }
+        }
+
+        private sealed class Holder
+        {
+            public SKSurface? Surface;
+            public int W, H;
+        }
+
+        private sealed class Draw(Rect bounds, Size full, double offsetY, double time, double rise, double bright, Holder holder) : ICustomDrawOperation
         {
             public Rect Bounds => bounds;
             public bool HitTest(Point p) => false;
@@ -146,7 +223,7 @@ half4 main(float2 coord) {
             public void Render(ImmediateDrawingContext context)
             {
                 var feature = context.TryGetFeature<ISkiaSharpApiLeaseFeature>();
-                if (feature == null) return;
+                if (feature == null || bounds.Width < 1 || bounds.Height < 1) return;
                 using var lease = feature.Lease();
                 var canvas = lease.SkCanvas;
                 var rect = new SKRect(0, 0, (float)bounds.Width, (float)bounds.Height);
@@ -155,7 +232,7 @@ half4 main(float2 coord) {
                     // Gölgelendirici açılamazsa sitedeki yedek gibi düz gradyan
                     using var fallback = new SKPaint
                     {
-                        Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(0, rect.Height),
+                        Shader = SKShader.CreateLinearGradient(new SKPoint(0, (float)-offsetY), new SKPoint(0, (float)(full.Height - offsetY)),
                             new[] { new SKColor(0, 0, 0), new SKColor(11, 0, 32), new SKColor(58, 10, 90), new SKColor(163, 32, 111), new SKColor(18, 0, 42), new SKColor(7, 0, 15) },
                             new[] { 0f, .35f, .55f, .64f, .642f, 1f }, SKShaderTileMode.Clamp),
                     };
@@ -164,14 +241,34 @@ half4 main(float2 coord) {
                 }
                 var uniforms = new SKRuntimeEffectUniforms(Effect.Value)
                 {
-                    ["size"] = new[] { (float)bounds.Width, (float)bounds.Height },
+                    ["size"] = new[] { (float)full.Width, (float)full.Height },
                     ["time"] = (float)(time % 3600),
                     ["rise"] = (float)rise,
                     ["bright"] = (float)bright,
+                    ["offsetY"] = (float)offsetY,
                 };
                 using var shader = Effect.Value.ToShader(uniforms);
                 using var paint = new SKPaint { Shader = shader };
-                canvas.DrawRect(rect, paint);
+
+                // Ekrandaki piksel boyutunun yarısında bir ara yüzeye çizilir, sonra yumuşatılarak büyütülür
+                var gr = lease.GrContext;
+                float scale = canvas.TotalMatrix.ScaleX;
+                int w = Math.Max(1, (int)Math.Ceiling(bounds.Width * scale * 0.5)), h = Math.Max(1, (int)Math.Ceiling(bounds.Height * scale * 0.5));
+                if (gr == null) { canvas.DrawRect(rect, paint); return; }
+                if (holder.Surface == null || holder.W != w || holder.H != h)
+                {
+                    holder.Surface?.Dispose();
+                    holder.Surface = SKSurface.Create(gr, false, new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Premul));
+                    holder.W = w; holder.H = h;
+                }
+                if (holder.Surface == null) { canvas.DrawRect(rect, paint); return; }
+                var off = holder.Surface.Canvas;
+                off.ResetMatrix();
+                off.Scale(w / (float)bounds.Width, h / (float)bounds.Height);
+                off.DrawRect(rect, paint);
+                off.Flush();
+                using var image = holder.Surface.Snapshot();
+                canvas.DrawImage(image, rect, new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
             }
         }
     }
