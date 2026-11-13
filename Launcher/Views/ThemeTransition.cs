@@ -149,6 +149,13 @@ half4 main(float2 coord) {
         /// </summary>
         public Task PlayAsync(string theme, Action atMiddle)
         {
+            // Önceki geçiş temasını henüz uygulamadıysa önce o uygulanır (hiçbir seçim kaybolmasın)
+            if (!_middleDone && _atMiddle is { } pending)
+            {
+                _atMiddle = null;
+                _middleDone = true;
+                try { pending(); } catch { }
+            }
             _done?.TrySetResult();
             var sheet = theme switch { Themes.Mesale => Burn.Value, Themes.Derin => Sculk.Value, _ => null };
             if (sheet != null && TakeSnapshot() is { } shot)
@@ -158,9 +165,12 @@ half4 main(float2 coord) {
                 _sheetEffect = sheet;
                 _sheetMs = theme == Themes.Derin ? SculkMs : BurnMs;
                 _burning = true;
-                atMiddle();                // altta yeni tema; üstte eski görüntü yanacak / yutulacak
-                _atMiddle = null;
-                _middleDone = true;
+                // Tema hemen değil, eski görüntü ekrana geldikten sonra uygulanır: uygulama arayüzü bir süre meşgul eder,
+                // bu sırada ekranda donuk bir arayüz yerine eski görüntü durur; efekt tema uygulanınca başlar
+                _atMiddle = atMiddle;
+                _middleDone = false;
+                _waitFrames = 2;
+                _progress = 0;
                 _done = new TaskCompletionSource();
                 IsHitTestVisible = true;
                 IsVisible = true;
@@ -218,8 +228,25 @@ half4 main(float2 coord) {
             catch { return null; }
         }
 
+        /// <summary>Görüntü geçişinde temayı uygulamadan önce beklenen kare sayısı (görüntü ekrana gelsin).</summary>
+        private int _waitFrames;
+
         private void Frame(TimeSpan _)
         {
+            if (_burning && _waitFrames > 0)
+            {
+                if (--_waitFrames == 0)
+                {
+                    _middleDone = true;
+                    try { _atMiddle?.Invoke(); } catch { }
+                    _atMiddle = null;
+                    _clock.Restart();       // efekt tema uygulandıktan sonra baştan
+                }
+                InvalidateVisual();
+                if (TopLevel.GetTopLevel(this) is { } waitTop) waitTop.RequestAnimationFrame(Frame);
+                else { _waitFrames = 0; _middleDone = true; _atMiddle?.Invoke(); _atMiddle = null; }
+                return;
+            }
             _progress = Math.Min(1, _clock.Elapsed.TotalMilliseconds / (_burning ? _sheetMs : DurationMs));
             if (!_middleDone && _progress >= 0.5)
             {
