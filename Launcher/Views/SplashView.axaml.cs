@@ -29,7 +29,6 @@ namespace VuluLauncher.Views
         private double _last;
         /// <summary>Bu oynatma Ufkun öbür ucu açılışı mı (tema açılışta bir kez okunur).</summary>
         private bool _ufuk;
-        private double _ufukTime;
 
         public SplashView()
         {
@@ -59,9 +58,9 @@ namespace VuluLauncher.Views
             // Sahnesi olan temalarda (Ufkun öbür ucu, Derin Karanlık) sahneli açılış; yazının rengi temaya göre
             _ufuk = Themes.HasScene;
             if (_ufuk) StyleSceneTitle();
-            _ufukTime = 0;
             UfukStage.IsVisible = _ufuk;
             UfukStage.Opacity = 1;
+            if (_ufuk) UfukScene.StartSplash();
             Sheet.IsVisible = Glow.IsVisible = Title.IsVisible = Sparks.IsVisible = !_ufuk;
             _clock.Restart();
             _last = 0;
@@ -74,6 +73,7 @@ namespace VuluLauncher.Views
             _opened?.TrySetResult();
             _opened = new TaskCompletionSource();
             _openClock.Restart();
+            if (_ufuk) UfukScene.OpenSplash();
             Start();
             return _opened.Task;
         }
@@ -179,16 +179,8 @@ namespace VuluLauncher.Views
         /// </summary>
         private void RenderUfuk(double t, double open, double dt)
         {
+            // Sahnenin kendisi (zaman, doğuş, parlama, saydamlaşma) çizim iş parçacığında hesaplanır
             double p = open < 0 ? 0 : Math.Min(1, open / BurnMs);
-            double speed = 1 + 16 * p * p;
-            _ufukTime += dt / 1000 * speed;
-
-            UfukScene.Time = _ufukTime;
-            UfukScene.Rise = OutEase.Ease(Progress(t, 150, 1600));
-            double flash = p <= 0.35 ? 0 : Math.Sin(Math.PI * Math.Clamp((p - 0.35) / 0.5, 0, 1));
-            UfukScene.Brightness = OutEase.Ease(Progress(t, 0, 900)) + flash * 0.6;
-            UfukScene.InvalidateVisual();
-
             Rise(UfukTop, Progress(t, 500, 500));
             double word = OutEase.Ease(Progress(t, 650, 700));
             UfukWord.Opacity = word;
@@ -200,7 +192,6 @@ namespace VuluLauncher.Views
             double grow = 1 + 0.35 * OutEase.Ease(p);
             UfukTitle.RenderTransform = new ScaleTransform(grow, grow);
             UfukTitle.Opacity = 1 - Progress(open < 0 ? 0 : open, 150, 500);
-            UfukStage.Opacity = 1 - Math.Clamp((p - 0.6) / 0.4, 0, 1);
         }
 
         private IBrush? _ufukWordBrush;

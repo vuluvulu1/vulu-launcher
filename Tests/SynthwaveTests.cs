@@ -20,7 +20,7 @@ namespace VuluLauncher.Tests
             Assert.True(effect != null, errors);
             var uniforms = new SKRuntimeEffectUniforms(effect!)
             {
-                ["size"] = new[] { 1320f, 820f }, ["time"] = 2f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f, ["focus"] = 0f,
+                ["size"] = new[] { 1320f, 820f }, ["time"] = 2f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f, ["focus"] = 0f, ["fade"] = 1f,
             };
             using var shader = effect!.ToShader(uniforms);
             using var surface = SKSurface.Create(new SKImageInfo(1320, 820));
@@ -72,7 +72,7 @@ namespace VuluLauncher.Tests
         public void ShaderDraws()
         {
             using var effect = SKRuntimeEffect.CreateShader(Views.SynthwaveBackdrop.Shader, out _)!;
-            var uniforms = new SKRuntimeEffectUniforms(effect) { ["size"] = new[] { 320f, 200f }, ["time"] = 3f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f, ["focus"] = 0f };
+            var uniforms = new SKRuntimeEffectUniforms(effect) { ["size"] = new[] { 320f, 200f }, ["time"] = 3f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f, ["focus"] = 0f, ["fade"] = 1f };
             using var shader = effect.ToShader(uniforms);
             using var surface = SKSurface.Create(new SKImageInfo(320, 200));
             using var paint = new SKPaint { Shader = shader };
@@ -92,7 +92,7 @@ namespace VuluLauncher.Tests
             string? path = Environment.GetEnvironmentVariable("VULU_SYNTH_PNG");
             if (string.IsNullOrEmpty(path)) return;
             using var effect = SKRuntimeEffect.CreateShader(Views.SynthwaveBackdrop.Shader, out _)!;
-            var uniforms = new SKRuntimeEffectUniforms(effect) { ["size"] = new[] { 1320f, 820f }, ["time"] = 5f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f, ["focus"] = 0f };
+            var uniforms = new SKRuntimeEffectUniforms(effect) { ["size"] = new[] { 1320f, 820f }, ["time"] = 5f, ["rise"] = 1f, ["bright"] = 1f, ["offsetY"] = 0f, ["par"] = 0f, ["focus"] = 0f, ["fade"] = 1f };
             using var shader = effect.ToShader(uniforms);
             using var surface = SKSurface.Create(new SKImageInfo(1320, 820));
             using var paint = new SKPaint { Shader = shader };
