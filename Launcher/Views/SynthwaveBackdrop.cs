@@ -102,6 +102,8 @@ half4 main(float2 local) {
         /// <summary>Hareketli arka plan açık mı (Ayarlar); kapalıyken sahne tek kare çizilip durur.</summary>
         public static bool Animated { get; set; } = true;
         public static event Action? AnimatedChanged;
+        /// <summary>Oyun çalışırken sahne durur: ekran kartı oyuna kalsın (HomeViewModel.GameRunning).</summary>
+        public static bool GameRunning { get; set; }
         public static void SetAnimated(bool value)
         {
             Animated = value;
@@ -147,7 +149,7 @@ half4 main(float2 local) {
 
         private void Tick(SynthLayer layer)
         {
-            if (Manual || !Animated || !IsEffectivelyVisible) return;
+            if (Manual || !Animated || GameRunning || !IsEffectivelyVisible) return;
             if (TopLevel.GetTopLevel(this) is not Window { IsVisible: true, WindowState: not WindowState.Minimized } window) return;
             // Odakta değilken yavaş: ızgara saniyede 8, gökyüzü 2 kare
             var want = TimeSpan.FromMilliseconds(layer == _ground ? (window.IsActive ? 40 : 125) : (window.IsActive ? 125 : 500));

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -427,7 +427,11 @@ namespace VuluLauncher.ViewModels
             if (Selected != null) UiState.Set("ram_" + Selected.Id, value.ToString(CultureInfo.InvariantCulture));
         }
 
-        partial void OnGameRunningChanged(bool value) => Refresh();
+        partial void OnGameRunningChanged(bool value)
+        {
+            Views.SynthwaveBackdrop.GameRunning = value;   // oyun açıkken tema arka planı durur
+            Refresh();
+        }
         partial void OnLaunchingChanged(bool value) => Refresh();
 
         private async Task LoadVisualsAsync(InstanceItem item)
