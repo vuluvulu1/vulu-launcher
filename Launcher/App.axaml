@@ -98,6 +98,8 @@
             <FontFamily x:Key="Mono">avares://vulu Launcher/Assets/Fonts#IBM Plex Mono</FontFamily>
             <FontFamily x:Key="Script">avares://vulu Launcher/Assets/Fonts#Great Vibes</FontFamily>
             <FontFamily x:Key="Pixel">avares://vulu Launcher/Assets/Fonts#Silkscreen</FontFamily>
+            <!-- Ufkun öbür ucu başlıkları (vulu-web /vulusalufuk ile aynı yazı tipi, OFL) -->
+            <FontFamily x:Key="Neon">avares://vulu Launcher/Assets/Fonts#Orbitron</FontFamily>
 
             <!-- Fluent temasının vurgu rengi (seçim, odak, kaydırma çubuğu) Meşale'ye çekilir -->
             <Color x:Key="SystemAccentColor">#F2A33A</Color>

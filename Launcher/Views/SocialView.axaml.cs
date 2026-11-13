@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using VuluLauncher.ViewModels;
@@ -10,6 +10,7 @@ namespace VuluLauncher.Views
         public SocialView()
         {
             InitializeComponent();
+            Themes.Attach(this);   // Ufkun öbür ucu: sayfanın kendi stillerinin üstüne
             // Enter gönderir, Shift+Enter yeni satır
             Compose.AddHandler(KeyDownEvent, (_, e) =>
             {

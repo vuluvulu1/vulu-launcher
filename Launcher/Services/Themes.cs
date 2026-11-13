@@ -120,6 +120,9 @@ namespace VuluLauncher
                 if (res.TryGetResource(key, null, out var value)) Write(value, colors);
             // Fluent'in vurgu renkleri Color değeridir (fırça değil): yeniden konur, DynamicResource ile bağlı olanlar güncellenir
             foreach (var (key, color) in name == Ufuk ? UfukSystem : _mesaleSystem!) res[key] = color;
+            // Meşale köşeli, Ufkun öbür ucu yuvarlak (sitedeki gibi); Fluent bu değerleri DynamicResource ile okur
+            res["ControlCornerRadius"] = new CornerRadius(name == Ufuk ? 8 : 0);
+            res["OverlayCornerRadius"] = new CornerRadius(name == Ufuk ? 12 : 0);
 
             // Fırça olmayan değerler (BoxShadow ışıltıları) için temaya özel stiller (Views/UfukStyles.axaml)
             if (_ufukStyles == null) { _ufukStyles = new Views.UfukStyles(); app.Styles.Add(_ufukStyles); }

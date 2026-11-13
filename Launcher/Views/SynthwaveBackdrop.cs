@@ -17,7 +17,7 @@ namespace VuluLauncher.Views
     internal sealed class SynthwaveBackdrop : Control
     {
         internal const string Shader = @"
-uniform float2 size; uniform float time; uniform float rise; uniform float bright; uniform float offsetY;
+uniform float2 size; uniform float time; uniform float rise; uniform float bright; uniform float offsetY; uniform float par;
 float hash(float2 p) { return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
 float noise1(float x) { float i = floor(x), f = fract(x); return mix(hash(float2(i, 0.0)), hash(float2(i + 1.0, 0.0)), f * f * (3.0 - 2.0 * f)); }
 half4 main(float2 local) {
@@ -35,12 +35,12 @@ half4 main(float2 local) {
         // Yıldızlar (yukarıda, yavaşça parlayıp söner)
         float2 g = floor(coord / 3.0);
         float s = hash(g);
-        if (s > 0.9975 && t < 0.7) col += float3(0.9, 0.85, 1.0) * (0.5 + 0.5 * sin(time * 2.0 + s * 80.0)) * (1.0 - t / 0.7);
+        if (s > 0.9955 && t < 0.75) col += float3(0.9, 0.85, 1.0) * (0.35 + 0.65 * (0.5 + 0.5 * sin(time * 2.0 + s * 80.0))) * (1.0 - t / 0.75) * (s > 0.9985 ? 1.0 : 0.55);
         // Güneş: altına doğru kalınlaşan, aşağı kayan boşluklar; çevresinde pembe hale
-        float2 c = float2(0.5, hz - 0.17 + (1.0 - rise) * 0.4);
+        float2 c = float2(0.5 - par * 0.012, hz - 0.17 + (1.0 - rise) * 0.4);
         float2 d = (uv - c) * float2(aspect, 1.0);
         float r = length(d), R = 0.20;
-        float glow = exp(-max(r - R, 0.0) * 9.0) * 0.55;
+        float glow = exp(-max(r - R, 0.0) * 7.0) * 0.75;
         col += float3(1.0, 0.18, 0.75) * glow * 0.6;
         if (r < R) {
             float v = (uv.y - (c.y - R)) / (2.0 * R);          // 0 üst, 1 alt
@@ -50,8 +50,16 @@ half4 main(float2 local) {
             if (band < gap) sun = col;
             col = mix(col, sun, smoothstep(R, R - 0.004, r));
         }
+        // Uzak dağlar: daha yüksek, sise karışmış açık mor; güneşin altını örter, kenarında soluk camgöbeği
+        float x2 = (uv.x - par * 0.018) * 3.2;
+        float m2 = noise1(x2 + 20.0) * 0.58 + noise1(x2 * 2.4 + 31.0) * 0.3 + noise1(x2 * 6.3 + 44.0) * 0.12;
+        float mh2 = hz - (0.05 + m2 * 0.15) * (1.0 - (1.0 - abs(uv.x - 0.5) * 2.0) * 0.55);
+        if (uv.y > mh2) {
+            col = mix(col, float3(0.17, 0.03, 0.30), 0.88);
+            col += float3(0.0, 0.84, 1.0) * exp(-(uv.y - mh2) * size.y * 0.5) * 0.35;
+        }
         // Dağlar: ufkun hemen üstünde koyu mor siluet, kenarında pembe çizgi
-        float x = uv.x * 7.0;
+        float x = (uv.x - par * 0.03) * 7.0;
         float m = (noise1(x) * 0.6 + noise1(x * 2.3 + 5.0) * 0.3 + noise1(x * 5.1 + 9.0) * 0.1);
         float edge = 1.0 - abs(uv.x - 0.5) * 2.0;              // ortada (güneşin önü) daha alçak
         float mh = hz - (0.03 + m * 0.12) * (1.0 - edge * 0.65);
@@ -63,20 +71,27 @@ half4 main(float2 local) {
         // Zemin: izleyiciye doğru akan perspektif ızgara (yatay pembe, dikey camgöbeği)
         float y = uv.y - hz;
         float z = 0.18 / max(y, 0.0008);
-        float wx = (uv.x - 0.5) * aspect * z * 4.0;
+        float wx = (uv.x - 0.5 + par * 0.06) * aspect * z * 4.0;
         float wz = z * 2.0 + time * 1.6;
         // Çizgiye uzaklık (0: çizginin üstü) ve bir pikselin dünya ölçüsündeki boyu (SkSL'de fwidth yok, elle)
         float dx = 0.5 - abs(fract(wx) - 0.5), dz = 0.5 - abs(fract(wz) - 0.5);
         float px = aspect * z * 4.0 / size.x, pz = 0.36 / (y * y) / size.y;
         float vx = (1.0 - smoothstep(0.0, px * 2.4, dx)) * clamp(0.6 / (px * 30.0), 0.0, 1.0);
         float vz = (1.0 - smoothstep(0.0, pz * 2.4, dz)) * clamp(0.6 / (pz * 30.0), 0.0, 1.0);
+        float gx = exp(-dx / max(px * 7.0, 0.0001)) * clamp(0.6 / (px * 30.0), 0.0, 1.0);
+        float gz = exp(-dz / max(pz * 7.0, 0.0001)) * clamp(0.6 / (pz * 30.0), 0.0, 1.0);
         float fade = smoothstep(0.0, 0.2, y);             // ufukta silikleşir
         col = mix(float3(0.07, 0.0, 0.16), float3(0.027, 0.0, 0.06), smoothstep(0.0, 0.35, y));
         col += float3(1.0, 0.18, 0.95) * vz * (0.15 + 0.95 * fade);
         col += float3(0.0, 0.84, 1.0) * vx * (0.3 + 0.8 * fade);
+        col += float3(1.0, 0.18, 0.95) * gz * 0.22 * fade + float3(0.0, 0.84, 1.0) * gx * 0.18 * fade;
         // Ufuk çizgisinin parıltısı
         col += float3(1.0, 0.25, 0.8) * exp(-y * size.y * 0.05) * 0.5;
     }
+    // Ufuk sisi: çizginin iki yanında pembe bir pus
+    col += float3(0.9, 0.2, 0.7) * exp(-abs(uv.y - hz) * 22.0) * 0.18;
+    // Film greni
+    col += (hash(coord + fract(time) * 91.7) - 0.5) * 0.03;
     // Vinyet
     float2 q = uv - 0.5;
     col *= 1.0 - dot(q, q) * 0.9;
@@ -127,6 +142,10 @@ half4 main(float2 local) {
         public double Brightness { get; set; } = 1;
 
         internal double CurrentTime => Manual ? Time : Animated ? (DateTime.UtcNow - _start).TotalSeconds : 4.0;
+        /// <summary>Fareye göre paralaks (-1 sol, 1 sağ); yumuşakça hedefe yaklaşır.</summary>
+        internal double Parallax { get; private set; }
+        private double _parallaxTarget;
+        private TopLevel? _top;
         internal double CurrentRise => Manual ? Rise : 1;
         internal double CurrentBrightness => Manual ? Brightness : 1;
 
@@ -155,6 +174,13 @@ half4 main(float2 local) {
             var want = TimeSpan.FromMilliseconds(layer == _ground ? (window.IsActive ? 40 : 125) : (window.IsActive ? 125 : 500));
             var timer = layer == _ground ? _groundTimer : _skyTimer;
             if (timer.Interval != want) timer.Interval = want;
+            if (layer == _ground)
+            {
+                double before = Parallax;
+                Parallax += (_parallaxTarget - Parallax) * 0.12;
+                // Paralaks değiştikçe gökyüzü de (güneş, dağlar) birlikte kayar
+                if (Math.Abs(Parallax - before) > 0.002) _sky.InvalidateVisual();
+            }
             layer.InvalidateVisual();
         }
 
@@ -185,6 +211,8 @@ half4 main(float2 local) {
             _skyTimer.Start();
             _groundTimer.Start();
             AnimatedChanged += InvalidateVisual;
+            _top = TopLevel.GetTopLevel(this);
+            _top?.AddHandler(Avalonia.Input.InputElement.PointerMovedEvent, OnPointerMoved, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -192,7 +220,15 @@ half4 main(float2 local) {
             _skyTimer.Stop();
             _groundTimer.Stop();
             AnimatedChanged -= InvalidateVisual;
+            _top?.RemoveHandler(Avalonia.Input.InputElement.PointerMovedEvent, OnPointerMoved);
+            _top = null;
             base.OnDetachedFromVisualTree(e);
+        }
+
+        private void OnPointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
+        {
+            if (_top == null || _top.Bounds.Width < 1) return;
+            _parallaxTarget = Math.Clamp(e.GetPosition(_top).X / _top.Bounds.Width * 2 - 1, -1, 1);
         }
 
         /// <summary>Sahnenin bir parçası (gökyüzü ya da zemin).</summary>
@@ -205,7 +241,7 @@ half4 main(float2 local) {
             {
                 var full = owner.Bounds.Size;
                 context.Custom(new Draw(new Rect(Bounds.Size), full, top ? 0 : Bounds.Y, owner.CurrentTime,
-                    owner.CurrentRise, owner.CurrentBrightness, _holder));
+                    owner.CurrentRise, owner.CurrentBrightness, owner.Manual ? 0 : owner.Parallax, _holder));
             }
         }
 
@@ -215,7 +251,7 @@ half4 main(float2 local) {
             public int W, H;
         }
 
-        private sealed class Draw(Rect bounds, Size full, double offsetY, double time, double rise, double bright, Holder holder) : ICustomDrawOperation
+        private sealed class Draw(Rect bounds, Size full, double offsetY, double time, double rise, double bright, double par, Holder holder) : ICustomDrawOperation
         {
             public Rect Bounds => bounds;
             public bool HitTest(Point p) => false;
@@ -248,14 +284,17 @@ half4 main(float2 local) {
                     ["rise"] = (float)rise,
                     ["bright"] = (float)bright,
                     ["offsetY"] = (float)offsetY,
+                    ["par"] = (float)par,
                 };
                 using var shader = Effect.Value.ToShader(uniforms);
                 using var paint = new SKPaint { Shader = shader };
 
-                // Ekrandaki piksel boyutunun yarısında bir ara yüzeye çizilir, sonra yumuşatılarak büyütülür
+                // Bir ara yüzeye çizilir, sonra yumuşatılarak büyütülür
                 var gr = lease.GrContext;
                 float scale = canvas.TotalMatrix.ScaleX;
-                int w = Math.Max(1, (int)Math.Ceiling(bounds.Width * scale * 0.5)), h = Math.Max(1, (int)Math.Ceiling(bounds.Height * scale * 0.5));
+                // Gökyüzü seyrek güncellenir: tam çözünürlük (dağ kenarları basamaklanmasın); zemin akıcı: %60
+                double res = offsetY <= 0 ? 1.0 : 0.6;
+                int w = Math.Max(1, (int)Math.Ceiling(bounds.Width * scale * res)), h = Math.Max(1, (int)Math.Ceiling(bounds.Height * scale * res));
                 if (gr == null) { canvas.DrawRect(rect, paint); return; }
                 if (holder.Surface == null || holder.W != w || holder.H != h)
                 {

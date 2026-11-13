@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -12,6 +12,7 @@ namespace VuluLauncher.Views
         public SettingsView()
         {
             InitializeComponent();
+            Themes.Attach(this);   // Ufkun öbür ucu: sayfanın kendi stillerinin üstüne
 
             // Metin kutusundan çıkınca kaydedilir (Enter de kaydeder; satırın kendi KeyBinding'i)
             AddHandler(LostFocusEvent, (_, e) =>

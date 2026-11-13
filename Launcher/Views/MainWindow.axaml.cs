@@ -13,6 +13,7 @@ namespace VuluLauncher.Views
         {
             InitializeComponent();
             Themes.Mark(this);
+            Themes.Attach(NavTabs);   // sekmelerin kendi stilleri var; temanınkiler onların üstüne
             // Tema geçişi animasyonu (Ayarlar › Tema)
             DataContextChanged += (_, _) =>
             {

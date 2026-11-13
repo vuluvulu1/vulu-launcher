@@ -1,9 +1,13 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
 namespace VuluLauncher.Views
 {
     internal sealed partial class ServersView : UserControl
     {
-        public ServersView() => InitializeComponent();
+        public ServersView()
+        {
+            InitializeComponent();
+            Themes.Attach(this);   // Ufkun öbür ucu: sayfanın kendi stillerinin üstüne
+        }
     }
 }

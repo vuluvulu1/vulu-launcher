@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Interactivity;
 using VuluLauncher.ViewModels;
 
@@ -9,6 +9,7 @@ namespace VuluLauncher.Views
         public AdminView()
         {
             InitializeComponent();
+            Themes.Attach(this);   // Ufkun öbür ucu: sayfanın kendi stillerinin üstüne
             // Şarkı adı ve sanatçı kutudan çıkınca kaydedilir
             AddHandler(LostFocusEvent, (_, e) =>
             {

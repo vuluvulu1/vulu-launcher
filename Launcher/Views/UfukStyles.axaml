@@ -1,5 +1,6 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="using:VuluLauncher.Views"
         x:Class="VuluLauncher.Views.UfukStyles">
     <!--
         "Ufkun öbür ucu" temasında fırça olmayan değerler (BoxShadow gölgeleri, ışıltılar). Stiller hep yüklüdür; pencere
@@ -49,5 +50,92 @@
     </Style>
     <Style Selector="Window.ufuk ComboBox.bar /template/ Border#Background">
         <Setter Property="BoxShadow" Value="inset 0 0 0 1 #6600D7FF" />
+    </Style>
+
+    <!-- ── Yazılar: Orbitron ve neon ışıltı (ufuk.css .uf-bolum-baslik, .topnav) ── -->
+    <Style Selector="Window.ufuk TextBlock.page-title">
+        <Setter Property="FontFamily" Value="{StaticResource Neon}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="LetterSpacing" Value="1.5" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="Effect">
+            <DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="18" Color="#FF2DF1" Opacity="0.85" />
+        </Setter>
+    </Style>
+    <Style Selector="Window.ufuk Button.tab TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource Neon}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="LetterSpacing" Value="0.8" />
+    </Style>
+    <Style Selector="Window.ufuk Button.tab.active TextBlock">
+        <Setter Property="Effect">
+            <DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="12" Color="#00D7FF" Opacity="0.9" />
+        </Setter>
+    </Style>
+    <Style Selector="Window.ufuk Button.tab Border.bar">
+        <Setter Property="Background" Value="#00D7FF" />
+        <Setter Property="BoxShadow" Value="0 0 14 2 #B300D7FF" />
+    </Style>
+
+    <!-- Başlık çubuğunun altında pembeden camgöbeğine neon çizgi -->
+    <Style Selector="Window.ufuk Border#TitleBar">
+        <Setter Property="BoxShadow" Value="0 1 0 0 #8CFF2DF1, 0 4 22 0 #26FF2DF1" />
+    </Style>
+
+    <!-- ── Ana düğme: pembe-mor gradyan, etrafında hale ── -->
+    <Style Selector="Window.ufuk Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #59FFFFFF, 0 0 16 0 #80FF2DF1" />
+    </Style>
+    <Style Selector="Window.ufuk Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BoxShadow" Value="inset 0 1 0 0 #66FFFFFF, 0 0 26 2 #B3FF2DF1" />
+    </Style>
+
+    <!-- ── Cam kartlar: yuvarlak köşe, pembe → camgöbeği ince kenar, derin gölge (ufuk.css .uf-cam) ── -->
+    <Style Selector="Window.ufuk Border.card, Window.ufuk Border.row-card, Window.ufuk Border.mcard">
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="#B3FF2DF1" />
+                <GradientStop Offset="0.4" Color="#14FFFFFF" />
+                <GradientStop Offset="1" Color="#9900D7FF" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="BoxShadow" Value="0 18 44 0 #73000000, inset 0 1 0 0 #1FFFFFFF" />
+        <!-- İçerik (kart resimleri) yuvarlak köşenin dışına taşmasın -->
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="Window.ufuk Border.card:pointerover, Window.ufuk Border.row-card:pointerover">
+        <Setter Property="BoxShadow" Value="0 22 54 0 #80000000, 0 0 30 0 #2EFF2DF1, inset 0 1 0 0 #24FFFFFF" />
+    </Style>
+
+    <!-- Ayarlar bölümleri de cam kart -->
+    <Style Selector="Window.ufuk v|SettingsView Border.section">
+        <Setter Property="Background" Value="{StaticResource Card}" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="BorderBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="#B3FF2DF1" />
+                <GradientStop Offset="0.4" Color="#14FFFFFF" />
+                <GradientStop Offset="1" Color="#9900D7FF" />
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="BoxShadow" Value="0 18 44 0 #73000000, inset 0 1 0 0 #1FFFFFFF" />
+    </Style>
+    <Style Selector="Window.ufuk v|SettingsView TextBlock.h2">
+        <Setter Property="FontFamily" Value="{StaticResource Neon}" />
+        <Setter Property="LetterSpacing" Value="1.2" />
+    </Style>
+
+    <!-- Sohbet: kendi mesajım pembe-mor -->
+    <Style Selector="Window.ufuk Border.bubble.mine">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="#B3A01C8F" />
+                <GradientStop Offset="1" Color="#B34A10A0" />
+            </LinearGradientBrush>
+        </Setter>
     </Style>
 </Styles>

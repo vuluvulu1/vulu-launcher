@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using VuluLauncher.ViewModels;
@@ -7,7 +7,11 @@ namespace VuluLauncher.Views
 {
     internal sealed partial class DiscoverView : UserControl
     {
-        public DiscoverView() => InitializeComponent();
+        public DiscoverView()
+        {
+            InitializeComponent();
+            Themes.Attach(this);   // Ufkun öbür ucu: sayfanın kendi stillerinin üstüne
+        }
 
         /// <summary>Paket kartına tıklanınca ayrıntılar açılır (karttaki düğmeler kendi işini yapar).</summary>
         private void OnPackTapped(object? sender, TappedEventArgs e)
