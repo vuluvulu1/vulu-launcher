@@ -17,10 +17,15 @@ namespace VuluLauncher.ViewModels
 
     internal sealed record SocialHint(string Text);
 
-    internal sealed partial class SocialFeedLink(SocialViewModel owner, bool active) : ObservableObject
+    internal sealed partial class SocialFeedLink(SocialViewModel owner, bool active, string kind = "feed") : ObservableObject
     {
         public bool IsActive { get; } = active;
-        [RelayCommand] private void Open() => owner.ShowFeed();
+        /// <summary>"feed" (akış), "board" (liderlik tablosu) ya da "map" (dünya haritası).</summary>
+        public string Kind { get; } = kind;
+        public string Title => Kind switch { "board" => "Liderlik", "map" => "Harita", _ => "Akış" };
+        public string Sub => Kind switch { "board" => "Haftalık sıralama ve şampiyonlar", "map" => "vulu sunucusu, sen ve arkadaşların", _ => "Paylaşılan ekran görüntüleri" };
+        public string Glyph => Kind switch { "board" => "★", "map" => "◈", _ => "▦" };
+        [RelayCommand] private void Open() { if (Kind == "feed") owner.ShowFeed(); else owner.ShowWorld(Kind); }
     }
 
     /// <summary>Soldaki kişi satırı: avatar, durum, okunmamış sayısı, satır düğmeleri.</summary>
@@ -198,6 +203,7 @@ namespace VuluLauncher.ViewModels
         public SocialViewModel(MainViewModel main)
         {
             Main = main;
+            World = new WorldViewModel(main);
             _friendsTimer = new DispatcherTimer(TimeSpan.FromSeconds(60), DispatcherPriority.Background, async (_, _) => await RefreshFriendsAsync());
             _liveTimer = new DispatcherTimer(TimeSpan.FromSeconds(60), DispatcherPriority.Background, async (_, _) =>
             {
@@ -218,10 +224,16 @@ namespace VuluLauncher.ViewModels
 
         /// <summary>"feed" ya da "chat".</summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsFeed), nameof(IsChat))]
+        [NotifyPropertyChangedFor(nameof(IsFeed), nameof(IsChat), nameof(IsWorld))]
         private string _view = "feed";
+        partial void OnViewChanged(string value) { if (!IsWorld) World?.Leave(); }
         public bool IsFeed => View == "feed";
         public bool IsChat => View == "chat";
+        /// <summary>Liderlik tablosu ya da harita açık (vulu sunucusu; WorldViewModel).</summary>
+        public bool IsWorld => View is "board" or "map";
+
+        /// <summary>Liderlik tablosu ve canlı harita (Sosyal'in sol listesinden açılır).</summary>
+        public WorldViewModel World { get; private set; } = null!;
 
         // Akış
         [ObservableProperty]
@@ -280,6 +292,7 @@ namespace VuluLauncher.ViewModels
             await Task.WhenAll(LoadConversationsAsync(), RefreshFriendsAsync(), RefreshPresenceAsync(), Main.MembersAsync());
             RenderList();
             if (IsChat && Active != null) return;
+            if (IsWorld) { await World.OpenAsync(); return; }
             var unread = _conversations.FirstOrDefault(c => c.Int("unread") > 0);
             if (unread.ValueKind == JsonValueKind.Object) await OpenConversationAsync(unread.Text("username")!);
             else ShowFeed();
@@ -342,7 +355,12 @@ namespace VuluLauncher.ViewModels
             JsonElement Conv(string name) => _conversations.FirstOrDefault(c => c.Text("username") == name);
 
             List.Clear();
-            if (query.Length == 0) List.Add(new SocialFeedLink(this, IsFeed));
+            if (query.Length == 0)
+            {
+                List.Add(new SocialFeedLink(this, IsFeed));
+                List.Add(new SocialFeedLink(this, View == "board", "board"));
+                List.Add(new SocialFeedLink(this, View == "map", "map"));
+            }
 
             var incoming = _incoming.Where(Match).ToList();
             if (incoming.Count > 0)
@@ -421,6 +439,17 @@ namespace VuluLauncher.ViewModels
         /// <summary>Kişinin arkadaşlık durumu: "friend", "incoming", "outgoing" ya da null.</summary>
         public string? FriendState(string username) =>
             _friends.Contains(username) ? "friend" : _incoming.Contains(username) ? "incoming" : _outgoing.Contains(username) ? "outgoing" : null;
+
+        /// <summary>Liderlik tablosunu ya da haritayı açar.</summary>
+        public void ShowWorld(string kind)
+        {
+            Active = null;
+            View = kind;
+            Messages.Clear();
+            RenderList();
+            World.View = kind;
+            _ = World.OpenAsync();
+        }
 
         // ── Akış ─────────────────────────────────────────────────────────
         public void ShowFeed()

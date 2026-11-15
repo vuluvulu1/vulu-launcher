@@ -46,6 +46,21 @@ namespace VuluLauncher
 
         public Task<T> DeleteAsync<T>(string path) => SendAsync<T>(HttpMethod.Delete, path, null);
 
+        /// <summary>Gövdeli herhangi bir istek (ör. gövdeli DELETE).</summary>
+        public Task<T> SendJsonAsync<T>(HttpMethod method, string path, object body) =>
+            SendAsync<T>(method, path, JsonContent.Create(body, options: Json));
+
+        /// <summary>Oturumla korunan bir dosyanın baytları (harita karoları); yoksa (404) null.</summary>
+        public async Task<byte[]?> GetBytesAsync(string path)
+        {
+            try
+            {
+                using var response = await RawAsync(HttpMethod.Get, path, null, HttpCompletionOption.ResponseContentRead);
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            catch (ApiException ex) when (ex.Status == HttpStatusCode.NotFound) { return null; }
+        }
+
         /// <summary>Dosyayı akış halinde gönderir (belleğe tamamı alınmaz).</summary>
         public async Task<T> UploadFileAsync<T>(string path, string filePath)
         {

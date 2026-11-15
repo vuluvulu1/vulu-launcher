@@ -12,6 +12,27 @@ namespace VuluLauncher.Views
         public MainWindow()
         {
             InitializeComponent();
+#if DEBUG
+            // Yalnızca geliştirmede: VULU_UI_SHOT=<klasör> ile pencerenin kendisi birkaç saniyede bir PNG'ye çizilir
+            // (arayüz denemesi; ekran değil, yalnızca bu pencerenin görsel ağacı)
+            if (Environment.GetEnvironmentVariable("VULU_UI_SHOT") is { Length: > 0 } shotDir)
+            {
+                int n = 0;
+                var timer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+                timer.Tick += (_, _) =>
+                {
+                    try
+                    {
+                        var size = new Avalonia.PixelSize((int)Bounds.Width, (int)Bounds.Height);
+                        using var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(size);
+                        rtb.Render(this);
+                        rtb.Save(System.IO.Path.Combine(shotDir, $"shot-{n++ % 4}.png"));
+                    }
+                    catch (Exception ex) { LogFile.Write("[ui] görüntü alınamadı: " + ex.Message); }
+                };
+                timer.Start();
+            }
+#endif
             Themes.Mark(this);
             Themes.Attach(NavTabs);
             Themes.Attach(TitleBar);  // başlık çubuğunun da kendi stilleri var (neon alt çizgi)   // sekmelerin kendi stilleri var; temanınkiler onların üstüne

@@ -52,6 +52,10 @@
                             <Border IsVisible="{Binding IsAdminUser}" Background="{StaticResource AccentSoft}" Padding="6,1" VerticalAlignment="Center">
                                 <TextBlock Text="Admin" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Accent}" />
                             </Border>
+                            <Border IsVisible="{Binding HasProgress}" BorderBrush="{StaticResource Accent}" BorderThickness="1" Padding="6,1" VerticalAlignment="Center"
+                                    ToolTip.Tip="vulu seviyesi: vulu sunucusunda oynadıkça yükselir">
+                                <TextBlock FontSize="11" FontWeight="Bold" Foreground="{StaticResource Accent}"><Run Text="Seviye " /><Run Text="{Binding Level}" /></TextBlock>
+                            </Border>
                         </StackPanel>
                         <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12.5" />
                         <ItemsControl ItemsSource="{Binding Roles}">
@@ -96,34 +100,183 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Skin -->
+                <!-- Skin: dönen 3B karakter (sürükleyerek çevrilir) ve dolap -->
                 <Border Classes="section" IsVisible="{Binding ShowSkin}">
                     <StackPanel>
                         <TextBlock Classes="h2" Text="Skin" />
                         <Grid ColumnDefinitions="Auto,*">
-                            <Border Width="128" Height="256" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                            <Border Width="190" Height="290" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1">
                                 <Grid>
-                                    <TextBlock Text="Varsayılan skin" Classes="dim" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    <v:SkinViewer3D Skin="{Binding SkinBytes}" Cape="{Binding CapeBytes}" Slim="{Binding Slim}" Margin="8"
+                                                    ToolTip.Tip="Çevirmek için sürükle" />
+                                    <TextBlock Text="Varsayılan skin" Classes="dim" FontSize="11.5" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,6"
                                                IsVisible="{Binding !HasSkin}" />
-                                    <Image Source="{Binding Skin}" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="None" />
                                 </Grid>
                             </Border>
-                            <StackPanel Grid.Column="1" Margin="20,0,0,0" Spacing="10" IsVisible="{Binding IsOwn}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <Button Classes="sm primary" Content="{Binding SkinButton}" Command="{Binding PickSkinCommand}" />
-                                    <Button Classes="sm" Content="Kaldır" IsVisible="{Binding HasSkin}" Command="{Binding RemoveSkinCommand}" />
+                            <StackPanel Grid.Column="1" Margin="20,0,0,0" Spacing="10">
+                                <StackPanel Spacing="10" IsVisible="{Binding IsOwn}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Button Classes="sm primary" Content="{Binding SkinButton}" Command="{Binding PickSkinCommand}" />
+                                        <Button Classes="sm" Content="Kaldır" IsVisible="{Binding HasSkin}" Command="{Binding RemoveSkinCommand}" />
+                                    </StackPanel>
+                                    <TextBlock Text="Beden tipi" Classes="label" />
+                                    <Border Classes="segmented" HorizontalAlignment="Left">
+                                    <StackPanel Orientation="Horizontal" IsEnabled="{Binding HasSkin}">
+                                        <Button Classes="seg" Classes.active="{Binding !Slim}" Content="Klasik (Steve)" Command="{Binding SetSkinModelCommand}" CommandParameter="default" />
+                                        <Button Classes="seg" Classes.active="{Binding Slim}" Content="İnce (Alex)" Command="{Binding SetSkinModelCommand}" CommandParameter="slim" />
+                                    </StackPanel>
+                                    </Border>
+                                    <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap" MaxWidth="460" HorizontalAlignment="Left"
+                                               Text="64×64 PNG. Tek oyunculu dünyada, LAN'da ve vulu sunucularında görünür; değişiklik oyunu bir sonraki açışında geçerli olur." />
                                 </StackPanel>
-                                <TextBlock Text="Beden tipi" Classes="label" />
-                                <Border Classes="segmented">
-                                <StackPanel Orientation="Horizontal" IsEnabled="{Binding HasSkin}">
-                                    <Button Classes="seg" Classes.active="{Binding !Slim}" Content="Klasik (Steve)" Command="{Binding SetSkinModelCommand}" CommandParameter="default" />
-                                    <Button Classes="seg" Classes.active="{Binding Slim}" Content="İnce (Alex)" Command="{Binding SetSkinModelCommand}" CommandParameter="slim" />
+
+                                <!-- Dolap: yüklenen skinler saklanır, tek tıkla giyilir -->
+                                <StackPanel Spacing="6" IsVisible="{Binding ShowWardrobe}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Dolap" Classes="label" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding WardrobeCount}" Classes="dim" FontSize="11.5" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <TextBlock Classes="dim" FontSize="12" IsVisible="{Binding !HasWardrobe}" TextWrapping="Wrap" MaxWidth="460" HorizontalAlignment="Left"
+                                               Text="Yüklediğin skinler burada saklanır; aralarında tek tıkla geçersin." />
+                                    <ItemsControl ItemsSource="{Binding Wardrobe}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:WardrobeItem">
+                                                <Button Classes="flat" Padding="4" Margin="0,0,6,6" Command="{Binding WearCommand}" ToolTip.Tip="{Binding Name}">
+                                                    <Button.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Giy" Command="{Binding WearCommand}" />
+                                                            <MenuItem Header="Adını değiştir" Command="{Binding RenameCommand}" />
+                                                            <MenuItem Header="Dolaptan çıkar" Command="{Binding RemoveCommand}" />
+                                                        </ContextMenu>
+                                                    </Button.ContextMenu>
+                                                    <Border Width="58" Height="92" Background="{StaticResource Card}" BorderThickness="2"
+                                                            BorderBrush="{StaticResource Line}" Classes.worn="{Binding IsWorn}">
+                                                        <Border.Styles>
+                                                            <Style Selector="Border.worn"><Setter Property="BorderBrush" Value="{StaticResource Accent}" /></Style>
+                                                        </Border.Styles>
+                                                        <Grid RowDefinitions="*,Auto">
+                                                            <Image Source="{Binding Preview}" Stretch="Uniform" Margin="6,4" RenderOptions.BitmapInterpolationMode="None" />
+                                                            <TextBlock Grid.Row="1" Text="{Binding Name}" FontSize="10" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" Margin="2,0,2,3" />
+                                                        </Grid>
+                                                    </Border>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Classes="dim" FontSize="11.5" IsVisible="{Binding HasWardrobe}" Text="Giymek için tıkla · sağ tık: ad değiştir, dolaptan çıkar" />
                                 </StackPanel>
-                                </Border>
-                                <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap" MaxWidth="420" HorizontalAlignment="Left"
-                                           Text="64×64 PNG. Tek oyunculu dünyada, LAN'da ve vulu sunucularında görünür; değişiklik oyunu bir sonraki açışında geçerli olur." />
                             </StackPanel>
                         </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Seviye ve sezon: vulu sunucusunun istatistiklerinden -->
+                <Border Classes="section" IsVisible="{Binding HasProgress}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Classes="h2" Text="Seviye" />
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Width="64" Height="64" CornerRadius="32" BorderBrush="{StaticResource Accent}" BorderThickness="3" Background="{StaticResource AccentSoft}">
+                                <TextBlock Text="{Binding Level}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentHi}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="14,4,0,0" Spacing="6" VerticalAlignment="Center">
+                                <ProgressBar Value="{Binding LevelFraction}" Maximum="1" Height="8" />
+                                <TextBlock Text="{Binding LevelText}" Classes="dim" FontSize="12" />
+                                <TextBlock Text="{Binding StatsText}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Spacing="8" IsVisible="{Binding HasSeason}" Margin="0,6,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding SeasonName}" FontWeight="Bold" FontSize="14.5" />
+                                <Border Background="{StaticResource AccentSoft}" Padding="6,1" VerticalAlignment="Center">
+                                    <TextBlock FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentHi}"><Run Text="Sezon seviyesi " /><Run Text="{Binding SeasonLevel}" /></TextBlock>
+                                </Border>
+                            </StackPanel>
+                            <ProgressBar Value="{Binding SeasonFraction}" Maximum="1" Height="6" />
+                            <TextBlock Text="{Binding SeasonText}" Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                            <ItemsControl ItemsSource="{Binding Quests}">
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:QuestItem">
+                                        <Border Background="{StaticResource Card}" BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="10,8" Margin="0,0,8,8"
+                                                Classes.done="{Binding Done}">
+                                            <Border.Styles>
+                                                <Style Selector="Border.done"><Setter Property="BorderBrush" Value="{StaticResource Ok}" /></Style>
+                                            </Border.Styles>
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <TextBlock Text="{Binding Icon}" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                                <StackPanel Grid.Column="1" Spacing="3">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding Desc}" Classes="dim" FontSize="11.5" TextWrapping="Wrap" />
+                                                    <ProgressBar Value="{Binding Fraction}" Maximum="1" Height="4" Margin="0,2,0,0" />
+                                                    <TextBlock Text="{Binding ProgressText}" Classes="muted" FontSize="11" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- vulu Pelerinleri: satılmaz, oynayarak ve etkinliklerle kazanılır; oyunda herkes görür -->
+                <Border Classes="section" IsVisible="{Binding HasCapes}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Classes="h2" Text="Pelerinler" />
+                        <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding IsOwn}"
+                                   Text="Pelerinler satılmaz: oynayarak, sezon görevleriyle ve etkinlik kazanarak alınır. Taktığın pelerini oyunda herkes görür." />
+                        <ItemsControl ItemsSource="{Binding Capes}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CapeItem">
+                                    <Button Classes="flat" Padding="4" Margin="0,0,8,8" Command="{Binding ToggleCommand}" ToolTip.Tip="{Binding Tip}">
+                                        <Border Width="84" Background="{StaticResource Card}" BorderThickness="2" BorderBrush="{StaticResource Line}" Padding="6"
+                                                Classes.worn="{Binding IsWorn}" Classes.locked="{Binding Locked}">
+                                            <Border.Styles>
+                                                <Style Selector="Border.worn"><Setter Property="BorderBrush" Value="{StaticResource Accent}" /></Style>
+                                                <Style Selector="Border.locked"><Setter Property="Opacity" Value="0.42" /></Style>
+                                            </Border.Styles>
+                                            <StackPanel Spacing="4">
+                                                <Image Source="{Binding Preview}" Width="40" Height="64" RenderOptions.BitmapInterpolationMode="None" />
+                                                <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" />
+                                                <TextBlock Text="Kilitli" FontSize="10" Classes="dim" HorizontalAlignment="Center" IsVisible="{Binding Locked}" />
+                                                <TextBlock Text="Takılı" FontSize="10" Foreground="{StaticResource Accent}" HorizontalAlignment="Center" IsVisible="{Binding IsWorn}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding CapeNote}" Classes="muted" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding CapeNote, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                        <!-- Admin: pelerin ver / geri al -->
+                        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding CanGrantCapes}">
+                            <ComboBox ItemsSource="{Binding GrantableCapes}" SelectedItem="{Binding GrantCape}" PlaceholderText="Pelerin seç" MinWidth="180" />
+                            <Button Classes="sm" Content="Ver" Command="{Binding GrantCapeToUserCommand}" />
+                            <Button Classes="sm danger" Content="Geri al" Command="{Binding RevokeCapeFromUserCommand}" />
+                            <TextBlock Text="{Binding GrantNote}" Classes="muted" FontSize="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Rozetler -->
+                <Border Classes="section" IsVisible="{Binding HasBadges}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Classes="h2" Text="{Binding BadgesTitle}" />
+                        <ItemsControl ItemsSource="{Binding Badges}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:BadgeItem">
+                                    <Border BorderBrush="{StaticResource Accent}" BorderThickness="1" Background="{StaticResource AccentSoft}" Padding="8,3" Margin="0,0,6,6" ToolTip.Tip="{Binding Tip}">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="{Binding Icon}" FontSize="13" />
+                                            <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource AccentHi}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
 

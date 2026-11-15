@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
 using Avalonia.Media.Imaging;
@@ -164,7 +164,9 @@ namespace VuluLauncher.ViewModels
 
         private async Task ApplyAsync(JsonElement user)
         {
-            foreach (var name in new[] { nameof(IsOwn), nameof(IsOther), nameof(IsViewingOwn), nameof(ShowEditButton), nameof(Initial) }) OnPropertyChanged(name);
+            foreach (var name in new[] { nameof(IsOwn), nameof(IsOther), nameof(IsViewingOwn), nameof(ShowEditButton), nameof(Initial), nameof(ShowWardrobe), nameof(CanGrantCapes) }) OnPropertyChanged(name);
+            CapeNote = GrantNote = null;
+            if (!IsOwn) { Wardrobe.Clear(); OnPropertyChanged(nameof(HasWardrobe)); }
             IsAdminUser = user.Bool("isAdmin");
             var parts = new List<string>();
             if (user.Text("createdAt") is { } created && DateTime.TryParse(created, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at))
@@ -188,8 +190,11 @@ namespace VuluLauncher.ViewModels
 
             HasSkin = user.Text("skinHash") is { Length: > 0 };
             Slim = user.Text("skinModel") == "slim";
-            Skin = HasSkin && await Images.LoadBytesAsync($"{Avatars.ApiBase}/yggdrasil/textures/{user.Text("skinHash")}?c=1") is { } png
-                ? SkinRenderer.RenderFront(png, Slim) : null;
+            SkinBytes = HasSkin ? await Images.LoadBytesAsync($"{Avatars.ApiBase}/yggdrasil/textures/{user.Text("skinHash")}?c=1") : null;
+            Skin = SkinBytes is { } png ? SkinRenderer.RenderFront(png, Slim) : null;
+            CapeBytes = user.Text("capeHash") is { Length: > 0 } capeHash ? await Images.LoadBytesAsync($"{Avatars.ApiBase}/yggdrasil/textures/{capeHash}?c=1") : null;
+            _ = LoadProgressAsync(_requestId);
+            if (IsOwn) _ = LoadWardrobeAsync();
             OnPropertyChanged(nameof(ShowSkin));
             OnPropertyChanged(nameof(SkinButton));
 

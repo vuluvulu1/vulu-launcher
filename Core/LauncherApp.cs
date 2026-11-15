@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace VuluLauncher
 {
@@ -104,6 +104,7 @@ namespace VuluLauncher
             // Açılışta sunucuya bir istek atılır; bağlantı (DNS, TLS) giriş yapılana kadar ısınmış olur
             _ = Task.Run(async () => { try { using var _ = await Downloader.Http.GetAsync(ApiConfig.BaseUrl + "/ping"); } catch { } });
             RegisterProfileCommands();
+            RegisterProgressCommands();
             RegisterMicrosoftCommands();
 
             // ── Admin ─────────────────────────────────────────────────────

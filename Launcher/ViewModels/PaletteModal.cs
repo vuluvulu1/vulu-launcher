@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -36,6 +36,8 @@ namespace VuluLauncher.ViewModels
             _all.Add(new PaletteItem("Sayfa", "vulu Packs", null, () => { main.Discover.SetSource("packs"); main.SelectedTab = main.Tabs[1]; return Task.CompletedTask; }));
             _all.Add(new PaletteItem("Sayfa", "Mod ara (CurseForge / Modrinth)", null, () => { main.Discover.SetSource("curseforge"); main.SelectedTab = main.Tabs[1]; return Task.CompletedTask; }));
             Page("servers", "Sunucular");
+            _all.Add(new PaletteItem("Sayfa", "Liderlik tablosu", null, () => { main.SelectedTab = main.Tabs.First(t => t.Key == "social"); main.Social.ShowWorld("board"); return Task.CompletedTask; }));
+            _all.Add(new PaletteItem("Sayfa", "Dünya haritası", null, () => { main.SelectedTab = main.Tabs.First(t => t.Key == "social"); main.Social.ShowWorld("map"); return Task.CompletedTask; }));
             Page("social", "Sosyal");
             Page("settings", "Ayarlar");
             if (main.IsAdmin) Page("admin", "Admin paneli");

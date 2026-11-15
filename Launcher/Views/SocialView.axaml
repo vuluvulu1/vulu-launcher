@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
              xmlns:v="using:VuluLauncher.Views"
@@ -93,11 +93,11 @@
                                 <Button Classes="row" Classes.active="{Binding IsActive}" Command="{Binding OpenCommand}">
                                     <Grid ColumnDefinitions="34,*">
                                         <Border Width="34" Height="34" Background="{StaticResource AccentSoft}" CornerRadius="17">
-                                            <TextBlock Text="▦" Foreground="{StaticResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Glyph}" Foreground="{StaticResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>
                                         <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                            <TextBlock Text="Akış" FontWeight="SemiBold" />
-                                            <TextBlock Text="Paylaşılan ekran görüntüleri" Classes="dim" FontSize="12" />
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Sub}" Classes="dim" FontSize="12" />
                                         </StackPanel>
                                     </Grid>
                                 </Button>
@@ -140,6 +140,9 @@
                 </ScrollViewer>
             </DockPanel>
         </Border>
+
+        <!-- ── Liderlik ve harita (vulu sunucusu) ─────────────────────────── -->
+        <v:WorldView Grid.Column="1" DataContext="{Binding World}" IsVisible="{Binding $parent[UserControl].((vm:SocialViewModel)DataContext).IsWorld}" />
 
         <!-- ── Akış ───────────────────────────────────────────────────── -->
         <ScrollViewer Grid.Column="1" IsVisible="{Binding IsFeed}">

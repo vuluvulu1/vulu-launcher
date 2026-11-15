@@ -221,6 +221,15 @@ namespace VuluLauncher.ViewModels
             _members = null;
             SelectedTab = Tabs[0];
             LoggedIn = true;
+#if DEBUG
+            // Yalnızca geliştirmede: VULU_UI_PAGE=board / map / profile ile giriş sonrası o sayfa açılır (arayüz denemesi)
+            if (Environment.GetEnvironmentVariable("VULU_UI_PAGE") is { Length: > 0 } devPage)
+            {
+                if (devPage == "profile") _ = OpenProfileAsync(Username);
+                else if (devPage is "board" or "map") { SelectedTab = Tabs.First(t => t.Key == "social"); Social.ShowWorld(devPage); }
+                else if (Tabs.FirstOrDefault(t => t.Key == devPage) is { } devTab) SelectedTab = devTab;
+            }
+#endif
             // Perde açılana kadar görünmeyen işler (sosyal akış, bildirimler, profil resmi...) açılıştan sonra başlar:
             // sonuçları arayüzü yeniden düzenletir ve açılış animasyonunu takıltırdı
             void StartBackground()
@@ -479,6 +488,7 @@ namespace VuluLauncher.ViewModels
             if (value?.Page is SettingsViewModel settings) _ = settings.LoadAsync();
             if (value?.Page is DiscoverViewModel discover) _ = discover.OpenAsync();
             if (value?.Page is ServersViewModel servers) _ = servers.LoadAsync();
+            if (value?.Page is not SocialViewModel) Social.World.Leave();   // harita yenilemesi Sosyal'den çıkınca durur
             if (value?.Page is SocialViewModel social) _ = social.OpenAsync();
             if (value?.Page is AdminViewModel admin) _ = admin.OpenAsync();
             // Başka sayfada mod kurulduysa ya da kaldırıldıysa Oyna'daki sayılar güncel olsun
