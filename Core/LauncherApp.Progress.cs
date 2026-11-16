@@ -49,6 +49,41 @@ namespace VuluLauncher
                 return await _api.PutAsync<JsonElement>("/progress/admin/config", new { config = args.GetProperty("config") });
             });
 
+            // Admin: pelerin kataloğu (ekle, düzenle, sil, önizle, sahipler)
+            _bridge.On("admin.capes", async _ => { RequireLogin(); return await _api.GetAsync<JsonElement>("/progress/admin/capes"); });
+            _bridge.On("admin.capePreview", async args =>
+            {
+                RequireLogin();
+                return await _api.PostAsync<JsonElement>("/progress/admin/capes/preview", args);
+            });
+            _bridge.On("admin.saveCape", async args =>
+            {
+                RequireLogin();
+                var cape = args.GetProperty("cape");
+                return args.TryGetProperty("isNew", out var n) && n.ValueKind == JsonValueKind.True
+                    ? await _api.PostAsync<JsonElement>("/progress/admin/capes", cape)
+                    : await _api.PutAsync<JsonElement>("/progress/admin/capes/" + Uri.EscapeDataString(cape.GetProperty("key").GetString() ?? ""), cape);
+            });
+            _bridge.On("admin.deleteCape", async args =>
+            {
+                RequireLogin();
+                return await _api.DeleteAsync<JsonElement>("/progress/admin/capes/" + Uri.EscapeDataString(args.Str("key")));
+            });
+            _bridge.On("admin.capeOwners", async args =>
+            {
+                RequireLogin();
+                return await _api.GetAsync<JsonElement>("/progress/admin/capes/" + Uri.EscapeDataString(args.Str("key")) + "/owners");
+            });
+            // 64×32 pelerin PNG'si seçtirir; base64 olarak döner (boyutu sunucu denetler). Vazgeçilirse null
+            _bridge.On("admin.pickCapePng", async _ =>
+            {
+                RequireLogin();
+                string? path = await _host.PickFileAsync("Pelerin dokusu seçin (64×32 PNG)", "PNG", new[] { "png" });
+                if (path == null) return null;
+                if (new FileInfo(path).Length > 256 * 1024) throw new InvalidOperationException("Dosya 256 KB'tan büyük olamaz.");
+                return new { data = Convert.ToBase64String(await File.ReadAllBytesAsync(path)), name = Path.GetFileName(path) };
+            });
+
             // Dolap: kayıtlı skinler
             _bridge.On("wardrobe.list", async _ => { RequireLogin(); return await _api.GetAsync<JsonElement>("/users/me/wardrobe"); });
             _bridge.On("wardrobe.apply", async args =>

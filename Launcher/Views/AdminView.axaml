@@ -389,6 +389,175 @@
                     </Border>
                 </StackPanel>
 
+                <!-- Pelerinler: katalog, düzenleyici, önizleme, sahipler -->
+                <Grid IsVisible="{Binding IsCapes}" ColumnDefinitions="*,Auto">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0"
+                                       Text="Pelerinler satılmaz; sezon görevleri, haftalık liderlik ve etkinliklerle verilir. Düzenlemek için bir pelerine tıkla." />
+                            <Button Grid.Column="1" Classes="sm primary" Content="+ Yeni pelerin" Command="{Binding NewCapeCommand}" />
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding CapeRows}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CapeRow">
+                                    <Button Classes="flat" Padding="0" Margin="0,0,10,10" Command="{Binding EditCommand}" ToolTip.Tip="{Binding Earn}">
+                                        <Border Width="128" Background="{StaticResource Card}" BorderThickness="2" BorderBrush="{StaticResource Line}" Padding="8"
+                                                Classes.sel="{Binding IsSelected}">
+                                            <Border.Styles>
+                                                <Style Selector="Border.sel"><Setter Property="BorderBrush" Value="{StaticResource Accent}" /></Style>
+                                            </Border.Styles>
+                                            <StackPanel Spacing="4">
+                                                <Image Source="{Binding Preview}" Width="40" Height="64" RenderOptions.BitmapInterpolationMode="None" />
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12.5" TextAlignment="Center" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="11" TextAlignment="Center" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Düzenleyici -->
+                    <Border Grid.Column="1" Width="470" Margin="14,0,0,0" IsVisible="{Binding CapeEditing}" Classes="row" Padding="16" VerticalAlignment="Top">
+                        <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{Binding EditorTitle}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                <Button Grid.Column="1" Classes="sm" Content="Kapat" Command="{Binding CloseCapeEditorCommand}" />
+                            </Grid>
+
+                            <!-- Önizleme: düz yüz ve kendi skininle 3B -->
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Border Width="96" Height="150" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                                    <Image Source="{Binding CapeFace}" Width="80" Height="128" RenderOptions.BitmapInterpolationMode="None" />
+                                </Border>
+                                <Border Grid.Column="1" Height="150" Margin="10,0,0,0" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                                    <v:SkinViewer3D Skin="{Binding MySkinBytes}" Slim="{Binding MySkinSlim}" Cape="{Binding CapePreviewBytes}" Margin="4"
+                                                    ToolTip.Tip="Senin skininle; sürükleyerek çevir" />
+                                </Border>
+                            </Grid>
+
+                            <WrapPanel>
+                                <StackPanel Spacing="4" Margin="0,0,10,8" Width="200">
+                                    <TextBlock Text="Adı" Classes="label" />
+                                    <TextBox Text="{Binding CapeName}" MaxLength="40" />
+                                </StackPanel>
+                                <StackPanel Spacing="4" Margin="0,0,10,8" Width="150">
+                                    <TextBlock Text="Anahtar" Classes="label" />
+                                    <TextBox Text="{Binding CapeKey}" MaxLength="32" IsEnabled="{Binding CapeIsNew}" PlaceholderText="addan üretilir"
+                                             ToolTip.Tip="Küçük harf, rakam, tire. Oyuncularda bu anahtarla saklanır; sonradan değişmez." />
+                                </StackPanel>
+                                <StackPanel Spacing="4" Margin="0,0,0,8" Width="70">
+                                    <TextBlock Text="Sıra" Classes="label" />
+                                    <NumericUpDown Value="{Binding CapeOrder}" Minimum="0" Maximum="9999" Increment="1" ShowButtonSpinner="False" FormatString="0" />
+                                </StackPanel>
+                            </WrapPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Nasıl kazanılır (oyuncular görür)" Classes="label" />
+                                <TextBox Text="{Binding CapeEarn}" MaxLength="160" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <CheckBox IsChecked="{Binding CapeAdminOnly}" Content="Adminlere özel (yalnızca adminler takar, başkasına verilemez)" />
+
+                            <TextBlock Text="Doku" Classes="label" />
+                            <Border Classes="segmented" HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Classes="seg" Classes.active="{Binding IsDesign}" Content="Desen" Command="{Binding SetCapeSourceCommand}" CommandParameter="design" />
+                                    <Button Classes="seg" Classes.active="{Binding IsArt}" Content="Hazır çizim" Command="{Binding SetCapeSourceCommand}" CommandParameter="art" />
+                                    <Button Classes="seg" Classes.active="{Binding IsPng}" Content="PNG yükle" Command="{Binding PickCapePngCommand}" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Desen: renkler ve amblem -->
+                            <StackPanel Spacing="8" IsVisible="{Binding IsDesign}">
+                                <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto">
+                                    <TextBlock Text="Zemin" Classes="label" VerticalAlignment="Center" Margin="0,0,8,6" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="0,0,14,6">
+                                        <Border Width="22" Height="22" Background="{Binding BaseBrush}" BorderBrush="{StaticResource Line}" BorderThickness="1" />
+                                        <TextBox Text="{Binding ColorBase}" MaxLength="7" Width="90" FontFamily="{StaticResource Mono}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2" Text="Kenar" Classes="label" VerticalAlignment="Center" Margin="0,0,8,6" />
+                                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" Margin="0,0,0,6">
+                                        <Border Width="22" Height="22" Background="{Binding EdgeBrush}" BorderBrush="{StaticResource Line}" BorderThickness="1" />
+                                        <TextBox Text="{Binding ColorEdge}" MaxLength="7" Width="90" FontFamily="{StaticResource Mono}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Row="1" Text="Amblem" Classes="label" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="0,0,14,0">
+                                        <Border Width="22" Height="22" Background="{Binding InkBrush}" BorderBrush="{StaticResource Line}" BorderThickness="1" />
+                                        <TextBox Text="{Binding ColorInk}" MaxLength="7" Width="90" FontFamily="{StaticResource Mono}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="2. renk" Classes="label" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    <StackPanel Grid.Row="1" Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                                        <Border Width="22" Height="22" Background="{Binding Ink2Brush}" BorderBrush="{StaticResource Line}" BorderThickness="1" />
+                                        <TextBox Text="{Binding ColorInk2}" MaxLength="7" Width="90" FontFamily="{StaticResource Mono}" />
+                                    </StackPanel>
+                                </Grid>
+                                <!-- Tema renkleri: tek tıkla zemin/kenar/amblem -->
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="Tema renkleri" Classes="dim" FontSize="11.5" VerticalAlignment="Center" />
+                                    <Button Classes="sm" Content="Meşale" Command="{Binding UseThemeCommand}" CommandParameter="mesale" />
+                                    <Button Classes="sm" Content="Ufuk" Command="{Binding UseThemeCommand}" CommandParameter="ufuk" />
+                                    <Button Classes="sm" Content="Derin" Command="{Binding UseThemeCommand}" CommandParameter="derin" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="Amblem" Classes="label" VerticalAlignment="Center" />
+                                    <ComboBox ItemsSource="{Binding Emblems}" SelectedItem="{Binding Emblem}" Width="200">
+                                        <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:Option"><TextBlock Text="{Binding Label}" /></DataTemplate></ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Hazır çizim -->
+                            <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsArt}">
+                                <TextBlock Text="Çizim" Classes="label" VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding Arts}" SelectedItem="{Binding Art}" Width="220">
+                                    <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:Option"><TextBlock Text="{Binding Label}" /></DataTemplate></ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- PNG -->
+                            <TextBlock IsVisible="{Binding PngName, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="dim" FontSize="12" TextWrapping="Wrap">
+                                <Run Text="Doku dosyası: " /><Run Text="{Binding PngName}" /><Run Text=" · 64×32 Minecraft pelerin dokusu (pelerin + elytra)." />
+                            </TextBlock>
+
+                            <TextBlock Text="{Binding CapeNote}" TextWrapping="Wrap" FontSize="12.5" IsVisible="{Binding CapeNote, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                       Classes.ok="{Binding CapeOk}" Classes.err="{Binding !CapeOk}">
+                                <TextBlock.Styles>
+                                    <Style Selector="TextBlock.ok"><Setter Property="Foreground" Value="{StaticResource Ok}" /></Style>
+                                    <Style Selector="TextBlock.err"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                                </TextBlock.Styles>
+                            </TextBlock>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Classes="sm primary" Content="Kaydet" Command="{Binding SaveCapeCommand}" />
+                                <Button Classes="sm danger" Content="Pelerini sil" Command="{Binding DeleteCapeCommand}" IsVisible="{Binding CanDeleteCape}" />
+                            </StackPanel>
+
+                            <!-- Sahipler -->
+                            <StackPanel Spacing="6" IsVisible="{Binding ShowOwners}" Margin="0,6,0,0">
+                                <TextBlock Text="Sahipler" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding OwnersTitle}" Classes="dim" FontSize="12" />
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBox Text="{Binding GrantUsername}" PlaceholderText="Kullanıcı adı" MaxLength="16" />
+                                    <Button Grid.Column="1" Classes="sm" Content="Ver" Margin="6,0,0,0" Command="{Binding GrantCapeToOwnerCommand}" />
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding CapeOwners}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:CapeOwner">
+                                            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Username}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="11.5" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                                <Button Grid.Column="1" Classes="sm danger" Content="Geri al" Command="{Binding RevokeCommand}" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
                 <!-- Alan -->
                 <StackPanel IsVisible="{Binding IsStorage}" Spacing="12" MaxWidth="720" HorizontalAlignment="Left">
                     <TextBlock Text="{Binding StorageTotal}" FontWeight="Bold" />

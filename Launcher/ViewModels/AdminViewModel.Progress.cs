@@ -78,7 +78,7 @@ namespace VuluLauncher.ViewModels
         public ObservableCollection<Option> CapeOptions { get; } = new();
 
         public bool IsProgress => Tab == "progress";
-        partial void OnTabChanged(string value) => OnPropertyChanged(nameof(IsProgress));
+        partial void OnTabChanged(string value) { OnPropertyChanged(nameof(IsProgress)); OnPropertyChanged(nameof(IsCapes)); }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(LevelPreview))]
