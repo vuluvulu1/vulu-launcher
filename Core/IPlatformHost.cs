@@ -49,6 +49,9 @@ namespace VuluLauncher
         void BeginWindowDrag();
         void MoveWindowDrag();
 
+        /// <summary>Bildirimler launcher öndeyken de sistem bildirimi olarak mı çıkar (değilse öndeyken arayüzün içinde).</summary>
+        bool NotifiesOnDesktop => false;
+
         /// <summary>Sistem bildirimi; tıklanınca <see cref="LauncherApp.OnNotificationClicked"/> çağrılır.</summary>
         void Notify(string title, string body, string? tag);
 

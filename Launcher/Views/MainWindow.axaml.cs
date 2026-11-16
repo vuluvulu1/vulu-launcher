@@ -100,12 +100,6 @@ namespace VuluLauncher.Views
             if (sender is Flyout { Content: Control panel }) _ = PopoverIn.RunAsync(panel);
         }
 
-        /// <summary>Bildirim kartının üstüne gelince süresi durur.</summary>
-        private void OnToastPointer(object? sender, Avalonia.Input.PointerEventArgs e)
-        {
-            if (sender is Control { DataContext: ToastItem toast } c) toast.Paused = e.RoutedEvent == PointerEnteredEvent;
-        }
-
         private int _lastUnread;
 
         /// <summary>Okunmamış sayısı artınca zil kısa bir sallanır, rozet "pıt" diye büyüyüp yerine oturur.</summary>

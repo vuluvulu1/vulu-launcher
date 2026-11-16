@@ -90,6 +90,17 @@
     </Style>
 
     <!-- ── Kartlar: koyu taş, üstten inen soğuk ışık, ince camgöbeği kenar ── -->
+    <!-- Bildirim kartı: taş kart gibi -->
+    <Style Selector="Window.derin Border.toast-card">
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#802FE6D8" />
+                <GradientStop Offset="0.6" Color="#262FE6D8" />
+                <GradientStop Offset="1" Color="#140F6E73" />
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
     <Style Selector="Window.derin Border.card, Window.derin Border.row-card, Window.derin Border.mcard">
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="BorderThickness" Value="1" />

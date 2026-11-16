@@ -17,7 +17,8 @@ namespace VuluLauncher
     {
         private readonly ClassicDesktopStyleApplicationLifetime _lifetime;
         private readonly TrayNotifier _tray = new(Path.Combine(AppContext.BaseDirectory, "logo.ico"));
-        private readonly ToastWindow _toast = new(Path.Combine(AppContext.BaseDirectory, "logo.ico"));
+        private Views.DesktopToastWindow? _toasts;
+        private event Action<string?>? ToastClicked;
 
         private MainWindow? _window;
         private MainViewModel? _viewModel;
@@ -44,8 +45,8 @@ namespace VuluLauncher
         /// <summary>Bildirime (Windows bildirimi ya da sağ alttaki kart) tıklanınca; LauncherApp oluşturulunca bağlanır.</summary>
         public event Action<string?>? NotificationClicked
         {
-            add { _tray.Clicked += value; _toast.Clicked += value; }
-            remove { _tray.Clicked -= value; _toast.Clicked -= value; }
+            add { _tray.Clicked += value; ToastClicked += value; }
+            remove { _tray.Clicked -= value; ToastClicked -= value; }
         }
 
         /// <summary>
@@ -83,7 +84,7 @@ namespace VuluLauncher
             {
                 _tray.ShowIcon();
                 // Sağ altta kısa bir kart: launcher'ın arka planda çalıştığı belli olsun; tıklanınca pencere açılır
-                _toast.Show("vulu Launcher çalışıyor", "Simge durumunda başladı; mesajlar ve bildirimler gelecek. Açmak için tıkla.", null);
+                Notify("vulu Launcher çalışıyor", "Simge durumunda başladı; mesajlar ve bildirimler gelecek. Açmak için tıkla.", null);
                 EnterTray();
             }
             else
@@ -193,12 +194,25 @@ namespace VuluLauncher
         public void Close() => Exit();
 
         /// <summary>
-        /// Masaüstünde sağ altta kart. Tam ekran oyunun üstünde de görünür (odağı çalmaz, oyunu küçültmez); Windows
-        /// bildirimi tam ekranda gizlendiği için ona düşülmez.
+        /// Bildirimler launcher öndeyken de masaüstünde, bütün uygulamaların üstünde çıkar (Steam'deki gibi).
         /// </summary>
-        public void Notify(string title, string body, string? tag) => _toast.Show(title, body, tag);
+        public bool NotifiesOnDesktop => true;
 
-        public void Notify(string title, string body, string? tag, string? imagePath) => _toast.Show(title, body, tag, imagePath);
+        /// <summary>
+        /// Masaüstünde sağ altta kart (Views/DesktopToastWindow). Tam ekran oyunun üstünde de görünür (odağı çalmaz,
+        /// oyunu küçültmez); Windows bildirimi tam ekranda gizlendiği için ona düşülmez.
+        /// </summary>
+        public void Notify(string title, string body, string? tag) => Notify(title, body, tag, null);
+
+        public void Notify(string title, string body, string? tag, string? imagePath) => Dispatcher.UIThread.Post(() =>
+        {
+            try
+            {
+                _toasts ??= new Views.DesktopToastWindow(new ViewModels.ToastStack(clicked => ToastClicked?.Invoke(clicked)));
+                _toasts.Add(title, body, tag, imagePath);
+            }
+            catch (Exception ex) { LogFile.Write("[bildirim] gösterilemedi: " + ex.Message); }
+        });
 
         // Pencere sürükleme native başlık çubuğunda yapılır (MainWindow)
         public void BeginWindowDrag() { }
@@ -293,7 +307,6 @@ namespace VuluLauncher
         public void Dispose()
         {
             _tray.Dispose();
-            _toast.Dispose();
         }
 
         /// <summary>Windows 11'de çerçevesiz pencerenin köşelerini yuvarlatır; eski sürümlerde etkisizdir.</summary>

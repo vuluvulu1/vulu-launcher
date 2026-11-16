@@ -132,8 +132,8 @@ namespace VuluLauncher
         }
 
         /// <summary>
-        /// Bütün bildirimler buradan geçer: launcher öndeyse arayüzün içinde sağ altta kart olarak, değilse
-        /// (arkada, bildirim alanında, oyundayken) masaüstünde Steam'deki gibi kart olarak gösterilir.
+        /// Bütün bildirimler buradan geçer. Windows'ta her zaman masaüstünde Steam'deki gibi kart olarak; diğer
+        /// platformlarda launcher öndeyse arayüzün içinde, değilse sistem bildirimi olarak gösterilir.
         /// </summary>
         // Oyun bellek yetmesin diye launcher simge durumuna alındıysa 1 (oyun kapanınca pencere geri açılır)
         private int _hidForMemory;
@@ -170,7 +170,7 @@ namespace VuluLauncher
                 try
                 {
                     _bridge.Emit("notification", NotificationJson(entry));
-                    if (_host.IsForeground) _bridge.Emit("toast", new { title, body, tag, avatar = avatarUrl });
+                    if (_host.IsForeground && !_host.NotifiesOnDesktop) _bridge.Emit("toast", new { title, body, tag, avatar = avatarUrl });
                     else _host.Notify(title, body, tag, avatar);
                 }
                 catch { /* bildirim gösterilemezse launcher etkilenmez */ }

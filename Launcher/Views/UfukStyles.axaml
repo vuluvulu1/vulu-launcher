@@ -95,6 +95,18 @@
         <Setter Property="BoxShadow" Value="inset 0 1 0 0 #66FFFFFF, 0 0 26 2 #B3FF2DF1" />
     </Style>
 
+    <!-- ── Bildirim kartı: cam kart gibi yuvarlak köşe, pembe → camgöbeği kenar ── -->
+    <Style Selector="Window.ufuk Border.toast-card">
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="BorderBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="#B3FF2DF1" />
+                <GradientStop Offset="0.4" Color="#14FFFFFF" />
+                <GradientStop Offset="1" Color="#9900D7FF" />
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
+
     <!-- ── Cam kartlar: yuvarlak köşe, pembe → camgöbeği ince kenar, derin gölge (ufuk.css .uf-cam) ── -->
     <Style Selector="Window.ufuk Border.card, Window.ufuk Border.row-card, Window.ufuk Border.mcard">
         <Setter Property="CornerRadius" Value="12" />

@@ -1,0 +1,22 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:VuluLauncher.ViewModels"
+        xmlns:v="using:VuluLauncher.Views"
+        x:Class="VuluLauncher.Views.DesktopToastWindow"
+        x:DataType="vm:ToastStack"
+        Title="vulu bildirim"
+        Width="376" SizeToContent="Height"
+        SystemDecorations="None" CanResize="False" ShowInTaskbar="False" ShowActivated="False" Topmost="True"
+        Background="Transparent" TransparencyLevelHint="Transparent"
+        WindowStartupLocation="Manual">
+    <!-- Masaüstünde sağ altta, bütün uygulamaların üstünde duran bildirim kartları (Steam'deki gibi).
+         Kartlar pencerenin sağ kenarından (ekranın kenarı) kayarak gelir; solda ve üstte gölgeye yer kalır. -->
+    <ItemsControl ItemsSource="{Binding Items}" Margin="24,24,12,12" VerticalAlignment="Bottom">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ToastItem"><v:ToastCard /></DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</Window>

@@ -25,31 +25,6 @@ namespace VuluLauncher.ViewModels
         public bool HasBadge => Badge > 0;
     }
 
-    /// <summary>Sağ altta birkaç saniye görünen bildirim kartı (launcher içinde); tıklanınca etiketi ilgili sayfayı açar.</summary>
-    internal sealed partial class ToastItem(MainViewModel main, string title, string body, string? tag, string? avatar) : ObservableObject
-    {
-        public string Title { get; } = title;
-        public string Body { get; } = body;
-        public bool HasBody => Body.Length > 0;
-        [ObservableProperty] private Avalonia.Media.Imaging.Bitmap? _avatar;
-        /// <summary>Kapanıyor: sağa kayarak çıkar (web: .toast.leaving .26s).</summary>
-        [ObservableProperty] private bool _leaving;
-        /// <summary>Ekranda kalacağı süre (saniye); alttaki ince çizgi bununla kısalır.</summary>
-        public const double Lifetime = 6;
-        [ObservableProperty] [NotifyPropertyChangedFor(nameof(TimerWidth))] private double _left = Lifetime;
-        /// <summary>Üstüne gelindi: süre durur.</summary>
-        [ObservableProperty] private bool _paused;
-        public double TimerWidth => Math.Max(0, 338 * Left / Lifetime);
-        public async Task LoadAsync() => Avatar = await Images.LoadAsync(avatar, 64);
-        [RelayCommand]
-        private async Task Open()
-        {
-            main.DismissToast(this);
-            if (tag != null) await main.RouteAsync(tag);
-        }
-        [RelayCommand] private void Dismiss() => main.DismissToast(this);
-    }
-
     /// <summary>Pencerenin tamamı: giriş ekranı ya da sekmeli ana görünüm, bildirim kartları.</summary>
     internal sealed partial class MainViewModel : ObservableObject
     {
@@ -68,7 +43,7 @@ namespace VuluLauncher.ViewModels
         public DownloadsViewModel Downloads { get; }
         public SplashViewModel Splash { get; } = new();
         public ObservableCollection<PageTab> Tabs { get; } = new();
-        public ObservableCollection<ToastItem> Toasts { get; } = new();
+        public ToastStack Toasts { get; }
         /// <summary>Açık kutular; sonuncusu en üstte.</summary>
         public ObservableCollection<ModalViewModel> Modals { get; } = new();
 
@@ -123,6 +98,7 @@ namespace VuluLauncher.ViewModels
 
         public MainViewModel()
         {
+            Toasts = new ToastStack(tag => { if (tag != null) _ = RouteAsync(tag); });
             Login = new LoginViewModel(EnterAsync);
             Home = new HomeViewModel();
             Home.Main = this;
@@ -185,7 +161,11 @@ namespace VuluLauncher.ViewModels
                     Avalonia.Threading.DispatcherTimer.RunOnce(() =>
                     {
                         Notifications.Unread++;
-                        ShowToast("Arkadaşın oyuna girdi", "önizleme vulu Resmi paketinde oynuyor.");
+                        ShowToast("Kopyalandı", "Sunucu adresi panoya kopyalandı.");
+                        // Masaüstü bildirimleri (gerçek bildirim yolu: Core → WindowsHost.Notify)
+                        _ = _core.Call("debug.notify", new { title = "Yeni mesaj", body = "Akşam sunucuya girecek misin? Yeni haritayı denemek istiyorum.", tag = "dm:deneme" });
+                        _ = _core.Call("debug.notify", new { title = "Sunucu daveti", body = "deneme seni vulu Resmi'ye çağırıyor.", tag = "invite:deneme:vulu Resmi" });
+                        _ = _core.Call("debug.notify", new { title = "Paket güncellendi", body = "vulu Resmi için yeni sürüm hazır.", tag = "pack:vulu-resmi" });
                         var dialog = new DialogViewModel("Paketi kaldır", "Bu paket ve içindeki dünyalar silinecek. Emin misin?", "Kaldır", "Vazgeç", true);
                         _ = ShowAsync(dialog);
                         Avalonia.Threading.DispatcherTimer.RunOnce(() => dialog.Close(), TimeSpan.FromSeconds(7));
@@ -546,36 +526,8 @@ namespace VuluLauncher.ViewModels
             if (value?.Page is HomeViewModel && LoggedIn) Home.RefreshDetails();
         }
 
-        private DispatcherTimer? _toastClock;
-
-        public void ShowToast(string title, string body, string? tag = null, string? avatar = null)
-        {
-            var toast = new ToastItem(this, title, body, tag, avatar);
-            _ = toast.LoadAsync();
-            Toasts.Add(toast);
-            // En fazla 3 kart; fazlası (en eskisi) kayarak çıkar
-            foreach (var old in Toasts.Where(t => !t.Leaving).SkipLast(3).ToList()) DismissToast(old);
-            if (_toastClock == null)
-            {
-                // Kartların süresi tek saatle akar; üstüne gelinen kartın süresi durur
-                _toastClock = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
-                _toastClock.Tick += (_, _) =>
-                {
-                    foreach (var t in Toasts.ToList())
-                        if (!t.Leaving && !t.Paused && (t.Left -= 0.1) <= 0) DismissToast(t);
-                    if (Toasts.Count == 0) _toastClock.Stop();
-                };
-            }
-            _toastClock.Start();
-        }
-
-        /// <summary>Kart sağa kayıp solarak çıkar (0,26 sn), sonra listeden kalkar.</summary>
-        public void DismissToast(ToastItem toast)
-        {
-            if (toast.Leaving) return;
-            toast.Leaving = true;
-            DispatcherTimer.RunOnce(() => Toasts.Remove(toast), TimeSpan.FromMilliseconds(260));
-        }
+        /// <summary>Launcher içindeki küçük bilgi kartı (ör. "Kopyalandı"); asıl bildirimler masaüstünde çıkar.</summary>
+        public void ShowToast(string title, string body, string? tag = null, string? avatar = null) => Toasts.Show(title, body, tag, avatar);
 
         private void OnCoreEvent(string name, JsonElement data)
         {

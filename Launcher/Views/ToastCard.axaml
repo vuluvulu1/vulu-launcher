@@ -1,0 +1,89 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.ToastCard"
+             x:DataType="vm:ToastItem">
+    <!-- Bildirim kartı: launcher içinde ve masaüstünde (DesktopToastWindow) aynı görünüm.
+         Kartın çerçevesi burada; temalar (Themes.Attach) bu listenin sonuna eklenip köşeyi ve kenarı değiştirir -->
+    <UserControl.Styles>
+        <Style Selector="Border.toast-card">
+            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
+            <Setter Property="Transitions">
+                <Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.15" /></Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.toast:pointerover Border.toast-card"><Setter Property="BorderBrush" Value="{StaticResource Accent}" /></Style>
+    </UserControl.Styles>
+    <Button Classes="flat toast" Classes.leaving="{Binding Leaving}" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+            Command="{Binding OpenCommand}" PointerEntered="OnPointer" PointerExited="OnPointer">
+        <Button.Styles>
+            <!-- Sağdan kayıp solarak gelir, giderken yine sağa kayıp söner -->
+            <Style Selector="Button.toast">
+                <Style.Animations>
+                    <Animation Duration="0:0:0.34" Easing="0.16,1,0.3,1" FillMode="Backward">
+                        <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="380" /><Setter Property="Opacity" Value="0" /></KeyFrame>
+                        <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="0" /><Setter Property="Opacity" Value="1" /></KeyFrame>
+                    </Animation>
+                </Style.Animations>
+            </Style>
+            <Style Selector="Button.toast.leaving">
+                <Style.Animations>
+                    <Animation Duration="0:0:0.26" Easing="0.7,0,0.84,0" FillMode="Forward">
+                        <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="0" /><Setter Property="Opacity" Value="1" /></KeyFrame>
+                        <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="380" /><Setter Property="Opacity" Value="0" /></KeyFrame>
+                    </Animation>
+                </Style.Animations>
+            </Style>
+            <!-- Basınca küçülmesin (kart geniş); düz düğmenin üstüne gelince açılan zemini kartın kendi zemini örtmesin -->
+            <Style Selector="Button.toast:pressed"><Setter Property="RenderTransform" Value="none" /></Style>
+            <Style Selector="Button.toast:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="Transparent" /></Style>
+            <!-- Kapatma çarpısı yalnızca üstüne gelince -->
+            <Style Selector="Button.toast Button.x">
+                <Setter Property="Opacity" Value="0" />
+                <Setter Property="Transitions">
+                    <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.12" /></Transitions>
+                </Setter>
+            </Style>
+            <Style Selector="Button.toast:pointerover Button.x"><Setter Property="Opacity" Value="1" /></Style>
+            <Style Selector="Border.toast-timer">
+                <Setter Property="Transitions">
+                    <Transitions><DoubleTransition Property="Width" Duration="0:0:0.1" /></Transitions>
+                </Setter>
+            </Style>
+            <Style Selector="TextBlock.playing"><Setter Property="Foreground" Value="#7CC47F" /></Style>
+        </Button.Styles>
+        <Border Classes="toast-card" Background="{StaticResource Glass}" BorderThickness="1"
+                BoxShadow="0 12 32 0 #99000000" ClipToBounds="True">
+            <Panel>
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="12,12,6,12">
+                    <!-- Gönderenin profil resmi; yoksa baş harfi; kişi değilse launcher simgesi -->
+                    <Border Width="40" Height="40" CornerRadius="20" ClipToBounds="True" Margin="0,0,12,0" VerticalAlignment="Center"
+                            Background="{StaticResource Accent}">
+                        <Grid>
+                            <TextBlock Text="{Binding Initial}" IsVisible="{Binding ShowInitial}" FontSize="17" FontWeight="Bold"
+                                       Foreground="{StaticResource AccentInk}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Background="{StaticResource Raised}" IsVisible="{Binding Person, Converter={x:Static ObjectConverters.IsNull}}">
+                                <Image Source="avares://vulu Launcher/Assets/logo.png" Width="22" Height="22" />
+                            </Border>
+                            <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
+                        </Grid>
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Title}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding Body}" IsVisible="{Binding HasBody}" Classes="muted" Classes.playing="{Binding IsPlaying}"
+                                   FontSize="12.5" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <Button Grid.Column="2" Classes="primary" Content="Katıl" IsVisible="{Binding IsInvite}" Padding="12,5" FontSize="12.5"
+                            VerticalAlignment="Center" Margin="8,0,0,0" Command="{Binding JoinCommand}" />
+                    <Button Grid.Column="3" Classes="flat x" Padding="5" VerticalAlignment="Top" Margin="4,-6,0,0"
+                            Command="{Binding DismissCommand}" ToolTip.Tip="Kapat" AutomationProperties.Name="Kapat">
+                        <Path Classes="icon" Data="M1.5 1.5l7 7M8.5 1.5l-7 7" Width="10" Height="10" Stretch="None" StrokeThickness="1.4" />
+                    </Button>
+                </Grid>
+                <!-- Kalan süre: alttaki ince çizgi kısalır; üstüne gelince durur -->
+                <Border Classes="toast-timer" Height="2" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                        Width="{Binding TimerWidth}" Background="{StaticResource Accent}" Opacity="0.75" />
+            </Panel>
+        </Border>
+    </Button>
+</UserControl>
