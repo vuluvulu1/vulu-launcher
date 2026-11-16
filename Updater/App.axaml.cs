@@ -9,7 +9,11 @@ namespace Updater
         /// <summary>Program.Main'in kurduğu model; pencere bununla açılır.</summary>
         public static UpdaterViewModel? Model { get; set; }
 
-        public override void Initialize() => AvaloniaXamlLoader.Load(this);
+        public override void Initialize()
+        {
+            AvaloniaXamlLoader.Load(this);
+            UpdaterTheme.Apply(Resources, UpdaterTheme.ReadThemeName());
+        }
 
         public override void OnFrameworkInitializationCompleted()
         {

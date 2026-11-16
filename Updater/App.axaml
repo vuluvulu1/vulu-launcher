@@ -51,10 +51,10 @@
             <Setter Property="BorderBrush" Value="{StaticResource ButtonLine}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="{StaticResource Text}" />
-            <Setter Property="CornerRadius" Value="0" />
-            <Setter Property="Height" Value="34" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Height" Value="30" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="FontSize" Value="12" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -98,9 +98,9 @@
         <Style Selector="Button.chrome">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Width" Value="34" />
-            <Setter Property="Height" Value="28" />
-            <Setter Property="Margin" Value="2,4" />
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Margin" Value="0" />
             <Setter Property="Padding" Value="0" />
         </Style>
         <Style Selector="Button.chrome:pointerover /template/ ContentPresenter#PART_ContentPresenter">
@@ -110,8 +110,8 @@
             <Setter Property="Background" Value="{StaticResource Danger}" />
         </Style>
         <Style Selector="Button.chrome Path">
-            <Setter Property="Stroke" Value="{StaticResource Muted}" />
-            <Setter Property="StrokeThickness" Value="1.5" />
+            <Setter Property="Stroke" Value="{StaticResource Dim}" />
+            <Setter Property="StrokeThickness" Value="1.25" />
             <Setter Property="StrokeLineCap" Value="Round" />
             <Setter Property="Width" Value="12" />
             <Setter Property="Height" Value="12" />
@@ -120,13 +120,20 @@
         <Style Selector="Button.chrome:pointerover Path"><Setter Property="Stroke" Value="{StaticResource Text}" /></Style>
 
         <Style Selector="ProgressBar">
-            <Setter Property="Height" Value="5" />
-            <Setter Property="MinHeight" Value="5" />
-            <Setter Property="CornerRadius" Value="3" />
-            <Setter Property="Background" Value="#14FFFFFF" />
+            <Setter Property="Height" Value="2" />
+            <Setter Property="MinHeight" Value="2" />
+            <Setter Property="CornerRadius" Value="1" />
+            <Setter Property="Background" Value="{StaticResource Line}" />
             <Setter Property="Foreground" Value="{StaticResource Accent}" />
         </Style>
         <Style Selector="ProgressBar.ok"><Setter Property="Foreground" Value="{StaticResource Ok}" /></Style>
+
+        <!-- Kayan alanlar: ince, yalnızca üstüne gelince belirgin kaydırma çubuğu -->
+        <Style Selector="ScrollViewer.thin">
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="AllowAutoHide" Value="True" />
+        </Style>
 
         <Style Selector="CheckBox">
             <Setter Property="Foreground" Value="{StaticResource Text}" />

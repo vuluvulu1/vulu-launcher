@@ -3,85 +3,110 @@
         xmlns:u="using:Updater"
         x:Class="Updater.MainWindow"
         x:DataType="u:UpdaterViewModel"
-        Width="340" Height="400"
+        Width="460" Height="200"
         WindowDecorations="None"
         CanResize="False"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource Bg}">
 
-    <Border BorderBrush="{StaticResource LineStrong}" BorderThickness="1">
-        <DockPanel>
-            <!-- Başlık çubuğu: sürükleme buradan ve boş alanlardan -->
-            <Border DockPanel.Dock="Top" Height="36" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
-                <Grid ColumnDefinitions="*,Auto,Auto">
-                    <StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
-                        <Image Source="avares://Updater/Assets/logo.png" Width="16" Height="16" RenderOptions.BitmapInterpolationMode="None" />
-                        <TextBlock Text="vulu Launcher" FontWeight="Bold" VerticalAlignment="Center" />
-                    </StackPanel>
-                    <Button Grid.Column="1" Classes="chrome" Command="{Binding MinimizeCommand}" ToolTip.Tip="Küçült" AutomationProperties.Name="Küçült">
-                        <Path Data="M2,6 L10,6" />
-                    </Button>
-                    <Button Grid.Column="2" Classes="chrome close" Command="{Binding CloseCommand}" ToolTip.Tip="Kapat" AutomationProperties.Name="Kapat">
-                        <Path Data="M2.5,2.5 L9.5,9.5 M9.5,2.5 L2.5,9.5" />
-                    </Button>
-                </Grid>
-            </Border>
+    <!-- Sabit boyutlu iki bölme: solda durum, sağda sürüm notları ya da o durumun düğmeleri. Pencere hiçbir durumda büyümez. -->
+    <Border BorderBrush="{StaticResource Line}" BorderThickness="1">
+        <Grid ColumnDefinitions="216,1,*">
 
-            <DockPanel Margin="22,22,22,18">
-                <!-- Düğmeler: duruma göre biri görünür -->
-                <Panel DockPanel.Dock="Bottom" Margin="0,16,0,0">
-                    <Grid ColumnDefinitions="*,6,*" IsVisible="{Binding ShowErrorActions}">
+            <!-- Sol: logo üstte sabit; durum ve ilerleme çizgisi altta sabit (başlık iki satır olsa da yerleri kaymaz) -->
+            <Image Margin="24,24,0,0" Source="avares://Updater/Assets/logo.png" Width="32" Height="32"
+                   HorizontalAlignment="Left" VerticalAlignment="Top" RenderOptions.BitmapInterpolationMode="HighQuality" />
+            <StackPanel Margin="24,0,22,26" VerticalAlignment="Bottom">
+                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"
+                           TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"
+                           Classes.error="{Binding IsError}" Classes.ok="{Binding IsUninstalled}">
+                    <TextBlock.Styles>
+                        <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                        <Style Selector="TextBlock.ok"><Setter Property="Foreground" Value="{StaticResource Ok}" /></Style>
+                    </TextBlock.Styles>
+                </TextBlock>
+                <TextBlock Margin="0,3,0,0" MinHeight="16" Text="{Binding Detail}" IsVisible="{Binding ShowLeftDetail}"
+                           FontFamily="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource Dim}"
+                           TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                <ProgressBar Margin="0,12,0,0" MinWidth="0" HorizontalAlignment="Stretch" Minimum="0" Maximum="100" Value="{Binding Percent}"
+                             IsIndeterminate="{Binding IsIndeterminate}" Opacity="{Binding BarOpacity}" Classes.ok="{Binding IsLaunching}" />
+            </StackPanel>
+
+            <Border Grid.Column="1" Margin="0,22" Background="{StaticResource Line}" />
+
+            <!-- Sağ: duruma göre tek bir içerik -->
+            <Panel Grid.Column="2" Margin="18,20,18,18">
+
+                <!-- Sürüm notları: uzunsa yalnızca bu alan kayar -->
+                <DockPanel IsVisible="{Binding ShowNotesPane}">
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding NotesTitle}" FontSize="11.5" FontWeight="SemiBold"
+                               Foreground="{StaticResource Muted}" Margin="0,0,40,8" />
+                    <ScrollViewer Classes="thin">
+                        <!-- Alt kenarda hafif solma: devamı olduğunu belli eder -->
+                        <ScrollViewer.OpacityMask>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0.8" Color="Black" />
+                                <GradientStop Offset="1" Color="#30000000" />
+                            </LinearGradientBrush>
+                        </ScrollViewer.OpacityMask>
+                        <TextBlock Text="{Binding Notes}" FontSize="11.5" LineHeight="18" Foreground="{StaticResource Dim}"
+                                   TextWrapping="Wrap" Margin="0,0,8,14" />
+                    </ScrollViewer>
+                </DockPanel>
+
+                <!-- Not yokken: sessiz imza -->
+                <StackPanel IsVisible="{Binding ShowIdlePane}" VerticalAlignment="Bottom" Spacing="2">
+                    <TextBlock Text="vulu Launcher" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource Muted}" />
+                    <TextBlock Text="{Binding Label}" FontFamily="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource Dim}" />
+                </StackPanel>
+
+                <!-- Hata: neden ve iki düğme -->
+                <DockPanel IsVisible="{Binding IsError}">
+                    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,6,*" Margin="0,10,0,0">
                         <Button Content="Yine de aç" Command="{Binding LaunchCommand}" IsVisible="{Binding CanLaunchAnyway}" />
                         <Button Grid.Column="2" Classes="primary" Content="Tekrar dene" Command="{Binding RetryCommand}" />
                     </Grid>
-                    <Grid ColumnDefinitions="*,6,*" IsVisible="{Binding IsConfirm}">
+                    <ScrollViewer Classes="thin" Margin="0,18,0,0">
+                        <TextBlock Text="{Binding Detail}" FontSize="11.5" LineHeight="18" Foreground="{StaticResource Muted}"
+                                   TextWrapping="Wrap" Margin="0,0,8,0" />
+                    </ScrollViewer>
+                </DockPanel>
+
+                <!-- Kaldırma sorusu -->
+                <DockPanel IsVisible="{Binding IsConfirm}">
+                    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,6,*" Margin="0,10,0,0">
                         <Button Content="Vazgeç" Command="{Binding CloseCommand}" />
                         <Button Grid.Column="2" Classes="danger" Content="Kaldır" Command="{Binding UninstallCommand}" />
                     </Grid>
-                    <Button Classes="primary" Content="Kapat" Command="{Binding CloseCommand}" IsVisible="{Binding IsUninstalled}" />
-                </Panel>
+                    <CheckBox Margin="0,18,0,0" VerticalAlignment="Top" VerticalContentAlignment="Top" IsChecked="{Binding DeleteData}"
+                              AutomationProperties.Name="Oyun dosyalarını da sil">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Oyun dosyalarını da sil" FontSize="12" FontWeight="SemiBold" />
+                            <TextBlock Text="Dünyalar, Java ve ayarlar kalıcı olarak silinir." FontSize="11"
+                                       Foreground="{StaticResource Dim}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </CheckBox>
+                </DockPanel>
 
-                <StackPanel>
-                    <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Muted}" />
+                <!-- Kaldırıldı -->
+                <DockPanel IsVisible="{Binding IsUninstalled}">
+                    <Button DockPanel.Dock="Bottom" Classes="primary" Content="Kapat" Command="{Binding CloseCommand}" Margin="0,10,0,0" />
+                    <ScrollViewer Classes="thin" Margin="0,18,0,0">
+                        <TextBlock Text="{Binding Detail}" FontSize="11.5" LineHeight="18" Foreground="{StaticResource Muted}"
+                                   TextWrapping="Wrap" Margin="0,0,8,0" />
+                    </ScrollViewer>
+                </DockPanel>
+            </Panel>
 
-                    <StackPanel Margin="0,28,0,0">
-                        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" MinHeight="22"
-                                   Classes.error="{Binding IsError}" Classes.ok="{Binding IsUninstalled}">
-                            <TextBlock.Styles>
-                                <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
-                                <Style Selector="TextBlock.ok"><Setter Property="Foreground" Value="{StaticResource Ok}" /></Style>
-                            </TextBlock.Styles>
-                        </TextBlock>
-                        <TextBlock Text="{Binding Detail}" Margin="0,4,0,0" MinHeight="18" FontFamily="{StaticResource Mono}" FontSize="11.5"
-                                   Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
-                        <ProgressBar Margin="0,14,0,0" Minimum="0" Maximum="100" Value="{Binding Percent}"
-                                     IsIndeterminate="{Binding IsIndeterminate}" IsVisible="{Binding ShowBar}" Classes.ok="{Binding IsLaunching}" />
-                    </StackPanel>
-
-                    <!-- Sürüm notları -->
-                    <Border Margin="0,18,0,0" MaxHeight="120" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1"
-                            IsVisible="{Binding ShowNotes}">
-                        <ScrollViewer Padding="12,10">
-                            <StackPanel Spacing="6">
-                                <TextBlock Text="{Binding NotesTitle}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource AccentHi}" />
-                                <TextBlock Text="{Binding Notes}" FontSize="11.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </ScrollViewer>
-                    </Border>
-
-                    <!-- Kaldırma: oyun dosyaları da silinsin mi -->
-                    <Border Margin="0,16,0,0" Padding="12,10" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1"
-                            IsVisible="{Binding IsConfirm}">
-                        <CheckBox IsChecked="{Binding DeleteData}" VerticalContentAlignment="Top" AutomationProperties.Name="Oyun dosyalarını da sil">
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Oyun dosyalarını da sil" FontSize="12.5" FontWeight="SemiBold" />
-                                <TextBlock Text="Dünyalar, instance'lar, Java ve launcher ayarları kalıcı olarak silinir." FontSize="11.5"
-                                           Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </CheckBox>
-                    </Border>
-                </StackPanel>
-            </DockPanel>
-        </DockPanel>
+            <!-- Pencere düğmeleri: sağ üst köşede, sessiz -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,6,0">
+                <Button Classes="chrome" Command="{Binding MinimizeCommand}" ToolTip.Tip="Küçült" AutomationProperties.Name="Küçült">
+                    <Path Data="M2,6 L10,6" />
+                </Button>
+                <Button Classes="chrome close" Command="{Binding CloseCommand}" ToolTip.Tip="Kapat" AutomationProperties.Name="Kapat">
+                    <Path Data="M2.5,2.5 L9.5,9.5 M9.5,2.5 L2.5,9.5" />
+                </Button>
+            </StackPanel>
+        </Grid>
     </Border>
 </Window>

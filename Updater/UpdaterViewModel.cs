@@ -35,7 +35,8 @@ namespace Updater
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsError), nameof(IsConfirm), nameof(IsUninstalled), nameof(IsLaunching), nameof(ShowBar),
-            nameof(IsIndeterminate), nameof(ShowNotes), nameof(ShowErrorActions), nameof(CanLaunchAnyway))]
+            nameof(IsIndeterminate), nameof(ShowNotes), nameof(ShowErrorActions), nameof(CanLaunchAnyway), nameof(BarOpacity),
+            nameof(ShowLeftDetail), nameof(ShowNotesPane), nameof(ShowIdlePane))]
         private string _state = "checking";
         [ObservableProperty] private string _title = "Başlatılıyor…";
         [ObservableProperty] private string _detail = "";
@@ -43,7 +44,7 @@ namespace Updater
         [NotifyPropertyChangedFor(nameof(IsIndeterminate), nameof(Percent))]
         private double? _progress;
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowNotes))]
+        [NotifyPropertyChangedFor(nameof(ShowNotes), nameof(ShowNotesPane), nameof(ShowIdlePane))]
         private string? _notes;
         [ObservableProperty] private string _notesTitle = "";
         [ObservableProperty] private bool _deleteData;
@@ -62,6 +63,14 @@ namespace Updater
         public bool ShowErrorActions => IsError;
         public bool CanLaunchAnyway => IsError && !UninstallMode;
 
+        // İki bölmeli sabit pencere: sağ bölmede her durumda tek bir içerik görünür
+        /// <summary>İlerleme çizgisi gizlenince yeri boş kalır; sol bölme kaymaz.</summary>
+        public double BarOpacity => ShowBar ? 1 : 0;
+        /// <summary>Hata ve kaldırıldı durumlarında ayrıntı sağ bölmede (uzun olabilir) gösterilir.</summary>
+        public bool ShowLeftDetail => !IsError && !IsUninstalled;
+        public bool ShowNotesPane => ShowNotes && !IsConfirm && !IsUninstalled;
+        public bool ShowIdlePane => !ShowNotesPane && !IsError && !IsConfirm && !IsUninstalled;
+
         private void Report(UpdateStatus status) => Dispatcher.UIThread.Post(() => Apply(status));
 
         private void Apply(UpdateStatus status)
@@ -72,12 +81,32 @@ namespace Updater
             Progress = status.Progress;
             if (!string.IsNullOrWhiteSpace(status.Notes))
             {
-                Notes = status.Notes.Trim();
+                Notes = TidyNotes(status.Notes);
                 NotesTitle = $"v{status.Version} yenilikleri";
             }
             if (IsConfirm) UninstallSent = false;
             OnPropertyChanged(nameof(Percent));
         }
+
+        /// <summary>Sürüm notlarının Markdown işaretlerini sade metne çevirir (başlık işareti, madde imleri, kalın yazı).</summary>
+        internal static string TidyNotes(string notes)
+        {
+            var lines = new List<string>();
+            foreach (string raw in notes.Replace("\r\n", "\n").Split('\n'))
+            {
+                string line = raw.Trim().Replace("**", "").Replace("__", "").Replace("`", "");
+                if (line.StartsWith('#')) line = line.TrimStart('#').Trim();
+                else if (line.StartsWith("- ") || line.StartsWith("* ")) line = "· " + line[2..].Trim();
+                if (line.Length == 0 && (lines.Count == 0 || lines[^1].Length == 0)) continue;
+                lines.Add(line);
+            }
+            return string.Join("\n", lines).Trim();
+        }
+
+#if DEBUG
+        /// <summary>Yalnızca geliştirmede: görünüm denemesi için motoru çalıştırmadan bir durum gösterir.</summary>
+        internal void ShowSample(UpdateStatus status) => Apply(status);
+#endif
 
         /// <summary>Pencere açıldı: güncelleme denetimi (ya da kaldırma sorusu) başlar.</summary>
         public void Start()
