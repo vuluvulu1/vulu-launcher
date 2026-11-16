@@ -169,13 +169,17 @@
             <Setter Property="RenderTransform" Value="none" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.06" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.14" Easing="CubicEaseOut" />
                     <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
                 </Transitions>
             </Setter>
         </Style>
+        <!-- Basınca düğme hafifçe içe göçer, bırakınca yumuşakça geri gelir; büyük düğmeler daha az -->
         <Style Selector="Button:pressed">
-            <Setter Property="RenderTransform" Value="translateY(1px)" />
+            <Setter Property="RenderTransform" Value="scale(0.96)" />
+        </Style>
+        <Style Selector="Button.play:pressed, Button.hero:pressed, Button.media:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.985)" />
         </Style>
         <!-- Renkler anında değil, web'deki gibi kısa bir geçişle değişir -->
         <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
@@ -361,8 +365,22 @@
                 <Transitions>
                     <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
                     <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
                 </Transitions>
             </Setter>
+        </Style>
+        <!-- Tıklanan kartlar üstüne gelince 3 piksel yükselir, gölgesi derinleşir; basınca geri iner (Pressable).
+             .hover: geliştirmede VULU_UI_HOVER görüntüleri için (fare yokken) -->
+        <Style Selector="Border.lift">
+            <Setter Property="RenderTransform" Value="none" />
+        </Style>
+        <Style Selector="Border.lift:pointerover, Border.lift.hover">
+            <Setter Property="RenderTransform" Value="translateY(-3px)" />
+            <Setter Property="BoxShadow" Value="0 12 28 0 #73000000" />
+        </Style>
+        <Style Selector="Border.lift.pressed">
+            <Setter Property="RenderTransform" Value="translateY(-1px) scale(0.985)" />
         </Style>
 
         <Style Selector="Ellipse.dot"><Setter Property="Fill" Value="#A1958A" /></Style>

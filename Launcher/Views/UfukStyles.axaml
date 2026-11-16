@@ -110,7 +110,7 @@
         <!-- İçerik (kart resimleri) yuvarlak köşenin dışına taşmasın -->
         <Setter Property="ClipToBounds" Value="True" />
     </Style>
-    <Style Selector="Window.ufuk Border.card:pointerover, Window.ufuk Border.row-card:pointerover">
+    <Style Selector="Window.ufuk Border.card:pointerover, Window.ufuk Border.row-card:pointerover, Window.ufuk Border.lift.hover">
         <Setter Property="BoxShadow" Value="0 22 54 0 #80000000, 0 0 30 0 #2EFF2DF1, inset 0 1 0 0 #24FFFFFF" />
     </Style>
 

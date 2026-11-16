@@ -244,9 +244,9 @@
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ShotCard">
-                            <Border Classes="card" Width="300" Margin="0,0,14,14">
+                            <Border Classes="card lift" Width="300" Margin="0,0,14,14">
                                 <StackPanel>
-                                    <Button Classes="flat" Padding="0" Command="{Binding OpenCommand}" ToolTip.Tip="Büyük gör">
+                                    <Button Classes="flat media" Padding="0" Command="{Binding OpenCommand}" ToolTip.Tip="Büyük gör">
                                         <Border Classes="zoom" Width="298" Height="168" Background="{StaticResource Raised}" ClipToBounds="True">
                                             <Image Source="{Binding Thumb}" Stretch="UniformToFill" />
                                         </Border>

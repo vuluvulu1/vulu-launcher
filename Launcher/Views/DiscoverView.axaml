@@ -131,7 +131,7 @@
                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:PackCard">
-                                <Border Classes="card" Width="300" Margin="0,0,16,16" Cursor="Hand" Tapped="OnPackTapped">
+                                <Border Classes="card lift" Width="300" Margin="0,0,16,16" Cursor="Hand" Tapped="OnPackTapped" v:Pressable.Enabled="True">
                                     <StackPanel>
                                         <Grid Height="150" ClipToBounds="True" Background="{StaticResource Raised}">
                                             <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"

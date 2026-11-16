@@ -24,6 +24,13 @@ namespace VuluLauncher.Views
                 {
                     try
                     {
+                        // VULU_UI_HOVER=1: fare yokken de "üstüne gelinmiş" hâli görünsün (ilk tıklanır kart, ilk paket resmi)
+                        if (Environment.GetEnvironmentVariable("VULU_UI_HOVER") == "1")
+                        {
+                            var all = this.GetVisualDescendants().OfType<Control>().Where(c => c.IsEffectivelyVisible).ToList();
+                            all.FirstOrDefault(c => c is Border b && b.Classes.Contains("lift"))?.Classes.Set("hover", true);
+                            all.OfType<ListBoxItem>().Skip(1).FirstOrDefault()?.Classes.Set("hover", true);
+                        }
                         var size = new Avalonia.PixelSize((int)Bounds.Width, (int)Bounds.Height);
                         using var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(size);
                         // Tema sahnesi compositor görseli; görüntüye girsin diye o an normal çizimle de verilir

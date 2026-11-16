@@ -473,4 +473,32 @@ namespace VuluLauncher.Views
             _ = step.RunAsync(e.Container);
         }
     }
+
+    /// <summary>
+    /// Düğme olmayan tıklanır öğelere (ör. Keşfet paket kartı) basılma hissi: sol tuş basılıyken "pressed" sınıfı.
+    /// İçindeki bir düğmeye basmak sayılmaz (olayı o düğme işler).
+    /// </summary>
+    internal static class Pressable
+    {
+        public static readonly AttachedProperty<bool> EnabledProperty =
+            AvaloniaProperty.RegisterAttached<Control, bool>("Enabled", typeof(Pressable));
+
+        public static bool GetEnabled(Control c) => c.GetValue(EnabledProperty);
+        public static void SetEnabled(Control c, bool v) => c.SetValue(EnabledProperty, v);
+
+        static Pressable()
+        {
+            EnabledProperty.Changed.AddClassHandler<Control>((c, e) =>
+            {
+                if (e.NewValue is not true) return;
+                c.PointerPressed += (_, a) =>
+                {
+                    if (a.GetCurrentPoint(c).Properties.IsLeftButtonPressed) c.Classes.Set("pressed", true);
+                };
+                c.PointerReleased += (_, _) => c.Classes.Set("pressed", false);
+                c.PointerCaptureLost += (_, _) => c.Classes.Set("pressed", false);
+                c.PointerExited += (_, _) => c.Classes.Set("pressed", false);
+            });
+        }
+    }
 }

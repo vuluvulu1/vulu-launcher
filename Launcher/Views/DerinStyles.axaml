@@ -103,7 +103,7 @@
         <Setter Property="BoxShadow" Value="0 20 48 0 #99000000, inset 0 1 0 0 #148FF7EE" />
         <Setter Property="ClipToBounds" Value="True" />
     </Style>
-    <Style Selector="Window.derin Border.card:pointerover, Window.derin Border.row-card:pointerover">
+    <Style Selector="Window.derin Border.card:pointerover, Window.derin Border.row-card:pointerover, Window.derin Border.lift.hover">
         <Setter Property="BoxShadow" Value="0 22 54 0 #A6000000, 0 0 28 0 #262FE6D8, inset 0 1 0 0 #1F8FF7EE" />
     </Style>
 

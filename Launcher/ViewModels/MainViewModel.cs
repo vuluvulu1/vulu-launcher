@@ -173,6 +173,16 @@ namespace VuluLauncher.ViewModels
                         Social.World.Loading = true;
                         Social.World.Error = null;
                     }, TimeSpan.FromSeconds(2.5));
+                // VULU_UI_SAMPLE=1: Keşfet'e örnek paket kartları (kart görünümünü denemek için)
+                else if (Environment.GetEnvironmentVariable("VULU_UI_SAMPLE") == "1")
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                    {
+                        Discover.Packs.Skeleton = false;
+                        Discover.Packs.Cards.Clear();
+                        foreach (var (name, loader) in new[] { ("Örnek Paket", "fabric"), ("Macera", "forge"), ("Sade", "vanilla"), ("Teknik", "neoforge") })
+                            Discover.Packs.Cards.Add(new PackCard(Discover.Packs, JsonDocument.Parse(
+                                $"{{\"id\":\"{name}\",\"name\":\"{name}\",\"description\":\"Önizleme için örnek paket açıklaması.\",\"loader\":\"{loader}\",\"author\":\"vulu\"}}").RootElement));
+                    }, TimeSpan.FromSeconds(2.5));
                 return;
             }
 #endif
