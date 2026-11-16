@@ -34,13 +34,20 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private Avalonia.Media.Imaging.Bitmap? _avatar;
         /// <summary>Kapanıyor: sağa kayarak çıkar (web: .toast.leaving .26s).</summary>
         [ObservableProperty] private bool _leaving;
+        /// <summary>Ekranda kalacağı süre (saniye); alttaki ince çizgi bununla kısalır.</summary>
+        public const double Lifetime = 6;
+        [ObservableProperty] [NotifyPropertyChangedFor(nameof(TimerWidth))] private double _left = Lifetime;
+        /// <summary>Üstüne gelindi: süre durur.</summary>
+        [ObservableProperty] private bool _paused;
+        public double TimerWidth => Math.Max(0, 338 * Left / Lifetime);
         public async Task LoadAsync() => Avatar = await Images.LoadAsync(avatar, 64);
         [RelayCommand]
         private async Task Open()
         {
-            main.Toasts.Remove(this);
+            main.DismissToast(this);
             if (tag != null) await main.RouteAsync(tag);
         }
+        [RelayCommand] private void Dismiss() => main.DismissToast(this);
     }
 
     /// <summary>Pencerenin tamamı: giriş ekranı ya da sekmeli ana görünüm, bildirim kartları.</summary>
@@ -172,6 +179,16 @@ namespace VuluLauncher.ViewModels
                         Servers.Status = null;
                         Social.World.Loading = true;
                         Social.World.Error = null;
+                    }, TimeSpan.FromSeconds(2.5));
+                // VULU_UI_MODAL=1: örnek bildirim kartı ve soru kutusu (7 sn sonra kendiliğinden kapanır)
+                if (Environment.GetEnvironmentVariable("VULU_UI_MODAL") == "1")
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                    {
+                        Notifications.Unread++;
+                        ShowToast("Arkadaşın oyuna girdi", "önizleme vulu Resmi paketinde oynuyor.");
+                        var dialog = new DialogViewModel("Paketi kaldır", "Bu paket ve içindeki dünyalar silinecek. Emin misin?", "Kaldır", "Vazgeç", true);
+                        _ = ShowAsync(dialog);
+                        Avalonia.Threading.DispatcherTimer.RunOnce(() => dialog.Close(), TimeSpan.FromSeconds(7));
                     }, TimeSpan.FromSeconds(2.5));
                 // VULU_UI_SAMPLE=1: Keşfet'e örnek paket kartları (kart görünümünü denemek için)
                 else if (Environment.GetEnvironmentVariable("VULU_UI_SAMPLE") == "1")
@@ -448,7 +465,13 @@ namespace VuluLauncher.ViewModels
         {
             Modals.Add(modal);
             try { return await modal.Result; }
-            finally { Modals.Remove(modal); }
+            finally
+            {
+                // Önce çıkış animasyonu (0,15 sn), sonra kaldır
+                modal.Closing = true;
+                await Task.Delay(150);
+                Modals.Remove(modal);
+            }
         }
 
         /// <summary>Soru kutusu: tamam denirse true.</summary>
@@ -523,17 +546,35 @@ namespace VuluLauncher.ViewModels
             if (value?.Page is HomeViewModel && LoggedIn) Home.RefreshDetails();
         }
 
+        private DispatcherTimer? _toastClock;
+
         public void ShowToast(string title, string body, string? tag = null, string? avatar = null)
         {
             var toast = new ToastItem(this, title, body, tag, avatar);
             _ = toast.LoadAsync();
             Toasts.Add(toast);
-            while (Toasts.Count > 3) Toasts.RemoveAt(0);
-            DispatcherTimer.RunOnce(() =>
+            // En fazla 3 kart; fazlası (en eskisi) kayarak çıkar
+            foreach (var old in Toasts.Where(t => !t.Leaving).SkipLast(3).ToList()) DismissToast(old);
+            if (_toastClock == null)
             {
-                toast.Leaving = true;
-                DispatcherTimer.RunOnce(() => Toasts.Remove(toast), TimeSpan.FromMilliseconds(260));
-            }, TimeSpan.FromSeconds(6));
+                // Kartların süresi tek saatle akar; üstüne gelinen kartın süresi durur
+                _toastClock = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+                _toastClock.Tick += (_, _) =>
+                {
+                    foreach (var t in Toasts.ToList())
+                        if (!t.Leaving && !t.Paused && (t.Left -= 0.1) <= 0) DismissToast(t);
+                    if (Toasts.Count == 0) _toastClock.Stop();
+                };
+            }
+            _toastClock.Start();
+        }
+
+        /// <summary>Kart sağa kayıp solarak çıkar (0,26 sn), sonra listeden kalkar.</summary>
+        public void DismissToast(ToastItem toast)
+        {
+            if (toast.Leaving) return;
+            toast.Leaving = true;
+            DispatcherTimer.RunOnce(() => Toasts.Remove(toast), TimeSpan.FromMilliseconds(260));
         }
 
         private void OnCoreEvent(string name, JsonElement data)

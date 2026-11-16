@@ -50,7 +50,11 @@ namespace VuluLauncher.Views
             // Tema geçişi animasyonu (Ayarlar › Tema)
             DataContextChanged += (_, _) =>
             {
-                if (DataContext is MainViewModel m) m.PlayThemeTransition = (theme, atMiddle) => Transition.PlayAsync(theme, atMiddle);
+                if (DataContext is MainViewModel m)
+                {
+                    m.PlayThemeTransition = (theme, atMiddle) => Transition.PlayAsync(theme, atMiddle);
+                    WatchBell(m);
+                }
             };
             // Başlık çubuğundan sürükleme (düğmelerin üstünde değilse)
             TitleBar.PointerPressed += (_, e) =>
@@ -92,7 +96,78 @@ namespace VuluLauncher.Views
         private void OnNotificationsOpened(object? sender, EventArgs e)
         {
             if (DataContext is MainViewModel vm) vm.Notifications.IsOpen = true;
+            // Liste zildan aşağı doğru solarak açılır
+            if (sender is Flyout { Content: Control panel }) _ = PopoverIn.RunAsync(panel);
         }
+
+        /// <summary>Bildirim kartının üstüne gelince süresi durur.</summary>
+        private void OnToastPointer(object? sender, Avalonia.Input.PointerEventArgs e)
+        {
+            if (sender is Control { DataContext: ToastItem toast } c) toast.Paused = e.RoutedEvent == PointerEnteredEvent;
+        }
+
+        private int _lastUnread;
+
+        /// <summary>Okunmamış sayısı artınca zil kısa bir sallanır, rozet "pıt" diye büyüyüp yerine oturur.</summary>
+        private void WatchBell(MainViewModel vm)
+        {
+            _lastUnread = vm.Notifications.Unread;
+            vm.Notifications.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName != nameof(NotificationsViewModel.Unread)) return;
+                int now = vm.Notifications.Unread;
+                if (now > _lastUnread)
+                {
+                    _ = BellRing.RunAsync(BellIcon);
+                    _ = BadgePop.RunAsync(NotifBadge);
+                }
+                _lastUnread = now;
+            };
+        }
+
+        private static Avalonia.Animation.KeyFrame Frame(double cue, params (AvaloniaProperty p, object v)[] setters)
+        {
+            var f = new Avalonia.Animation.KeyFrame { Cue = new Avalonia.Animation.Cue(cue) };
+            foreach (var (prop, v) in setters) f.Setters.Add(new Avalonia.Styling.Setter(prop, v));
+            return f;
+        }
+
+        private static readonly Avalonia.Animation.Animation PopoverIn = new()
+        {
+            Duration = TimeSpan.FromMilliseconds(200),
+            Easing = new Avalonia.Animation.Easings.CubicEaseOut(),
+            Children =
+            {
+                Frame(0, (OpacityProperty, 0.0), (Avalonia.Media.TranslateTransform.YProperty, -6.0)),
+                Frame(1, (OpacityProperty, 1.0), (Avalonia.Media.TranslateTransform.YProperty, 0.0)),
+            },
+        };
+
+        private static readonly Avalonia.Animation.Animation BellRing = new()
+        {
+            Duration = TimeSpan.FromMilliseconds(650),
+            Easing = new Avalonia.Animation.Easings.LinearEasing(),
+            Children =
+            {
+                Frame(0, (Avalonia.Media.RotateTransform.AngleProperty, 0.0)),
+                Frame(0.15, (Avalonia.Media.RotateTransform.AngleProperty, 16.0)),
+                Frame(0.35, (Avalonia.Media.RotateTransform.AngleProperty, -12.0)),
+                Frame(0.55, (Avalonia.Media.RotateTransform.AngleProperty, 7.0)),
+                Frame(0.75, (Avalonia.Media.RotateTransform.AngleProperty, -3.0)),
+                Frame(1, (Avalonia.Media.RotateTransform.AngleProperty, 0.0)),
+            },
+        };
+
+        private static readonly Avalonia.Animation.Animation BadgePop = new()
+        {
+            Duration = TimeSpan.FromMilliseconds(380),
+            Easing = new Avalonia.Animation.Easings.BackEaseOut(),
+            Children =
+            {
+                Frame(0, (Avalonia.Media.ScaleTransform.ScaleXProperty, 0.4), (Avalonia.Media.ScaleTransform.ScaleYProperty, 0.4)),
+                Frame(1, (Avalonia.Media.ScaleTransform.ScaleXProperty, 1.0), (Avalonia.Media.ScaleTransform.ScaleYProperty, 1.0)),
+            },
+        };
 
         /// <summary>Bildirim listesi kapanınca hepsi okundu sayılır.</summary>
         private void OnNotificationsClosed(object? sender, EventArgs e)

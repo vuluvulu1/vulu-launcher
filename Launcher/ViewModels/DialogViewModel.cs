@@ -18,6 +18,9 @@ namespace VuluLauncher.ViewModels
 
         public void Close(object? result = null) => _result.TrySetResult(result);
 
+        /// <summary>Kapanıyor: kutu ve karartma kısa bir çıkış animasyonuyla kaybolur, sonra listeden çıkar.</summary>
+        [ObservableProperty] private bool _closing;
+
         /// <summary>Vazgeç, Kapat ya da Esc.</summary>
         [RelayCommand] private void Dismiss() => Close(null);
 

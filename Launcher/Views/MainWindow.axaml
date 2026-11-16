@@ -179,8 +179,8 @@
                         <!-- Bildirim merkezi -->
                         <Button Classes="flat tb big" IsVisible="{Binding ShowShell}" ToolTip.Tip="Bildirimler" AutomationProperties.Name="Bildirimler">
                             <Panel>
-                                <Path Classes="icon" Data="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
-                                <Border IsVisible="{Binding Notifications.HasUnread}" Background="{StaticResource Accent}" MinWidth="15" Height="15" CornerRadius="8"
+                                <Path x:Name="BellIcon" Classes="icon" Data="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" RenderTransformOrigin="50%,15%" />
+                                <Border x:Name="NotifBadge" IsVisible="{Binding Notifications.HasUnread}" Background="{StaticResource Accent}" MinWidth="15" Height="15" CornerRadius="8"
                                         Padding="3,0" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-6,-9,0">
                                     <TextBlock Text="{Binding Notifications.Badge}" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource AccentInk}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -290,38 +290,57 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ToastItem">
-                        <Button Classes="flat toast" Classes.leaving="{Binding Leaving}" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Command="{Binding OpenCommand}">
+                        <Button Classes="flat toast" Classes.leaving="{Binding Leaving}" Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Command="{Binding OpenCommand}"
+                                PointerEntered="OnToastPointer" PointerExited="OnToastPointer">
                             <!-- Sağdan kayarak gelir (web: toast-in .34s) -->
                             <Button.Styles>
                                 <Style Selector="Button.toast.leaving">
                                     <Style.Animations>
                                         <Animation Duration="0:0:0.26" Easing="0.7,0,0.84,0" FillMode="Forward">
-                                            <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="0" /></KeyFrame>
-                                            <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="380" /></KeyFrame>
+                                            <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="0" /><Setter Property="Opacity" Value="1" /></KeyFrame>
+                                            <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="380" /><Setter Property="Opacity" Value="0" /></KeyFrame>
                                         </Animation>
                                     </Style.Animations>
                                 </Style>
                                 <Style Selector="Button.toast">
                                     <Style.Animations>
                                         <Animation Duration="0:0:0.34" Easing="0.16,1,0.3,1" FillMode="Backward">
-                                            <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="380" /></KeyFrame>
-                                            <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="0" /></KeyFrame>
+                                            <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="380" /><Setter Property="Opacity" Value="0" /></KeyFrame>
+                                            <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="0" /><Setter Property="Opacity" Value="1" /></KeyFrame>
                                         </Animation>
                                     </Style.Animations>
                                 </Style>
+                                <!-- Basınca küçülmesin (kart geniş); kapatma çarpısı yalnızca üstüne gelince -->
+                                <Style Selector="Button.toast:pressed"><Setter Property="RenderTransform" Value="none" /></Style>
+                                <Style Selector="Button.toast Button.x"><Setter Property="Opacity" Value="0" /></Style>
+                                <Style Selector="Button.toast:pointerover Button.x"><Setter Property="Opacity" Value="1" /></Style>
+                                <Style Selector="Border.toast-timer">
+                                    <Setter Property="Transitions">
+                                        <Transitions><DoubleTransition Property="Width" Duration="0:0:0.1" /></Transitions>
+                                    </Setter>
+                                </Style>
                             </Button.Styles>
-                            <Border Background="{StaticResource Glass}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
-                                    Padding="12,10" BoxShadow="0 12 32 0 #99000000">
-                                <Grid ColumnDefinitions="Auto,*">
-                                    <Border Width="36" Height="36" CornerRadius="18" ClipToBounds="True" Margin="0,0,10,0" VerticalAlignment="Top"
-                                            IsVisible="{Binding Avatar, Converter={x:Static ObjectConverters.IsNotNull}}">
-                                        <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
-                                    </Border>
-                                    <StackPanel Grid.Column="1" Spacing="3">
-                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap" />
-                                        <TextBlock Text="{Binding Body}" IsVisible="{Binding HasBody}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" MaxLines="3" />
-                                    </StackPanel>
-                                </Grid>
+                            <Border Classes="toast-card" Background="{StaticResource Glass}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
+                                    BoxShadow="0 12 32 0 #99000000" ClipToBounds="True">
+                                <Panel>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="12,10,6,10">
+                                        <Border Width="36" Height="36" CornerRadius="18" ClipToBounds="True" Margin="0,0,10,0" VerticalAlignment="Top"
+                                                IsVisible="{Binding Avatar, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="3">
+                                            <TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Body}" IsVisible="{Binding HasBody}" Classes="muted" FontSize="12.5" TextWrapping="Wrap" MaxLines="3" />
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Classes="flat x" Padding="5" VerticalAlignment="Top" Margin="4,-4,0,0"
+                                                Command="{Binding DismissCommand}" ToolTip.Tip="Kapat" AutomationProperties.Name="Kapat">
+                                            <Path Classes="icon" Data="M1.5 1.5l7 7M8.5 1.5l-7 7" Width="10" Height="10" Stretch="None" StrokeThickness="1.4" />
+                                        </Button>
+                                    </Grid>
+                                    <!-- Kalan süre: alttaki ince çizgi kısalır; üstüne gelince durur -->
+                                    <Border Classes="toast-timer" Height="2" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                            Width="{Binding TimerWidth}" Background="{StaticResource Accent}" Opacity="0.7" />
+                                </Panel>
                             </Border>
                         </Button>
                     </DataTemplate>
@@ -418,14 +437,40 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ModalViewModel">
-                        <Border Classes="backdrop" Background="#A6000000">
-                            <!-- Kutu açılırken karartma ve kutu yumuşakça belirir (web: view-in .12s) -->
+                        <Border Classes="backdrop" Classes.closing="{Binding Closing}" Background="#A6000000">
+                            <!-- Açılış: karartma solarak gelir, kutu hafifçe büyüyüp yükselerek belirir.
+                                 Kapanış: ikisi birlikte 0,15 sn'de söner, kutu biraz küçülür (MainViewModel.ShowAsync) -->
                             <Border.Styles>
                                 <Style Selector="Border.backdrop">
                                     <Style.Animations>
-                                        <Animation Duration="0:0:0.12" Easing="CubicEaseOut" FillMode="Backward">
+                                        <Animation Duration="0:0:0.18" Easing="CubicEaseOut" FillMode="Backward">
                                             <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /></KeyFrame>
                                             <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                                <Style Selector="Border.backdrop > Border.modal-box">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:0.26" Easing="0.16,1,0.3,1" FillMode="Backward">
+                                            <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="ScaleTransform.ScaleX" Value="0.96" /><Setter Property="ScaleTransform.ScaleY" Value="0.96" /><Setter Property="TranslateTransform.Y" Value="10" /></KeyFrame>
+                                            <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="ScaleTransform.ScaleX" Value="1" /><Setter Property="ScaleTransform.ScaleY" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                                <Style Selector="Border.backdrop.closing">
+                                    <Setter Property="IsHitTestVisible" Value="False" />
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:0.15" Easing="CubicEaseIn" FillMode="Forward">
+                                            <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+                                            <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0" /></KeyFrame>
+                                        </Animation>
+                                    </Style.Animations>
+                                </Style>
+                                <Style Selector="Border.backdrop.closing > Border.modal-box">
+                                    <Style.Animations>
+                                        <Animation Duration="0:0:0.15" Easing="CubicEaseIn" FillMode="Forward">
+                                            <KeyFrame Cue="0%"><Setter Property="ScaleTransform.ScaleX" Value="1" /><Setter Property="ScaleTransform.ScaleY" Value="1" /></KeyFrame>
+                                            <KeyFrame Cue="100%"><Setter Property="ScaleTransform.ScaleX" Value="0.97" /><Setter Property="ScaleTransform.ScaleY" Value="0.97" /></KeyFrame>
                                         </Animation>
                                     </Style.Animations>
                                 </Style>
