@@ -375,6 +375,9 @@ half4 main(float2 local) {
         /// </summary>
         internal static bool Snapshotting { get; set; }
 
+        /// <summary>Sahnenin son çizildiği yer (ölçüm için): ekran kartı ya da işlemci.</summary>
+        internal static string? Backend { get; private set; }
+
         private sealed class SnapshotDraw(SKRuntimeEffect? effect, Rect bounds, Size full, double offsetY, double time, double par) : ICustomDrawOperation
         {
             public Rect Bounds => bounds;
@@ -486,7 +489,7 @@ half4 main(float2 local) {
         {
             private LayerMessage? _m;
             private double _par;
-            private long _lastFrame, _lastRender;
+            private long _lastFrame, _lastRender, _lastSlot = -1;
             private bool _ticking;
             private SKSurface? _surface;
             private int _w, _h;
@@ -530,8 +533,13 @@ half4 main(float2 local) {
                     return;
                 }
 
-                double interval = m.Top ? (s.Focused ? 125 : 500) : (s.Focused ? 40 : 125);
-                if (s.Active && Ms(_lastRender, now) >= interval) { _lastRender = now; Invalidate(); }
+                // Maliyet gölgelendiricide değil, her karede pencerenin o bölümünün yeniden birleştirilip ekrana
+                // basılmasında (ölçüldü: çizmeden de aynı). Bu yüzden iki katman aynı saate hizalı kare ister: üst
+                // katmanın her karesi alt katmanın bir karesine denk gelir, ayrı bir kare basılmaz (önceden ~33, şimdi
+                // 25 kare/sn). Odakta değilken (başka pencere öndeyken) alt katman saniyede 4, üst katman 1 kare.
+                double interval = m.Top ? (s.Focused ? 120 : 1000) : (s.Focused ? 40 : 250);
+                long slot = (long)(CompositionNow.TotalMilliseconds / interval);
+                if (s.Active && slot != _lastSlot) { _lastSlot = slot; _lastRender = now; Invalidate(); }
                 else if (parallaxMoving && Ms(_lastRender, now) >= 33) { _lastRender = now; Invalidate(); }
 
                 if (s.Active || parallaxMoving) RegisterForNextAnimationFrameUpdate();
@@ -607,6 +615,7 @@ half4 main(float2 local) {
 
             // Bir ara yüzeye çizilir, sonra yumuşatılarak büyütülür: üst katman tam, alt katman %60 çözünürlük
             var gr = lease.GrContext;
+            Backend = gr == null ? "işlemci (yazılım)" : "ekran kartı (" + gr.Backend + ")";
             float scale = canvas.TotalMatrix.ScaleX;
             // Ekran kartı yoksa (yazılım çizimi, geçişin ekran görüntüsü) gölgelendirici işlemcide çalışır: düşük çözünürlük
             double res = gr == null ? 0.35 : offsetY <= 0 ? 1.0 : 0.6;

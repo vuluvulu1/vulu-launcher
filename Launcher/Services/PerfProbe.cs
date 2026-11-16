@@ -95,7 +95,7 @@ namespace VuluLauncher
             await Task.Delay(1500);
             await NextFrame(window); await NextFrame(window);
             Line($"kabuk hazır       {SinceStart(),8:0} ms");
-            Line($"tema              {Themes.Current} (hareketli: {Views.SynthwaveBackdrop.Animated})");
+            Line($"tema              {Themes.Current} (hareketli: {Views.SynthwaveBackdrop.Animated}, sahne çizimi: {Views.SynthwaveBackdrop.Backend ?? "-"})");
             Line("");
             await Task.Delay(2500);
             var host = window.FindControl<Views.PageHost>("PageHost")!;
@@ -153,10 +153,12 @@ namespace VuluLauncher
             }
             Line("");
 
-            Line("── boşta (5 sn; işlemci = tüm süreç, bir çekirdeğin yüzdesi) ──");
-            foreach (string key in new[] { "home", "social", "settings" })
+            Line("── boşta (10 sn; işlemci = tüm süreç, bir çekirdeğin yüzdesi) ──");
+            foreach (string key in new[] { "home", "social", "settings", "settings-bos" })
             {
-                vm.SelectTabCommand.Execute(vm.Tabs.First(t => t.Key == key));
+                // settings-bos: Ayarlar açık ama sayfa gizli; yalnızca arka plan sahnesinin maliyeti
+                vm.SelectTabCommand.Execute(vm.Tabs.First(t => t.Key == key.Replace("-bos", "")));
+                host.IsVisible = !key.EndsWith("-bos");
                 _phase = "boşta:" + key;
                 await Task.Delay(2500);
                 using var process = Process.GetCurrentProcess();
@@ -165,12 +167,13 @@ namespace VuluLauncher
                 void OnLayout(object? s, EventArgs e) => layouts++;
                 window.LayoutUpdated += OnLayout;
                 var sw = Stopwatch.StartNew();
-                await Task.Delay(5000);
+                await Task.Delay(10000);
                 window.LayoutUpdated -= OnLayout;
                 process.Refresh();
                 double cpu = (process.TotalProcessorTime - cpu0).TotalMilliseconds / sw.Elapsed.TotalMilliseconds * 100;
-                Line($"{key,-10} işlemci %{cpu,5:0.0}   yerleşim turu {layouts}");
+                Line($"{key,-12} işlemci %{cpu,5:0.0}   yerleşim turu {layouts}");
             }
+            host.IsVisible = true;
             Line("");
 
             Line("── oyun çıktısı: Oyna › Konsol açıkken 80 ms'de bir 20 satır, 4 sn (600 satır sınırı) ──");

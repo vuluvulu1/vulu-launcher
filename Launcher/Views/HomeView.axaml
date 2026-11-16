@@ -200,7 +200,16 @@
         <Border Grid.Row="0" Background="{StaticResource StagePlain}" />
         <Border Grid.Row="0" Background="{StaticResource StageGlow}" />
         <!-- Ufkun öbür ucu teması: arka planı olmayan pakette synthwave sahnesi (resmi olan pakette resim üstünü örter) -->
-        <v:SynthwaveBackdrop Grid.Row="0" IsVisible="{Binding HasScene, Source={x:Static local:ThemeState.Instance}}" />
+        <!-- Resim varsa sahne tamamen onun arkasında kalır: o zaman hiç çizilmez (görünmezken de saniyede 25 kare çizip
+             bütün Oyna sayfasını yeniden çizdiriyordu) -->
+        <v:SynthwaveBackdrop Grid.Row="0">
+            <v:SynthwaveBackdrop.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="HasScene" Source="{x:Static local:ThemeState.Instance}" />
+                    <Binding Path="Background" Converter="{x:Static ObjectConverters.IsNull}" />
+                </MultiBinding>
+            </v:SynthwaveBackdrop.IsVisible>
+        </v:SynthwaveBackdrop>
         <Image Grid.Row="0" Source="{Binding Background}" Stretch="UniformToFill" />
         <!-- Yazılar okunsun: kenarlardan ve alttan karartma (mesale.css .stage-bg::after) -->
         <Border Grid.Row="0" IsHitTestVisible="False">

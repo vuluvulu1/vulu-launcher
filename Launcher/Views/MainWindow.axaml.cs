@@ -26,7 +26,9 @@ namespace VuluLauncher.Views
                     {
                         var size = new Avalonia.PixelSize((int)Bounds.Width, (int)Bounds.Height);
                         using var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(size);
-                        rtb.Render(this);
+                        // Tema sahnesi compositor görseli; görüntüye girsin diye o an normal çizimle de verilir
+                        SynthwaveBackdrop.Snapshotting = true;
+                        try { rtb.Render(this); } finally { SynthwaveBackdrop.Snapshotting = false; }
                         rtb.Save(System.IO.Path.Combine(shotDir, $"shot-{n++ % 4}.png"));
                     }
                     catch (Exception ex) { LogFile.Write("[ui] görüntü alınamadı: " + ex.Message); }
