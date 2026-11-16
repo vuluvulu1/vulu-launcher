@@ -139,24 +139,50 @@ namespace VuluLauncher.ViewModels
 
         // ── Harita ───────────────────────────────────────────────────────
         private bool _centered;
+        private Dictionary<string, double> _regionTimes = new();
+        private int _ticks;
+        private const int PlayerSeconds = 2;          // oyuncu konumları
+        private const int TileCheckSeconds = 60;      // değişen karolar (sunucu 2 dk'da bir çizer)
+
+        /// <summary>Sunucunun bölge zamanları: değişenlerin karoları yenilenir.</summary>
+        private async Task CheckTilesAsync(bool first)
+        {
+            var info = await _core.Call("map.info");
+            MapEnabled = info.Bool("enabled");
+            var ow = info.Get("dims").Get("overworld");
+            MapUpdated = ow.Text("updatedAt") is { } at ? "Harita güncellendi: " + Names.Ago(at) : "";
+            var times = new Dictionary<string, double>();
+            if (ow.Get("regions") is { ValueKind: JsonValueKind.Object } regions)
+                foreach (var r in regions.EnumerateObject()) times[r.Name] = r.Value.ValueKind == JsonValueKind.Number ? r.Value.GetDouble() : 0;
+            if (!first)
+            {
+                var changed = new List<(int, int)>();
+                foreach (var t in times)
+                {
+                    if (_regionTimes.TryGetValue(t.Key, out var old) && old == t.Value) continue;
+                    var parts = t.Key.Split(',');
+                    if (parts.Length == 2 && int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int x)
+                        && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int z)) changed.Add((x, z));
+                }
+                if (changed.Count > 0) Map?.Invalidate(changed);
+            }
+            _regionTimes = times;
+        }
 
         private async Task OpenMapAsync()
         {
             Error = null;
-            try
-            {
-                var info = await _core.Call("map.info");
-                MapEnabled = info.Bool("enabled");
-                var ow = info.Get("dims").Get("overworld");
-                MapUpdated = ow.Text("updatedAt") is { } at ? "Harita güncellendi: " + Names.Ago(at) : "";
-            }
+            try { await CheckTilesAsync(first: true); }
             catch (Exception ex) { Error = "Harita alınamadı: " + ex.Message; return; }
             if (!MapEnabled) { MapStatus = "Harita henüz hazır değil; sunucu ilk çizimi bitirince burada görünür."; return; }
             Map?.Refresh();
             await RefreshPlayersAsync();
-            _timer ??= new DispatcherTimer(TimeSpan.FromSeconds(10), DispatcherPriority.Background, async (_, _) =>
+            // Harita açıkken: konumlar 2 sn'de bir, değişen karolar dakikada bir
+            _timer ??= new DispatcherTimer(TimeSpan.FromSeconds(PlayerSeconds), DispatcherPriority.Background, async (_, _) =>
             {
-                if (IsMap && main.SelectedTab?.Page == main.Social && main.Social.View == "map") await RefreshPlayersAsync(); else _timer?.Stop();
+                if (!(IsMap && main.SelectedTab?.Page == main.Social && main.Social.View == "map")) { _timer?.Stop(); return; }
+                await RefreshPlayersAsync();
+                if (++_ticks % (TileCheckSeconds / PlayerSeconds) == 0) { try { await CheckTilesAsync(first: false); } catch { } }
             });
             _timer.Start();
         }
