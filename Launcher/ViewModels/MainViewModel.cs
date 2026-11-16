@@ -227,6 +227,11 @@ namespace VuluLauncher.ViewModels
             {
                 if (devPage == "profile") _ = OpenProfileAsync(Username);
                 else if (devPage is "board" or "map") { SelectedTab = Tabs.First(t => t.Key == "social"); Social.ShowWorld(devPage); }
+                else if (devPage.StartsWith("admin:", StringComparison.Ordinal) && IsAdmin)
+                {
+                    SelectedTab = Tabs.First(t => t.Key == "admin");
+                    _ = Admin.SelectTabCommand.ExecuteAsync(Admin.Tabs.First(t => t.Key == devPage[6..]));
+                }
                 else if (Tabs.FirstOrDefault(t => t.Key == devPage) is { } devTab) SelectedTab = devTab;
             }
 #endif

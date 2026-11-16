@@ -129,14 +129,15 @@ namespace VuluLauncher.Views
 
         private Bitmap? _skin, _cape;
         private List<SkinModel.Face> _faces = new();
-        private double _yaw = -0.5, _time;
+        private double _yaw = -0.5, _pitch = DefaultPitch, _time;
+        private const double DefaultPitch = -0.22;   // hafif yukarıdan
         private bool _dragging, _attached;
         private Point _dragFrom;
         private DateTime _lastDrag = DateTime.MinValue, _lastFrame = DateTime.UtcNow;
 
         public SkinViewer3D()
         {
-            Cursor = new Cursor(StandardCursorType.SizeWestEast);
+            Cursor = new Cursor(StandardCursorType.SizeAll);
             Rebuild();
         }
 
@@ -234,6 +235,8 @@ namespace VuluLauncher.Views
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
+            // Çift tık: dik duruşa döner
+            if (e.ClickCount == 2) { _pitch = DefaultPitch; InvalidateVisual(); }
             _dragging = true;
             _dragFrom = e.GetPosition(this);
             e.Pointer.Capture(this);
@@ -244,7 +247,9 @@ namespace VuluLauncher.Views
             base.OnPointerMoved(e);
             if (!_dragging) return;
             var p = e.GetPosition(this);
+            // Yatay sürükleme y ekseninde, dikey sürükleme x ekseninde çevirir; ikisi de sınırsız (360°)
             _yaw += (p.X - _dragFrom.X) * 0.015;
+            _pitch -= (p.Y - _dragFrom.Y) * 0.015;
             _dragFrom = p;
             _lastDrag = DateTime.UtcNow;
             InvalidateVisual();

@@ -41,6 +41,14 @@ namespace VuluLauncher
                 return await _api.SendJsonAsync<JsonElement>(HttpMethod.Delete, "/progress/capes/grant", new { username = args.Str("username"), key = args.Str("key") });
             });
 
+            // Admin: sezonlar, görevler (başarımlar), seviye/XP ve haftalık dallar
+            _bridge.On("admin.progressConfig", async _ => { RequireLogin(); return await _api.GetAsync<JsonElement>("/progress/admin/config"); });
+            _bridge.On("admin.saveProgressConfig", async args =>
+            {
+                RequireLogin();
+                return await _api.PutAsync<JsonElement>("/progress/admin/config", new { config = args.GetProperty("config") });
+            });
+
             // Dolap: kayıtlı skinler
             _bridge.On("wardrobe.list", async _ => { RequireLogin(); return await _api.GetAsync<JsonElement>("/users/me/wardrobe"); });
             _bridge.On("wardrobe.apply", async args =>

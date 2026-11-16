@@ -108,7 +108,7 @@
                             <Border Width="190" Height="290" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1">
                                 <Grid>
                                     <v:SkinViewer3D Skin="{Binding SkinBytes}" Cape="{Binding CapeBytes}" Slim="{Binding Slim}" Margin="8"
-                                                    ToolTip.Tip="Çevirmek için sürükle" />
+                                                    ToolTip.Tip="Her yöne çevirmek için sürükle · çift tık: dik duruş" />
                                     <TextBlock Text="Varsayılan skin" Classes="dim" FontSize="11.5" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,6"
                                                IsVisible="{Binding !HasSkin}" />
                                 </Grid>

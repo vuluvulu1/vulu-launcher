@@ -97,7 +97,6 @@
                                         </Border>
                                         <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Sub}" Classes="dim" FontSize="12" />
                                         </StackPanel>
                                     </Grid>
                                 </Button>

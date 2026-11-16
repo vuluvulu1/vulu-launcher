@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
              xmlns:v="using:VuluLauncher.Views"
@@ -225,6 +225,168 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                </StackPanel>
+
+                <!-- İlerleme: sezonlar, görevler (başarımlar), seviye ve XP, haftalık liderlik -->
+                <StackPanel IsVisible="{Binding IsProgress}" Spacing="16" MaxWidth="980" HorizontalAlignment="Left">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,16,0"
+                                   Text="Buradaki her şey vulu sunucusunun istatistiklerinden hesaplanır. Değişiklikler &quot;Kaydet&quot;e basınca geçerli olur; oyuncuların ilerlemesi en çok 5 dakika içinde yeni ayarla güncellenir." />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button Classes="sm" Content="Geri al" Command="{Binding ReloadProgressCommand}" ToolTip.Tip="Kaydedilmemiş değişiklikleri at" />
+                            <Button Classes="sm primary" Content="Kaydet" Command="{Binding SaveProgressCommand}" IsEnabled="{Binding !ProgressSaving}" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="{Binding ProgressNote}" TextWrapping="Wrap" IsVisible="{Binding ProgressNote, Converter={x:Static ObjectConverters.IsNotNull}}"
+                               Classes.ok="{Binding ProgressOk}" Classes.err="{Binding !ProgressOk}">
+                        <TextBlock.Styles>
+                            <Style Selector="TextBlock.ok"><Setter Property="Foreground" Value="{StaticResource Ok}" /></Style>
+                            <Style Selector="TextBlock.err"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                        </TextBlock.Styles>
+                    </TextBlock>
+
+                    <!-- Sezonlar -->
+                    <Border Classes="row" Padding="16">
+                        <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="Sezonlar" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Classes="sm" Content="+ Sezon ekle" Command="{Binding AddSeasonCommand}" />
+                            </Grid>
+                            <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap"
+                                       Text="Aynı anda tek sezon sürer; tarihler çakışamaz. Her görev bir rozet verir. Bütün görevleri bitiren ya da sezon seviyesine ulaşan sezon pelerinini alır (seviye 0: yalnızca görevlerle)." />
+                            <ItemsControl ItemsSource="{Binding Seasons}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SeasonEdit">
+                                        <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="12" Margin="0,0,0,10">
+                                            <StackPanel Spacing="10">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="2" Command="{Binding ToggleCommand}">
+                                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" />
+                                                    </Button>
+                                                    <Button Grid.Column="1" Classes="sm danger" Content="Sezonu sil" Command="{Binding RemoveCommand}" />
+                                                </Grid>
+                                                <StackPanel Spacing="10" IsVisible="{Binding IsOpen}">
+                                                    <WrapPanel>
+                                                        <StackPanel Spacing="4" Margin="0,0,12,8" Width="200">
+                                                            <TextBlock Text="Adı" Classes="label" />
+                                                            <TextBox Text="{Binding Name}" MaxLength="40" />
+                                                        </StackPanel>
+                                                        <StackPanel Spacing="4" Margin="0,0,12,8" Width="110">
+                                                            <TextBlock Text="Anahtar" Classes="label" />
+                                                            <TextBox Text="{Binding Key}" MaxLength="32" ToolTip.Tip="Küçük harf, rakam, tire (ör. s2). Kaydettikten sonra değiştirme: oyuncuların sezon ilerlemesi buna bağlı." />
+                                                        </StackPanel>
+                                                        <StackPanel Spacing="4" Margin="0,0,12,8">
+                                                            <TextBlock Text="Başlangıç" Classes="label" />
+                                                            <CalendarDatePicker SelectedDate="{Binding Start}" Width="150" />
+                                                        </StackPanel>
+                                                        <StackPanel Spacing="4" Margin="0,0,12,8">
+                                                            <TextBlock Text="Bitiş" Classes="label" />
+                                                            <CalendarDatePicker SelectedDate="{Binding End}" Width="150" />
+                                                        </StackPanel>
+                                                        <StackPanel Spacing="4" Margin="0,0,12,8">
+                                                            <TextBlock Text="Sezon pelerini" Classes="label" />
+                                                            <ComboBox ItemsSource="{Binding Capes}" SelectedItem="{Binding Cape}" Width="190">
+                                                                <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:Option"><TextBlock Text="{Binding Label}" /></DataTemplate></ComboBox.ItemTemplate>
+                                                            </ComboBox>
+                                                        </StackPanel>
+                                                        <StackPanel Spacing="4" Margin="0,0,12,8">
+                                                            <TextBlock Text="Pelerin için sezon seviyesi" Classes="label" />
+                                                            <NumericUpDown Value="{Binding CapeLevel}" Minimum="0" Maximum="1000" Increment="1" FormatString="0" Width="150" />
+                                                        </StackPanel>
+                                                    </WrapPanel>
+
+                                                    <Grid ColumnDefinitions="*,Auto">
+                                                        <TextBlock Text="Görevler" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                        <Button Grid.Column="1" Classes="sm" Content="+ Görev ekle" Command="{Binding AddQuestCommand}" />
+                                                    </Grid>
+                                                    <Grid ColumnDefinitions="54,170,*,190,100,Auto" Margin="0,0,0,-4">
+                                                        <TextBlock Text="Simge" Classes="label" />
+                                                        <TextBlock Grid.Column="1" Text="Adı" Classes="label" />
+                                                        <TextBlock Grid.Column="2" Text="Açıklama" Classes="label" />
+                                                        <TextBlock Grid.Column="3" Text="Sayılan" Classes="label" />
+                                                        <TextBlock Grid.Column="4" Text="Hedef" Classes="label" />
+                                                    </Grid>
+                                                    <ItemsControl ItemsSource="{Binding Quests}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="vm:QuestEdit">
+                                                                <Grid ColumnDefinitions="54,170,*,190,100,Auto" Margin="0,0,0,6">
+                                                                    <TextBox Text="{Binding Icon}" MaxLength="4" Margin="0,0,6,0" HorizontalContentAlignment="Center" />
+                                                                    <TextBox Grid.Column="1" Text="{Binding Name}" MaxLength="40" Margin="0,0,6,0" />
+                                                                    <TextBox Grid.Column="2" Text="{Binding Desc}" MaxLength="120" Margin="0,0,6,0" PlaceholderText="Oyuncunun göreceği açıklama" />
+                                                                    <ComboBox Grid.Column="3" ItemsSource="{Binding Stats}" SelectedItem="{Binding Stat}" HorizontalAlignment="Stretch" Margin="0,0,6,0">
+                                                                        <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:Option"><TextBlock Text="{Binding Label}" /></DataTemplate></ComboBox.ItemTemplate>
+                                                                    </ComboBox>
+                                                                    <NumericUpDown Grid.Column="4" Value="{Binding Target}" Minimum="0" Maximum="1000000000" Increment="1" ShowButtonSpinner="False" Margin="0,0,6,0" />
+                                                                    <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="4">
+                                                                        <Button Classes="sm" Content="↑" Command="{Binding MoveUpCommand}" ToolTip.Tip="Yukarı taşı" />
+                                                                        <Button Classes="sm danger" Content="Sil" Command="{Binding RemoveCommand}" />
+                                                                    </StackPanel>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Seviye ve XP -->
+                    <Border Classes="row" Padding="16">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Seviye ve XP" FontSize="16" FontWeight="Bold" />
+                            <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap"
+                                       Text="Oyuncu sunucuda oynadıkça XP kazanır. L. seviye için toplam (katsayı × L × (L+1)) XP gerekir; katsayı büyüdükçe seviyeler yavaşlar. Sezon seviyesi aynı eğriyle, yalnızca sezon başından beri kazanılan XP'den hesaplanır." />
+                            <WrapPanel>
+                                <StackPanel Spacing="4" Margin="0,0,12,8"><TextBlock Text="Seviye katsayısı" Classes="label" /><NumericUpDown Value="{Binding LevelBase}" Minimum="5" Maximum="10000" Increment="5" Width="150" /></StackPanel>
+                                <StackPanel Spacing="4" Margin="0,0,12,8"><TextBlock Text="Oynanan dakika başına" Classes="label" /><NumericUpDown Value="{Binding XpMinute}" Minimum="0" Maximum="100000" Increment="1" Width="150" /></StackPanel>
+                                <StackPanel Spacing="4" Margin="0,0,12,8"><TextBlock Text="Elmas başına" Classes="label" /><NumericUpDown Value="{Binding XpDiamond}" Minimum="0" Maximum="100000" Increment="1" Width="150" /></StackPanel>
+                                <StackPanel Spacing="4" Margin="0,0,12,8"><TextBlock Text="Başarım başına" Classes="label" /><NumericUpDown Value="{Binding XpAdvancement}" Minimum="0" Maximum="100000" Increment="1" Width="150" /></StackPanel>
+                                <StackPanel Spacing="4" Margin="0,0,12,8"><TextBlock Text="Gidilen km başına" Classes="label" /><NumericUpDown Value="{Binding XpKm}" Minimum="0" Maximum="100000" Increment="1" Width="150" /></StackPanel>
+                                <StackPanel Spacing="4" Margin="0,0,12,8"><TextBlock Text="10 yaratık başına" Classes="label" /><NumericUpDown Value="{Binding XpMobs10}" Minimum="0" Maximum="100000" Increment="1" Width="150" /></StackPanel>
+                            </WrapPanel>
+                            <TextBlock Text="{Binding LevelPreview}" Classes="muted" FontSize="12" FontFamily="{StaticResource Mono}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Haftalık liderlik -->
+                    <Border Classes="row" Padding="16">
+                        <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="Haftalık liderlik" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+                                <CheckBox Grid.Column="1" IsChecked="{Binding WeeklyEnabled}" Content="Birincilere ödül ver" />
+                            </Grid>
+                            <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap"
+                                       Text="Tablo her pazartesi 00:00'da (Türkiye saati) sıfırlanır. Her açık dalın birincisi o dalın rozetini ve seçilen pelerini alır. Kapalı dallar tabloda görünmez." />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="Birincilerin pelerini" Classes="label" VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding CapeOptions}" SelectedItem="{Binding WeeklyCape}" Width="200">
+                                    <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:Option"><TextBlock Text="{Binding Label}" /></DataTemplate></ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <Grid ColumnDefinitions="70,54,*,*" Margin="0,0,0,-4">
+                                <TextBlock Text="Açık" Classes="label" />
+                                <TextBlock Grid.Column="1" Text="Simge" Classes="label" />
+                                <TextBlock Grid.Column="2" Text="Dalın adı" Classes="label" />
+                                <TextBlock Grid.Column="3" Text="Rozetin adı" Classes="label" />
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Weekly}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:WeeklyEdit">
+                                        <Grid ColumnDefinitions="70,54,*,*" Margin="0,0,0,6">
+                                            <CheckBox IsChecked="{Binding Enabled}" VerticalAlignment="Center" />
+                                            <TextBox Grid.Column="1" Text="{Binding Icon}" MaxLength="4" Margin="0,0,6,0" HorizontalContentAlignment="Center" />
+                                            <TextBox Grid.Column="2" Text="{Binding Name}" MaxLength="40" Margin="0,0,6,0" />
+                                            <TextBox Grid.Column="3" Text="{Binding BadgeName}" MaxLength="40" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <!-- Alan -->

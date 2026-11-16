@@ -117,7 +117,7 @@ namespace VuluLauncher.ViewModels
                 {
                     double value = q.Num("value"), target = Math.Max(1, q.Num("target"));
                     Quests.Add(new QuestItem(q.Text("icon") ?? "★", q.Text("name") ?? "", q.Text("desc") ?? "",
-                        q.Bool("done") ? "Tamamlandı ✓" : QuestProgress(q.Text("key"), value, target), Math.Clamp(value / target, 0, 1), q.Bool("done")));
+                        q.Text("text") ?? (q.Bool("done") ? "Tamamlandı ✓" : $"{value:0.#} / {target:0.#}"), Math.Clamp(value / target, 0, 1), q.Bool("done")));
                 }
             }
             else SeasonName = null;
@@ -157,13 +157,6 @@ namespace VuluLauncher.ViewModels
             OnPropertyChanged(nameof(HasCapes));
             OnPropertyChanged(nameof(CanGrantCapes));
         }
-
-        private static string QuestProgress(string? key, double value, double target) => key switch
-        {
-            "yola-cikis" => $"{Math.Floor(value / 72000)} / {target / 72000} saat",
-            "gezgin" => $"{(value / 100000).ToString("0.#", Tr)} / {target / 100000} km",
-            _ => $"{value:0} / {target:0}",
-        };
 
         public async Task ToggleCapeAsync(CapeItem cape)
         {

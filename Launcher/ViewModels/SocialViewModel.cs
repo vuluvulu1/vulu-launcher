@@ -23,7 +23,6 @@ namespace VuluLauncher.ViewModels
         /// <summary>"feed" (akış), "board" (liderlik tablosu) ya da "map" (dünya haritası).</summary>
         public string Kind { get; } = kind;
         public string Title => Kind switch { "board" => "Liderlik", "map" => "Harita", _ => "Akış" };
-        public string Sub => Kind switch { "board" => "Haftalık sıralama ve şampiyonlar", "map" => "vulu sunucusu, sen ve arkadaşların", _ => "Paylaşılan ekran görüntüleri" };
         public string Glyph => Kind switch { "board" => "★", "map" => "◈", _ => "▦" };
         [RelayCommand] private void Open() { if (Kind == "feed") owner.ShowFeed(); else owner.ShowWorld(Kind); }
     }

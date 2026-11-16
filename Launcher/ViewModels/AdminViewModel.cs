@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
 using Avalonia.Media;
@@ -60,11 +60,11 @@ namespace VuluLauncher.ViewModels
 
     internal sealed record StoragePart(string Label, string Size, IBrush Brush, double Fraction);
 
-    /// <summary>Admin paneli: özet, kullanıcılar, roller, kayıt istekleri, duyuru, radyo ve sunucu alanı.</summary>
+    /// <summary>Admin paneli: özet, kullanıcılar, roller, kayıt istekleri, duyuru, radyo, ilerleme (sezonlar, görevler, seviye) ve sunucu alanı.</summary>
     internal sealed partial class AdminViewModel(MainViewModel main) : ObservableObject
     {
         private static readonly (string Key, string Label)[] TabList =
-            { ("overview", "Özet"), ("users", "Kullanıcılar"), ("roles", "Roller"), ("registrations", "Kayıt istekleri"), ("announcement", "Duyuru"), ("radio", "Radyo"), ("storage", "Alan") };
+            { ("overview", "Özet"), ("users", "Kullanıcılar"), ("roles", "Roller"), ("registrations", "Kayıt istekleri"), ("announcement", "Duyuru"), ("radio", "Radyo"), ("progress", "İlerleme"), ("storage", "Alan") };
         private static readonly (int Hours, string Label)[] Durations = { (0, "Kaldırılana kadar"), (3, "3 saat"), (24, "1 gün"), (72, "3 gün"), (168, "1 hafta") };
         public static readonly string[] RoleColors = { "#c9a992", "#e3b04f", "#7cc47f", "#5fa8d3", "#9b7fd1", "#e2604a", "#d17fb0", "#9c704c" };
         private static readonly Dictionary<string, string> StorageColors = new() { ["packs"] = "#c27e3e", ["shots"] = "#5b8def", ["images"] = "#9b6bd6", ["messages"] = "#4caf6a" };
@@ -154,6 +154,7 @@ namespace VuluLauncher.ViewModels
                     case "announcement": await LoadAnnouncementAsync(); break;
                     case "radio": await LoadRadioAsync(); break;
                     case "storage": await LoadStorageAsync(); break;
+                    case "progress": await LoadProgressConfigAsync(); break;
                 }
                 Status = "";
             }
