@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Avalonia.Media.Imaging;
 
 namespace VuluLauncher.Native
@@ -25,6 +25,40 @@ namespace VuluLauncher.Native
         {
             if (string.IsNullOrWhiteSpace(url)) return Task.FromResult<Bitmap?>(null);
             return Cache.GetOrAdd($"{width}|{url}", _ => Task.Run(() => LoadCoreAsync(url, width)));
+        }
+
+        /// <summary>
+        /// Görselin önceden bulanıklaştırılmış küçük kopyası (Meşale'de Oyna dışı sayfaların zemini). Eskiden tam boy resim
+        /// canlı BlurEffect ile çiziliyordu: kaydırma, hover, sayfa geçişi gibi her yeniden çizimde bulanıklık baştan
+        /// hesaplanıyordu. Şimdi bir kez, arka planda, küçük boyutta hesaplanır.
+        /// </summary>
+        public static Task<Bitmap?> LoadBlurredAsync(string? url, int width = 640, float sigma = 5f)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return Task.FromResult<Bitmap?>(null);
+            return Cache.GetOrAdd($"blur{width}:{sigma}|{url}", _ => Task.Run(async () =>
+            {
+                try
+                {
+                    var bytes = await LoadBytesAsync(url);
+                    if (bytes == null) return null;
+                    using var original = SkiaSharp.SKBitmap.Decode(bytes);
+                    if (original == null) return null;
+                    double scale = Math.Min(1, (double)width / original.Width);
+                    int w = Math.Max(1, (int)(original.Width * scale)), h = Math.Max(1, (int)(original.Height * scale));
+                    using var small = original.Resize(new SkiaSharp.SKImageInfo(w, h), new SkiaSharp.SKSamplingOptions(SkiaSharp.SKFilterMode.Linear, SkiaSharp.SKMipmapMode.Linear));
+                    using var surface = SkiaSharp.SKSurface.Create(new SkiaSharp.SKImageInfo(w, h));
+                    using var paint = new SkiaSharp.SKPaint { ImageFilter = SkiaSharp.SKImageFilter.CreateBlur(sigma, sigma, SkiaSharp.SKShaderTileMode.Clamp) };
+                    surface.Canvas.DrawBitmap(small, 0, 0, paint);
+                    using var image = surface.Snapshot();
+                    using var data = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+                    return new Bitmap(data.AsStream());
+                }
+                catch (Exception ex)
+                {
+                    LogFile.Write($"[ui] bulanık zemin hazırlanamadı ({url}): {ex.Message}");
+                    return null;
+                }
+            }));
         }
 
         /// <summary>Görselin baytları (skin gibi önce işlenecek resimler için); alınamazsa null.</summary>

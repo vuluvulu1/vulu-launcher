@@ -417,8 +417,17 @@
                     </Border>
 
                     <!-- Konsol -->
-                    <ScrollViewer Grid.Row="1" x:Name="ConsoleScroll" Padding="12,8" IsVisible="{Binding IsLog}">
-                        <ItemsControl ItemsSource="{Binding Console}">
+                    <!-- Sanallaştırılmış: yalnızca görünen satırlar kurulur (oyun saniyede yüzlerce satır yazabilir; 600 satırın hepsi
+                         kurulu olunca her yeni satır arayüzü takıltıyordu) -->
+                    <ItemsControl Grid.Row="1" x:Name="ConsoleList" Padding="12,8" IsVisible="{Binding IsLog}" ItemsSource="{Binding Console}">
+                            <ItemsControl.Template>
+                                <ControlTemplate>
+                                    <ScrollViewer Name="PART_ScrollViewer" Padding="{TemplateBinding Padding}" HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:LogLine">
                                     <SelectableTextBlock Classes="log" Classes.warn="{Binding IsWarn}" Classes.error="{Binding IsError}">
@@ -431,7 +440,6 @@
                                 <Style Selector="SelectableTextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
                             </ItemsControl.Styles>
                         </ItemsControl>
-                    </ScrollViewer>
 
                     <ScrollViewer Grid.Row="1" IsVisible="{Binding !IsLog}">
                         <StackPanel Margin="12" Spacing="8">

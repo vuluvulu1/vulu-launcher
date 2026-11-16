@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace VuluLauncher.Views
 {
@@ -95,7 +96,13 @@ namespace VuluLauncher.Views
         private void Frame(TimeSpan _)
         {
             _animating = false;
-            if (!IsEffectivelyVisible || TopLevel.GetTopLevel(this) == null) return;
+            if (TopLevel.GetTopLevel(this) == null) return;
+            // Sayfalar artık saklanıyor (gizli sekme): görünmezken çizmez, yarım saniyede bir yeniden görünür mü bakar
+            if (!IsEffectivelyVisible)
+            {
+                if (IsVisible) { _animating = true; DispatcherTimer.RunOnce(() => { _animating = false; Animate(); }, TimeSpan.FromMilliseconds(500)); }
+                return;
+            }
             InvalidateVisual();
             Animate();
         }
@@ -172,7 +179,13 @@ namespace VuluLauncher.Views
         private void Frame(TimeSpan _)
         {
             _animating = false;
-            if (!IsEffectivelyVisible || TopLevel.GetTopLevel(this) == null) return;
+            if (TopLevel.GetTopLevel(this) == null) return;
+            // Sayfalar artık saklanıyor (gizli sekme): görünmezken çizmez, yarım saniyede bir yeniden görünür mü bakar
+            if (!IsEffectivelyVisible)
+            {
+                if (IsVisible) { _animating = true; DispatcherTimer.RunOnce(() => { _animating = false; Animate(); }, TimeSpan.FromMilliseconds(500)); }
+                return;
+            }
             InvalidateVisual();
             Animate();
         }

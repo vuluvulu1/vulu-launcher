@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -46,12 +46,19 @@ namespace VuluLauncher
             }
 #endif
 
+#if DEBUG
+            PerfProbe.Mark("main() başı");
+#endif
             // Önbellek temizliği ve eski güncelleme dosyaları
             Storage.CleanUpAtStartup();
 
             // Avalonia: ana iş parçacığı arayüz iş parçacığı olur; pencere kapatılsa da (bildirim alanı) uygulama sürer
             var lifetime = new ClassicDesktopStyleApplicationLifetime { Args = args, ShutdownMode = ShutdownMode.OnExplicitShutdown };
             AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace().SetupWithLifetime(lifetime);
+#if DEBUG
+            PerfProbe.Start();
+            PerfProbe.Mark("avalonia hazır");
+#endif
 
             using var host = new WindowsHost(lifetime);
             var bridge = new Bridge(host.SendToUi);
@@ -66,6 +73,9 @@ namespace VuluLauncher
             if (startInTray) app.StartInBackground();
 
             host.Start(startInTray);
+#if DEBUG
+            PerfProbe.Mark("pencere kuruldu");
+#endif
             lifetime.Start(args);
 
             app.Shutdown();

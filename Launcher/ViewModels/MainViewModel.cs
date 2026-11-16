@@ -160,6 +160,7 @@ namespace VuluLauncher.ViewModels
                 Home.LoadPreview();
                 // VULU_UI_PAGE=settings: o sekmeyle açılır
                 if (Tabs.FirstOrDefault(t => t.Key == Environment.GetEnvironmentVariable("VULU_UI_PAGE")) is { } page) SelectedTab = page;
+                _ = PerfProbe.RunAsync(this);
                 return;
             }
 #endif

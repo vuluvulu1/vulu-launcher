@@ -108,6 +108,20 @@ namespace VuluLauncher.Views
             _dragging = false;
         }
 
+        private HomeViewModel? _consoleVm;
+        private bool _consoleScrollQueued;
+
+        private ScrollViewer? ConsoleScroll => ConsoleList.FindDescendantOfType<ScrollViewer>();
+
+        private void OnConsoleChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (_consoleScrollQueued || !ConsoleList.IsEffectivelyVisible || ConsoleScroll is not { } scroll) return;
+            bool atBottom = scroll.Offset.Y >= scroll.Extent.Height - scroll.Viewport.Height - 40;
+            if (!atBottom) return;
+            _consoleScrollQueued = true;
+            Dispatcher.UIThread.Post(() => { _consoleScrollQueued = false; ConsoleScroll?.ScrollToEnd(); }, DispatcherPriority.Background);
+        }
+
         private bool _heroLeft;
 
         /// <summary>
@@ -116,7 +130,7 @@ namespace VuluLauncher.Views
         /// </summary>
         private void SyncHeroInset()
         {
-            if (!Hero.IsVisible || Hero.Bounds.Height <= 0 || !NewButton.IsVisible) return;
+            if (!IsEffectivelyVisible || !Hero.IsVisible || Hero.Bounds.Height <= 0 || !NewButton.IsVisible) return;
             var last = NewButton.TranslatePoint(new Point(0, NewButton.Bounds.Height), this);
             var top = Hero.TranslatePoint(new Point(0, 0), this);
             if (last is null || top is null) return;
@@ -134,15 +148,20 @@ namespace VuluLauncher.Views
             // Ufkun öbür ucu: sayfanın kendi stillerinin üstüne temanın ışıltıları
             Themes.Attach(this);
             LayoutUpdated += (_, _) => SyncHeroInset();
-            // Konsol en alttayken yeni satırlar gelince alta kayar; kullanıcı yukarı kaydırdıysa yerinde kalır
+            // Konsol en alttayken yeni satırlar gelince alta kayar; kullanıcı yukarı kaydırdıysa yerinde kalır. Bir grup
+            // satır (oyun çıktısı 80 ms'de bir toplu gelir) için tek kaydırma yapılır.
+            // Konsol sekmesi açılınca en son satır görünür
+            ConsoleList.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == IsVisibleProperty && ConsoleList.IsVisible)
+                    Dispatcher.UIThread.Post(() => ConsoleScroll?.ScrollToEnd(), DispatcherPriority.Background);
+            };
             DataContextChanged += (_, _) =>
             {
-                if (DataContext is not HomeViewModel vm) return;
-                vm.Console.CollectionChanged += (_, _) =>
-                {
-                    bool atBottom = ConsoleScroll.Offset.Y >= ConsoleScroll.Extent.Height - ConsoleScroll.Viewport.Height - 40;
-                    if (atBottom) Dispatcher.UIThread.Post(ConsoleScroll.ScrollToEnd, DispatcherPriority.Background);
-                };
+                if (DataContext is not HomeViewModel vm || _consoleVm == vm) return;
+                if (_consoleVm != null) _consoleVm.Console.CollectionChanged -= OnConsoleChanged;
+                _consoleVm = vm;
+                vm.Console.CollectionChanged += OnConsoleChanged;
             };
         }
     }

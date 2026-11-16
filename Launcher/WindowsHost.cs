@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Avalonia;
@@ -55,7 +55,13 @@ namespace VuluLauncher
         public void Start(bool startInTray)
         {
             _viewModel = new MainViewModel();
+#if DEBUG
+            PerfProbe.Mark("görünüm modeli");
+#endif
             _window = new MainWindow { DataContext = _viewModel };
+#if DEBUG
+            PerfProbe.Mark("pencere nesnesi");
+#endif
             ApplyLayout(AppSettings.Current.WindowSize);
             _window.Opened += (_, _) =>
             {

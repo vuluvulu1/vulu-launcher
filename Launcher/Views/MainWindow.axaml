@@ -246,18 +246,18 @@
             <!-- Ufkun öbür ucu teması: Oyna dışındaki sayfaların (ve girişin) arkasında hareketli synthwave sahnesi -->
             <v:SynthwaveBackdrop Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding ShowSynthwave}" />
             <Panel Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding ShowBackdrop}" IsHitTestVisible="False" ClipToBounds="True">
-                <Image Source="{Binding Home.Background}" Stretch="UniformToFill" Margin="-40">
-                    <Image.Effect><BlurEffect Radius="26" /></Image.Effect>
-                </Image>
+                <!-- Önceden bulanıklaştırılmış küçük kopya (canlı BlurEffect her yeniden çizimde baştan hesaplanıyordu) -->
+                <Image Source="{Binding Home.BackgroundBlurred}" Stretch="UniformToFill" Margin="-40" RenderOptions.BitmapInterpolationMode="MediumQuality" />
                 <Border Background="#D9080706" />
             </Panel>
-            <ContentControl x:Name="PageHost" Grid.Row="0" Grid.RowSpan="2" Classes.home="{Binding IsHomePage}"
-                            Content="{Binding SelectedTab.Page}" IsVisible="{Binding ShowShell}">
-                <ContentControl.Styles>
-                    <Style Selector="ContentControl#PageHost"><Setter Property="Margin" Value="0,50,0,0" /></Style>
-                    <Style Selector="ContentControl#PageHost.home"><Setter Property="Margin" Value="0" /></Style>
-                </ContentControl.Styles>
-            </ContentControl>
+            <!-- Sayfalar bir kez kurulup saklanır; sekme değişince yalnızca görünürlük değişir (Views/PageHost.cs) -->
+            <v:PageHost x:Name="PageHost" Grid.Row="0" Grid.RowSpan="2" Classes.home="{Binding IsHomePage}"
+                        Page="{Binding SelectedTab.Page}" IsVisible="{Binding ShowShell}">
+                <v:PageHost.Styles>
+                    <Style Selector="v|PageHost#PageHost"><Setter Property="Margin" Value="0,50,0,0" /></Style>
+                    <Style Selector="v|PageHost#PageHost.home"><Setter Property="Margin" Value="0" /></Style>
+                </v:PageHost.Styles>
+            </v:PageHost>
             <!-- ── Açılış perdesi: giriş ve ana ekran arkasında hazırlanır ── -->
             <!-- Başlık çubuğu (ZIndex 3) dahil her şeyin üstünde -->
             <!-- Tema geçişi (Ayarlar › Tema): ekranı kısa bir ışık tüneliyle örter, ortada tema değişir -->

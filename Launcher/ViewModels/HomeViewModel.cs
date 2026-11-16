@@ -194,6 +194,8 @@ namespace VuluLauncher.ViewModels
 
         [ObservableProperty] private InstanceItem? _selected;
         [ObservableProperty] private Bitmap? _background;
+        /// <summary>Arka planın önceden bulanıklaştırılmış küçük kopyası (Meşale'de öbür sayfaların zemini).</summary>
+        [ObservableProperty] private Bitmap? _backgroundBlurred;
         [ObservableProperty] private Bitmap? _logo;
         [ObservableProperty] private bool _hasLogo;
 
@@ -380,6 +382,7 @@ namespace VuluLauncher.ViewModels
         partial void OnSelectedChanged(InstanceItem? value)
         {
             Background = null;
+            BackgroundBlurred = null;
             Logo = null;
             HasLogo = false;
             ModCount = Size = Updated = PlayTime = "–";
@@ -444,6 +447,8 @@ namespace VuluLauncher.ViewModels
             Background = bg;
             Logo = lg;
             HasLogo = lg != null;
+            var blurred = await Images.LoadBlurredAsync(item.BackgroundUrl);
+            if (Selected == item) BackgroundBlurred = blurred;
         }
 
         /// <summary>İçerik değişince (mod kuruldu, kapatıldı): istatistikler ve alt bilgi yenilenir.</summary>

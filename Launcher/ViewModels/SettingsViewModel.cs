@@ -11,7 +11,7 @@ namespace VuluLauncher.ViewModels
 {
     /// <summary>
     /// Ayarlar sayfası. Her değişiklik anında kaydedilir (settings.save; Core pencere boyutu, başlangıç kaydı, Discord
-    /// gibi yan etkileri kendisi uygular). Sayfa her açılışta baştan kurulur ki başka yerden değişen ayarlar da görünsün.
+    /// gibi yan etkileri kendisi uygular). Sayfa her açılışta ayarları yeniden okur; başka yerden bir şey değiştiyse satırlar baştan kurulur.
     /// </summary>
     internal sealed partial class SettingsViewModel(MainViewModel main) : ObservableObject
     {
@@ -21,6 +21,7 @@ namespace VuluLauncher.ViewModels
         private readonly CoreClient _core = CoreClient.Instance;
         private JsonObject _settings = new();
         private IDisposable? _noteTimer;
+        private string? _lastInfo;
 
         public ObservableCollection<SettingSection> Sections { get; } = new();
 
@@ -38,6 +39,11 @@ namespace VuluLauncher.ViewModels
             try { info = await _core.Call("settings.get"); }
             catch (Exception ex) { LoadError = "Ayarlar alınamadı: " + ex.Message; return; }
             LoadError = null;
+            // Sayfa her açılışta denetlenir ama satırlar yalnızca bir şey değiştiyse yeniden kurulur: ~1000 öğeyi baştan
+            // kurmak her açılışta 200+ ms donma ve 20–36 MB çöp demekti
+            string raw = info.GetRawText();
+            if (raw == _lastInfo && Sections.Count > 0) return;
+            _lastInfo = raw;
             _settings = JsonNode.Parse(info.Get("settings").GetRawText())!.AsObject();
             Build(info);
             Filter();
