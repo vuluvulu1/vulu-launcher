@@ -46,6 +46,8 @@
                             </StackPanel>
                         </Border>
                         <TextBlock Grid.Column="1" Text="{Binding Subtitle}" Classes="dim" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="14,0,0,0" />
+                        <!-- Yüklenirken sağda küçük dönen gösterge (içerik yerinden oynamaz) -->
+                        <v:Spinner Grid.Column="1" Width="18" Height="18" Thickness="2.2" HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="{Binding Loading}" />
                     </Grid>
 
                     <!-- Geçen haftanın birincileri -->

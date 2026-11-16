@@ -73,6 +73,10 @@
             <DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="12" Color="#00D7FF" Opacity="0.9" />
         </Setter>
     </Style>
+    <Style Selector="Window.ufuk Border.tabind">
+        <Setter Property="Background" Value="#00D7FF" />
+        <Setter Property="BoxShadow" Value="0 0 14 2 #B300D7FF" />
+    </Style>
     <Style Selector="Window.ufuk Button.tab Border.bar">
         <Setter Property="Background" Value="#00D7FF" />
         <Setter Property="BoxShadow" Value="0 0 14 2 #B300D7FF" />

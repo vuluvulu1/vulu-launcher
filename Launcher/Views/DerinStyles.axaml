@@ -1,4 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui"
+﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:v="using:VuluLauncher.Views"
         x:Class="VuluLauncher.Views.DerinStyles">
@@ -66,6 +66,10 @@
         <Setter Property="Effect">
             <DropShadowEffect OffsetX="0" OffsetY="0" BlurRadius="10" Color="#2FE6D8" Opacity="0.8" />
         </Setter>
+    </Style>
+    <Style Selector="Window.derin Border.tabind">
+        <Setter Property="Background" Value="#2FE6D8" />
+        <Setter Property="BoxShadow" Value="0 0 14 2 #992FE6D8" />
     </Style>
     <Style Selector="Window.derin Button.tab Border.bar">
         <Setter Property="Background" Value="#2FE6D8" />

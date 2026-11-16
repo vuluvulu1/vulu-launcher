@@ -61,11 +61,11 @@
                               Text="Admin bir sunucu eklediğinde burada görünecek." />
                 <!-- İlk yüklemede yer tutucular (web: .server-skel) -->
                 <StackPanel Spacing="12" IsVisible="{Binding FirstLoad}">
-                    <v:Skeleton Height="150" />
-                    <v:Skeleton Height="150" />
+                    <Border Classes="card skel" Height="150" IsHitTestVisible="False"><v:Skeleton Kind="server" /></Border>
+                    <Border Classes="card skel" Height="150" IsHitTestVisible="False"><v:Skeleton Kind="server" /></Border>
                 </StackPanel>
 
-                <ItemsControl ItemsSource="{Binding Servers}">
+                <ItemsControl ItemsSource="{Binding Servers}" v:Reveal.Stagger="True">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ServerCard">
                             <Border Classes="card" Classes.offline="{Binding IsOffline}" Padding="16" Margin="0,0,0,12">

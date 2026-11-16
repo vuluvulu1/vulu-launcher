@@ -15,7 +15,7 @@ namespace VuluLauncher.ViewModels
         public bool HasCount => Count > 0;
     }
 
-    internal sealed record SocialHint(string Text);
+    internal sealed record SocialHint(string Text, bool Loading = false);
 
     internal sealed partial class SocialFeedLink(SocialViewModel owner, bool active, string kind = "feed") : ObservableObject
     {
@@ -251,7 +251,13 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private bool _verified;
         [ObservableProperty] private bool _keyChanged;
         [ObservableProperty] private string _draft = "";
-        [ObservableProperty] private string? _chatMessage;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ChatLoading), nameof(ChatNote))]
+        private string? _chatMessage;
+        /// <summary>Sohbet yükleniyor: yazı yerine dönen gösterge.</summary>
+        public bool ChatLoading => ChatMessage == "Yükleniyor…";
+        /// <summary>Sohbetin ortasında gösterilen not (yükleniyor değilse).</summary>
+        public bool ChatNote => ChatMessage != null && !ChatLoading;
         [ObservableProperty] private bool _sending;
         public string LockText => Verified ? "🔒 Doğrulandı" : "🔒 Uçtan uca şifreli";
         public string Placeholder => $"{Active} kişisine yaz…";
@@ -398,7 +404,7 @@ namespace VuluLauncher.ViewModels
                 List.Add(row);
             }
             if (people.Count == 0)
-                List.Add(new SocialHint(!_friendsLoaded ? "Yükleniyor…" : query.Length > 0 ? "Bu adla bir arkadaşın ya da konuşman yok." : "Henüz kimse yok. Yukarıdan birini ara ve arkadaş ekle."));
+                List.Add(!_friendsLoaded ? new SocialHint("Yükleniyor…", true) : new SocialHint(query.Length > 0 ? "Bu adla bir arkadaşın ya da konuşman yok." : "Henüz kimse yok. Yukarıdan birini ara ve arkadaş ekle."));
 
             var outgoing = _outgoing.Where(Match).ToList();
             if (outgoing.Count > 0)

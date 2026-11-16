@@ -160,7 +160,19 @@ namespace VuluLauncher.ViewModels
                 Home.LoadPreview();
                 // VULU_UI_PAGE=settings: o sekmeyle açılır
                 if (Tabs.FirstOrDefault(t => t.Key == Environment.GetEnvironmentVariable("VULU_UI_PAGE")) is { } page) SelectedTab = page;
+                else if (Environment.GetEnvironmentVariable("VULU_UI_PAGE") is { } world && world is "board" or "map") { SelectedTab = Tabs.First(t => t.Key == "social"); Social.ShowWorld(world); }
                 _ = PerfProbe.RunAsync(this);
+                // VULU_UI_LOADING=1: yükleme iskeletleri açık kalır (yükleniyor görünümünü denemek için)
+                if (Environment.GetEnvironmentVariable("VULU_UI_LOADING") == "1")
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                    {
+                        Discover.Packs.Skeleton = true;
+                        Social.ShotSkeleton = true;
+                        Servers.FirstLoad = true;
+                        Servers.Status = null;
+                        Social.World.Loading = true;
+                        Social.World.Error = null;
+                    }, TimeSpan.FromSeconds(2.5));
                 return;
             }
 #endif

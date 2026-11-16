@@ -24,7 +24,7 @@
     <Grid ColumnDefinitions="*,280">
         <ScrollViewer>
             <Panel>
-            <v:Skeleton Height="420" Margin="28,22,28,30" MaxWidth="820" VerticalAlignment="Top" IsVisible="{Binding ShowSkeleton}" />
+            <Border Classes="card skel" Height="420" Margin="28,22,28,30" MaxWidth="820" VerticalAlignment="Top" IsHitTestVisible="False" IsVisible="{Binding ShowSkeleton}"><v:Skeleton Kind="profile" /></Border>
             <StackPanel Margin="28,22,28,30" MaxWidth="820" Spacing="18" IsVisible="{Binding !ShowSkeleton}">
                 <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
 

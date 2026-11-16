@@ -349,6 +349,13 @@
         </Style>
 
         <!-- Kartlar: üstüne gelince kenar yumuşakça belirginleşir -->
+        <!-- Yükleniyor iskeletinin kartı: sayfanın kendi kart stili yoksa da kart gibi görünsün -->
+        <Style Selector="Border.skel">
+            <Setter Property="Background" Value="{StaticResource Card}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="ClipToBounds" Value="True" />
+        </Style>
         <Style Selector="Border.card, Border.row-card">
             <Setter Property="Transitions">
                 <Transitions>

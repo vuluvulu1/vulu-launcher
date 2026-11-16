@@ -123,11 +123,11 @@
                     <v:EmptyState IsVisible="{Binding IsEmpty}" Margin="0,30,0,0" Icon="📦" Title="Henüz paylaşılan paket yok"
                                   Text="Admin bir paket paylaştığında burada görünecek." />
                     <WrapPanel IsVisible="{Binding Skeleton}">
-                        <v:Skeleton Width="300" Height="290" Margin="0,0,16,16" />
-                        <v:Skeleton Width="300" Height="290" Margin="0,0,16,16" />
-                        <v:Skeleton Width="300" Height="290" Margin="0,0,16,16" />
+                        <Border Classes="card skel" Width="300" Height="290" Margin="0,0,16,16" IsHitTestVisible="False"><v:Skeleton Kind="card" /></Border>
+                        <Border Classes="card skel" Width="300" Height="290" Margin="0,0,16,16" IsHitTestVisible="False"><v:Skeleton Kind="card" /></Border>
+                        <Border Classes="card skel" Width="300" Height="290" Margin="0,0,16,16" IsHitTestVisible="False"><v:Skeleton Kind="card" /></Border>
                     </WrapPanel>
-                    <ItemsControl ItemsSource="{Binding Cards}">
+                    <ItemsControl ItemsSource="{Binding Cards}" v:Reveal.Stagger="True">
                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:PackCard">
@@ -180,7 +180,7 @@
                     <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Classes="dim" FontSize="12.5" Margin="0,0,0,8" TextWrapping="Wrap" />
                     <ScrollViewer x:Name="HitScroll">
                         <StackPanel Margin="0,0,14,24" Spacing="8">
-                            <ItemsControl ItemsSource="{Binding Hits}" Margin="0,0,-9,0">
+                            <ItemsControl ItemsSource="{Binding Hits}" Margin="0,0,-9,0" v:Reveal.Stagger="True">
                                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:ContentHit">
@@ -246,7 +246,7 @@
                             <TextBlock Classes="field" Text="Yükleyici" />
                             <ComboBox ItemsSource="{Binding LoaderOptions}" SelectedItem="{Binding Loader}" />
                         </StackPanel>
-                        <TextBlock Text="Filtreler yükleniyor..." IsVisible="{Binding FiltersLoading}" Classes="dim" FontSize="12.5" />
+                        <v:Loading Text="Filtreler yükleniyor…" HorizontalAlignment="Left" IsVisible="{Binding FiltersLoading}" Margin="0,4" />
                         <ItemsControl ItemsSource="{Binding Groups}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:CategoryGroup">

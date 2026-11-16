@@ -60,6 +60,10 @@
                         <Setter Property="Background" Value="{StaticResource Glass}" />
                         <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
                     </Style>
+                    <Style Selector="Border.tabind">
+                        <Setter Property="Background" Value="{StaticResource Accent}" />
+                        <Setter Property="BoxShadow" Value="0 0 15 3 #B8F2A33A" />
+                    </Style>
                 </Border.Styles>
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <StackPanel Orientation="Horizontal" Spacing="9" Margin="14,0" VerticalAlignment="Center">
@@ -70,7 +74,8 @@
                         </Border>
                     </StackPanel>
 
-                    <ItemsControl x:Name="NavTabs" Grid.Column="1" ItemsSource="{Binding Tabs}" IsVisible="{Binding ShowShell}" Margin="8,0,0,0">
+                    <Panel Grid.Column="1" Margin="8,0,0,0" IsVisible="{Binding ShowShell}">
+                    <ItemsControl x:Name="NavTabs" ItemsSource="{Binding Tabs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
@@ -128,7 +133,7 @@
                                     <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.15" /></Transitions>
                                 </Setter>
                             </Style>
-                            <Style Selector="Button.tab.active Border.bar"><Setter Property="Opacity" Value="1" /></Style>
+                            <!-- Seçili sekmenin çizgisi artık tek parça: sekmeler arasında kayar (TabIndicator) -->
                             <Style Selector="Button.tab.glow /template/ ContentPresenter#PART_ContentPresenter">
                                 <Setter Property="Background" Value="{StaticResource AccentSoft}" />
                                 <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
@@ -139,6 +144,19 @@
                             </Style>
                         </ItemsControl.Styles>
                     </ItemsControl>
+                    <!-- Seçili sekmenin üstündeki parlayan çizgi: sekme değişince yeni sekmeye kayarak gider -->
+                    <Canvas IsHitTestVisible="False" ClipToBounds="False">
+                        <Border x:Name="TabIndicator" Classes="tabind" Height="2" Opacity="0">
+                            <Border.Transitions>
+                                <Transitions>
+                                    <DoubleTransition Property="Canvas.Left" Duration="0:0:0.28" Easing="CubicEaseOut" />
+                                    <DoubleTransition Property="Width" Duration="0:0:0.28" Easing="CubicEaseOut" />
+                                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                                </Transitions>
+                            </Border.Transitions>
+                        </Border>
+                    </Canvas>
+                    </Panel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,6,0" VerticalAlignment="Center">
                         <!-- Hızlı arama -->

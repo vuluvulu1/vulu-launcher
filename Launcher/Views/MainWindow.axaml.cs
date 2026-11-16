@@ -51,6 +51,17 @@ namespace VuluLauncher.Views
                 if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !IsOnButton(e.Source as Visual))
                     BeginMoveDrag(e);
             };
+            // Seçili sekmenin çizgisi yeni sekmeye kayar; ilk konumda ve sekme gizliyken (Profil) animasyonsuz
+            NavTabs.LayoutUpdated += (_, _) => PlaceTabIndicator();
+            DataContextChanged += (_, _) =>
+            {
+                if (DataContext is MainViewModel m)
+                    m.PropertyChanged += (_, e) =>
+                    {
+                        if (e.PropertyName == nameof(MainViewModel.SelectedTab))
+                            Avalonia.Threading.Dispatcher.UIThread.Post(PlaceTabIndicator, Avalonia.Threading.DispatcherPriority.Loaded);
+                    };
+            };
             // İndirme paneli: üstüne gelindiyse tamamlanınca kapanmaz
             DownloadsPanel.PointerEntered += (_, _) => { if (DataContext is MainViewModel m) m.Downloads.Hovered = true; };
             DownloadsPanel.PointerExited += (_, _) => { if (DataContext is MainViewModel m) m.Downloads.Hovered = false; };
@@ -80,6 +91,37 @@ namespace VuluLauncher.Views
         private void OnNotificationsClosed(object? sender, EventArgs e)
         {
             if (DataContext is MainViewModel vm) vm.Notifications.IsOpen = false;
+        }
+
+        private Rect _indicator;
+
+        private void PlaceTabIndicator()
+        {
+            var active = NavTabs.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Classes.Contains("active") && b.IsEffectivelyVisible);
+            if (active?.TranslatePoint(default, TabIndicator.GetVisualParent<Visual>()!) is not { } p || active.Bounds.Width < 1)
+            {
+                TabIndicator.Opacity = 0;
+                return;
+            }
+            var target = new Rect(p.X + 8, 0, active.Bounds.Width - 16, 2);
+            if (target == _indicator && TabIndicator.Opacity > 0) return;
+            bool first = TabIndicator.Opacity == 0 || _indicator == default;
+            _indicator = target;
+            if (first)
+            {
+                // İlk kez ya da gizli sekmeden dönüşte kaymadan yerinde belirir
+                var transitions = TabIndicator.Transitions;
+                TabIndicator.Transitions = null;
+                Canvas.SetLeft(TabIndicator, target.X);
+                TabIndicator.Width = target.Width;
+                TabIndicator.Transitions = transitions;
+            }
+            else
+            {
+                Canvas.SetLeft(TabIndicator, target.X);
+                TabIndicator.Width = target.Width;
+            }
+            TabIndicator.Opacity = 1;
         }
 
         private static bool IsOnButton(Visual? visual)

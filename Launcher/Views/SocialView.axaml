@@ -108,7 +108,16 @@
                                 </StackPanel>
                             </DataTemplate>
                             <DataTemplate DataType="vm:SocialHint">
-                                <TextBlock Text="{Binding Text}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" Margin="12,4" />
+                                <Panel>
+                                    <TextBlock Text="{Binding Text}" IsVisible="{Binding !Loading}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" Margin="12,4" />
+                                    <!-- Kişiler yüklenirken: kişi satırı şeklinde yer tutucular -->
+                                    <StackPanel IsVisible="{Binding Loading}" IsHitTestVisible="False">
+                                        <v:Skeleton Kind="row" Height="50" />
+                                        <v:Skeleton Kind="row" Height="50" Opacity="0.75" />
+                                        <v:Skeleton Kind="row" Height="50" Opacity="0.5" />
+                                        <v:Skeleton Kind="row" Height="50" Opacity="0.3" />
+                                    </StackPanel>
+                                </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="vm:SocialRow">
                                 <Button Classes="row" Classes.active="{Binding IsActive}" Command="{Binding OpenCommand}">
@@ -227,11 +236,11 @@
                               Text="Oyunda F2 ile ekran görüntüsü al, sonra buradan paylaş. Bütün vulu üyeleri görür, beğenip yorum yapabilir." />
                 <!-- Yüklenirken yer tutucular (web: .shot-skel) -->
                 <StackPanel Orientation="Horizontal" Spacing="14" IsVisible="{Binding ShotSkeleton}">
-                    <v:Skeleton Width="300" Height="225" />
-                    <v:Skeleton Width="300" Height="225" />
-                    <v:Skeleton Width="300" Height="225" />
+                    <Border Classes="card skel" Width="300" Height="225" IsHitTestVisible="False"><v:Skeleton Kind="shot" /></Border>
+                    <Border Classes="card skel" Width="300" Height="225" IsHitTestVisible="False"><v:Skeleton Kind="shot" /></Border>
+                    <Border Classes="card skel" Width="300" Height="225" IsHitTestVisible="False"><v:Skeleton Kind="shot" /></Border>
                 </StackPanel>
-                <ItemsControl ItemsSource="{Binding Shots}">
+                <ItemsControl ItemsSource="{Binding Shots}" v:Reveal.Stagger="True">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ShotCard">
@@ -297,8 +306,9 @@
             </Border>
 
             <Panel>
-                <TextBlock Text="{Binding ChatMessage}" IsVisible="{Binding ChatMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                <TextBlock Text="{Binding ChatMessage}" IsVisible="{Binding ChatNote}"
                            Classes="dim" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <v:Loading Text="Mesajlar yükleniyor…" IsVisible="{Binding ChatLoading}" VerticalAlignment="Center" />
                 <ScrollViewer x:Name="ChatScroll">
                     <ItemsControl ItemsSource="{Binding Messages}" Margin="20,12">
                         <ItemsControl.ItemTemplate>
