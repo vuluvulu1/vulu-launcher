@@ -55,7 +55,9 @@ namespace VuluLauncher.Views
                         using var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize((int)Bounds.Width, (int)Bounds.Height));
                         rtb.Render(this);
                         rtb.Save(System.IO.Path.Combine(dir, $"desktop-toast-{_stack.Items.Count}.png"));
-                        LogFile.Write($"[bildirim] konum {Position}, boyut {Bounds.Width}x{Bounds.Height}");
+                        var own = TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+                        LogFile.Write($"[bildirim] konum {Position}, boyut {Bounds.Width}x{Bounds.Height}, saydamlık {ActualTransparencyLevel}, " +
+                                      $"öndeki pencere bildirim mi: {GetForegroundWindow() == own}, exstyle 0x{GetWindowLongPtr(own, GWL_EXSTYLE).ToInt64():X}");
                     }
                     catch (Exception ex) { LogFile.Write("[ui] bildirim görüntüsü alınamadı: " + ex.Message); }
                 }, TimeSpan.FromMilliseconds(900));
@@ -79,6 +81,7 @@ namespace VuluLauncher.Views
 
         [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")] private static extern IntPtr GetWindowLongPtr(IntPtr hwnd, int index);
         [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")] private static extern IntPtr SetWindowLongPtr(IntPtr hwnd, int index, IntPtr value);
+        [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
         [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
     }
 }
