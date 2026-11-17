@@ -317,7 +317,10 @@ namespace VuluLauncher.Views
                 {
                     // Yüzler arasında saç teli kadar boşluk kalmasın diye hedef çok az büyütülür
                     const double e = 0.04;
-                    context.DrawImage(image, f.Uv, new Rect(-e, -e, w + e * 2, h + e * 2));
+                    // HD doku (64×32'nin katı): kesilecek bölge dokunun gerçek boyutuna göre büyütülür
+                    double k = image.PixelSize.Width / 64.0;
+                    var src = k == 1 ? f.Uv : new Rect(f.Uv.X * k, f.Uv.Y * k, f.Uv.Width * k, f.Uv.Height * k);
+                    context.DrawImage(image, src, new Rect(-e, -e, w + e * 2, h + e * 2));
                 }
             }
         }

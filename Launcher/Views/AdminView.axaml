@@ -517,7 +517,7 @@
 
                             <!-- PNG -->
                             <TextBlock IsVisible="{Binding PngName, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="dim" FontSize="12" TextWrapping="Wrap">
-                                <Run Text="Doku dosyası: " /><Run Text="{Binding PngName}" /><Run Text=" · 64×32 Minecraft pelerin dokusu (pelerin + elytra)." />
+                                <Run Text="Doku dosyası: " /><Run Text="{Binding PngName}" /><Run Text=" · 64×32 ya da HD katı (128×64 … 1024×512) Minecraft pelerin dokusu (pelerin + elytra)." />
                             </TextBlock>
 
                             <TextBlock Text="{Binding CapeNote}" TextWrapping="Wrap" FontSize="12.5" IsVisible="{Binding CapeNote, Converter={x:Static ObjectConverters.IsNotNull}}"

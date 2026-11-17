@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace VuluLauncher
 {
@@ -74,13 +74,13 @@ namespace VuluLauncher
                 RequireLogin();
                 return await _api.GetAsync<JsonElement>("/progress/admin/capes/" + Uri.EscapeDataString(args.Str("key")) + "/owners");
             });
-            // 64×32 pelerin PNG'si seçtirir; base64 olarak döner (boyutu sunucu denetler). Vazgeçilirse null
+            // Pelerin PNG'si seçtirir (64×32 ya da HD katı: 128×64 … 1024×512); base64 olarak döner (boyutu sunucu denetler). Vazgeçilirse null
             _bridge.On("admin.pickCapePng", async _ =>
             {
                 RequireLogin();
-                string? path = await _host.PickFileAsync("Pelerin dokusu seçin (64×32 PNG)", "PNG", new[] { "png" });
+                string? path = await _host.PickFileAsync("Pelerin dokusu seçin (64×32 ya da 512×256 gibi HD PNG)", "PNG", new[] { "png" });
                 if (path == null) return null;
-                if (new FileInfo(path).Length > 256 * 1024) throw new InvalidOperationException("Dosya 256 KB'tan büyük olamaz.");
+                if (new FileInfo(path).Length > 1400 * 1024) throw new InvalidOperationException("Dosya 1,4 MB'tan büyük olamaz.");
                 return new { data = Convert.ToBase64String(await File.ReadAllBytesAsync(path)), name = Path.GetFileName(path) };
             });
 

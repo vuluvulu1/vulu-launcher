@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
 using Avalonia.Media;
@@ -250,17 +250,18 @@ namespace VuluLauncher.ViewModels
         }
     }
 
-    /// <summary>Pelerin dokusundan (64×32) dış yüzün büyütülmüş önizlemesi.</summary>
+    /// <summary>Pelerin dokusundan (64×32 ya da HD katı) dış yüzün büyütülmüş önizlemesi.</summary>
     internal static class CapePreview
     {
         public static Bitmap? Render(byte[] png, int scale = 6)
         {
             using var cape = SkiaSharp.SKBitmap.Decode(png);
             if (cape == null || cape.Width < 22 || cape.Height < 17) return null;
+            float k = cape.Width / 64f;   // HD doku: 64×32'nin katı
             using var surface = SkiaSharp.SKSurface.Create(new SkiaSharp.SKImageInfo(10 * scale, 16 * scale));
             using var image = SkiaSharp.SKImage.FromBitmap(cape);
             surface.Canvas.Clear(SkiaSharp.SKColors.Transparent);
-            surface.Canvas.DrawImage(image, SkiaSharp.SKRect.Create(1, 1, 10, 16), SkiaSharp.SKRect.Create(0, 0, 10 * scale, 16 * scale),
+            surface.Canvas.DrawImage(image, SkiaSharp.SKRect.Create(1 * k, 1 * k, 10 * k, 16 * k), SkiaSharp.SKRect.Create(0, 0, 10 * scale, 16 * scale),
                 new SkiaSharp.SKSamplingOptions(SkiaSharp.SKFilterMode.Nearest));
             using var snapshot = surface.Snapshot();
             using var data = snapshot.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
