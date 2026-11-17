@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -91,6 +91,30 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private decimal? _xpKm = 4;
         [ObservableProperty] private decimal? _xpMobs10 = 1;
         [ObservableProperty] private bool _weeklyEnabled = true;
+        // Oyunda seviye öneki (tab listesi, sohbet, isim)
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LevelTagPreview))]
+        private bool _levelTagEnabled = true;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LevelTagPreview))]
+        private string _levelTagFormat = "[Sv {level}] ";
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LevelTagBrush))]
+        private Option? _levelTagColor;
+        public ObservableCollection<Option> LevelTagColors { get; } = new(new[]
+        {
+            new Option("gold", "Altın"), new Option("yellow", "Sarı"), new Option("aqua", "Camgöbeği"), new Option("green", "Yeşil"),
+            new Option("light_purple", "Pembe"), new Option("red", "Kırmızı"), new Option("white", "Beyaz"), new Option("gray", "Gri"),
+            new Option("dark_aqua", "Koyu camgöbeği"), new Option("dark_purple", "Mor"),
+        });
+        /// <summary>Oyundaki görünüşün örneği (tab listesi / sohbet).</summary>
+        public string LevelTagPreview => LevelTagEnabled ? $"{LevelTagFormat.Replace("{level}", "12")}vuluvulu" : "Kapalı: oyunda önek görünmez.";
+        /// <summary>Minecraft renginin yaklaşık karşılığı (önizleme).</summary>
+        public Avalonia.Media.IBrush LevelTagBrush => new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse((LevelTagColor?.Key ?? "gold") switch
+        {
+            "yellow" => "#FFFF55", "aqua" => "#55FFFF", "green" => "#55FF55", "light_purple" => "#FF55FF", "red" => "#FF5555",
+            "white" => "#FFFFFF", "gray" => "#AAAAAA", "dark_aqua" => "#00AAAA", "dark_purple" => "#AA00AA", _ => "#FFAA00",
+        }));
         [ObservableProperty] private Option? _weeklyCape;
         [ObservableProperty] private string? _progressNote;
         [ObservableProperty] private bool _progressOk;
@@ -120,6 +144,10 @@ namespace VuluLauncher.ViewModels
 
             var config = r.Get("config");
             LevelBase = (decimal)config.Num("levelBase", 50);
+            var tag = config.Get("levelTag");
+            LevelTagEnabled = tag.Get("enabled").ValueKind != JsonValueKind.False;
+            LevelTagFormat = tag.Text("format") ?? "[Sv {level}] ";
+            LevelTagColor = LevelTagColors.FirstOrDefault(c => c.Key == tag.Text("color")) ?? LevelTagColors[0];
             var xp = config.Get("xp");
             XpMinute = (decimal)xp.Num("minute", 1);
             XpDiamond = (decimal)xp.Num("diamond", 15);
@@ -214,6 +242,7 @@ namespace VuluLauncher.ViewModels
                 var config = new
                 {
                     levelBase = LevelBase ?? 50,
+                    levelTag = new { enabled = LevelTagEnabled, format = LevelTagFormat, color = LevelTagColor?.Key ?? "gold" },
                     xp = new { minute = XpMinute ?? 0, diamond = XpDiamond ?? 0, advancement = XpAdvancement ?? 0, km = XpKm ?? 0, mobs10 = XpMobs10 ?? 0 },
                     weekly = new
                     {

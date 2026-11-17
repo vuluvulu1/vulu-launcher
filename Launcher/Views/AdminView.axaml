@@ -352,6 +352,38 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Oyunda seviye: tab listesinde, sohbette ve kafanın üstündeki isimde önek -->
+                    <Border Classes="row" Padding="16">
+                        <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="Oyunda seviye" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+                                <CheckBox Grid.Column="1" IsChecked="{Binding LevelTagEnabled}" Content="Göster" />
+                            </Grid>
+                            <TextBlock Classes="dim" FontSize="12" TextWrapping="Wrap"
+                                       Text="vulu sunucusunda oyuncunun adının önüne seviyesi yazılır: tab listesinde, sohbette ve kafasının üstünde. Minecraft'ın takım önekiyle yapılır, mod gerekmez. Oyuncu girince ve istatistikler her yenilendiğinde (5 dk) güncellenir; seviyesi 0 olana önek konmaz." />
+                            <WrapPanel>
+                                <StackPanel Spacing="4" Margin="0,0,12,8" Width="200">
+                                    <TextBlock Text="Biçim ({level} seviye olur)" Classes="label" />
+                                    <TextBox Text="{Binding LevelTagFormat}" MaxLength="24" FontFamily="{StaticResource Mono}" IsEnabled="{Binding LevelTagEnabled}" />
+                                </StackPanel>
+                                <StackPanel Spacing="4" Margin="0,0,12,8">
+                                    <TextBlock Text="Renk" Classes="label" />
+                                    <ComboBox ItemsSource="{Binding LevelTagColors}" SelectedItem="{Binding LevelTagColor}" Width="170" IsEnabled="{Binding LevelTagEnabled}">
+                                        <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:Option"><TextBlock Text="{Binding Label}" /></DataTemplate></ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Spacing="4" Margin="0,0,12,8">
+                                    <TextBlock Text="Oyunda" Classes="label" />
+                                    <Border Background="#C0000000" Padding="10,6">
+                                        <TextBlock FontFamily="{StaticResource Mono}" FontSize="13">
+                                            <Run Text="{Binding LevelTagPreview}" Foreground="{Binding LevelTagBrush}" />
+                                        </TextBlock>
+                                    </Border>
+                                </StackPanel>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
                     <!-- Haftalık liderlik -->
                     <Border Classes="row" Padding="16">
                         <StackPanel Spacing="10">
