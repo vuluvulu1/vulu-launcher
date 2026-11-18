@@ -29,6 +29,10 @@ namespace VuluLauncher.Views
         private double _last;
         /// <summary>Bu oynatma Ufkun öbür ucu açılışı mı (tema açılışta bir kez okunur).</summary>
         private bool _ufuk;
+        /// <summary>Bu oynatma Grafit açılışı mı.</summary>
+        private bool _grafit;
+        /// <summary>Grafit açılışının kapanışı (ms): kartlar sönünce altta gerçek kartlar kalır.</summary>
+        private const double GrafitOpenMs = 650;
 
         public SplashView()
         {
@@ -59,13 +63,16 @@ namespace VuluLauncher.Views
             _ufuk = Themes.HasScene;
             if (_ufuk) StyleSceneTitle();
             UfukStage.IsVisible = _ufuk;
+            _grafit = Themes.IsGrafit;
+            GrafitStage.IsVisible = _grafit;
+            GrafitStage.Opacity = 1;
             UfukStage.Opacity = 1;
             if (_ufuk)
             {
                 if (_vm is { Holding: true }) UfukScene.HoldSplash();
                 else UfukScene.StartSplash();
             }
-            Sheet.IsVisible = Glow.IsVisible = Title.IsVisible = Sparks.IsVisible = !_ufuk;
+            Sheet.IsVisible = Glow.IsVisible = Title.IsVisible = Sparks.IsVisible = !_ufuk && !_grafit;
             _clock.Restart();
             _last = 0;
             Render(0, -1, 0);
@@ -98,7 +105,7 @@ namespace VuluLauncher.Views
             _last = now;
             double open = _openClock.IsRunning ? _openClock.Elapsed.TotalMilliseconds : -1;
             Render(now, open, dt);
-            bool openDone = open >= BurnMs;
+            bool openDone = open >= (_grafit ? GrafitOpenMs : BurnMs);
             if (openDone || top == null || _vm is not { IsVisible: true })
             {
                 _running = false;
@@ -124,6 +131,7 @@ namespace VuluLauncher.Views
         private void Render(double t, double open, double dt)
         {
             if (_ufuk) { RenderUfuk(t, open, dt); return; }
+            if (_grafit) { RenderGrafit(t, open); return; }
             // Yazının yeri (sahneye göre)
             var size = Letters.Bounds.Size;
             var center = Letters.TranslatePoint(new Point(size.Width / 2, size.Height / 2), Stage) ?? new Point(Stage.Bounds.Width / 2, Stage.Bounds.Height / 2);
@@ -197,6 +205,32 @@ namespace VuluLauncher.Views
             double grow = 1 + 0.35 * OutEase.Ease(p);
             UfukTitle.RenderTransform = new ScaleTransform(grow, grow);
             UfukTitle.Opacity = 1 - Progress(open < 0 ? 0 : open, 150, 500);
+        }
+
+        /// <summary>
+        /// Grafit: kartlar 0,15 sn arayla, 0,45 sn'de aşağıdan yerine oturur; ardından simge ve yazı, sonra karşılama.
+        /// Açılırken yazı ve kartlar 0,65 sn'de söner (zemin en son), altta gerçek arayüz aynı yerde durur.
+        /// </summary>
+        private void RenderGrafit(double t, double open)
+        {
+            Settle(GrafitLeft, Progress(t, 150, 450));
+            Settle(GrafitCenter, Progress(t, 300, 450));
+            Settle(GrafitRight, Progress(t, 450, 450));
+            GrafitMark.Opacity = OutEase.Ease(Progress(t, 850, 400));
+            double mark = 0.8 + 0.2 * OutEase.Ease(Progress(t, 850, 400));
+            GrafitMark.RenderTransform = new ScaleTransform(mark, mark);
+            Rise(GrafitWord, Progress(t, 950, 450));
+            Rise(GrafitGreeting, Progress(t, 1650, 450));
+            if (open < 0) { GrafitStage.Opacity = 1; GrafitTitle.Opacity = 1; return; }
+            GrafitTitle.Opacity = 1 - OutEase.Ease(Progress(open, 0, 300));
+            GrafitStage.Opacity = 1 - OutEase.Ease(Progress(open, 150, GrafitOpenMs - 150));
+        }
+
+        private static void Settle(Control control, double p)
+        {
+            double e = OutEase.Ease(p);
+            control.Opacity = e;
+            control.RenderTransform = new TranslateTransform(0, 18 * (1 - e));
         }
 
         private IBrush? _ufukWordBrush;

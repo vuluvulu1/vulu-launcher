@@ -37,7 +37,18 @@
         <Style Selector="ListBox.rail ListBoxItem:pointerover Border.dim, ListBox.rail ListBoxItem:selected Border.dim">
             <Setter Property="Opacity" Value="0" />
         </Style>
+        <!-- Boyutlar stilde (yerel değer olsaydı Grafit'in satır düzeni onları değiştiremezdi) -->
+        <Style Selector="ListBox.rail StackPanel.pack">
+            <Setter Property="Width" Value="58" />
+            <Setter Property="Height" Value="76" />
+            <Setter Property="Spacing" Value="2" />
+        </Style>
+        <Style Selector="ListBox.rail StackPanel.packrow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
         <Style Selector="ListBox.rail ListBoxItem Border.thumb">
+            <Setter Property="Width" Value="58" />
+            <Setter Property="Height" Value="58" />
             <Setter Property="RenderTransform" Value="none" />
             <Setter Property="Transitions">
                 <Transitions>
@@ -208,15 +219,19 @@
     </UserControl.Styles>
 
     <Grid RowDefinitions="*,78">
+        <!-- Grafit: ortadaki paket kartının zemini (resim kartın üstünde, yazılar altında); HomeView.axaml.cs ApplyLayout -->
+        <Border x:Name="CenterCard" Grid.RowSpan="2" IsVisible="False" Background="#18191B" BorderBrush="#222428" BorderThickness="1" CornerRadius="14" />
         <!-- ── Seçili paketin arka planı ──────────────────────────────── -->
+        <Border x:Name="StageBox" Grid.Row="0" ClipToBounds="True">
+        <Panel>
         <!-- Arka planı olmayan pakette: karanlıkta sıcak bir ışık -->
         <!-- Arka planı olmayan pakette: karanlıkta sıcak bir ışık (mesale.css .stage-bg.plain) -->
-        <Border Grid.Row="0" Background="{StaticResource StagePlain}" />
-        <Border Grid.Row="0" Background="{StaticResource StageGlow}" />
+        <Border Background="{StaticResource StagePlain}" />
+        <Border Background="{StaticResource StageGlow}" />
         <!-- Ufkun öbür ucu teması: arka planı olmayan pakette synthwave sahnesi (resmi olan pakette resim üstünü örter) -->
         <!-- Resim varsa sahne tamamen onun arkasında kalır: o zaman hiç çizilmez (görünmezken de saniyede 25 kare çizip
              bütün Oyna sayfasını yeniden çizdiriyordu) -->
-        <v:SynthwaveBackdrop Grid.Row="0">
+        <v:SynthwaveBackdrop>
             <v:SynthwaveBackdrop.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
                     <Binding Path="HasScene" Source="{x:Static local:ThemeState.Instance}" />
@@ -224,9 +239,9 @@
                 </MultiBinding>
             </v:SynthwaveBackdrop.IsVisible>
         </v:SynthwaveBackdrop>
-        <Image Grid.Row="0" Source="{Binding Background}" Stretch="UniformToFill" />
+        <Image Source="{Binding Background}" Stretch="UniformToFill" />
         <!-- Yazılar okunsun: kenarlardan ve alttan karartma (mesale.css .stage-bg::after) -->
-        <Border Grid.Row="0" IsHitTestVisible="False">
+        <Border x:Name="ShadeSide" IsHitTestVisible="False">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
                     <GradientStop Color="#9E080706" Offset="0" />
@@ -236,7 +251,7 @@
                 </LinearGradientBrush>
             </Border.Background>
         </Border>
-        <Border Grid.Row="0" IsHitTestVisible="False">
+        <Border x:Name="ShadeBottom" IsHitTestVisible="False">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
                     <GradientStop Color="#94080706" Offset="0" />
@@ -246,9 +261,11 @@
                 </LinearGradientBrush>
             </Border.Background>
         </Border>
+        </Panel>
+        </Border>
 
         <!-- Duyuru: paketin üstünde, kapatılabilir -->
-        <Border Grid.Row="0" IsVisible="{Binding HasAnnouncement}" ZIndex="2" Margin="100,58,394,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+        <Border x:Name="Announce" Grid.Row="0" IsVisible="{Binding HasAnnouncement}" ZIndex="2" Margin="100,58,394,0" VerticalAlignment="Top" HorizontalAlignment="Left"
                 MaxWidth="560" Classes="mcard announce" Padding="14,10">
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <TextBlock Text="📣" FontSize="16" VerticalAlignment="Top" Margin="0,0,10,0" />
@@ -262,17 +279,21 @@
         </Border>
 
         <!-- Resim başlık çubuğunun altına uzanır; içerik çubuğun altından başlar -->
-        <Grid Grid.Row="0" ColumnDefinitions="94,*,356" Margin="0,50,0,0">
+        <Grid x:Name="Body" Grid.Row="0" ColumnDefinitions="94,*,356" Margin="0,50,0,0">
             <!-- ── Sol şerit: paketler ─────────────────────────────── -->
-            <Border Grid.Column="0">
+            <!-- Grafit'te kart: başlık, adlarıyla paket satırları, altta radyo (ApplyLayout) -->
+            <Border x:Name="RailCard" Grid.Column="0">
+              <DockPanel>
+                <TextBlock x:Name="RailHeader" DockPanel.Dock="Top" Text="Paketler" IsVisible="False" FontWeight="SemiBold" FontSize="13.5" Margin="16,14,16,6" />
+                <Border x:Name="RadioHost" DockPanel.Dock="Bottom" IsVisible="False" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="14,12" />
                 <ScrollViewer VerticalScrollBarVisibility="Hidden">
                   <StackPanel Margin="0,0,0,10">
-                    <ListBox Classes="rail" ItemsSource="{Binding Instances}" SelectedItem="{Binding Selected}" Padding="18,10,12,0">
+                    <ListBox x:Name="Rail" Classes="rail" ItemsSource="{Binding Instances}" SelectedItem="{Binding Selected}" Padding="18,10,12,0">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:InstanceItem">
                                 <!-- Sağ tıkta paketin sık kullanılan işlemleri (web: instanceMenu); tıklanan paket önce seçilir -->
                                 <!-- Kişisel instance'lar sürüklenerek sıralanır (web: wireCardDrag) -->
-                                <StackPanel Spacing="2" Width="58" Height="76" ToolTip.Tip="{Binding Tip}" Background="Transparent"
+                                <StackPanel Classes="pack" ToolTip.Tip="{Binding Tip}" Background="Transparent"
                                             ContextRequested="OnPackContextRequested" PointerPressed="OnPackPressed" PointerMoved="OnPackMoved"
                                             PointerReleased="OnPackReleased" PointerCaptureLost="OnPackCaptureLost">
                                     <StackPanel.ContextFlyout>
@@ -291,7 +312,7 @@
                                             <MenuItem Header="Sil" IsVisible="{Binding SelectedIsCustom}" Classes="danger" Command="{Binding DeleteInstanceCommand}" />
                                         </MenuFlyout>
                                     </StackPanel.ContextFlyout>
-                                    <Border Classes="thumb" Width="58" Height="58" Background="{StaticResource ButtonBg}">
+                                    <Border Classes="thumb" Background="{StaticResource ButtonBg}">
                                         <Panel ClipToBounds="True">
                                             <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="18" Foreground="{StaticResource Muted}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -301,10 +322,15 @@
                                                      HorizontalAlignment="Right" VerticalAlignment="Top" Margin="3" ToolTip.Tip="Güncelleme var" />
                                         </Panel>
                                     </Border>
-                                    <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="Medium" TextTrimming="CharacterEllipsis"
+                                    <TextBlock Classes="packname" Text="{Binding Name}" FontSize="11" FontWeight="Medium" TextTrimming="CharacterEllipsis"
                                                HorizontalAlignment="Center" MaxWidth="70" Margin="-6,0">
                                         <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="1" BlurRadius="6" Color="Black" Opacity="1" /></TextBlock.Effect>
                                     </TextBlock>
+                                    <!-- Grafit: simgenin yanında ad ve sürüm -->
+                                    <StackPanel Classes="packrow" VerticalAlignment="Center" Spacing="1">
+                                        <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="168" />
+                                        <TextBlock Text="{Binding Subtitle}" FontFamily="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource Dim}" TextTrimming="CharacterEllipsis" MaxWidth="168" />
+                                    </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -314,15 +340,16 @@
                             Command="{Binding NewInstanceCommand}" ToolTip.Tip="Yeni instance" />
                   </StackPanel>
                 </ScrollViewer>
+              </DockPanel>
             </Border>
 
             <!-- ── Paket bilgileri (sol alt) ──────────────────────── -->
             <!-- Paket adı: ince ve çok büyük (mesale.css .pack-title) -->
             <!-- Şerit paket bilgisine ulaşmıyorsa bilgi sola, şeridin altına yaslanır (web: syncHeroInset); HomeView.axaml.cs -->
             <StackPanel x:Name="Hero" Grid.Column="1" VerticalAlignment="Bottom" Margin="6,0,20,18" Spacing="10">
-                <Image Source="{Binding Logo}" IsVisible="{Binding HasLogo}" MaxWidth="480" MaxHeight="130"
+                <Image x:Name="HeroLogo" Source="{Binding Logo}" IsVisible="{Binding HasLogo}" MaxWidth="480" MaxHeight="130"
                        HorizontalAlignment="Left" Stretch="Uniform" />
-                <TextBlock Text="{Binding Selected.Name}" IsVisible="{Binding !HasLogo}" FontSize="96" FontWeight="Light" LetterSpacing="-4.2"
+                <TextBlock x:Name="HeroTitle" Text="{Binding Selected.Name}" IsVisible="{Binding !HasLogo}" FontSize="96" FontWeight="Light" LetterSpacing="-4.2"
                            TextTrimming="CharacterEllipsis" Margin="-4,0,0,0">
                     <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="2" BlurRadius="34" Color="Black" Opacity="0.62" /></TextBlock.Effect>
                 </TextBlock>
@@ -420,7 +447,7 @@
 
             <!-- ── Sağ panel: dünyalar, ekran görüntüleri, içerik, konsol ── -->
             <!-- Sağ sütun: kenarsız, gölgeli kart; en fazla 560 yüksekliğinde, alta yaslı (mesale.css #console) -->
-            <Border Grid.Column="2" Margin="0,8,18,16" Classes="mcard console" MaxHeight="560" VerticalAlignment="Bottom">
+            <Border x:Name="InfoPanel" Grid.Column="2" Margin="0,8,18,16" Classes="mcard console" MaxHeight="560" VerticalAlignment="Bottom">
                 <Grid RowDefinitions="40,*">
                     <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="6,0">
                         <Grid ColumnDefinitions="*,Auto">
@@ -534,9 +561,9 @@
 
         <!-- ── Alt çubuk: seçili paket, RAM, durum, OYNA ──────────────── -->
         <!-- Oyun çubuğu (mesale.css #m-bar) -->
-        <Border Grid.Row="1" Classes="bar" Background="{StaticResource BarBg}">
-            <Grid ColumnDefinitions="210,Auto,*,Auto,Auto,Auto" Margin="18,0">
-                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+        <Border x:Name="Bar" Grid.Row="1" Classes="bar" Background="{StaticResource BarBg}">
+            <Grid x:Name="BarGrid" ColumnDefinitions="210,Auto,*,Auto,Auto,Auto" Margin="18,0">
+                <StackPanel x:Name="BarPack" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                     <Border Width="52" Height="52" Background="{StaticResource Raised}" Classes="barthumb">
                         <Panel ClipToBounds="True">
                             <TextBlock Text="{Binding Selected.Initial}" FontWeight="Bold" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -549,9 +576,10 @@
 
 
                 <!-- Radyo: çal/durdur, ses, istasyon (tıklayınca türler ve istasyonlar) -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="8,0,0,0"
+                <!-- Grafit'te sol karta taşınır ve iki satır olur: üstte istasyon, altta düğmeler (ApplyLayout) -->
+                <Grid x:Name="RadioBox" Grid.Column="1" ColumnDefinitions="Auto,Auto,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8" VerticalAlignment="Center" Margin="8,0,0,0"
                             DataContext="{Binding $parent[Window].((vm:MainViewModel)DataContext).Radio}" x:DataType="vm:RadioViewModel">
-                    <Button Classes="primary" Width="32" Height="32" Padding="0" CornerRadius="16" HorizontalContentAlignment="Center"
+                    <Button x:Name="RadioPlay" Classes="primary" Width="32" Height="32" Padding="0" CornerRadius="16" HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center" Command="{Binding ToggleCommand}" ToolTip.Tip="Radyoyu çal / durdur"
                             AutomationProperties.Name="Radyo">
                         <Panel>
@@ -559,14 +587,14 @@
                             <Path Data="M6 4h4v16H6zM14 4h4v16h-4z" Fill="{StaticResource AccentInk}" Width="10" Height="11" Stretch="Uniform" IsVisible="{Binding Playing}" />
                         </Panel>
                     </Button>
-                    <Button Classes="flat" Width="32" Height="32" Padding="0" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="Sesi kapat / aç" AutomationProperties.Name="Sesi kapat">
+                    <Button x:Name="RadioMute" Grid.Column="1" Classes="flat" Width="32" Height="32" Padding="0" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="Sesi kapat / aç" AutomationProperties.Name="Sesi kapat">
                         <Panel>
                             <Path Classes="icon" Data="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6" IsVisible="{Binding !Muted}" Width="14" Height="14" />
                             <Path Classes="icon" Data="M4 9h4l5-4v14l-5-4H4zM16 9l5 6M21 9l-5 6" IsVisible="{Binding Muted}" Width="14" Height="14" />
                         </Panel>
                     </Button>
-                    <Slider Width="76" Minimum="0" Maximum="100" Value="{Binding Volume}" VerticalAlignment="Center" ToolTip.Tip="Ses düzeyi" />
-                    <Button Classes="flat" Padding="6,2" MaxWidth="190" HorizontalContentAlignment="Left" ToolTip.Tip="İstasyon seç">
+                    <Slider x:Name="RadioVolume" Grid.Column="2" Width="76" Minimum="0" Maximum="100" Value="{Binding Volume}" VerticalAlignment="Center" ToolTip.Tip="Ses düzeyi" />
+                    <Button x:Name="RadioStation" Grid.Column="3" Classes="flat" Padding="6,2" MaxWidth="190" HorizontalContentAlignment="Left" ToolTip.Tip="İstasyon seç">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <!-- Çalarken ses çubukları (web: .music-eq) -->
@@ -634,7 +662,7 @@
                             </Flyout>
                         </Button.Flyout>
                     </Button>
-                </StackPanel>
+                </Grid>
 
                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="6" Margin="20,0">
                     <Grid ColumnDefinitions="*,Auto">

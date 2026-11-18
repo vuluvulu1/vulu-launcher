@@ -119,8 +119,44 @@ half4 main(float2 coord) {
             catch { return null; }
         });
 
+        /// <summary>
+        /// Grafit'e geçiş: eski görüntü 88 px'lik karolara bölünür; karolar sol üstten sağ alta doğru sırayla, kart
+        /// çevirir gibi daralıp kaybolur, arkalarından yeni tema görünür. Dönen karonun kenarında ince limon yeşili çizgi.
+        /// Aynı düzen (eski görüntünün resmi + ilerleme); front burada doğrudan 0..1 ilerlemedir.
+        /// </summary>
+        public const string TilesShader = @"
+uniform shader img; uniform float2 size; uniform float2 imgSize; uniform float front; uniform float time;
+half4 main(float2 coord) {
+    float cell = 88.0;
+    float2 n = floor(size / cell) + 1.0;
+    float2 id = floor(coord / cell);
+    float2 local = (coord - id * cell) / cell;
+    float order = (id.x + id.y) / (n.x + n.y - 2.0);
+    float t = clamp((front - order * 0.6) / 0.4, 0.0, 1.0);
+    t = t * t * (3.0 - 2.0 * t);
+    float w = cos(t * 1.5707963);
+    float dx = abs(local.x - 0.5);
+    if (w < 0.002 || dx > 0.5 * w) { return half4(0.0); }
+    // Karolar ayrışınca araları açılır (1,5 px)
+    float g = 1.5 / cell * step(0.001, t);
+    if (local.y < g || local.y > 1.0 - g) { return half4(0.0); }
+    float lx = 0.5 + (local.x - 0.5) / w;
+    half4 c = img.eval((id + float2(lx, local.y)) * cell * imgSize / size);
+    float shade = 1.0 - 0.6 * t;
+    float edge = smoothstep(0.5 * w - 2.5 / cell, 0.5 * w, dx) * step(0.001, t);
+    half3 lime = half3(0.773, 0.941, 0.290);
+    return half4(mix(c.rgb * half(shade), lime * c.a, half(edge * 0.7)), c.a);
+}";
+
+        private static readonly Lazy<SKRuntimeEffect?> Tiles = new(() =>
+        {
+            try { return SKRuntimeEffect.CreateShader(TilesShader, out _); }
+            catch { return null; }
+        });
+
         private const double BurnMs = 1500;
         private const double SculkMs = 1800;
+        private const double TilesMs = 1100;
         private SKImage? _snapshot;
         /// <summary>Eski görüntünün üstünden ilerleyen geçiş (yanma ya da sculk) sürüyor.</summary>
         private bool _burning;
@@ -146,6 +182,7 @@ half4 main(float2 coord) {
         ///   Ufkun öbür ucu: ışık tüneli, perde ekranı tam örttüğünde <paramref name="atMiddle"/> çağrılır.
         ///   Meşale: ekranın görüntüsü alınır, tema hemen değişir, eski görüntü yanarak açılır.
         ///   Derin Karanlık: aynı düzen, eski görüntüyü sculk damarları yutar.
+        ///   Grafit: aynı düzen, eski görüntü karolara bölünüp sırayla dönerek kaybolur.
         /// </summary>
         public Task PlayAsync(string theme, Action atMiddle)
         {
@@ -157,13 +194,13 @@ half4 main(float2 coord) {
                 try { pending(); } catch { }
             }
             _done?.TrySetResult();
-            var sheet = theme switch { Themes.Mesale => Burn.Value, Themes.Derin => Sculk.Value, _ => null };
+            var sheet = theme switch { Themes.Mesale => Burn.Value, Themes.Derin => Sculk.Value, Themes.Grafit => Tiles.Value, _ => null };
             if (sheet != null && TakeSnapshot() is { } shot)
             {
                 _snapshot?.Dispose();
                 _snapshot = shot;
                 _sheetEffect = sheet;
-                _sheetMs = theme == Themes.Derin ? SculkMs : BurnMs;
+                _sheetMs = theme switch { Themes.Derin => SculkMs, Themes.Grafit => TilesMs, _ => BurnMs };
                 _burning = true;
                 // Tema hemen değil, eski görüntü ekrana geldikten sonra uygulanır: uygulama arayüzü bir süre meşgul eder,
                 // bu sırada ekranda donuk bir arayüz yerine eski görüntü durur; efekt tema uygulanınca başlar
@@ -189,6 +226,7 @@ half4 main(float2 coord) {
             {
                 Themes.Derin => ((0.18f, 0.9f, 0.85f), (0.56f, 0.97f, 0.93f)),
                 Themes.Mesale => ((1f, 0.6f, 0.2f), (1f, 0.85f, 0.5f)),
+                Themes.Grafit => ((0.77f, 0.94f, 0.29f), (0.93f, 0.93f, 0.94f)),
                 _ => ((1f, 0.18f, 0.95f), (0f, 0.84f, 1f)),                   // pembe çizgiler, camgöbeği halka
             };
             _atMiddle = atMiddle;
@@ -275,7 +313,8 @@ half4 main(float2 coord) {
         public override void Render(DrawingContext context)
         {
             if (_burning && _snapshot != null && _sheetEffect != null)
-                context.Custom(new BurnDraw(_sheetEffect, new Rect(Bounds.Size), _snapshot, Front(_progress), _clock.Elapsed.TotalSeconds));
+                context.Custom(new BurnDraw(_sheetEffect, new Rect(Bounds.Size), _snapshot,
+                    _sheetEffect == Tiles.Value ? _progress : Front(_progress), _clock.Elapsed.TotalSeconds));
             else
                 context.Custom(new Draw(new Rect(Bounds.Size), _progress, _clock.Elapsed.TotalSeconds, _a, _b));
         }

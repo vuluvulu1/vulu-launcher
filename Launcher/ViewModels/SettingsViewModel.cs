@@ -195,8 +195,8 @@ namespace VuluLauncher.ViewModels
 
         private SettingSection LookSection() =>
             new SettingSection("Ses ve görünüm")
-                .Add(new ChoiceRow("Tema", "Ufkun öbür ucu: vulu-web'deki gizli sayfanın synthwave dünyası. Derin Karanlık: sculk mağarası; damarlar ışıldar, sensörler nabız gibi atar.",
-                    new[] { ("mesale", "Meşale"), ("ufuk", "Ufkun öbür ucu"), ("derin", "Derin Karanlık") }, S("theme", "mesale"), async value =>
+                .Add(new ChoiceRow("Tema", "Ufkun öbür ucu: vulu-web'deki gizli sayfanın synthwave dünyası. Derin Karanlık: sculk mağarası; damarlar ışıldar, sensörler nabız gibi atar. Grafit: sade gri ve limon yeşili, her şey ayrı kartlarda.",
+                    new[] { ("mesale", "Meşale"), ("ufuk", "Ufkun öbür ucu"), ("derin", "Derin Karanlık"), ("grafit", "Grafit") }, S("theme", "mesale"), async value =>
                     {
                         if (!await Change(("theme", value))) return false;
                         await main.SwitchThemeAsync(value);

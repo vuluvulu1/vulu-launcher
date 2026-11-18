@@ -12,6 +12,8 @@ namespace VuluLauncher
         [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _isUfuk;
         /// <summary>Temanın hareketli bir arka plan sahnesi var mı (Ufkun öbür ucu, Derin Karanlık).</summary>
         [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _hasScene;
+        /// <summary>Grafit: kartlı düzen (Oyna sayfası başka yerleşir).</summary>
+        [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _isGrafit;
     }
 
     /// <summary>
@@ -20,6 +22,7 @@ namespace VuluLauncher
     ///   mesale: varsayılan, amber ve koyu kahve (vulu'nun kendi rengi)
     ///   ufuk:   "Ufkun öbür ucu" (vulu-web'deki /vulusalufuk sürprizi): synthwave, mor gökyüzü, pembe ve camgöbeği neon
     ///   derin:  "Derin Karanlık": Minecraft'ın sculk mağarası; neredeyse siyah zemin, biyolüminesans camgöbeği damarlar
+    ///   grafit: nötr grafit ve limon yeşili; sahne yok, her şey ayrı kartlarda (Oyna sayfası kartlı düzene geçer)
     /// Sahnesi olan temalarda sayfaların arkasında <see cref="Views.SynthwaveBackdrop"/> çizer (sahne temaya göre seçilir).
     /// Fırça olmayan değerler (BoxShadow ışıltıları) her temanın stil dosyasındadır; pencere tema adıyla aynı sınıfı
     /// taşıdığında geçerli olurlar (Views/UfukStyles.axaml, Views/DerinStyles.axaml).
@@ -29,13 +32,15 @@ namespace VuluLauncher
         public const string Mesale = "mesale";
         public const string Ufuk = "ufuk";
         public const string Derin = "derin";
-        private static readonly string[] All = { Mesale, Ufuk, Derin };
+        public const string Grafit = "grafit";
+        private static readonly string[] All = { Mesale, Ufuk, Derin, Grafit };
 
         public static string Current { get; private set; } = Mesale;
         public static bool IsUfuk => Current == Ufuk;
         public static bool IsDerin => Current == Derin;
+        public static bool IsGrafit => Current == Grafit;
         /// <summary>Hareketli arka plan sahnesi olan tema.</summary>
-        public static bool HasScene => Current != Mesale;
+        public static bool HasScene => Current is Ufuk or Derin;
         public static event Action? Changed;
 
         /// <summary>İlk uygulamada Meşale renkleri buradan alınır (App.axaml'daki değerler).</summary>
@@ -145,6 +150,67 @@ namespace VuluLauncher
             ["ToggleSwitchKnobFillOff"] = [C("#A9CBC7")],
         };
 
+        /// <summary>Grafit: nötr koyu gri yüzeyler, tek vurgu limon yeşili (#C5F04A); ışıltı ve gölge yok.</summary>
+        private static readonly Dictionary<string, Color[]> GrafitColors = new()
+        {
+            ["Bg"] = [C("#101112")],
+            ["Panel"] = [C("#18191B")],
+            ["SidePanel"] = [C("#141516")],
+            ["Surface"] = [C("#1F2124")],
+            ["Raised"] = [C("#26282B")],
+            ["Card"] = [C("#18191B")],
+            ["Glass"] = [C("#18191B")],
+            ["Hover"] = [C("#14FFFFFF")],
+            ["Line"] = [C("#2C2F33")],
+            ["LineStrong"] = [C("#3A3D42")],
+            ["ButtonBg"] = [C("#1F2124")],
+            ["ButtonLine"] = [C("#3A3D42")],
+            ["Text"] = [C("#EDEEEF")],
+            ["Muted"] = [C("#B9BCC1")],
+            ["Dim"] = [C("#A3A7AD")],
+            ["Accent"] = [C("#C5F04A")],
+            ["AccentHi"] = [C("#DAFF7A")],
+            ["AccentSoft"] = [C("#29C5F04A")],
+            ["AccentInk"] = [C("#101112")],
+            ["PrimaryFill"] = [C("#C5F04A"), C("#C5F04A")],
+            ["PrimaryFillHover"] = [C("#D6FF66"), C("#D6FF66")],
+            ["Ok"] = [C("#C5F04A")],
+            ["Warn"] = [C("#F2C14E")],
+            ["Error"] = [C("#FF6B5E")],
+            ["TitleBarBg"] = [C("#101112")],
+            ["StagePlain"] = [C("#1F2124"), C("#18191B")],
+            ["StageGlow"] = [C("#00000000"), C("#00000000")],
+            ["BarBg"] = [C("#00000000"), C("#00000000")],
+            ["ChipBg"] = [C("#1F2124")],
+            ["HeroBg"] = [C("#00000000")],
+            ["HeroHoverBg"] = [C("#1F2124")],
+            ["HeroLine"] = [C("#3A3D42")],
+            ["TileBg"] = [C("#00000000")],
+            ["TileLine"] = [C("#3A3D42")],
+            ["SoftFill"] = [C("#1F2124")],
+            ["SoftFillHover"] = [C("#2C2F33")],
+            ["LoginBg"] = [C("#00000000"), C("#00000000"), C("#00000000")],
+            ["BannerFallback"] = [C("#2C2F33"), C("#18191B")],
+            ["TabGlow"] = [C("#00000000"), C("#00000000")],
+            ["ToggleSwitchFillOn"] = [C("#C5F04A")],
+            ["ToggleSwitchFillOnPointerOver"] = [C("#D6FF66")],
+            ["ToggleSwitchFillOnPressed"] = [C("#A8D134")],
+            ["ToggleSwitchKnobFillOn"] = [C("#101112")],
+            ["ToggleSwitchKnobFillOnPointerOver"] = [C("#101112")],
+            ["ToggleSwitchKnobFillOnPressed"] = [C("#101112")],
+            ["ToggleSwitchStrokeOff"] = [C("#3A3D42")],
+            ["ToggleSwitchKnobFillOff"] = [C("#B9BCC1")],
+        };
+
+        private static readonly Dictionary<string, Color> GrafitSystem = new()
+        {
+            ["SystemAccentColor"] = C("#C5F04A"),
+            ["SystemAccentColorLight1"] = C("#D6FF66"),
+            ["SystemAccentColorDark1"] = C("#A8D134"),
+            ["AccentColor"] = C("#C5F04A"),
+            ["BgColor"] = C("#101112"),
+        };
+
         private static readonly Dictionary<string, Color> UfukSystem = new()
         {
             ["SystemAccentColor"] = C("#FF2DF1"),
@@ -168,6 +234,7 @@ namespace VuluLauncher
         {
             Ufuk => (8, 12),
             Derin => (6, 8),
+            Grafit => (8, 12),
             _ => (0, 0),
         };
 
@@ -197,6 +264,7 @@ namespace VuluLauncher
             {
                 Ufuk => (UfukColors, UfukSystem),
                 Derin => (DerinColors, DerinSystem),
+                Grafit => (GrafitColors, GrafitSystem),
                 _ => (_mesale, _mesaleSystem!),
             };
             foreach (var (key, colors) in palette)
@@ -218,14 +286,15 @@ namespace VuluLauncher
             bool changed = Current != name;
             Current = name;
             ThemeState.Instance.IsUfuk = name == Ufuk;
-            ThemeState.Instance.HasScene = name != Mesale;
+            ThemeState.Instance.HasScene = name is Ufuk or Derin;
+            ThemeState.Instance.IsGrafit = name == Grafit;
             if (changed) Changed?.Invoke();
         }
 
         private static Styles? _appStyles;
 
         /// <summary>Bütün temaların stil dosyaları; her biri yalnızca pencere kendi sınıfını taşırken geçerlidir.</summary>
-        private static Styles ThemeStyles() => new() { new Views.UfukStyles(), new Views.DerinStyles() };
+        private static Styles ThemeStyles() => new() { new Views.UfukStyles(), new Views.DerinStyles(), new Views.GrafitStyles() };
 
         /// <summary>
         /// Kendi stilleri olan sayfalar (Oyna) için: sayfanın stilleri uygulamanınkinden önce geldiği için temaya özel

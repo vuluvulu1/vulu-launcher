@@ -65,7 +65,7 @@ namespace VuluLauncher.ViewModels
         private bool _isHomePage = true;
         public bool HomeOverlay => ShowShell && IsHomePage;
         /// <summary>Oyna dışındaki sayfaların zemini: seçili paketin resmi, bulanık ve karartılmış.</summary>
-        public bool ShowBackdrop => ShowShell && !IsHomePage && !Themes.HasScene;
+        public bool ShowBackdrop => ShowShell && !IsHomePage && !Themes.HasScene && !Themes.IsGrafit;
         /// <summary>Ufkun öbür ucu teması: Oyna dışındaki sayfalarda (girişte de) paket resmi yerine synthwave sahnesi.</summary>
         public bool ShowSynthwave => Themes.HasScene && !(ShowShell && IsHomePage);
 
@@ -141,6 +141,12 @@ namespace VuluLauncher.ViewModels
                 LoggedIn = true;
                 Version = "v" + (await _core.Call("app.init")).Text("version");
                 Home.LoadPreview();
+                // VULU_UI_SPLASH=1: temanın açılışı oynar, 6 sn sonra açılır (açılış animasyonunu denemek için)
+                if (Environment.GetEnvironmentVariable("VULU_UI_SPLASH") == "1")
+                {
+                    Splash.Begin(Username);
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() => _ = Splash.OpenAsync(), TimeSpan.FromSeconds(6));
+                }
                 // VULU_UI_PAGE=settings: o sekmeyle açılır
                 if (Tabs.FirstOrDefault(t => t.Key == Environment.GetEnvironmentVariable("VULU_UI_PAGE")) is { } page) SelectedTab = page;
                 else if (Environment.GetEnvironmentVariable("VULU_UI_PAGE") is { } world && world is "board" or "map") { SelectedTab = Tabs.First(t => t.Key == "social"); Social.ShowWorld(world); }

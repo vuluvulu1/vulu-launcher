@@ -39,6 +39,7 @@ namespace VuluLauncher.Tests
         [InlineData("mesale")]
         [InlineData("ufuk")]
         [InlineData("derin")]
+        [InlineData("grafit")]
         public void SettingsKeepEveryTheme(string theme)
         {
             var settings = new AppSettings { Theme = theme };
@@ -51,6 +52,13 @@ namespace VuluLauncher.Tests
         public void SculkTransitionCompiles()
         {
             using var effect = SKRuntimeEffect.CreateShader(Views.ThemeTransition.SculkShader, out string? errors);
+            Assert.True(effect != null, errors);
+        }
+
+        [Fact]
+        public void TilesTransitionCompiles()
+        {
+            using var effect = SKRuntimeEffect.CreateShader(Views.ThemeTransition.TilesShader, out string? errors);
             Assert.True(effect != null, errors);
         }
 

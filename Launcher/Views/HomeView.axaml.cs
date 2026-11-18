@@ -69,7 +69,7 @@ namespace VuluLauncher.Views
             Control? target = null;
             foreach (var panel in this.GetVisualDescendants().OfType<StackPanel>())
             {
-                if (panel == _dragControl || panel.DataContext is not InstanceItem { IsCustom: true } || panel.Classes.Contains("dragging")) continue;
+                if (panel == _dragControl || !panel.Classes.Contains("pack") || panel.DataContext is not InstanceItem { IsCustom: true } || panel.Classes.Contains("dragging")) continue;
                 if (panel.TranslatePoint(new Avalonia.Point(0, 0), this) is not { } top) continue;
                 if (position.Y >= top.Y && position.Y <= top.Y + panel.Bounds.Height) { target = panel; break; }
             }
@@ -130,7 +130,7 @@ namespace VuluLauncher.Views
         /// </summary>
         private void SyncHeroInset()
         {
-            if (!IsEffectivelyVisible || !Hero.IsVisible || Hero.Bounds.Height <= 0 || !NewButton.IsVisible) return;
+            if (Themes.IsGrafit || !IsEffectivelyVisible || !Hero.IsVisible || Hero.Bounds.Height <= 0 || !NewButton.IsVisible) return;
             var last = NewButton.TranslatePoint(new Point(0, NewButton.Bounds.Height), this);
             var top = Hero.TranslatePoint(new Point(0, 0), this);
             if (last is null || top is null) return;
@@ -142,11 +142,104 @@ namespace VuluLauncher.Views
             Hero.Margin = free ? new Thickness(18, 0, 20, 18) : new Thickness(6, 0, 20, 18);
         }
 
+        // ── Grafit: kartlı yerleşim ──
+        // Öğeler aynı kalır (aynı bağlamalar, aynı komutlar); yalnızca yerleri ve boyutları değişir:
+        //   solda kart içinde adlarıyla paket listesi ve altında radyo, ortada paket kartı (resim üstte, yazılar altta,
+        //   oyun çubuğu kartın dibinde), sağda tam boy bilgi paneli. Meşale ve sahneli temalarda eski yerleşim.
+        private const double Gap = 14, LeftWidth = 264, RightWidth = 314, ArtHeight = 290;
+        private bool? _grafit;
+        private Avalonia.Media.IEffect? _heroTitleEffect;
+
+        private void ApplyLayout()
+        {
+            bool g = Themes.IsGrafit;
+            if (_grafit == g) return;
+            _grafit = g;
+            var card = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#18191B"));
+            var line = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#222428"));
+            double left = Gap + LeftWidth, right = Gap + RightWidth, top = 50 + Gap;
+
+            CenterCard.IsVisible = g;
+            CenterCard.Margin = new Thickness(left, top, right, Gap);
+
+            Grid.SetRowSpan(StageBox, g ? 2 : 1);
+            StageBox.Margin = g ? new Thickness(left + 1, top + 1, right + 1, 0) : default;
+            StageBox.Height = g ? ArtHeight : double.NaN;
+            StageBox.VerticalAlignment = g ? Avalonia.Layout.VerticalAlignment.Top : Avalonia.Layout.VerticalAlignment.Stretch;
+            StageBox.CornerRadius = g ? new CornerRadius(13, 13, 0, 0) : default;
+            ShadeSide.IsVisible = ShadeBottom.IsVisible = !g;
+            Announce.Margin = g ? new Thickness(left + 14, top + 14, 0, 0) : new Thickness(100, 58, 394, 0);
+
+            Grid.SetRowSpan(Body, g ? 2 : 1);
+            Body.Margin = g ? new Thickness(Gap, top, Gap, Gap) : new Thickness(0, 50, 0, 0);
+            Body.ColumnDefinitions[0].Width = new GridLength(g ? LeftWidth + Gap : 94);
+            Body.ColumnDefinitions[2].Width = new GridLength(g ? RightWidth + Gap : 356);
+
+            RailCard.Margin = g ? new Thickness(0, 0, Gap, 0) : default;
+            RailCard.Background = g ? card : null;
+            RailCard.BorderBrush = g ? line : null;
+            RailCard.BorderThickness = new Thickness(g ? 1 : 0);
+            RailCard.CornerRadius = new CornerRadius(g ? 14 : 0);
+            RailCard.ClipToBounds = g;
+            RailHeader.IsVisible = RadioHost.IsVisible = g;
+            Rail.Padding = g ? new Thickness(8, 0, 8, 0) : new Thickness(18, 10, 12, 0);
+            NewButton.Width = g ? double.NaN : 58;
+            NewButton.Height = g ? 44 : 58;
+            NewButton.Margin = g ? new Thickness(8, 4, 8, 0) : new Thickness(18, 0, 0, 0);
+            NewButton.HorizontalAlignment = g ? Avalonia.Layout.HorizontalAlignment.Stretch : Avalonia.Layout.HorizontalAlignment.Left;
+            NewButton.CornerRadius = new CornerRadius(g ? 10 : 0);
+            NewButton.Content = g ? "+ Yeni paket" : "+ Yeni";
+
+            _heroTitleEffect ??= HeroTitle.Effect;
+            _heroLeft = false;
+            Grid.SetColumn(Hero, 1);
+            Grid.SetColumnSpan(Hero, 1);
+            Hero.VerticalAlignment = g ? Avalonia.Layout.VerticalAlignment.Top : Avalonia.Layout.VerticalAlignment.Bottom;
+            Hero.Margin = g ? new Thickness(24, ArtHeight + 17, 24, 0) : new Thickness(6, 0, 20, 18);
+            HeroTitle.FontSize = g ? 46 : 96;
+            HeroTitle.FontWeight = g ? Avalonia.Media.FontWeight.Medium : Avalonia.Media.FontWeight.Light;
+            HeroTitle.LetterSpacing = g ? -1.4 : -4.2;
+            HeroTitle.Margin = g ? default : new Thickness(-4, 0, 0, 0);
+            HeroTitle.Effect = g ? null : _heroTitleEffect;
+            HeroLogo.MaxHeight = g ? 72 : 130;
+            HeroLogo.MaxWidth = g ? 360 : 480;
+
+            InfoPanel.Margin = g ? new Thickness(Gap, 0, 0, 0) : new Thickness(0, 8, 18, 16);
+            InfoPanel.MaxHeight = g ? double.PositiveInfinity : 560;
+            InfoPanel.VerticalAlignment = g ? Avalonia.Layout.VerticalAlignment.Stretch : Avalonia.Layout.VerticalAlignment.Bottom;
+
+            // Oyun çubuğu ortadaki kartın dibine oturur; seçili paketin adı zaten kartta yazdığı için çubukta gizlenir
+            Bar.Margin = g ? new Thickness(left + 1, 0, right + 1, Gap + 1) : default;
+            BarPack.IsVisible = !g;
+            BarGrid.ColumnDefinitions[0].Width = new GridLength(g ? 0 : 210);
+
+            // Radyo: Grafit'te sol kartın altına, iki satır (istasyon üstte, düğmeler altta)
+            if (RadioBox.Parent is Panel oldPanel) oldPanel.Children.Remove(RadioBox);
+            else if (RadioBox.Parent is Decorator oldHost) oldHost.Child = null;
+            if (g) RadioHost.Child = RadioBox;
+            else BarGrid.Children.Add(RadioBox);
+            Grid.SetColumn(RadioBox, g ? 0 : 1);
+            RadioBox.Margin = g ? default : new Thickness(8, 0, 0, 0);
+            RadioBox.RowSpacing = g ? 8 : 0;
+            Grid.SetRow(RadioStation, 0);
+            Grid.SetColumn(RadioStation, g ? 0 : 3);
+            Grid.SetColumnSpan(RadioStation, g ? 4 : 1);
+            RadioStation.MaxWidth = g ? double.PositiveInfinity : 190;
+            foreach (var (control, column) in new (Control, int)[] { (RadioPlay, 0), (RadioMute, 1), (RadioVolume, 2) })
+            {
+                Grid.SetRow(control, g ? 1 : 0);
+                Grid.SetColumn(control, column);
+            }
+            RadioVolume.Width = g ? 120 : 76;
+        }
+
         public HomeView()
         {
             InitializeComponent();
             // Ufkun öbür ucu: sayfanın kendi stillerinin üstüne temanın ışıltıları
             Themes.Attach(this);
+            ApplyLayout();
+            Themes.Changed += ApplyLayout;
             LayoutUpdated += (_, _) => SyncHeroInset();
             // Konsol en alttayken yeni satırlar gelince alta kayar; kullanıcı yukarı kaydırdıysa yerinde kalır. Bir grup
             // satır (oyun çıktısı 80 ms'de bir toplu gelir) için tek kaydırma yapılır.
