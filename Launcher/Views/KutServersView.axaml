@@ -1,0 +1,242 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
+             xmlns:native="using:VuluLauncher.Native"
+             x:Class="VuluLauncher.Views.KutServersView"
+             x:DataType="vm:ServersViewModel">
+    <!-- Kütüphane temasının Sunucular sayfası: başlık ve süzgeçler, iki sütun sunucu kartı, sağda seçili sunucunun çekmecesi
+         (adres, durum, çevrimiçi arkadaşlar, oyun sohbeti, işlemler, Bağlan). Aynı model (ServersViewModel). -->
+    <UserControl.Styles>
+        <Style Selector="ListBox.cards"><Setter Property="Background" Value="Transparent" /><Setter Property="Padding" Value="0" /></Style>
+        <Style Selector="ListBox.cards ListBoxItem"><Setter Property="Padding" Value="0" /><Setter Property="Margin" Value="0,0,16,16" /><Setter Property="Cursor" Value="Hand" /></Style>
+        <Style Selector="ListBox.cards ListBoxItem /template/ ContentPresenter#PART_ContentPresenter, ListBox.cards ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.cards ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter, ListBox.cards ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBox.cards Border.scard">
+            <Setter Property="Transitions"><Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.15" /><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" /></Transitions></Setter>
+            <Setter Property="RenderTransform" Value="none" />
+        </Style>
+        <Style Selector="ListBox.cards ListBoxItem:pointerover Border.scard"><Setter Property="BorderBrush" Value="#4A3A28" /><Setter Property="RenderTransform" Value="translateY(-2px)" /></Style>
+        <Style Selector="ListBox.cards ListBoxItem:selected Border.scard"><Setter Property="BorderBrush" Value="#F2A33A" /></Style>
+        <Style Selector="Border.scard.offline"><Setter Property="Opacity" Value="0.65" /></Style>
+        <Style Selector="Ellipse.dot"><Setter Property="Fill" Value="{StaticResource Dim}" /></Style>
+        <Style Selector="Ellipse.dot.online"><Setter Property="Fill" Value="#7FC98A" /></Style>
+        <Style Selector="Ellipse.dot.offline"><Setter Property="Fill" Value="{StaticResource Error}" /></Style>
+        <Style Selector="Ellipse.dot.playing"><Setter Property="Fill" Value="#7FC98A" /></Style>
+        <Style Selector="Button.chip-filter">
+            <Setter Property="Height" Value="32" /><Setter Property="Padding" Value="14,0" /><Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="#2E241A" /><Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#D9CDBF" /><Setter Property="FontSize" Value="13" /><Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.chip-filter.on"><Setter Property="Background" Value="#F3ECE2" /><Setter Property="Foreground" Value="#0B0A09" /><Setter Property="BorderBrush" Value="#F3ECE2" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+        <Style Selector="Button.chip-filter.on:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="#FFFFFF" /><Setter Property="Foreground" Value="#0B0A09" /></Style>
+        <Style Selector="Button.dbtn">
+            <Setter Property="Height" Value="36" /><Setter Property="Background" Value="#1B1510" /><Setter Property="BorderBrush" Value="#2E241A" />
+            <Setter Property="BorderThickness" Value="1" /><Setter Property="Padding" Value="12,0" /><Setter Property="FontSize" Value="13" />
+            <Setter Property="VerticalContentAlignment" Value="Center" /><Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.join">
+            <Setter Property="Height" Value="34" /><Setter Property="Padding" Value="16,0" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="FontSize" Value="13" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.bigplay">
+            <Setter Property="Height" Value="52" /><Setter Property="CornerRadius" Value="14" /><Setter Property="FontSize" Value="16" /><Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="LetterSpacing" Value="0.8" /><Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="*,372" RowDefinitions="Auto,*" Margin="28,14,20,20">
+        <!-- ── Başlık ── -->
+        <Grid Grid.ColumnSpan="2" ColumnDefinitions="Auto,Auto,*,Auto" Margin="0,0,0,16">
+            <TextBlock Text="Sunucular" FontSize="30" FontWeight="SemiBold" LetterSpacing="-0.6" VerticalAlignment="Center" />
+            <TextBlock x:Name="CountText" Grid.Column="1" FontFamily="{StaticResource Mono}" FontSize="12" Classes="dim" VerticalAlignment="Center" Margin="12,8,18,0" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <Button x:Name="FilterAll" Classes="chip-filter on" Content="Tümü" Click="OnFilter" Tag="all" />
+                <Button x:Name="FilterOnline" Classes="chip-filter" Content="Açık olanlar" Click="OnFilter" Tag="online" />
+                <Button x:Name="FilterFriends" Classes="chip-filter" Content="Arkadaşlarım orada" Click="OnFilter" Tag="friends" />
+            </StackPanel>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Classes="primary join" Content="+ Sunucu ekle" IsVisible="{Binding IsAdmin}" Command="{Binding AddCommand}" />
+                <Button Classes="dbtn" Content="Yenile" Command="{Binding LoadCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- ── Kartlar ── -->
+        <Grid Grid.Row="1" RowDefinitions="Auto,*">
+            <StackPanel Spacing="10" Margin="0,0,16,0">
+                <TextBlock Text="{Binding Status}" Foreground="{StaticResource Error}" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap" />
+                <v:EmptyState IsVisible="{Binding IsEmpty}" Margin="0,30,0,0" Icon="🗄" Title="Henüz sunucu yok" Text="Admin bir sunucu eklediğinde burada görünecek." />
+                <UniformGrid Columns="2" IsVisible="{Binding FirstLoad}">
+                    <Border Classes="card skel" Height="230" Margin="0,0,16,16" IsHitTestVisible="False"><v:Skeleton Kind="server" /></Border>
+                    <Border Classes="card skel" Height="230" Margin="0,0,0,16" IsHitTestVisible="False"><v:Skeleton Kind="server" /></Border>
+                </UniformGrid>
+            </StackPanel>
+            <ScrollViewer Grid.Row="1">
+                <ListBox x:Name="Cards" Classes="cards" SelectionMode="Single">
+                    <ListBox.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2" VerticalAlignment="Top" /></ItemsPanelTemplate></ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ServerCard">
+                            <Border Classes="scard" Classes.offline="{Binding IsOffline}" CornerRadius="16" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" ClipToBounds="True">
+                                <StackPanel>
+                                    <!-- Üst bant: durum ve gecikme -->
+                                    <Panel Height="92">
+                                        <Border Background="{StaticResource BannerFallback}" />
+                                        <Image Source="{Binding Favicon}" Stretch="UniformToFill" Opacity="0.35" RenderOptions.BitmapInterpolationMode="None" />
+                                        <Border Background="#BF0B0A09" CornerRadius="6" Padding="8,3" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <Ellipse Classes="dot" Classes.online="{Binding IsOnline}" Classes.offline="{Binding IsOffline}" Width="8" Height="8" VerticalAlignment="Center" />
+                                                <TextBlock Text="Açık" IsVisible="{Binding IsOnline}" FontSize="11.5" FontWeight="SemiBold" Foreground="#9ED9A5" />
+                                                <TextBlock Text="Kapalı" IsVisible="{Binding IsOffline}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource Error}" />
+                                                <TextBlock Text="Denetleniyor" IsVisible="{Binding State, Converter={x:Static vm:ServerStates.IsChecking}}" FontSize="11.5" Classes="dim" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Panel>
+                                    <StackPanel Margin="16,0,16,16" Spacing="10">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <Border Width="48" Height="48" CornerRadius="11" Background="#281F17" ClipToBounds="True" Margin="0,-24,12,0" BoxShadow="0 0 0 3 #14100C">
+                                                <Grid>
+                                                    <TextBlock Text="{Binding Initial}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <Image Source="{Binding Favicon}" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="None" />
+                                                </Grid>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Margin="0,8,0,0" Spacing="2">
+                                                <TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock native:RichText.Parts="{Binding Motd}" IsVisible="{Binding HasMotd}" FontFamily="{StaticResource Mono}" FontSize="12" Foreground="#AAAAAA" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                                <TextBlock Text="{Binding MotdFallback}" IsVisible="{Binding !HasMotd}" Classes="dim" FontSize="12.5" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsOnline}">
+                                            <ProgressBar Value="{Binding Fill}" Maximum="1" Height="6" MinHeight="6" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Players}" ToolTip.Tip="{Binding Sample}" FontFamily="{StaticResource Mono}" FontSize="12" Classes="muted" Margin="10,0,0,0" />
+                                        </Grid>
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <Border Background="#1B1510" CornerRadius="6" Padding="9,3" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding PackLabel}" FontSize="11.5" FontWeight="SemiBold" Foreground="#DCD0C2" />
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="{Binding FriendsHere}" IsVisible="{Binding HasFriendsHere}" FontSize="12" Foreground="#9ED9A5"
+                                                       VerticalAlignment="Center" Margin="10,0" TextTrimming="CharacterEllipsis" />
+                                            <Button Grid.Column="2" Classes="join" Classes.primary="{Binding IsOnline}" Content="{Binding JoinText}" Command="{Binding JoinCommand}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ── Çekmece: seçili sunucu ── -->
+        <Border Grid.Row="1" Grid.Column="1" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" ClipToBounds="True">
+            <Panel>
+                <TextBlock Text="Bir sunucu seç." Classes="dim" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding #Drawer.DataContext, Converter={x:Static ObjectConverters.IsNull}}" />
+                <DockPanel x:Name="Drawer" x:DataType="vm:ServerCard" IsVisible="{Binding $self.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <Panel DockPanel.Dock="Top" Height="120">
+                        <Border Background="{StaticResource BannerFallback}" />
+                        <Image Source="{Binding Favicon}" Stretch="UniformToFill" Opacity="0.35" RenderOptions.BitmapInterpolationMode="None" />
+                        <Border Background="#BF0B0A09" CornerRadius="6" Padding="9,3" Margin="16,0,0,12" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                            <TextBlock Text="{Binding Status}" FontSize="11.5" FontWeight="SemiBold" Foreground="#DCD0C2" />
+                        </Border>
+                    </Panel>
+                    <StackPanel DockPanel.Dock="Bottom" Margin="18,10,18,18" Spacing="8">
+                        <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
+                            <Button Classes="dbtn" Content="Davet et" HorizontalAlignment="Stretch" Command="{Binding InviteCommand}" ToolTip.Tip="Bir arkadaşını mesajla davet et" />
+                            <Button Grid.Column="1" Classes="dbtn" Content="{Binding ChatButton}" IsVisible="{Binding HasChat}" HorizontalAlignment="Stretch" Command="{Binding ToggleChatCommand}" />
+                            <Button Grid.Column="1" Classes="dbtn" Content="Kısayol" IsVisible="{Binding !HasChat}" HorizontalAlignment="Stretch" Command="{Binding ShortcutCommand}" />
+                            <Button Grid.Column="2" Classes="dbtn" Width="42" Content="⋯" ToolTip.Tip="Diğer işlemler">
+                                <Button.Flyout>
+                                    <MenuFlyout Placement="TopEdgeAlignedRight">
+                                        <MenuItem Header="Masaüstüne kısayol" Command="{Binding ShortcutCommand}" />
+                                        <MenuItem Header="Adresi kopyala" Command="{Binding CopyAddressCommand}" />
+                                        <MenuItem Header="Düzenle" IsVisible="{Binding IsAdmin}" Command="{Binding EditCommand}" />
+                                        <MenuItem Header="Sil" IsVisible="{Binding IsAdmin}" Command="{Binding DeleteCommand}" Foreground="{StaticResource Error}" />
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
+                        </Grid>
+                        <Button Classes="bigplay primary" Content="{Binding JoinText}" Command="{Binding JoinCommand}" />
+                    </StackPanel>
+                    <DockPanel Margin="18,16,18,0">
+                        <StackPanel DockPanel.Dock="Top" Spacing="12">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="{Binding Name}" FontSize="26" FontWeight="SemiBold" LetterSpacing="-0.5" TextTrimming="CharacterEllipsis" />
+                                <TextBlock native:RichText.Parts="{Binding Motd}" IsVisible="{Binding HasMotd}" FontFamily="{StaticResource Mono}" FontSize="12.5" Foreground="#AAAAAA" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Description}" IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" FontSize="13.5" Classes="muted" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Border Background="#1B1510" CornerRadius="12" Padding="12,8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{Binding Address}" FontFamily="{StaticResource Mono}" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    <Button Grid.Column="1" Classes="dbtn" Height="30" Content="Kopyala" Command="{Binding CopyAddressCommand}" />
+                                </Grid>
+                            </Border>
+                            <TextBlock IsVisible="{Binding IsOnline}" FontSize="12" Classes="dim" LetterSpacing="0.8">
+                                <Run Text="ŞU AN ORADA · " /><Run Text="{Binding Players}" />
+                            </TextBlock>
+                            <TextBlock Text="{Binding Sample}" IsVisible="{Binding Sample, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" FontSize="13.5" TextWrapping="Wrap" />
+                            <TextBlock FontSize="12.5" Classes="dim"><Run Text="Paket: " /><Run Text="{Binding PackLabel}" /></TextBlock>
+                        </StackPanel>
+                        <!-- Oyun içi sohbet -->
+                        <Border IsVisible="{Binding ChatOpen}" Background="#1B1510" CornerRadius="12" Padding="10" Margin="0,12,0,0">
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                                    <TextBox Text="{Binding ChatDraft}" Watermark="Oyundakilere yaz" MaxLength="200">
+                                        <TextBox.KeyBindings><KeyBinding Gesture="Enter" Command="{Binding SendChatCommand}" /></TextBox.KeyBindings>
+                                    </TextBox>
+                                    <Button Grid.Column="1" Classes="primary dbtn" Content="Gönder" Command="{Binding SendChatCommand}" Margin="8,0,0,0" />
+                                </Grid>
+                                <TextBlock DockPanel.Dock="Bottom" Text="{Binding ChatStatus}" IsVisible="{Binding ChatStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Foreground="{StaticResource Error}" FontSize="12" TextWrapping="Wrap" />
+                                <ScrollViewer native:AutoScroll.ToEnd="True">
+                                    <StackPanel>
+                                        <TextBlock Text="Henüz sohbet yok. Yazdığın mesaj oyunda herkese görünür." IsVisible="{Binding ChatEmpty}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" />
+                                        <ItemsControl ItemsSource="{Binding Chat}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:ChatLine">
+                                                    <SelectableTextBlock TextWrapping="Wrap" FontSize="12.5" Margin="0,1">
+                                                        <Run Text="{Binding Time}" Foreground="{StaticResource Dim}" FontFamily="{StaticResource Mono}" FontSize="11" /><Run Text=" " />
+                                                        <Run Text="{Binding Tag}" Foreground="{StaticResource Accent}" FontWeight="SemiBold" />
+                                                        <Run Text="{Binding NamePart}" FontWeight="Bold" Foreground="{StaticResource AccentHi}" />
+                                                        <Run Text="{Binding Text}" Foreground="{Binding IsEvent, Converter={x:Static vm:ChatColors.Text}}" />
+                                                    </SelectableTextBlock>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </DockPanel>
+                        </Border>
+                        <!-- Sohbet kapalıyken: çevrimiçi arkadaşlar -->
+                        <DockPanel IsVisible="{Binding !#Drawer.((vm:ServerCard)DataContext).ChatOpen, FallbackValue=True}" Margin="0,14,0,0" DataContext="{Binding $parent[UserControl].DataContext}" x:DataType="vm:ServersViewModel">
+                            <TextBlock DockPanel.Dock="Top" FontSize="12" Classes="dim" LetterSpacing="0.8" Margin="0,0,0,8"><Run Text="ÇEVRİMİÇİ ARKADAŞLAR · " /><Run Text="{Binding OnlineCount}" /></TextBlock>
+                            <TextBlock DockPanel.Dock="Top" Text="Şu an çevrimiçi kimse yok." IsVisible="{Binding NobodyOnline}" Classes="dim" FontSize="12.5" />
+                            <ScrollViewer>
+                                <ItemsControl ItemsSource="{Binding Online}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:PersonItem">
+                                            <Grid ColumnDefinitions="36,*" Margin="0,0,0,8">
+                                                <Panel Width="30" Height="30">
+                                                    <Border Background="{StaticResource Raised}" CornerRadius="15" ClipToBounds="True">
+                                                        <Grid>
+                                                            <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
+                                                        </Grid>
+                                                    </Border>
+                                                    <Ellipse Classes="dot" Classes.playing="{Binding IsPlaying}" Width="9" Height="9" HorizontalAlignment="Right" VerticalAlignment="Bottom" Stroke="#14100C" StrokeThickness="2" />
+                                                </Panel>
+                                                <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Username}" FontWeight="SemiBold" FontSize="13.5" />
+                                                    <TextBlock FontSize="12" TextTrimming="CharacterEllipsis"><Run Text="{Binding Game}" Foreground="#9ED9A5" /><Run Text="{Binding Rest}" Foreground="{StaticResource Dim}" /></TextBlock>
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </Panel>
+        </Border>
+    </Grid>
+</UserControl>

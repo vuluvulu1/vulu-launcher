@@ -172,6 +172,11 @@
         <Setter Property="Margin" Value="0,6,16,16" />
     </Style>
 
+    <!-- Sosyal: Akış/Liderlik/Harita üstteki sekmelerde; listedeki satırları gizlenir -->
+    <Style Selector="Window.kutuphane Button.navlink">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
     <!-- ── Simge rayı ── -->
     <Style Selector="Button.rail-tab">
         <Setter Property="Width" Value="66" />

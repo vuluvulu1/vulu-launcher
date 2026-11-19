@@ -75,13 +75,26 @@
     </UserControl.Styles>
 
 
-    <Grid ColumnDefinitions="300,*">
+    <Grid x:Name="Root" ColumnDefinitions="300,*" RowDefinitions="Auto,*">
+        <!-- Kütüphane: başlık ve bölüm sekmeleri üstte (soldaki listenin Akış/Liderlik/Harita satırları yerine);
+             kişiler sağdaki arkadaşlar çekmecesine geçer (SocialView.axaml.cs ApplyLayout) -->
+        <Grid x:Name="KutBar" Grid.ColumnSpan="2" ColumnDefinitions="Auto,Auto,*" Margin="28,14,20,14" IsVisible="False">
+            <TextBlock Text="Sosyal" FontSize="30" FontWeight="SemiBold" LetterSpacing="-0.6" VerticalAlignment="Center" />
+            <ItemsControl x:Name="KutTabs" Grid.Column="1" Classes="segmented" Margin="16,0,0,0" VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SocialFeedLink">
+                        <Button Classes="seg" Classes.active="{Binding IsActive}" Content="{Binding Title}" Command="{Binding OpenCommand}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
         <!-- ── Sol: kişiler ───────────────────────────────────────────── -->
-        <Border Classes="side side-left" Background="{StaticResource SidePanel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+        <Border x:Name="SidePane" Grid.RowSpan="2" Classes="side side-left" Background="{StaticResource SidePanel}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="14,20,14,10" Spacing="10">
                     <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Text="Sosyal" Classes="page-title" />
+                        <TextBlock x:Name="SideTitle" Text="Sosyal" Classes="page-title" />
                         <Button Grid.Column="1" Classes="sm" Content="Yeni mesaj" Command="{Binding NewMessageCommand}" ToolTip.Tip="Birine yeni mesaj yaz" />
                     </Grid>
                     <TextBox Text="{Binding Search}" Watermark="Arkadaş ya da üye ara…" />
@@ -90,7 +103,7 @@
                     <ItemsControl ItemsSource="{Binding List}" Margin="4,0,4,14">
                         <ItemsControl.DataTemplates>
                             <DataTemplate DataType="vm:SocialFeedLink">
-                                <Button Classes="row" Classes.active="{Binding IsActive}" Command="{Binding OpenCommand}">
+                                <Button Classes="row navlink" Classes.active="{Binding IsActive}" Command="{Binding OpenCommand}">
                                     <Grid ColumnDefinitions="34,*">
                                         <Border Width="34" Height="34" Background="{StaticResource AccentSoft}" CornerRadius="17">
                                             <TextBlock Text="{Binding Glyph}" Foreground="{StaticResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -150,14 +163,14 @@
         </Border>
 
         <!-- ── Liderlik ve harita (vulu sunucusu) ─────────────────────────── -->
-        <v:WorldView Grid.Column="1" DataContext="{Binding World}" IsVisible="{Binding $parent[UserControl].((vm:SocialViewModel)DataContext).IsWorld}" />
+        <v:WorldView x:Name="WorldPane" Grid.Column="1" Grid.RowSpan="2" DataContext="{Binding World}" IsVisible="{Binding $parent[UserControl].((vm:SocialViewModel)DataContext).IsWorld}" />
 
         <!-- ── Akış ───────────────────────────────────────────────────── -->
-        <ScrollViewer Grid.Column="1" IsVisible="{Binding IsFeed}">
+        <ScrollViewer x:Name="FeedPane" Grid.Column="1" Grid.RowSpan="2" IsVisible="{Binding IsFeed}">
             <StackPanel Margin="26,22,26,28" Spacing="14">
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Akış" Classes="page-title" />
+                        <TextBlock x:Name="FeedTitle" Text="Akış" Classes="page-title" />
                         <TextBlock Text="Oyuncuların paylaştığı ekran görüntüleri. Yalnızca vulu üyeleri görebilir." Classes="muted" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Bottom">
@@ -271,7 +284,7 @@
         </ScrollViewer>
 
         <!-- ── Sohbet ─────────────────────────────────────────────────── -->
-        <DockPanel Grid.Column="1" IsVisible="{Binding IsChat}">
+        <DockPanel x:Name="ChatPane" Grid.Column="1" Grid.RowSpan="2" IsVisible="{Binding IsChat}">
             <Border DockPanel.Dock="Top" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="20,12">
                 <StackPanel Spacing="8">
                     <Grid ColumnDefinitions="*,Auto">

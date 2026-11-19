@@ -125,6 +125,8 @@ namespace VuluLauncher.ViewModels
         /// <summary>Sunucunun kendi MOTD'si göründüğünde admin açıklaması altta ayrıca durur.</summary>
         [ObservableProperty] private bool _showDescription;
         [ObservableProperty] private string? _friendsHere;
+        /// <summary>Doluluk (0..1): Kütüphane temasındaki kartın çubuğu.</summary>
+        [ObservableProperty] private double _fill;
         public bool IsOnline => State == "online";
         public bool IsOffline => State == "offline";
         public bool HasMotd => Motd is { Count: > 0 };
@@ -141,6 +143,7 @@ namespace VuluLauncher.ViewModels
             bool online = st.Bool("online");
             State = online ? "online" : "offline";
             Players = online ? $"{st.Int("players")}/{st.Int("maxPlayers")}" : "";
+            Fill = online && st.Int("maxPlayers") > 0 ? Math.Clamp(st.Int("players") / (double)st.Int("maxPlayers"), 0, 1) : 0;
             Sample = string.Join(", ", st.Items("sample").Select(x => x.GetString()));
             Status = online ? string.Join(" · ", new[] { st.Text("version"), $"{st.Int("ping")} ms" }.Where(x => !string.IsNullOrEmpty(x))) : "Kapalı ya da ulaşılamıyor";
             if (Favicon == null && st.Text("favicon") is { } fav) Favicon = await Images.LoadAsync(fav, 64);

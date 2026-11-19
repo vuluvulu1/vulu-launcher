@@ -1,5 +1,6 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:VuluLauncher"
              xmlns:vm="using:VuluLauncher.ViewModels"
              xmlns:v="using:VuluLauncher.Views"
              xmlns:native="using:VuluLauncher.Native"
@@ -42,7 +43,10 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid ColumnDefinitions="*,300">
+    <Panel>
+    <!-- Kütüphane temasında bu sayfanın kendi görünümü; öbür temalarda aşağıdaki klasik yerleşim -->
+    <v:KutServersView IsVisible="{Binding IsKutuphane, Source={x:Static local:ThemeState.Instance}}" />
+    <Grid IsVisible="{Binding !IsKutuphane, Source={x:Static local:ThemeState.Instance}}" ColumnDefinitions="*,300">
         <!-- ── Sunucular ──────────────────────────────────────────────── -->
         <ScrollViewer>
             <StackPanel Margin="28,22,24,28" Spacing="14">
@@ -190,4 +194,5 @@
             </DockPanel>
         </Border>
     </Grid>
+    </Panel>
 </UserControl>

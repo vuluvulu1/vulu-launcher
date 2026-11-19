@@ -63,9 +63,217 @@
             <Setter Property="Foreground" Value="{StaticResource Text}" />
             <Setter Property="Background" Value="{StaticResource Hover}" />
         </Style>
+        <Style Selector="StackPanel.javalist"><Setter Property="Width" Value="420" /></Style>
+        <Style Selector="ContentControl.kut-control StackPanel.javalist"><Setter Property="Width" Value="372" /></Style>
+        <Style Selector="Border.setcard">
+            <Setter Property="Width" Value="410" />
+            <Setter Property="Margin" Value="0,0,14,14" />
+            <Setter Property="Padding" Value="18,16" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Background" Value="#14100C" />
+            <Setter Property="BorderBrush" Value="#2A2118" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Button.cat">
+            <Setter Property="Height" Value="32" /><Setter Property="Padding" Value="14,0" /><Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="#2E241A" /><Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#D9CDBF" /><Setter Property="FontSize" Value="13" /><Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.cat.on"><Setter Property="Background" Value="#F3ECE2" /><Setter Property="Foreground" Value="#0B0A09" /><Setter Property="BorderBrush" Value="#F3ECE2" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+        <Style Selector="Button.cat.on:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="#FFFFFF" /><Setter Property="Foreground" Value="#0B0A09" /></Style>
+        <Style Selector="Button.dbtn">
+            <Setter Property="Height" Value="36" /><Setter Property="Background" Value="#1B1510" /><Setter Property="BorderBrush" Value="#2E241A" />
+            <Setter Property="BorderThickness" Value="1" /><Setter Property="FontSize" Value="13" /><Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <!-- Kartlarda denetimler sola yaslı (klasik listede sağa) -->
+        <Style Selector="ContentControl.kut-control ItemsControl.segmented, ContentControl.kut-control WrapPanel">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
     </UserControl.Styles>
 
-    <Grid ColumnDefinitions="240,*">
+    <!-- Ayar denetimleri (seçenek, anahtar, metin, kaydırıcı, düğmeler, oyun penceresi, Java listesi): satırın ContentControl'ü
+         türüne göre buradan alır; klasik liste de Kütüphane kartları da aynı şablonları kullanır -->
+    <UserControl.DataTemplates>
+            <!-- Seçenekler: yan yana düğmeler -->
+            <DataTemplate DataType="vm:ChoiceRow">
+                <ItemsControl Classes="segmented" HorizontalAlignment="Right" ItemsSource="{Binding Options}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel HorizontalAlignment="Right" /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ChoiceOption">
+                            <Button Classes="seg" Classes.active="{Binding IsSelected}"
+                                    Content="{Binding Label}" Command="{Binding PickCommand}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </DataTemplate>
+
+            <DataTemplate DataType="vm:ToggleRow">
+                <ToggleSwitch IsChecked="{Binding Value}" IsEnabled="{Binding IsEnabled}" OnContent="" OffContent="" MinWidth="0" />
+            </DataTemplate>
+
+            <DataTemplate DataType="vm:TextRow">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBox Text="{Binding Value}" Watermark="{Binding Placeholder}" Width="300">
+                        <TextBox.KeyBindings>
+                            <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
+                        </TextBox.KeyBindings>
+                    </TextBox>
+                    <Button Classes="sm" IsVisible="{Binding HasAction}" Content="{Binding Action.Label}"
+                            Command="{Binding Action.RunCommand}" />
+                </StackPanel>
+            </DataTemplate>
+
+            <DataTemplate DataType="vm:SliderRow">
+                <Slider Value="{Binding Value}" Minimum="0" Maximum="100" Width="240" />
+            </DataTemplate>
+
+            <DataTemplate DataType="vm:ActionRow">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding Value}" IsVisible="{Binding HasValue}" FontWeight="SemiBold"
+                               VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <ItemsControl ItemsSource="{Binding Actions}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:RowAction">
+                                <Button Classes="sm" Classes.danger="{Binding IsDanger}" Content="{Binding Label}"
+                                        IsEnabled="{Binding IsEnabled}" Command="{Binding RunCommand}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </DataTemplate>
+
+            <DataTemplate DataType="vm:GameSizeRow">
+                <StackPanel Spacing="8" HorizontalAlignment="Right">
+                    <ItemsControl Classes="segmented" HorizontalAlignment="Right" ItemsSource="{Binding Choice.Options}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel HorizontalAlignment="Right" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ChoiceOption">
+                                <Button Classes="seg" Classes.active="{Binding IsSelected}"
+                                        Content="{Binding Label}" Command="{Binding PickCommand}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsCustom}" HorizontalAlignment="Right">
+                        <TextBox Text="{Binding Width}" Watermark="Genişlik" Width="96" Classes="commit-size" />
+                        <TextBlock Text="×" VerticalAlignment="Center" />
+                        <TextBox Text="{Binding Height}" Watermark="Yükseklik" Width="96" Classes="commit-size" />
+                        <Button Classes="sm" Content="Kaydet" Command="{Binding SaveCustomCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </DataTemplate>
+
+            <DataTemplate DataType="vm:JavaListRow">
+                <StackPanel Spacing="6" Classes="javalist">
+                    <TextBlock Text="Bilgisayarda kurulu Java bulunamadı; gereken sürüm otomatik indirilir."
+                               Classes="set-hint" IsVisible="{Binding IsEmpty}" />
+                    <ItemsControl ItemsSource="{Binding Items}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Spacing="6" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:JavaItem">
+                                <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}"
+                                        BorderThickness="1" Padding="10,7">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel>
+                                            <TextBlock>
+                                                <Run Text="{Binding Version}" FontWeight="Bold" />
+                                                <Run Text=" · " Foreground="{StaticResource Dim}" />
+                                                <Run Text="{Binding Source}" Foreground="{StaticResource Dim}" />
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Path}" Classes="set-hint" TextWrapping="NoWrap"
+                                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Path}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Classes="sm" Content="{Binding ButtonText}"
+                                                Command="{Binding UseCommand}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </DataTemplate>
+    </UserControl.DataTemplates>
+
+    <Panel>
+    <!-- ── Kütüphane: üstte kategori hapları ve arama, ortada seçili kategorinin ayarları kart kart, sağda hesap çekmecesi ── -->
+    <Grid x:Name="KutRoot" ColumnDefinitions="*,320" RowDefinitions="Auto,*" Margin="28,14,20,20" IsVisible="False">
+        <Grid Grid.ColumnSpan="2" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16">
+            <TextBlock Text="Ayarlar" FontSize="30" FontWeight="SemiBold" LetterSpacing="-0.6" VerticalAlignment="Center" />
+            <ItemsControl Grid.Column="1" ItemsSource="{Binding Sections}" Margin="16,0" VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SettingSection">
+                        <Button Classes="cat" Classes.on="{Binding IsCurrent}" IsVisible="{Binding IsVisible}" Content="{Binding Title}" Click="OnCategoryClick" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBox Grid.Column="2" Text="{Binding Search}" Watermark="Ayarlarda ara" Width="220" Height="36" VerticalContentAlignment="Center" />
+        </Grid>
+        <ScrollViewer Grid.Row="1" Margin="0,0,16,0">
+            <StackPanel Spacing="12">
+                <TextBlock Text="{Binding LoadError}" IsVisible="{Binding LoadError, Converter={x:Static ObjectConverters.IsNotNull}}" Foreground="{StaticResource Error}" TextWrapping="Wrap" />
+                <TextBlock Text="Aramana uyan bir ayar yok." IsVisible="{Binding NoResults}" Classes="muted" />
+                <ItemsControl x:Name="KutCards">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SettingRow">
+                            <Border Classes="setcard" IsVisible="{Binding IsShown}">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="{Binding Title}" FontSize="15.5" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Hint}" IsVisible="{Binding HasHint}" FontSize="12.5" Classes="dim" TextWrapping="Wrap" />
+                                    <ContentControl Content="{Binding}" HorizontalAlignment="Left" Margin="0,10,0,0" Classes="kut-control" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+        <!-- Çekmece: hesap ve launcher -->
+        <Border x:Name="KutDrawer" Grid.Row="1" Grid.Column="1" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" Padding="18">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Spacing="14">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Border Width="54" Height="54" CornerRadius="27" ClipToBounds="True" Background="{StaticResource Raised}" BoxShadow="0 0 0 2 #14100C, 0 0 0 4 #F2A33A">
+                            <Grid>
+                                <TextBlock x:Name="AccInitial" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Image x:Name="AccAvatar" Stretch="UniformToFill" />
+                            </Grid>
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="AccName" FontSize="18" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="vulu hesabı" FontSize="12.5" Classes="dim" />
+                        </StackPanel>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Button Classes="dbtn" Content="Profilim" HorizontalAlignment="Stretch" Click="OnProfileClick" />
+                        <Button Grid.Column="1" Classes="dbtn" Content="Çıkış yap" Foreground="{StaticResource Error}" HorizontalAlignment="Stretch" Click="OnLogoutClick" />
+                    </Grid>
+                    <TextBlock Text="{Binding Note}" Classes="muted" Classes.error="{Binding NoteIsError}" TextWrapping="Wrap" FontSize="12.5"
+                               IsVisible="{Binding Note, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock.Styles><Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style></TextBlock.Styles>
+                    </TextBlock>
+                </StackPanel>
+                <Border DockPanel.Dock="Bottom" Background="#1B1510" CornerRadius="12" Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="vulu Launcher" FontSize="13.5" FontWeight="SemiBold" />
+                        <TextBlock x:Name="AccVersion" FontSize="12" Classes="dim" />
+                    </StackPanel>
+                </Border>
+                <TextBlock Text="Depolama ve hesap ayarları üstteki Depolama ve Hesap kategorilerinde." Classes="dim" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Bottom" Margin="0,0,0,12" />
+            </DockPanel>
+        </Border>
+    </Grid>
+
+    <Grid x:Name="ClassicRoot" ColumnDefinitions="240,*">
         <!-- ── Sol: başlık, arama, bölümler ───────────────────────────── -->
         <!-- Web'deki gibi zeminsiz: arkada paketin bulanık resmi görünür (web: .settings-nav) -->
         <Border Background="Transparent">
@@ -114,114 +322,6 @@
                                                         <TextBlock Classes="set-hint" Text="{Binding Hint}" IsVisible="{Binding HasHint}" />
                                                     </StackPanel>
                                                     <ContentControl Grid.Column="1" Content="{Binding}" VerticalAlignment="Center" MaxWidth="480">
-                                                        <ContentControl.DataTemplates>
-                                                            <!-- Seçenekler: yan yana düğmeler -->
-                                                            <DataTemplate DataType="vm:ChoiceRow">
-                                                                <ItemsControl Classes="segmented" HorizontalAlignment="Right" ItemsSource="{Binding Options}">
-                                                                    <ItemsControl.ItemsPanel>
-                                                                        <ItemsPanelTemplate><WrapPanel HorizontalAlignment="Right" /></ItemsPanelTemplate>
-                                                                    </ItemsControl.ItemsPanel>
-                                                                    <ItemsControl.ItemTemplate>
-                                                                        <DataTemplate x:DataType="vm:ChoiceOption">
-                                                                            <Button Classes="seg" Classes.active="{Binding IsSelected}"
-                                                                                    Content="{Binding Label}" Command="{Binding PickCommand}" />
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
-                                                            </DataTemplate>
-
-                                                            <DataTemplate DataType="vm:ToggleRow">
-                                                                <ToggleSwitch IsChecked="{Binding Value}" IsEnabled="{Binding IsEnabled}" OnContent="" OffContent="" MinWidth="0" />
-                                                            </DataTemplate>
-
-                                                            <DataTemplate DataType="vm:TextRow">
-                                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                                    <TextBox Text="{Binding Value}" Watermark="{Binding Placeholder}" Width="300">
-                                                                        <TextBox.KeyBindings>
-                                                                            <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
-                                                                        </TextBox.KeyBindings>
-                                                                    </TextBox>
-                                                                    <Button Classes="sm" IsVisible="{Binding HasAction}" Content="{Binding Action.Label}"
-                                                                            Command="{Binding Action.RunCommand}" />
-                                                                </StackPanel>
-                                                            </DataTemplate>
-
-                                                            <DataTemplate DataType="vm:SliderRow">
-                                                                <Slider Value="{Binding Value}" Minimum="0" Maximum="100" Width="240" />
-                                                            </DataTemplate>
-
-                                                            <DataTemplate DataType="vm:ActionRow">
-                                                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                                                    <TextBlock Text="{Binding Value}" IsVisible="{Binding HasValue}" FontWeight="SemiBold"
-                                                                               VerticalAlignment="Center" Margin="0,0,4,0" />
-                                                                    <ItemsControl ItemsSource="{Binding Actions}">
-                                                                        <ItemsControl.ItemsPanel>
-                                                                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate>
-                                                                        </ItemsControl.ItemsPanel>
-                                                                        <ItemsControl.ItemTemplate>
-                                                                            <DataTemplate x:DataType="vm:RowAction">
-                                                                                <Button Classes="sm" Classes.danger="{Binding IsDanger}" Content="{Binding Label}"
-                                                                                        IsEnabled="{Binding IsEnabled}" Command="{Binding RunCommand}" />
-                                                                            </DataTemplate>
-                                                                        </ItemsControl.ItemTemplate>
-                                                                    </ItemsControl>
-                                                                </StackPanel>
-                                                            </DataTemplate>
-
-                                                            <DataTemplate DataType="vm:GameSizeRow">
-                                                                <StackPanel Spacing="8" HorizontalAlignment="Right">
-                                                                    <ItemsControl Classes="segmented" HorizontalAlignment="Right" ItemsSource="{Binding Choice.Options}">
-                                                                        <ItemsControl.ItemsPanel>
-                                                                            <ItemsPanelTemplate><WrapPanel HorizontalAlignment="Right" /></ItemsPanelTemplate>
-                                                                        </ItemsControl.ItemsPanel>
-                                                                        <ItemsControl.ItemTemplate>
-                                                                            <DataTemplate x:DataType="vm:ChoiceOption">
-                                                                                <Button Classes="seg" Classes.active="{Binding IsSelected}"
-                                                                                        Content="{Binding Label}" Command="{Binding PickCommand}" />
-                                                                            </DataTemplate>
-                                                                        </ItemsControl.ItemTemplate>
-                                                                    </ItemsControl>
-                                                                    <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsCustom}" HorizontalAlignment="Right">
-                                                                        <TextBox Text="{Binding Width}" Watermark="Genişlik" Width="96" Classes="commit-size" />
-                                                                        <TextBlock Text="×" VerticalAlignment="Center" />
-                                                                        <TextBox Text="{Binding Height}" Watermark="Yükseklik" Width="96" Classes="commit-size" />
-                                                                        <Button Classes="sm" Content="Kaydet" Command="{Binding SaveCustomCommand}" />
-                                                                    </StackPanel>
-                                                                </StackPanel>
-                                                            </DataTemplate>
-
-                                                            <DataTemplate DataType="vm:JavaListRow">
-                                                                <StackPanel Spacing="6" Width="420">
-                                                                    <TextBlock Text="Bilgisayarda kurulu Java bulunamadı; gereken sürüm otomatik indirilir."
-                                                                               Classes="set-hint" IsVisible="{Binding IsEmpty}" />
-                                                                    <ItemsControl ItemsSource="{Binding Items}">
-                                                                        <ItemsControl.ItemsPanel>
-                                                                            <ItemsPanelTemplate><StackPanel Spacing="6" /></ItemsPanelTemplate>
-                                                                        </ItemsControl.ItemsPanel>
-                                                                        <ItemsControl.ItemTemplate>
-                                                                            <DataTemplate x:DataType="vm:JavaItem">
-                                                                                <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}"
-                                                                                        BorderThickness="1" Padding="10,7">
-                                                                                    <Grid ColumnDefinitions="*,Auto">
-                                                                                        <StackPanel>
-                                                                                            <TextBlock>
-                                                                                                <Run Text="{Binding Version}" FontWeight="Bold" />
-                                                                                                <Run Text=" · " Foreground="{StaticResource Dim}" />
-                                                                                                <Run Text="{Binding Source}" Foreground="{StaticResource Dim}" />
-                                                                                            </TextBlock>
-                                                                                            <TextBlock Text="{Binding Path}" Classes="set-hint" TextWrapping="NoWrap"
-                                                                                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Path}" />
-                                                                                        </StackPanel>
-                                                                                        <Button Grid.Column="1" Classes="sm" Content="{Binding ButtonText}"
-                                                                                                Command="{Binding UseCommand}" VerticalAlignment="Center" Margin="10,0,0,0" />
-                                                                                    </Grid>
-                                                                                </Border>
-                                                                            </DataTemplate>
-                                                                        </ItemsControl.ItemTemplate>
-                                                                    </ItemsControl>
-                                                                </StackPanel>
-                                                            </DataTemplate>
-                                                        </ContentControl.DataTemplates>
                                                     </ContentControl>
                                                 </Grid>
                                             </Border>
@@ -236,4 +336,5 @@
             </StackPanel>
         </ScrollViewer>
     </Grid>
+    </Panel>
 </UserControl>

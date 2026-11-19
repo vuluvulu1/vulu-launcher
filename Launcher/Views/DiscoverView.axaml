@@ -1,5 +1,6 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:VuluLauncher"
              xmlns:vm="using:VuluLauncher.ViewModels"
              xmlns:v="using:VuluLauncher.Views"
              x:Class="VuluLauncher.Views.DiscoverView"
@@ -76,7 +77,10 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <DockPanel>
+    <Panel>
+    <!-- Kütüphane temasında bu sayfanın kendi görünümü; öbür temalarda aşağıdaki klasik yerleşim -->
+    <v:KutDiscoverView IsVisible="{Binding IsKutuphane, Source={x:Static local:ThemeState.Instance}}" />
+    <DockPanel IsVisible="{Binding !IsKutuphane, Source={x:Static local:ThemeState.Instance}}">
         <!-- ── Başlık: kaynak, tür, süren işlem ─────────────────────────── -->
         <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="28,22,28,14">
             <StackPanel Spacing="10">
@@ -274,4 +278,5 @@
             </Grid>
         </Panel>
     </DockPanel>
+    </Panel>
 </UserControl>

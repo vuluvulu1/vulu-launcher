@@ -32,6 +32,74 @@ namespace VuluLauncher.Views
             }, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
 
             Scroll.ScrollChanged += (_, _) => MarkCurrentSection();
+
+            ApplyLayout();
+            Themes.Changed += ApplyLayout;
+            DataContextChanged += (_, _) => BindKut(DataContext as SettingsViewModel);
+            AttachedToVisualTree += (_, _) => FillAccount();
+        }
+
+        // ── Kütüphane yerleşimi: kategori hapları + seçili kategorinin satırları kart kart + hesap çekmecesi ──
+        private SettingsViewModel? _kutVm;
+
+        private void ApplyLayout()
+        {
+            bool k = Themes.IsKutuphane;
+            KutRoot.IsVisible = k;
+            ClassicRoot.IsVisible = !k;
+            if (k) { FillAccount(); ShowCards(); }
+        }
+
+        private void BindKut(SettingsViewModel? vm)
+        {
+            if (_kutVm == vm) return;
+            if (_kutVm != null) { _kutVm.Sections.CollectionChanged -= OnSectionsChanged; _kutVm.PropertyChanged -= OnVmChanged; }
+            _kutVm = vm;
+            if (vm != null) { vm.Sections.CollectionChanged += OnSectionsChanged; vm.PropertyChanged += OnVmChanged; }
+            ShowCards();
+        }
+
+        private void OnSectionsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => ShowCards();
+
+        private void OnVmChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SettingsViewModel.Search)) ShowCards();
+        }
+
+        /// <summary>Arama boşsa seçili kategorinin satırları; aramada bütün kategorilerin uyan satırları.</summary>
+        private void ShowCards()
+        {
+            if (_kutVm == null || !Themes.IsKutuphane) return;
+            var current = _kutVm.Sections.FirstOrDefault(s => s.IsCurrent) ?? _kutVm.Sections.FirstOrDefault();
+            KutCards.ItemsSource = string.IsNullOrWhiteSpace(_kutVm.Search)
+                ? current?.Rows.ToList()
+                : _kutVm.Sections.SelectMany(s => s.Rows).ToList();
+        }
+
+        private void OnCategoryClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is not Button { DataContext: SettingSection section } || _kutVm == null) return;
+            foreach (var s in _kutVm.Sections) s.IsCurrent = s == section;
+            if (!string.IsNullOrEmpty(_kutVm.Search)) _kutVm.Search = "";
+            ShowCards();
+        }
+
+        private MainViewModel? Main => TopLevel.GetTopLevel(this)?.DataContext as MainViewModel;
+
+        private void FillAccount()
+        {
+            if (Main is not { } m) return;
+            AccName.Text = m.Username;
+            AccInitial.Text = m.UserInitial;
+            AccAvatar.Source = m.MyAvatar;
+            AccVersion.Text = m.Version;
+        }
+
+        private void OnProfileClick(object? sender, RoutedEventArgs e) => Main?.OpenMyProfileCommand.Execute(null);
+
+        private void OnLogoutClick(object? sender, RoutedEventArgs e)
+        {
+            if (Main is { } m) _ = m.LogoutAsync();
         }
 
         private static Slider? FindSlider(Visual? visual)
