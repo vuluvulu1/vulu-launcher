@@ -48,7 +48,7 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid ColumnDefinitions="*,372" RowDefinitions="Auto,*" Margin="28,14,20,20">
+    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*" Margin="28,14,20,20">
         <!-- ── Başlık ── -->
         <Grid Grid.ColumnSpan="2" ColumnDefinitions="Auto,Auto,*,Auto" Margin="0,0,0,16">
             <TextBlock Text="Sunucular" FontSize="30" FontWeight="SemiBold" LetterSpacing="-0.6" VerticalAlignment="Center" />
@@ -132,9 +132,10 @@
         </Grid>
 
         <!-- ── Çekmece: seçili sunucu ── -->
-        <Border Grid.Row="1" Grid.Column="1" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" ClipToBounds="True">
+        <!-- Seçili sunucu yoksa (liste boş) çekmece hiç görünmez, kartlar tüm genişliği alır -->
+        <Border Grid.Row="1" Grid.Column="1" Width="372" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" ClipToBounds="True"
+                IsVisible="{Binding #Drawer.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}">
             <Panel>
-                <TextBlock Text="Bir sunucu seç." Classes="dim" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding #Drawer.DataContext, Converter={x:Static ObjectConverters.IsNull}}" />
                 <DockPanel x:Name="Drawer" x:DataType="vm:ServerCard" IsVisible="{Binding $self.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}">
                     <Panel DockPanel.Dock="Top" Height="120">
                         <Border Background="{StaticResource BannerFallback}" />

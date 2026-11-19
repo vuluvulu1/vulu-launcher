@@ -214,7 +214,7 @@
 
     <Panel>
     <!-- ── Kütüphane: üstte kategori hapları ve arama, ortada seçili kategorinin ayarları kart kart, sağda hesap çekmecesi ── -->
-    <Grid x:Name="KutRoot" ColumnDefinitions="*,320" RowDefinitions="Auto,*" Margin="28,14,20,20" IsVisible="False">
+    <Grid x:Name="KutRoot" ColumnDefinitions="*,Auto" RowDefinitions="Auto,*" Margin="28,14,20,20" IsVisible="False">
         <Grid Grid.ColumnSpan="2" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16">
             <TextBlock Text="Ayarlar" FontSize="30" FontWeight="SemiBold" LetterSpacing="-0.6" VerticalAlignment="Center" />
             <ItemsControl Grid.Column="1" ItemsSource="{Binding Sections}" Margin="16,0" VerticalAlignment="Center">
@@ -248,8 +248,8 @@
                 </ItemsControl>
             </StackPanel>
         </ScrollViewer>
-        <!-- Çekmece: hesap ve launcher -->
-        <Border x:Name="KutDrawer" Grid.Row="1" Grid.Column="1" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" Padding="18">
+        <!-- Çekmece: hesap ve launcher. Gizli: profil başlık çubuğunda, çıkış ve sürüm Hesap ve dosyalar'da (aynı şeyler iki yerde durmasın) -->
+        <Border x:Name="KutDrawer" Grid.Row="1" Grid.Column="1" Width="320" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" Padding="18" IsVisible="False">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Spacing="14">
                     <Grid ColumnDefinitions="Auto,*">

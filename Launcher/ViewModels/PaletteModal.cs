@@ -49,6 +49,7 @@ namespace VuluLauncher.ViewModels
             if (main.Home.Selected is { IsCustom: true } selected)
                 _all.Add(new PaletteItem("Eylem", $"{selected.Name}: içeriği yönet", null, () => main.Home.ManageContentCommand.ExecuteAsync(null)));
             _all.Add(new PaletteItem("Eylem", "Yeni paket", null, () => main.OpenNewPackAsync()));
+            _all.Add(new PaletteItem("Eylem", "Geri bildirim: hata bildir ya da öneri yaz", null, () => main.OpenFeedbackAsync("launcher")));
             Render();
         }
 

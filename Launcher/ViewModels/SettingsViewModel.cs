@@ -356,6 +356,8 @@ namespace VuluLauncher.ViewModels
                     .With(new RowAction("Aç", () => OpenFolder("base")))
                     .With(new RowAction("Instance'lar", () => OpenFolder("instances"))))
                 .Add(new ActionRow("Sürüm", null) { Value = "vulu Launcher " + main.Version })
+                .Add(new ActionRow("Geri bildirim", "Bir hata mı buldun, bir fikrin mi var? Ekibe doğrudan yaz.")
+                    .With(new RowAction("Hata bildir ya da öneri yaz", () => main.OpenFeedbackAsync("launcher"))))
                 .Add(new ActionRow("Tanıtım rehberi", "İlk açılışta gösterilen dört adımlık kısa rehber.")
                     .With(new RowAction("Yeniden göster", main.ShowTourAsync)))
                 .Add(new ActionRow("Açık kaynak lisansları", "Kullanılan bileşenler ve lisans metinleri.")
