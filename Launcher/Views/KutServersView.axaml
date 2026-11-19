@@ -67,7 +67,8 @@
         <!-- ── Kartlar ── -->
         <Grid Grid.Row="1" RowDefinitions="Auto,*">
             <StackPanel Spacing="10" Margin="0,0,16,0">
-                <TextBlock Text="{Binding Status}" Foreground="{StaticResource Error}" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap" />
+                <v:EmptyState IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="0,30,0,0" Icon="!" Title="Sunucular yüklenemedi"
+                              Text="{Binding Status}" ActionText="Tekrar dene" Command="{Binding LoadCommand}" />
                 <v:EmptyState IsVisible="{Binding IsEmpty}" Margin="0,30,0,0" Icon="🗄" Title="Henüz sunucu yok" Text="Admin bir sunucu eklediğinde burada görünecek." />
                 <UniformGrid Columns="2" IsVisible="{Binding FirstLoad}">
                     <Border Classes="card skel" Height="230" Margin="0,0,16,16" IsHitTestVisible="False"><v:Skeleton Kind="server" /></Border>

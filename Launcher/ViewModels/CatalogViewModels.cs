@@ -232,7 +232,7 @@ namespace VuluLauncher.ViewModels
             }
             catch (Exception ex)
             {
-                Status = "Paketler alınamadı: " + ex.Message;
+                Status = Errors.Friendly(ex);
                 StatusIsError = true;
             }
             finally { _loading = false; Skeleton = false; }
@@ -591,12 +591,16 @@ namespace VuluLauncher.ViewModels
         }
 
         [RelayCommand] private Task More() => SearchAsync(true);
+        [RelayCommand] private Task Retry() => SearchAsync(false);
+        /// <summary>Arama yapılamadı (bağlantı, oturum): sonuçların yerinde açıklama ve "Tekrar dene".</summary>
+        [ObservableProperty] private string? _searchError;
 
 #if DEBUG
         /// <summary>Yalnızca önizlemede (VULU_UI_OPEN): oturum yokken kart görünümü için örnek sonuçlar.</summary>
         public void LoadPreview()
         {
             _requestId++;
+            SearchError = null;
             _suppress = true;
             Versions.Clear(); Versions.Add(new Option("", "Tüm sürümler")); Version = Versions[0];
             LoaderOptions.Clear(); LoaderOptions.Add(new Option("", "Tümü")); Loader = LoaderOptions[0];
@@ -622,7 +626,7 @@ namespace VuluLauncher.ViewModels
         private async Task SearchAsync(bool append)
         {
             int requestId = ++_requestId;
-            if (!append) { _offset = 0; Status = "Aranıyor..."; }
+            if (!append) { _offset = 0; Status = "Aranıyor..."; SearchError = null; }
             HasMore = false;
             string targetId = IsPack ? "" : Target?.Key ?? "";
 
@@ -644,10 +648,11 @@ namespace VuluLauncher.ViewModels
             }
             catch (Exception ex)
             {
-                if (requestId == _requestId) Status = "Arama başarısız: " + ex.Message;
+                if (requestId == _requestId) { Status = ""; SearchError = Errors.Friendly(ex); }
                 return;
             }
             if (requestId != _requestId) return;   // daha yeni bir arama başladı
+            SearchError = null;
 
             _total = result.Int("total");
             if (!append) Hits.Clear();

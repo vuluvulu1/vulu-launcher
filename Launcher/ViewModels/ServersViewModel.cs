@@ -321,7 +321,7 @@ namespace VuluLauncher.ViewModels
                 foreach (var card in Servers) _ = card.PingAsync();
                 _timer.Start();
             }
-            catch (Exception ex) { Status = "Sunucular alınamadı: " + ex.Message; }
+            catch (Exception ex) { Status = Errors.Friendly(ex); }
             finally { _loading = false; FirstLoad = false; }
         }
 

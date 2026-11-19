@@ -30,8 +30,8 @@
                 <Button Classes="sm" Content="Yenile" Command="{Binding ReloadCommand}" />
             </StackPanel>
         </Grid>
-        <TextBlock DockPanel.Dock="Top" Text="{Binding Error}" Foreground="{StaticResource Error}" Margin="0,0,0,10" TextWrapping="Wrap"
-                   IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        <v:EmptyState DockPanel.Dock="Top" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="0,30,0,20" Icon="!"
+                      Title="Yüklenemedi" Text="{Binding Error}" ActionText="Tekrar dene" Command="{Binding ReloadCommand}" />
 
         <Panel>
             <!-- ── Liderlik ──────────────────────────────────────────── -->

@@ -244,7 +244,8 @@
                 </StackPanel>
 
                 <TextBlock Text="EKRAN GÖRÜNTÜLERİ" Classes="section" Margin="0,10,0,0" />
-                <TextBlock Text="{Binding ShotsStatus}" Classes="dim" FontSize="12.5" IsVisible="{Binding ShotsStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <v:EmptyState IsVisible="{Binding ShotsStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="0,30,0,0" Icon="!" Title="Akış yüklenemedi"
+                              Text="{Binding ShotsStatus}" ActionText="Tekrar dene" Command="{Binding RetryShotsCommand}" />
                 <v:EmptyState IsVisible="{Binding ShotsEmpty}" Margin="0,30,0,0" Icon="🖼" Title="Akış şimdilik boş"
                               Text="Oyunda F2 ile ekran görüntüsü al, sonra buradan paylaş. Bütün vulu üyeleri görür, beğenip yorum yapabilir." />
                 <!-- Yüklenirken yer tutucular (web: .shot-skel) -->

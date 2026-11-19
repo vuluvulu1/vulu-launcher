@@ -77,8 +77,9 @@ namespace VuluLauncher.Views
             SidePane.Margin = k ? new Avalonia.Thickness(0, 0, 20, 20) : default;
             if (!k) SidePane.ClearValue(MarginProperty);
             SideTitle.Text = k ? "Arkadaşlar" : "Sosyal";
-            SideTitle.FontSize = k ? 18 : double.NaN;
-            if (!k) SideTitle.ClearValue(Avalonia.Controls.TextBlock.FontSizeProperty);
+            // NaN geçersiz yazı boyutu: atanınca istisna atar ve sayfa hiç kurulmaz (Kütüphane dışındaki temalarda Sosyal boş kalıyordu)
+            if (k) SideTitle.FontSize = 18;
+            else SideTitle.ClearValue(Avalonia.Controls.TextBlock.FontSizeProperty);
             FeedTitle.IsVisible = !k;
             foreach (Control pane in new Control[] { WorldPane, FeedPane, ChatPane })
             {

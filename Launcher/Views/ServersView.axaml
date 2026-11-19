@@ -60,7 +60,8 @@
                         <Button Classes="sm" Content="Yenile" Command="{Binding LoadCommand}" />
                     </StackPanel>
                 </Grid>
-                <TextBlock Text="{Binding Status}" Foreground="{StaticResource Error}" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <v:EmptyState IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="0,30,0,0" Icon="!" Title="Sunucular yüklenemedi"
+                              Text="{Binding Status}" ActionText="Tekrar dene" Command="{Binding LoadCommand}" />
                 <v:EmptyState IsVisible="{Binding IsEmpty}" Margin="0,30,0,0" Icon="🗄" Title="Henüz sunucu yok"
                               Text="Admin bir sunucu eklediğinde burada görünecek." />
                 <!-- İlk yüklemede yer tutucular (web: .server-skel) -->

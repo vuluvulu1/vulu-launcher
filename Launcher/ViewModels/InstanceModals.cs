@@ -64,7 +64,7 @@ namespace VuluLauncher.ViewModels
                 _ready = true;
                 McVersion = _wantedMc ?? McVersions.FirstOrDefault();
             }
-            catch (Exception ex) { Error = "Sürüm listesi alınamadı: " + ex.Message; }
+            catch (Exception ex) { Error = "Sürüm listesi alınamadı. " + Errors.Friendly(ex); }
         }
 
         partial void OnMcVersionChanged(string? value) { if (_ready) _ = LoadLoaderVersionsAsync(); }

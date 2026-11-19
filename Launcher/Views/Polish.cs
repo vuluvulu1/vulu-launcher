@@ -11,6 +11,7 @@ namespace VuluLauncher.Views
 {
     /// <summary>
     /// Boş durum (web: .empty-state): kesik çizgili çerçeve içinde yuvarlak simge, başlık ve kısa açıklama.
+    /// ActionText verilirse altta bir düğme çıkar (ör. hata ekranında "Tekrar dene").
     /// </summary>
     internal sealed class EmptyState : Panel
     {
@@ -18,8 +19,11 @@ namespace VuluLauncher.Views
         public static readonly StyledProperty<string> TitleProperty = AvaloniaProperty.Register<EmptyState, string>(nameof(Title), "");
         public static readonly StyledProperty<string> TextProperty = AvaloniaProperty.Register<EmptyState, string>(nameof(Text), "");
         public static readonly StyledProperty<bool> DashedProperty = AvaloniaProperty.Register<EmptyState, bool>(nameof(Dashed), true);
+        public static readonly StyledProperty<string> ActionTextProperty = AvaloniaProperty.Register<EmptyState, string>(nameof(ActionText), "");
+        public static readonly StyledProperty<System.Windows.Input.ICommand?> CommandProperty = AvaloniaProperty.Register<EmptyState, System.Windows.Input.ICommand?>(nameof(Command));
 
         private readonly TextBlock _icon, _title, _text;
+        private readonly Button _action;
         private readonly Rectangle _frame;
 
         public EmptyState()
@@ -35,6 +39,7 @@ namespace VuluLauncher.Views
             _icon = new TextBlock { FontSize = 22, Foreground = Brush("AccentHi"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
             _title = new TextBlock { FontSize = 16, FontWeight = FontWeight.SemiBold, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap };
             _text = new TextBlock { FontSize = 13, LineHeight = 19.5, Foreground = Brush("Muted"), TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap };
+            _action = new Button { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 6, 0, 0), Padding = new Thickness(16, 6), IsVisible = false };
             Children.Add(_frame);
             Children.Add(new StackPanel
             {
@@ -46,6 +51,7 @@ namespace VuluLauncher.Views
                     new Border { Width = 46, Height = 46, CornerRadius = new CornerRadius(23), Background = Brush("AccentSoft"), HorizontalAlignment = HorizontalAlignment.Center, Child = _icon },
                     _title,
                     _text,
+                    _action,
                 },
             });
         }
@@ -54,6 +60,8 @@ namespace VuluLauncher.Views
         public string Title { get => GetValue(TitleProperty); set => SetValue(TitleProperty, value); }
         public string Text { get => GetValue(TextProperty); set => SetValue(TextProperty, value); }
         public bool Dashed { get => GetValue(DashedProperty); set => SetValue(DashedProperty, value); }
+        public string ActionText { get => GetValue(ActionTextProperty); set => SetValue(ActionTextProperty, value); }
+        public System.Windows.Input.ICommand? Command { get => GetValue(CommandProperty); set => SetValue(CommandProperty, value); }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
@@ -62,6 +70,8 @@ namespace VuluLauncher.Views
             else if (change.Property == TitleProperty) _title.Text = Title;
             else if (change.Property == TextProperty) { _text.Text = Text; _text.IsVisible = Text.Length > 0; }
             else if (change.Property == DashedProperty) _frame.IsVisible = Dashed;
+            else if (change.Property == ActionTextProperty) { _action.Content = ActionText; _action.IsVisible = ActionText.Length > 0; }
+            else if (change.Property == CommandProperty) _action.Command = Command;
         }
 
         private static IBrush? Brush(string key) =>

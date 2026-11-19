@@ -96,7 +96,7 @@ namespace VuluLauncher.ViewModels
             Error = null;
             JsonElement data;
             try { data = await _core.Call("progress.leaderboard", new { period = Period }); }
-            catch (Exception ex) { if (id == _loadId) { Error = "Liderlik tablosu alınamadı: " + ex.Message; Loading = false; } return; }
+            catch (Exception ex) { if (id == _loadId) { Error = "Liderlik tablosu alınamadı. " + Errors.Friendly(ex); Loading = false; } return; }
             if (id != _loadId) return;
 
             var tr = CultureInfo.GetCultureInfo("tr-TR");
@@ -173,7 +173,7 @@ namespace VuluLauncher.ViewModels
         {
             Error = null;
             try { await CheckTilesAsync(first: true); }
-            catch (Exception ex) { Error = "Harita alınamadı: " + ex.Message; return; }
+            catch (Exception ex) { Error = "Harita alınamadı. " + Errors.Friendly(ex); return; }
             if (!MapEnabled) { MapStatus = "Harita henüz hazır değil; sunucu ilk çizimi bitirince burada görünür."; return; }
             Map?.Refresh();
             await RefreshPlayersAsync();

@@ -10,8 +10,7 @@
     </UserControl.Styles>
     <DockPanel>
         <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
-            <TextBlock Text="{Binding Status}" Classes="dim" FontSize="12.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                       Foreground="{Binding StatusIsError, Converter={x:Static v:KutBrushes.ErrorOrDim}}" />
+            <TextBlock Text="{Binding Status}" Classes="dim" FontSize="12.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" IsVisible="{Binding !StatusIsError}" />
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                 <Button Classes="cact" Content="{Binding RequestText}" IsVisible="{Binding FeedbackEnabled}" Command="{Binding RequestsCommand}"
                         ToolTip.Tip="Pakete bağlı olmayan istekler: yeni paket, mod ya da özellik" />
@@ -22,6 +21,8 @@
             <StackPanel Margin="0,0,0,8">
                 <v:EmptyState IsVisible="{Binding IsEmpty}" Margin="0,30,0,0" Icon="📦" Title="Henüz paylaşılan paket yok"
                               Text="Admin bir paket paylaştığında burada görünecek." />
+                <v:EmptyState IsVisible="{Binding StatusIsError}" Margin="0,30,0,0" Icon="!" Title="Paketler yüklenemedi"
+                              Text="{Binding Status}" ActionText="Tekrar dene" Command="{Binding LoadCommand}" />
                 <UniformGrid Columns="3" IsVisible="{Binding Skeleton}">
                     <Border Classes="ccard" Height="250" Margin="0,0,14,14" IsHitTestVisible="False"><v:Skeleton Kind="card" /></Border>
                     <Border Classes="ccard" Height="250" Margin="0,0,14,14" IsHitTestVisible="False"><v:Skeleton Kind="card" /></Border>

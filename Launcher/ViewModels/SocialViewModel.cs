@@ -318,8 +318,9 @@ namespace VuluLauncher.ViewModels
                 _incoming = r.Items("incoming").Select(x => x.GetString() ?? "").ToList();
                 _outgoing = r.Items("outgoing").Select(x => x.GetString() ?? "").ToList();
                 _friendsLoaded = true;
+                _friendsError = null;
             }
-            catch { /* eski liste kalır */ }
+            catch (Exception ex) { _friendsError = Errors.Friendly(ex); /* yüklenmiş eski liste varsa o kalır */ }
             UpdateBadge();
             if (Main.SelectedTab?.Page == this) RenderList();
         }
@@ -404,7 +405,8 @@ namespace VuluLauncher.ViewModels
                 List.Add(row);
             }
             if (people.Count == 0)
-                List.Add(!_friendsLoaded ? new SocialHint("Yükleniyor…", true) : new SocialHint(query.Length > 0 ? "Bu adla bir arkadaşın ya da konuşman yok." : "Henüz kimse yok. Yukarıdan birini ara ve arkadaş ekle."));
+                List.Add(!_friendsLoaded && _friendsError != null ? new SocialHint("Kişiler yüklenemedi. " + _friendsError)
+                    : !_friendsLoaded ? new SocialHint("Yükleniyor…", true) : new SocialHint(query.Length > 0 ? "Bu adla bir arkadaşın ya da konuşman yok." : "Henüz kimse yok. Yukarıdan birini ara ve arkadaş ekle."));
 
             var outgoing = _outgoing.Where(Match).ToList();
             if (outgoing.Count > 0)
@@ -479,6 +481,8 @@ namespace VuluLauncher.ViewModels
 
         /// <summary>İlk yüklemede görüntülerin yerinde parlayan kutular durur.</summary>
         [ObservableProperty] private bool _shotSkeleton;
+        [RelayCommand] private Task RetryShots() => LoadShotsAsync(false);
+        private string? _friendsError;
 
         private async Task LoadShotsAsync(bool append)
         {
@@ -498,7 +502,7 @@ namespace VuluLauncher.ViewModels
             }
             catch (Exception ex)
             {
-                if (request == _shotsRequest) ShotsStatus = "Ekran görüntüleri alınamadı: " + ex.Message;
+                if (request == _shotsRequest) ShotsStatus = Errors.Friendly(ex);
             }
             finally { if (request == _shotsRequest) { _shotsLoading = false; ShotSkeleton = false; } }
         }
