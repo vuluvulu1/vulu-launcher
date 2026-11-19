@@ -230,7 +230,7 @@
                 </DockPanel>
 
                 <!-- Sıralama ve filtreler: solda çerçeveli kart -->
-                <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                <Border Grid.Column="0" Classes="filters" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1"
                         VerticalAlignment="Top" Margin="0,0,0,24">
                 <ScrollViewer MaxHeight="680">
                     <StackPanel Spacing="14" Margin="14">

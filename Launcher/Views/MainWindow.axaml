@@ -17,7 +17,7 @@
 
             <!-- ── Başlık çubuğu: sürükleme buradan ───────────────────── -->
             <!-- Meşale: Oyna'da paketin resmi başlık çubuğunun altına uzanır, çubuk üstünde saydamlaşır -->
-            <Border x:Name="TitleBar" Grid.Row="0" ZIndex="3" Classes.overlay="{Binding HomeOverlay}">
+            <Border x:Name="TitleBar" Grid.Row="0" ZIndex="3" HorizontalAlignment="Stretch" Classes.overlay="{Binding HomeOverlay}">
                 <Border.Styles>
                     <Style Selector="Border#TitleBar">
                         <Setter Property="Background" Value="{StaticResource TitleBarBg}" />
@@ -65,7 +65,7 @@
                         <Setter Property="BoxShadow" Value="0 0 15 3 #B8F2A33A" />
                     </Style>
                 </Border.Styles>
-                <Grid ColumnDefinitions="Auto,*,Auto">
+                <Grid x:Name="TitleGrid" ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch">
                     <StackPanel x:Name="TitleLogo" Orientation="Horizontal" Spacing="9" Margin="14,0" VerticalAlignment="Center">
                         <Image Source="avares://vulu Launcher/Assets/logo.png" Width="20" Height="20" />
                         <TextBlock Text="vulu Launcher" FontWeight="Bold" VerticalAlignment="Center" />
@@ -171,7 +171,7 @@
                     </Panel>
                     </Border>
 
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,6,0" VerticalAlignment="Center">
+                    <StackPanel x:Name="TitleButtons" Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,6,0" VerticalAlignment="Center" HorizontalAlignment="Right">
                         <!-- Hızlı arama -->
                         <Border x:Name="SearchIconHost">
                         <Button Classes="flat tb big" IsVisible="{Binding ShowShell}" Command="{Binding OpenPaletteCommand}" AutomationProperties.Name="Hızlı arama"

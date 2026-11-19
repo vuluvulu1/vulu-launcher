@@ -36,7 +36,14 @@ namespace VuluLauncher.Views
                         // Tema sahnesi compositor görseli; görüntüye girsin diye o an normal çizimle de verilir
                         SynthwaveBackdrop.Snapshotting = true;
                         try { rtb.Render(this); } finally { SynthwaveBackdrop.Snapshotting = false; }
-                        rtb.Save(System.IO.Path.Combine(shotDir, $"shot-{n++ % 4}.png"));
+                        // VULU_UI_TOUR=1: her görüntüden sonra sıradaki sekmeye geçer (tek pencereyle bütün sayfalar)
+                        if (Environment.GetEnvironmentVariable("VULU_UI_TOUR") == "1" && DataContext is MainViewModel tour)
+                        {
+                            var tabs = tour.Tabs.Where(t => t.IsVisible).ToList();
+                            rtb.Save(System.IO.Path.Combine(shotDir, $"tour-{tour.SelectedTab?.Key ?? "none"}.png"));
+                            if (tabs.Count > 0) tour.SelectTabCommand.Execute(tabs[(tabs.IndexOf(tour.SelectedTab!) + 1) % tabs.Count]);
+                        }
+                        else rtb.Save(System.IO.Path.Combine(shotDir, $"shot-{n++ % 4}.png"));
                     }
                     catch (Exception ex) { LogFile.Write("[ui] görüntü alınamadı: " + ex.Message); }
                 };
@@ -48,6 +55,16 @@ namespace VuluLauncher.Views
             Themes.Attach(NavTabs);
             Themes.Attach(TitleBar);
             Themes.Attach(Rail);
+            // Tema başlık çubuğundaki öğeleri stille gizleyip gösterince (Kütüphane: logo, sekmeler, profil) çubuk kendiliğinden
+            // yeniden ölçülmüyor, gizlenenlerin yeri boş kalıyordu (pencere düğmeleri köşeden içeri kayıyordu)
+            void Remeasure() => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                foreach (var c in TitleGrid.Children.Concat(TitleButtons.Children)) c.InvalidateMeasure();
+                TitleButtons.InvalidateMeasure();
+                TitleGrid.InvalidateMeasure();
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+            Opened += (_, _) => Remeasure();
+            Themes.Changed += Remeasure;
             // Simge rayından da pencere sürüklenebilir (düğmelerin üstünde değilse)
             Rail.PointerPressed += (_, e) =>
             {
