@@ -52,6 +52,39 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
         </Style>
+        <!-- Yeni paket: soldaki kaynak satırları -->
+        <Style Selector="Button.src">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="10,9" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+        </Style>
+        <Style Selector="Button.src /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        </Style>
+        <Style Selector="Button.src:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+        </Style>
+        <Style Selector="Button.src.active /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="Button.src.active">
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
+        <Style Selector="Button.src Path">
+            <Setter Property="Stroke" Value="{Binding $parent[Button].Foreground}" />
+            <Setter Property="StrokeThickness" Value="1.7" />
+            <Setter Property="StrokeLineCap" Value="Round" />
+            <Setter Property="StrokeJoin" Value="Round" />
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="Stretch" Value="Uniform" />
+        </Style>
     </UserControl.Styles>
 
     <UserControl.Resources>
@@ -364,6 +397,98 @@
                         </StackPanel>
                     </Border>
                 </StackPanel>
+            </DataTemplate>
+
+            <!-- ── Yeni paket: solda kaynak, sağda içeriği (eski Keşfet sekmesi buraya taşındı) ── -->
+            <DataTemplate DataType="vm:NewPackModal">
+                <Grid ColumnDefinitions="236,*" Height="660">
+                    <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+                        <DockPanel Margin="14,18,14,14">
+                            <StackPanel DockPanel.Dock="Top" Margin="8,0,8,16" Spacing="2">
+                                <TextBlock Classes="modal-title" Text="Yeni paket" />
+                                <TextBlock Text="Nereden eklemek istersin?" Classes="dim" FontSize="12.5" />
+                            </StackPanel>
+                            <Button DockPanel.Dock="Bottom" Content="Vazgeç" Command="{Binding DismissCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                            <ItemsControl ItemsSource="{Binding Sources}">
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SourceItem">
+                                        <Button Classes="src" Classes.active="{Binding IsSelected}"
+                                                Command="{Binding $parent[ItemsControl].((vm:NewPackModal)DataContext).SelectCommand}" CommandParameter="{Binding}">
+                                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="11">
+                                                <Path Data="{Binding Icon}" VerticalAlignment="Center" />
+                                                <StackPanel Grid.Column="1" Spacing="1">
+                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" FontSize="13.5" Foreground="{Binding $parent[Button].Foreground}" />
+                                                    <TextBlock Text="{Binding Hint}" Classes="dim" FontSize="11.5" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DockPanel>
+                    </Border>
+                    <Panel Grid.Column="1" Margin="22,18,10,0">
+                        <v:PackGridView DataContext="{Binding Packs}" IsVisible="{Binding $parent[Panel].((vm:NewPackModal)DataContext).IsPacks}" />
+                        <v:ContentSearchView DataContext="{Binding Search}" IsVisible="{Binding $parent[Panel].((vm:NewPackModal)DataContext).IsSearch}" />
+                        <!-- Boş instance -->
+                        <DockPanel DataContext="{Binding Blank}" IsVisible="{Binding $parent[Panel].((vm:NewPackModal)DataContext).IsBlank}" Margin="0,0,12,0">
+                            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,16">
+                                <Button Classes="primary" Content="Oluştur" Padding="22,8" Command="{Binding SubmitCommand}" IsEnabled="{Binding CanSubmit}" IsDefault="True" />
+                            </StackPanel>
+                            <StackPanel Spacing="6" Width="520" HorizontalAlignment="Left">
+                                <TextBlock Text="Boş instance" FontSize="18" FontWeight="SemiBold" />
+                                <TextBlock Text="Kendi modlarını kuracağın sade bir paket. Sonra Oyna'dan İçerik ekle ile mod, kaynak paketi ya da shader eklersin."
+                                           Classes="dim" FontSize="12.5" TextWrapping="Wrap" Margin="0,0,0,10" />
+                                <TextBlock Text="Ad" Classes="label" />
+                                <TextBox Text="{Binding Name}" MaxLength="40" Watermark="Örn. Fabric 1.21" />
+                                <TextBlock Text="Minecraft sürümü" Classes="label" Margin="0,8,0,0" />
+                                <ComboBox ItemsSource="{Binding McVersions}" SelectedItem="{Binding McVersion}" HorizontalAlignment="Stretch" MaxDropDownHeight="360" />
+                                <TextBlock Text="Mod yükleyici" Classes="label" Margin="0,8,0,0" />
+                                <ItemsControl Classes="segmented" ItemsSource="{Binding Loaders}" HorizontalAlignment="Left">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:Choice">
+                                            <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:InstanceEditorModal)DataContext).PickLoaderCommand}" CommandParameter="{Binding}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <StackPanel IsVisible="{Binding ShowLoaderVersion}" Spacing="6" Margin="0,8,0,0">
+                                    <TextBlock Text="Yükleyici sürümü" Classes="label" />
+                                    <ComboBox ItemsSource="{Binding LoaderVersions}" SelectedItem="{Binding LoaderVersion}" HorizontalAlignment="Stretch"
+                                              MaxDropDownHeight="300" PlaceholderText="Yükleniyor..." />
+                                </StackPanel>
+                                <TextBlock Text="{Binding Hint}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" Margin="0,10,0,0" />
+                                <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" FontSize="12.5" TextWrapping="Wrap"
+                                           IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Panel>
+                </Grid>
+            </DataTemplate>
+
+            <!-- ── İçerik ekle: seçili instance'a mod, kaynak paketi, shader ── -->
+            <DataTemplate DataType="vm:AddContentModal">
+                <DockPanel Height="660">
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto" Margin="22,18,16,14">
+                        <StackPanel Spacing="2">
+                            <TextBlock Classes="modal-title" Text="{Binding Title}" />
+                            <TextBlock Text="{Binding Subtitle}" Classes="dim" FontSize="12.5" />
+                        </StackPanel>
+                        <ItemsControl Grid.Column="1" Classes="segmented" ItemsSource="{Binding Sources}" VerticalAlignment="Center" Margin="0,0,12,0">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:Choice">
+                                    <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                            Command="{Binding $parent[ItemsControl].((vm:AddContentModal)DataContext).SelectCommand}" CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Grid.Column="2" Content="Bitti" Classes="primary" Command="{Binding DismissCommand}" VerticalAlignment="Center" />
+                    </Grid>
+                    <v:ContentSearchView DataContext="{Binding Search}" Margin="22,0,10,0" />
+                </DockPanel>
             </DataTemplate>
 
             <!-- ── Yeni instance / düzenle ─────────────────────────────── -->

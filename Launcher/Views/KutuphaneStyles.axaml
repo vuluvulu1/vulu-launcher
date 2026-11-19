@@ -5,7 +5,7 @@
     <!--
         "Kütüphane" teması. Renkler vulu'nun (Meşale paleti: koyu kahve zemin, amber vurgu), iskelet bambaşka:
           • başlık çubuğunda sekme ve logo yok; yerinde geniş arama kutusu, sağda bildirim ve pencere düğmeleri
-          • sekmeler, radyo ve profil soldaki simge rayında (MainWindow.axaml Rail)
+          • sekmeler soldaki ince simge rayında (MainWindow.axaml Rail), Ayarlar rayın altında; radyo ve profil başlık çubuğunda
           • Oyna sayfası kapak ızgarası + sağda seçili paketin çekmecesi (LibraryView)
           • her yüzey yuvarlak köşeli, 1 px çizgili kart; ışıltı yok
         Hep yüklüdür; pencere "kutuphane" sınıfını taşıdığında geçerli olur (Services/Themes.cs).
@@ -13,18 +13,18 @@
 
     <!-- ── İskelet ── -->
     <!-- Varsayılan: gizli (öbür temalarda); Kütüphane'de görünür. Yerel IsVisible stili ezeceği için burada. -->
-    <Style Selector="Border#Rail, Border#SearchPillHost">
+    <Style Selector="Border#Rail, Border#SearchPillHost, Border#RadioHost">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="Window.kutuphane Border#Rail">
+    <Style Selector="Window.kutuphane Border#Rail, Window.kutuphane Border#RadioHost">
         <Setter Property="IsVisible" Value="True" />
     </Style>
     <Style Selector="Window.kutuphane Border#TitleBar, Window.kutuphane Border#TitleBar.overlay">
-        <Setter Property="Margin" Value="84,0,0,0" />
+        <Setter Property="Margin" Value="56,0,0,0" />
         <Setter Property="Background" Value="#0B0A09" />
         <Setter Property="BoxShadow" Value="none" />
     </Style>
-    <Style Selector="Window.kutuphane StackPanel#TitleLogo, Window.kutuphane Border#TabsHost, Window.kutuphane Border#SearchIconHost, Window.kutuphane Border#ProfileHost">
+    <Style Selector="Window.kutuphane Border#TabsHost, Window.kutuphane Border#SearchIconHost, Window.kutuphane Border#SettingsIconHost">
         <Setter Property="IsVisible" Value="False" />
     </Style>
     <Style Selector="Window.kutuphane Border#SearchPillHost">
@@ -179,8 +179,8 @@
 
     <!-- ── Simge rayı ── -->
     <Style Selector="Button.rail-tab">
-        <Setter Property="Width" Value="66" />
-        <Setter Property="Height" Value="60" />
+        <Setter Property="Width" Value="42" />
+        <Setter Property="Height" Value="42" />
         <Setter Property="Margin" Value="0,0,0,6" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="HorizontalAlignment" Value="Center" />

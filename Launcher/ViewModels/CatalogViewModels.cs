@@ -70,51 +70,8 @@ namespace VuluLauncher.ViewModels
             versions.Count == 0 ? "" : versions.Count == 1 ? versions[0] : $"{versions[0]} – {versions[^1]}";
     }
 
-    /// <summary>
-    /// Keşfet: vulu Packs (ekibin paylaştığı paketler), CurseForge ve Modrinth. Son açılan kaynak hatırlanır.
-    /// </summary>
-    internal sealed partial class DiscoverViewModel : ObservableObject
-    {
-        public DiscoverViewModel(MainViewModel main)
-        {
-            Main = main;
-            Packs = new PacksViewModel(main);
-            Content = new ContentSearchViewModel(main);
-            foreach (var (key, label) in new[] { ("packs", "vulu Packs"), ("curseforge", "CurseForge"), ("modrinth", "Modrinth") })
-                Sources.Add(new Choice(key, label));
-            _source = UiState.Get("discoverSource") is "curseforge" or "modrinth" ? UiState.Get("discoverSource")! : "packs";
-            foreach (var s in Sources) s.IsSelected = s.Key == _source;
-        }
-
-        public MainViewModel Main { get; }
-        public PacksViewModel Packs { get; }
-        public ContentSearchViewModel Content { get; }
-        public ObservableCollection<Choice> Sources { get; } = new();
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsPacks))]
-        private string _source;
-        public bool IsPacks => Source == "packs";
-
-        /// <summary>Sekme açıldı: seçili kaynak (yeniden) yüklenir.</summary>
-        public Task OpenAsync() => IsPacks ? Packs.LoadAsync() : Content.OpenAsync(Source);
-
-        [RelayCommand]
-        private Task SelectSource(Choice choice)
-        {
-            SetSource(choice.Key);
-            return OpenAsync();
-        }
-
-        /// <summary>Kaynağı seçer (yüklemeden; sekme açılınca yüklenir).</summary>
-        public void SetSource(string key)
-        {
-            Source = key;
-            foreach (var s in Sources) s.IsSelected = s.Key == key;
-            UiState.Set("discoverSource", key);
-        }
-    }
-
+    // Paket kaynakları: vulu Packs (ekibin paylaştığı paketler), CurseForge ve Modrinth. Görünümleri Yeni paket ve
+    // İçerik ekle pencerelerinde (CatalogModals.cs, Views/CatalogViews).
     // ── vulu Packs ───────────────────────────────────────────────────────
 
     /// <summary>Paketin bir revizyonundaki değişiklikler.</summary>
@@ -145,7 +102,7 @@ namespace VuluLauncher.ViewModels
         }
     }
 
-    /// <summary>Keşfet'teki paket kartı.</summary>
+    /// <summary>vulu Packs paket kartı.</summary>
     internal sealed partial class PackCard : ObservableObject
     {
         private readonly PacksViewModel _owner;
@@ -440,11 +397,17 @@ namespace VuluLauncher.ViewModels
         private int _requestId, _offset, _total;
         private bool _suppress, _targetPicked;
 
-        public ContentSearchViewModel(MainViewModel main)
+        /// <summary>
+        /// target null: Yeni paket penceresi, yalnızca modpack aranır (kurulunca yeni instance olur).
+        /// target verildiyse: İçerik ekle penceresi; mod, kaynak paketi ve shader o instance'a uyanlarla süzülür.
+        /// </summary>
+        public ContentSearchViewModel(MainViewModel main, InstanceItem? target)
         {
             _main = main;
-            foreach (var (key, label) in TypeList) Types.Add(new Choice(key, label));
+            foreach (var (key, label) in TypeList.Where(t => (t.Key == "modpack") == (target == null))) Types.Add(new Choice(key, label));
             Types[0].IsSelected = true;
+            _type = Types[0].Key;
+            if (target != null) { _presetTarget = target.Id; _targetPicked = true; }
             foreach (var (key, label) in new[] { ("", "Otomatik"), ("relevance", "İlgi düzeyi"), ("downloads", "İndirme sayısı"), ("follows", "Takipçi sayısı"), ("newest", "En yeni"), ("updated", "Son güncellenen") })
                 Sorts.Add(new Option(key, label));
             _sort = Sorts[0];
@@ -472,10 +435,12 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private string _clearText = "Temizle";
         [ObservableProperty] private bool _canClear;
 
+        /// <summary>Birden çok tür var (İçerik ekle: mod, kaynak paketi, shader): tür seçici görünür.</summary>
+        public bool HasTypes => Types.Count > 1;
         public bool IsCurseForge => Source == "curseforge";
         public bool IsPack => Type == "modpack";
         public string SourceLabel => IsCurseForge ? "CurseForge" : "Modrinth";
-        public string SearchHint => $"{SourceLabel}'da ara…";
+        public string SearchHint => IsPack ? $"{SourceLabel}'da modpack ara…" : $"{SourceLabel}'da ara…";
         /// <summary>Instance seçilmediyse (ya da modpack aranıyorsa) sürüm ve yükleyici filtresi gösterilir.</summary>
         public bool FreeBrowse => IsPack || string.IsNullOrEmpty(Target?.Key);
         public bool ShowTarget => !IsPack;
@@ -500,13 +465,6 @@ namespace VuluLauncher.ViewModels
 
         private string? _presetTarget;
 
-        /// <summary>Oyna'daki "Mod ekle": Keşfet bu instance hedef seçili açılır, modlar listelenir.</summary>
-        public void PresetTarget(string instanceId)
-        {
-            _presetTarget = instanceId;
-            _targetPicked = true;
-            if (Type == "modpack") SelectTypeCommand.Execute(Types[0]);
-        }
 
         partial void OnTargetChanged(Option? value)
         {
@@ -524,12 +482,13 @@ namespace VuluLauncher.ViewModels
             OnPropertyChanged(nameof(IsPack));
         }
 
-        /// <summary>Keşfet'te CurseForge ya da Modrinth seçildi.</summary>
+        /// <summary>CurseForge ya da Modrinth seçildi (pencere açılınca ya da kaynak değişince).</summary>
         public async Task OpenAsync(string source)
         {
             Source = source;
             OnPropertyChanged(nameof(IsCurseForge));
             OnPropertyChanged(nameof(SearchHint));
+            OnPropertyChanged(nameof(SourceLabel));
             Sorts[3] = new Option("follows", IsCurseForge ? "Beğeni sayısı" : "Takipçi sayısı");
 
             _suppress = true;
@@ -632,6 +591,33 @@ namespace VuluLauncher.ViewModels
         }
 
         [RelayCommand] private Task More() => SearchAsync(true);
+
+#if DEBUG
+        /// <summary>Yalnızca önizlemede (VULU_UI_OPEN): oturum yokken kart görünümü için örnek sonuçlar.</summary>
+        public void LoadPreview()
+        {
+            _requestId++;
+            _suppress = true;
+            Versions.Clear(); Versions.Add(new Option("", "Tüm sürümler")); Version = Versions[0];
+            LoaderOptions.Clear(); LoaderOptions.Add(new Option("", "Tümü")); Loader = LoaderOptions[0];
+            _suppress = false;
+            Hits.Clear();
+            var samples = new[]
+            {
+                ("Yıldız Tozu", "vulu", "Keşif ve macera odaklı, 200'den fazla modla gelen paket."),
+                ("Teknik Atölye", "örnek", "Makineler, borular ve otomasyon. Uzun soluklu bir teknik oyun."),
+                ("Sade Hayatta Kalma", "örnek", "Performans modları ve küçük iyileştirmelerle vanilla hissi."),
+                ("Gökyüzü Adaları", "örnek", "Tek blokla başlayan bir skyblock serüveni, görevlerle."),
+            };
+            foreach (var (title, author, description) in samples)
+                Hits.Add(new ContentHit(this, JsonSerializer.SerializeToElement(new
+                {
+                    id = title, title, author, description, type = Type, downloads = 1_284_000, follows = 3_400,
+                    gameVersions = new[] { "1.20.1" }, loaders = new[] { "forge" },
+                }), IsCurseForge));
+            Status = $"{Hits.Count} sonuç";
+        }
+#endif
 
         private async Task SearchAsync(bool append)
         {

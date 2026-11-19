@@ -69,6 +69,18 @@ namespace VuluLauncher.ViewModels
 
         partial void OnMcVersionChanged(string? value) { if (_ready) _ = LoadLoaderVersionsAsync(); }
 
+#if DEBUG
+        /// <summary>Yalnızca önizlemede: oturum yokken formun görünümü için örnek sürümler.</summary>
+        public void LoadPreview()
+        {
+            foreach (var v in new[] { "1.21.4", "1.21.1", "1.20.1" }) McVersions.Add(v);
+            foreach (var l in new[] { "vanilla", "fabric", "quilt", "forge", "neoforge" }) Loaders.Add(new Choice(l, Names.Loader(l)) { IsSelected = l == Loader });
+            McVersion = McVersions[0];
+            Error = null;
+            CanSubmit = true;
+        }
+#endif
+
         [RelayCommand]
         private void PickLoader(Choice choice)
         {
@@ -343,7 +355,7 @@ namespace VuluLauncher.ViewModels
         private async Task AddContent()
         {
             Close();
-            await _main.OpenDiscoverForAsync(_item);
+            await _main.OpenAddContentAsync(_item);
         }
     }
 

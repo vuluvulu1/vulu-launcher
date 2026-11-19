@@ -769,10 +769,10 @@ namespace VuluLauncher.ViewModels
         {
             if (card.Type == "pack")
             {
-                await Main.Discover.Packs.LoadAsync();
-                var pack = Main.Discover.Packs.Cards.FirstOrDefault(p => p.Id == card.Id);
+                await Main.Packs.LoadAsync();
+                var pack = Main.Packs.Cards.FirstOrDefault(p => p.Id == card.Id);
                 if (pack == null) return "Bu paket artık vulu Packs'te yok.";
-                await Main.Discover.Packs.ActAsync(pack);
+                await Main.Packs.ActAsync(pack);
                 return null;
             }
             if (Main.Servers.Servers.Count == 0) await Main.Servers.LoadAsync();

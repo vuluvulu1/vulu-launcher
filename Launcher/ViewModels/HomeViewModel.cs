@@ -567,10 +567,7 @@ namespace VuluLauncher.ViewModels
 
         // ── Paket işlemleri ──────────────────────────────────────────────
         [RelayCommand]
-        private async Task NewInstance()
-        {
-            if (await Main.ShowAsync(new InstanceEditorModal(null)) is string id) await ReloadInstancesAsync(id);
-        }
+        private Task NewInstance() => Main.OpenNewPackAsync();
 
         [RelayCommand]
         private async Task EditInstance()
@@ -588,7 +585,7 @@ namespace VuluLauncher.ViewModels
         [RelayCommand]
         private async Task AddContent()
         {
-            if (Selected is { IsCustom: true } s) await Main.OpenDiscoverForAsync(s);
+            if (Selected is { IsCustom: true } s) await Main.OpenAddContentAsync(s);
         }
 
         [RelayCommand]
@@ -686,7 +683,7 @@ namespace VuluLauncher.ViewModels
         private async Task UpdatePack()
         {
             if (Selected is not { } s || !_packUpdates.TryGetValue(s.Id, out var u)) return;
-            await Main.Discover.Packs.UpdateByIdAsync(u.Text("packId") ?? "");
+            await Main.Packs.UpdateByIdAsync(u.Text("packId") ?? "");
             await RefreshPackUpdatesAsync();
         }
 

@@ -340,7 +340,7 @@
                     </ListBox>
                     <Button x:Name="NewButton" Classes="flat" Content="+ Yeni" FontSize="12" HorizontalAlignment="Left" Margin="18,0,0,0" Width="58" Height="58" Padding="0" VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center" BorderThickness="1" BorderBrush="{StaticResource TileLine}" Background="{StaticResource TileBg}" Foreground="{StaticResource Text}"
-                            Command="{Binding NewInstanceCommand}" ToolTip.Tip="Yeni instance" />
+                            Command="{Binding NewInstanceCommand}" ToolTip.Tip="Yeni paket" />
                   </StackPanel>
                 </ScrollViewer>
               </DockPanel>

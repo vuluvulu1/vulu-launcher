@@ -190,7 +190,7 @@ namespace VuluLauncher.ViewModels
                 launcherFeedback > 0 ? "Açık hata bildirimi ya da öneri var." : "Açık bildirim yok.", launcherFeedback > 0, "Aç", () => main.OpenFeedbackAsync("launcher")));
             Cards.Add(new AdminCard("Paket geri bildirimleri", packFeedback.ToString(CultureInfo.InvariantCulture),
                 packFeedback > 0 ? string.Join(", ", packList.Where(p => p.Int("openFeedback") > 0).Select(p => $"{p.Text("name")} ({p.Int("openFeedback")})")) : "Açık bildirim yok.",
-                packFeedback > 0, "Paketlere git", () => { main.SelectedTab = main.Tabs[1]; return Task.CompletedTask; }));
+                packFeedback > 0, "Paketlere git", () => main.OpenNewPackAsync("packs")));
             Cards.Add(new AdminCard("Çevrimiçi", online.Count.ToString(CultureInfo.InvariantCulture),
                 online.Count > 0 ? $"{playing} kişi oyunda · {members.Count} üye" : $"{members.Count} üye, şu an kimse çevrimiçi değil.", false, "Kullanıcılar", () => SelectAsync("users")));
             Cards.Add(new AdminCard("Duyuru", announcement.ValueKind == JsonValueKind.Object ? "Yayında" : "Yok",
@@ -198,7 +198,7 @@ namespace VuluLauncher.ViewModels
                 false, announcement.ValueKind == JsonValueKind.Object ? "Düzenle" : "Duyuru yaz", () => SelectAsync("announcement")));
             Cards.Add(new AdminCard("Sunucular", servers.Count.ToString(CultureInfo.InvariantCulture),
                 servers.Count == 0 ? "Henüz sunucu eklenmemiş." : $"{servers.Count(s => s.IsOnline)} açık · {servers.Sum(s => int.TryParse(s.Players.Split('/')[0], out int n) ? n : 0)} oyuncu",
-                false, "Sunuculara git", () => { main.SelectedTab = main.Tabs[2]; return Task.CompletedTask; }));
+                false, "Sunuculara git", () => { main.SelectedTab = main.Tabs.First(t => t.Key == "servers"); return Task.CompletedTask; }));
 
             static async Task Try(Func<Task> run) { try { await run(); } catch { /* kart boş kalır */ } }
         }

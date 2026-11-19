@@ -1,0 +1,63 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Yeni paket ve İçerik ekle pencerelerinin ortak görünümü. Yalnızca tema fırçaları; köşeler temanın köşe yarıçapından. -->
+    <Style Selector="Border.ccard">
+        <Setter Property="Background" Value="{StaticResource Surface}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="Transitions">
+            <Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.15" /></Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.ccard:pointerover">
+        <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
+    </Style>
+    <Style Selector="Border.ctag">
+        <Setter Property="Background" Value="{StaticResource Raised}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        <Setter Property="Padding" Value="6,1" />
+        <Setter Property="Margin" Value="0,0,5,5" />
+    </Style>
+    <Style Selector="Border.ctag.accent">
+        <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+    </Style>
+    <Style Selector="Border.ctag TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource Muted}" />
+    </Style>
+    <Style Selector="Button.clink">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Foreground" Value="{StaticResource Accent}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <Style Selector="Button.clink:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+    </Style>
+    <Style Selector="Button.cact">
+        <Setter Property="Padding" Value="14,6" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.chip">
+        <Setter Property="Padding" Value="9,3" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Margin" Value="0,0,5,5" />
+        <Setter Property="Foreground" Value="{StaticResource Muted}" />
+    </Style>
+    <Style Selector="Button.chip.active">
+        <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+    </Style>
+    <Style Selector="ComboBox.flt">
+        <Setter Property="MinWidth" Value="140" />
+    </Style>
+</Styles>

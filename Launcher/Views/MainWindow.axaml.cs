@@ -207,7 +207,7 @@ namespace VuluLauncher.Views
         private void PlaceRailMark()
         {
             if (!Rail.IsEffectivelyVisible) return;
-            var active = RailTabs.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Classes.Contains("active") && b.IsEffectivelyVisible);
+            var active = Rail.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Classes.Contains("active") && b.IsEffectivelyVisible);
             if (active?.TranslatePoint(default, RailCanvas) is not { } p || active.Bounds.Height < 1)
             {
                 RailMark.Opacity = 0;

@@ -48,6 +48,9 @@
                         <Setter Property="Height" Value="19" />
                         <Setter Property="StrokeThickness" Value="2" />
                     </Style>
+                    <Style Selector="Button.tb.active Path.icon">
+                        <Setter Property="Stroke" Value="{StaticResource AccentHi}" />
+                    </Style>
                     <Style Selector="Button.tb.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
                         <Setter Property="Background" Value="#B33A2B" />
                     </Style>
@@ -93,7 +96,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:PageTab">
-                                <Button Classes="tab" Classes.active="{Binding IsActive}" Classes.glow="{Binding IsGlowing}" IsVisible="{Binding IsVisible}"
+                                <Button Classes="tab" Classes.active="{Binding IsActive}" Classes.glow="{Binding IsGlowing}" IsVisible="{Binding InBar}"
                                         Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SelectTabCommand}"
                                         CommandParameter="{Binding}">
                                     <Panel>
@@ -247,6 +250,50 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
+                        <!-- Kütüphane: radyo burada (öbür temalarda Oyna'daki oyun çubuğunda) -->
+                        <Border x:Name="RadioHost">
+                        <Button Classes="flat tb big" IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).ShowShell}" ToolTip.Tip="Radyo" AutomationProperties.Name="Radyo"
+                                DataContext="{Binding Radio}" x:DataType="vm:RadioViewModel">
+                            <Panel>
+                                <Path Classes="icon" Data="M4 10h16v10H4zM8 6l8-3M8 15h.01M14 13h4M14 16h4" IsVisible="{Binding !Playing}" />
+                                <v:EqBars IsVisible="{Binding Playing}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Panel>
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight">
+                                    <StackPanel Spacing="8" Width="340">
+                                        <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                                            <Button Classes="primary" Width="32" Height="32" Padding="0" CornerRadius="16" HorizontalContentAlignment="Center"
+                                                    VerticalContentAlignment="Center" Command="{Binding ToggleCommand}" ToolTip.Tip="Radyoyu çal / durdur">
+                                                <Panel>
+                                                    <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="11" Height="11" Stretch="Uniform" IsVisible="{Binding !Playing}" Margin="2,0,0,0" />
+                                                    <Path Data="M6 4h4v16H6zM14 4h4v16h-4z" Fill="{StaticResource AccentInk}" Width="10" Height="11" Stretch="Uniform" IsVisible="{Binding Playing}" />
+                                                </Panel>
+                                            </Button>
+                                            <Button Grid.Column="1" Classes="flat" Width="32" Height="32" Padding="0" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="Sesi kapat / aç">
+                                                <Panel>
+                                                    <Path Classes="icon" Data="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6" IsVisible="{Binding !Muted}" Width="14" Height="14" />
+                                                    <Path Classes="icon" Data="M4 9h4l5-4v14l-5-4H4zM16 9l5 6M21 9l-5 6" IsVisible="{Binding Muted}" Width="14" Height="14" />
+                                                </Panel>
+                                            </Button>
+                                            <Slider Grid.Column="2" Minimum="0" Maximum="100" Value="{Binding Volume}" VerticalAlignment="Center" ToolTip.Tip="Ses düzeyi" />
+                                        </Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Subtitle}" Classes="dim" FontSize="11.5" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <v:RadioPanel />
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        </Border>
+                        <!-- Ayarlar (Kütüphane'de rayın en altında) -->
+                        <Border x:Name="SettingsIconHost">
+                        <Button Classes="flat tb big" Classes.active="{Binding SettingsTab.IsActive}" IsVisible="{Binding ShowShell}" Command="{Binding SelectTabCommand}"
+                                CommandParameter="{Binding SettingsTab}" ToolTip.Tip="Ayarlar" AutomationProperties.Name="Ayarlar">
+                            <Path Classes="icon" Data="{Binding SettingsTab.Icon}" />
+                        </Button>
+                        </Border>
                         <Border x:Name="ProfileHost">
                         <Button Classes="flat chip" IsVisible="{Binding ShowShell}" Command="{Binding OpenMyProfileCommand}"
                                 ToolTip.Tip="Profilim" Padding="8,4" Margin="0,0,6,0">
@@ -292,97 +339,51 @@
                     <Style Selector="v|PageHost#PageHost"><Setter Property="Margin" Value="0,50,0,0" /></Style>
                     <Style Selector="v|PageHost#PageHost.home"><Setter Property="Margin" Value="0" /></Style>
                     <!-- Kütüphane: sayfalar simge rayının sağında, ince üst çubuğun altında (Oyna dahil) -->
-                    <Style Selector="Window.kutuphane v|PageHost#PageHost, Window.kutuphane v|PageHost#PageHost.home"><Setter Property="Margin" Value="84,50,0,0" /></Style>
+                    <Style Selector="Window.kutuphane v|PageHost#PageHost, Window.kutuphane v|PageHost#PageHost.home"><Setter Property="Margin" Value="56,50,0,0" /></Style>
                 </v:PageHost.Styles>
             </v:PageHost>
-            <!-- ── Kütüphane teması: solda simge rayı (sekmeler, radyo, profil); başlık çubuğunda sekme yok ── -->
-            <Border x:Name="Rail" Grid.Row="0" Grid.RowSpan="2" ZIndex="4" Width="84" HorizontalAlignment="Left"
+            <!-- ── Kütüphane teması: solda ince simge rayı (yalnızca sekmeler; Ayarlar en altta). Ad üstüne gelince görünür ── -->
+            <Border x:Name="Rail" Grid.Row="0" Grid.RowSpan="2" ZIndex="4" Width="56" HorizontalAlignment="Left"
                     Background="#090807" BorderBrush="#221B14" BorderThickness="0,0,1,0">
-                <DockPanel IsVisible="{Binding ShowShell}" Margin="0,16,0,14">
-                    <Border DockPanel.Dock="Top" Width="40" Height="40" CornerRadius="12" Background="{StaticResource Accent}" Margin="0,0,0,18"
-                            HorizontalAlignment="Center" ToolTip.Tip="vulu Launcher">
-                        <Image Source="avares://vulu Launcher/Assets/logo.png" Width="22" Height="22" />
-                    </Border>
-                    <StackPanel DockPanel.Dock="Bottom" Spacing="10" HorizontalAlignment="Center">
-                        <Button Classes="rail-btn" ToolTip.Tip="Radyo" AutomationProperties.Name="Radyo"
-                                DataContext="{Binding Radio}" x:DataType="vm:RadioViewModel">
-                            <Panel>
-                                <Path Classes="icon" Data="M4 10h16v10H4zM8 6l8-3M8 15h.01M14 13h4M14 16h4" Width="18" Height="18" IsVisible="{Binding !Playing}" />
-                                <v:EqBars IsVisible="{Binding Playing}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Panel>
-                            <Button.Flyout>
-                                <Flyout Placement="RightEdgeAlignedBottom">
-                                    <StackPanel Spacing="8" Width="340">
-                                        <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
-                                            <Button Classes="primary" Width="32" Height="32" Padding="0" CornerRadius="16" HorizontalContentAlignment="Center"
-                                                    VerticalContentAlignment="Center" Command="{Binding ToggleCommand}" ToolTip.Tip="Radyoyu çal / durdur">
-                                                <Panel>
-                                                    <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="11" Height="11" Stretch="Uniform" IsVisible="{Binding !Playing}" Margin="2,0,0,0" />
-                                                    <Path Data="M6 4h4v16H6zM14 4h4v16h-4z" Fill="{StaticResource AccentInk}" Width="10" Height="11" Stretch="Uniform" IsVisible="{Binding Playing}" />
-                                                </Panel>
-                                            </Button>
-                                            <Button Grid.Column="1" Classes="flat" Width="32" Height="32" Padding="0" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="Sesi kapat / aç">
-                                                <Panel>
-                                                    <Path Classes="icon" Data="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6" IsVisible="{Binding !Muted}" Width="14" Height="14" />
-                                                    <Path Classes="icon" Data="M4 9h4l5-4v14l-5-4H4zM16 9l5 6M21 9l-5 6" IsVisible="{Binding Muted}" Width="14" Height="14" />
-                                                </Panel>
-                                            </Button>
-                                            <Slider Grid.Column="2" Minimum="0" Maximum="100" Value="{Binding Volume}" VerticalAlignment="Center" ToolTip.Tip="Ses düzeyi" />
-                                        </Grid>
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding Subtitle}" Classes="dim" FontSize="11.5" TextTrimming="CharacterEllipsis" />
-                                        </StackPanel>
-                                        <v:RadioPanel />
-                                    </StackPanel>
-                                </Flyout>
-                            </Button.Flyout>
-                        </Button>
-                        <Button Classes="rail-avatar" Command="{Binding OpenMyProfileCommand}" ToolTip.Tip="Profilim" AutomationProperties.Name="Profilim">
-                            <Border Width="40" Height="40" CornerRadius="20" ClipToBounds="True" Background="{StaticResource Raised}">
-                                <Grid>
-                                    <TextBlock Text="{Binding UserInitial}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    <Image Source="{Binding MyAvatar}" Stretch="UniformToFill" />
-                                </Grid>
-                            </Border>
-                        </Button>
-                    </StackPanel>
-                    <Panel>
+                <Panel IsVisible="{Binding ShowShell}">
                     <!-- Seçili sekmenin yuvarlak zemini ve soldaki amber çizgi: sekme değişince yeni sekmeye kayar (PlaceRailMark) -->
                     <Canvas x:Name="RailCanvas" IsHitTestVisible="False">
-                        <Panel x:Name="RailMark" Width="84" Height="60" Opacity="0">
+                        <Panel x:Name="RailMark" Width="56" Height="42" Opacity="0">
                             <Panel.Transitions>
                                 <Transitions>
                                     <DoubleTransition Property="Canvas.Top" Duration="0:0:0.3" Easing="CubicEaseOut" />
                                     <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
                                 </Transitions>
                             </Panel.Transitions>
-                            <Border Width="66" Height="60" CornerRadius="12" Background="#2A1E10" HorizontalAlignment="Center" />
-                            <Border Width="3" Height="26" CornerRadius="0,2,2,0" Background="#F2A33A" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                            <Border Width="42" Height="42" CornerRadius="12" Background="#2A1E10" HorizontalAlignment="Center" />
+                            <Border Width="3" Height="20" CornerRadius="0,2,2,0" Background="#F2A33A" HorizontalAlignment="Left" VerticalAlignment="Center" />
                         </Panel>
                     </Canvas>
-                    <ItemsControl x:Name="RailTabs" ItemsSource="{Binding Tabs}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:PageTab">
-                                <Button Classes="rail-tab" Classes.active="{Binding IsActive}" Classes.glow="{Binding IsGlowing}" IsVisible="{Binding IsVisible}"
-                                        Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SelectTabCommand}" CommandParameter="{Binding}"
-                                        ToolTip.Tip="{Binding Title}">
-                                    <Panel>
-                                        <StackPanel Spacing="4" HorizontalAlignment="Center">
-                                            <Path Classes="tab-icon" Data="{Binding Icon}" Width="22" Height="22" Stretch="Uniform" HorizontalAlignment="Center" />
-                                            <TextBlock Text="{Binding Title}" FontSize="11" FontWeight="Medium" HorizontalAlignment="Center" />
-                                        </StackPanel>
-                                        <Border IsVisible="{Binding HasBadge}" Background="{StaticResource Accent}" MinWidth="16" Height="16" CornerRadius="8" Padding="4,0"
-                                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-2,6,0">
-                                            <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentInk}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Border>
-                                    </Panel>
-                                </Button>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    </Panel>
-                </DockPanel>
+                    <DockPanel Margin="0,62,0,12">
+                        <Button DockPanel.Dock="Bottom" Classes="rail-tab" Classes.active="{Binding SettingsTab.IsActive}" Classes.glow="{Binding SettingsTab.IsGlowing}"
+                                Command="{Binding SelectTabCommand}" CommandParameter="{Binding SettingsTab}" ToolTip.Tip="Ayarlar" ToolTip.Placement="Right"
+                                AutomationProperties.Name="Ayarlar">
+                            <Path Classes="tab-icon" Data="{Binding SettingsTab.Icon}" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" />
+                        </Button>
+                        <ItemsControl x:Name="RailTabs" ItemsSource="{Binding Tabs}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PageTab">
+                                    <Button Classes="rail-tab" Classes.active="{Binding IsActive}" Classes.glow="{Binding IsGlowing}" IsVisible="{Binding InBar}"
+                                            Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SelectTabCommand}" CommandParameter="{Binding}"
+                                            ToolTip.Tip="{Binding Title}" ToolTip.Placement="Right" AutomationProperties.Name="{Binding Title}">
+                                        <Panel>
+                                            <Path Classes="tab-icon" Data="{Binding Icon}" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <Border IsVisible="{Binding HasBadge}" Background="{StaticResource Accent}" MinWidth="15" Height="15" CornerRadius="8" Padding="3,0"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,3,3,0">
+                                                <TextBlock Text="{Binding Badge}" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource AccentInk}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Panel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Panel>
             </Border>
 
             <!-- ── Açılış perdesi: giriş ve ana ekran arkasında hazırlanır ── -->

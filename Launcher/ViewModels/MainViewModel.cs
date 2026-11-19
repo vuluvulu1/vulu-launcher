@@ -23,6 +23,9 @@ namespace VuluLauncher.ViewModels
         [NotifyPropertyChangedFor(nameof(HasBadge))]
         private int _badge;
         public bool HasBadge => Badge > 0;
+        /// <summary>Sekme çubuğunda (ya da rayın üst kısmında) görünür. Ayarlar ayrı bir dişli simgesiyle açılır.</summary>
+        public bool InBar => IsVisible && Key != "settings";
+        partial void OnIsVisibleChanged(bool value) => OnPropertyChanged(nameof(InBar));
     }
 
     /// <summary>Pencerenin tamamı: giriş ekranı ya da sekmeli ana görünüm, bildirim kartları.</summary>
@@ -33,7 +36,8 @@ namespace VuluLauncher.ViewModels
         public LoginViewModel Login { get; }
         public HomeViewModel Home { get; }
         public SettingsViewModel Settings { get; }
-        public DiscoverViewModel Discover { get; }
+        /// <summary>vulu Packs listesi (Yeni paket penceresi, paket güncelleme, sohbetteki paket kartları).</summary>
+        public PacksViewModel Packs { get; }
         public ServersViewModel Servers { get; }
         public SocialViewModel Social { get; }
         public ProfileViewModel Profile { get; }
@@ -95,6 +99,8 @@ namespace VuluLauncher.ViewModels
         /// <summary>Başlık çubuğundaki profil resmi.</summary>
         [ObservableProperty] private Avalonia.Media.Imaging.Bitmap? _myAvatar;
         [ObservableProperty] private PageTab? _selectedTab;
+        /// <summary>Ayarlar sekmesi: sekme çubuğunda değil, ayrı bir dişli simgesiyle açılır.</summary>
+        public PageTab SettingsTab { get; }
 
         public MainViewModel()
         {
@@ -102,13 +108,13 @@ namespace VuluLauncher.ViewModels
             Login = new LoginViewModel(EnterAsync);
             Home = new HomeViewModel();
             Home.Main = this;
-            // Güncellemesi olan paketler Keşfet sekmesinde rozet olur
+            // Güncellemesi olan paketler Oyna sekmesinde rozet olur
             Home.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(HomeViewModel.PackUpdateCount)) Tabs[1].Badge = Home.PackUpdateCount;
+                if (e.PropertyName == nameof(HomeViewModel.PackUpdateCount)) Tabs[0].Badge = Home.PackUpdateCount;
             };
             Settings = new SettingsViewModel(this);
-            Discover = new DiscoverViewModel(this);
+            Packs = new PacksViewModel(this);
             Servers = new ServersViewModel(this);
             Social = new SocialViewModel(this);
             Profile = new ProfileViewModel(this);
@@ -117,7 +123,6 @@ namespace VuluLauncher.ViewModels
             Radio = new RadioViewModel(this);
             Downloads = new DownloadsViewModel(this);
             Tabs.Add(new PageTab("home", "Oyna", "M7 4l13 8-13 8z", Home));
-            Tabs.Add(new PageTab("discover", "Keşfet", "M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z", Discover));
             Tabs.Add(new PageTab("servers", "Sunucular", "M3 4h18v7H3zM3 13h18v7H3zM7 7.5h.01M7 16.5h.01", Servers));
             Tabs.Add(new PageTab("social", "Sosyal", "M9 4.8a3.2 3.2 0 1 0 0 6.4a3.2 3.2 0 0 0 0-6.4zM3.5 19a5.5 5.5 0 0 1 11 0M17 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5zM15.5 14.2A4.5 4.5 0 0 1 20.5 19", Social));
             Tabs.Add(new PageTab("settings", "Ayarlar", "M12 9a3 3 0 1 0 0 6a3 3 0 0 0 0-6zM12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1", Settings));
@@ -125,6 +130,7 @@ namespace VuluLauncher.ViewModels
             // Profil başlık çubuğunda sekme olarak görünmez; kullanıcı adına ya da bir kişiye tıklanınca açılır
             Tabs.Add(new PageTab("profile", "Profil", "M12 12a4 4 0 1 0 0-8a4 4 0 0 0 0 8zM4 20a8 8 0 0 1 16 0", Profile) { IsVisible = false });
             SelectedTab = Tabs[0];
+            SettingsTab = Tabs.First(t => t.Key == "settings");
 
             _core.Event += OnCoreEvent;
         }
@@ -155,7 +161,7 @@ namespace VuluLauncher.ViewModels
                 if (Environment.GetEnvironmentVariable("VULU_UI_LOADING") == "1")
                     Avalonia.Threading.DispatcherTimer.RunOnce(() =>
                     {
-                        Discover.Packs.Skeleton = true;
+                        Packs.Skeleton = true;
                         Social.ShotSkeleton = true;
                         Servers.FirstLoad = true;
                         Servers.Status = null;
@@ -176,16 +182,34 @@ namespace VuluLauncher.ViewModels
                         _ = ShowAsync(dialog);
                         Avalonia.Threading.DispatcherTimer.RunOnce(() => dialog.Close(), TimeSpan.FromSeconds(7));
                     }, TimeSpan.FromSeconds(2.5));
-                // VULU_UI_SAMPLE=1: Keşfet'e örnek paket kartları (kart görünümünü denemek için)
-                else if (Environment.GetEnvironmentVariable("VULU_UI_SAMPLE") == "1")
+                // VULU_UI_OPEN=packs / curseforge / modrinth / blank: Yeni paket penceresi o kaynakla; content: İçerik ekle
+                if (Environment.GetEnvironmentVariable("VULU_UI_OPEN") is { Length: > 0 } open)
                     Avalonia.Threading.DispatcherTimer.RunOnce(() =>
                     {
-                        Discover.Packs.Skeleton = false;
-                        Discover.Packs.Cards.Clear();
+                        if (open != "content") _ = OpenNewPackAsync(open);
+                        else if (Home.Instances.FirstOrDefault(i => i.IsCustom) is { } custom) _ = OpenAddContentAsync(custom);
+                        // Oturum yok: istekler başarısız olunca örnek veriler konur
+                        Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                        {
+                            foreach (var m in Modals)
+                            {
+                                if (m is NewPackModal np) { np.Search.LoadPreview(); np.Blank.LoadPreview(); }
+                                if (m is AddContentModal ac) ac.Search.LoadPreview();
+                            }
+                        }, TimeSpan.FromSeconds(2));
+                    }, TimeSpan.FromSeconds(2));
+                // VULU_UI_SAMPLE=1: vulu Packs'e örnek paket kartları (kart görünümünü denemek için)
+                if (Environment.GetEnvironmentVariable("VULU_UI_SAMPLE") == "1")
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                    {
+                        Packs.Skeleton = false;
+                        Packs.Status = "4 paket";
+                        Packs.StatusIsError = false;
+                        Packs.Cards.Clear();
                         foreach (var (name, loader) in new[] { ("Örnek Paket", "fabric"), ("Macera", "forge"), ("Sade", "vanilla"), ("Teknik", "neoforge") })
-                            Discover.Packs.Cards.Add(new PackCard(Discover.Packs, JsonDocument.Parse(
+                            Packs.Cards.Add(new PackCard(Packs, JsonDocument.Parse(
                                 $"{{\"id\":\"{name}\",\"name\":\"{name}\",\"description\":\"Önizleme için örnek paket açıklaması.\",\"loader\":\"{loader}\",\"author\":\"vulu\"}}").RootElement));
-                    }, TimeSpan.FromSeconds(2.5));
+                    }, TimeSpan.FromSeconds(4));
                 return;
             }
 #endif
@@ -464,19 +488,25 @@ namespace VuluLauncher.ViewModels
         public async Task<bool> ConfirmAsync(string title, string message, string okText, string? cancelText = "Vazgeç", bool danger = false) =>
             await ShowAsync(new DialogViewModel(title, message, okText, cancelText, danger)) is true;
 
-        /// <summary>Keşfet'i bu instance'a içerik kurmak için açar (son kullanılan kaynak: CurseForge ya da Modrinth).</summary>
-        public async Task OpenDiscoverForAsync(InstanceItem instance)
+        /// <summary>Bu instance'a CurseForge ya da Modrinth'ten mod, kaynak paketi ya da shader kurma penceresi.</summary>
+        public async Task OpenAddContentAsync(InstanceItem instance)
         {
-            Discover.Content.PresetTarget(instance.Id);
-            string source = UiState.Get("discoverSource") == "modrinth" ? "modrinth" : "curseforge";
-            Discover.SetSource(source);
-            SelectedTab = Tabs[1];
-            await Task.CompletedTask;
+            await ShowAsync(new AddContentModal(this, instance));
+            Home.RefreshDetails();
+        }
+
+        /// <summary>Yeni paket penceresi: boş instance, vulu Packs, CurseForge ya da Modrinth modpack'i.</summary>
+        public async Task OpenNewPackAsync(string? source = null)
+        {
+            if (!LoggedIn || Modals.Any(m => m is NewPackModal)) return;
+            if (await ShowAsync(new NewPackModal(this, source)) is string id) await Home.ReloadInstancesAsync(id);
         }
 
         /// <summary>Oyna sekmesine geçer; verilen paket seçili olur (kurulumdan sonra).</summary>
         public async Task ShowHomeAsync(string? selectId)
         {
+            // Kurulum Yeni paket penceresinden başladıysa pencere kapanır, paket Oyna'da seçili görünür
+            foreach (var modal in Modals.OfType<NewPackModal>().ToList()) modal.Close();
             SelectedTab = Tabs[0];
             await Home.ReloadInstancesAsync(selectId);
         }
@@ -523,7 +553,7 @@ namespace VuluLauncher.ViewModels
             IsHomePage = value?.Page is HomeViewModel;
             // Ayarlar her açılışta baştan okunur (başka yerden değişen ayarlar da görünsün)
             if (value?.Page is SettingsViewModel settings) _ = settings.LoadAsync();
-            if (value?.Page is DiscoverViewModel discover) _ = discover.OpenAsync();
+
             if (value?.Page is ServersViewModel servers) _ = servers.LoadAsync();
             if (value?.Page is not SocialViewModel) Social.World.Leave();   // harita yenilemesi Sosyal'den çıkınca durur
             if (value?.Page is SocialViewModel social) _ = social.OpenAsync();

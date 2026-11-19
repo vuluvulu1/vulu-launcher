@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
+             x:Class="VuluLauncher.Views.ContentSearchView"
+             x:DataType="vm:ContentSearchViewModel">
+    <!-- CurseForge / Modrinth araması: Yeni paket'te modpack, İçerik ekle'de mod, kaynak paketi ve shader -->
+    <UserControl.Styles>
+        <StyleInclude Source="avares://vulu Launcher/Views/CatalogStyles.axaml" />
+    </UserControl.Styles>
+    <DockPanel>
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+            <TextBox x:Name="QueryBox" Text="{Binding Query}" Watermark="{Binding SearchHint}" Height="40" VerticalContentAlignment="Center" FontSize="14" />
+            <ItemsControl Grid.Column="1" Classes="segmented" ItemsSource="{Binding Types}" IsVisible="{Binding HasTypes}" Margin="10,0,0,0" VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:Choice">
+                        <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                Command="{Binding $parent[UserControl].((vm:ContentSearchViewModel)DataContext).SelectTypeCommand}" CommandParameter="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8" ItemSpacing="8" LineSpacing="8">
+            <ComboBox Classes="flt" ItemsSource="{Binding Sorts}" SelectedItem="{Binding Sort}" ToolTip.Tip="Sırala" />
+            <ComboBox Classes="flt" IsVisible="{Binding FreeBrowse}" ItemsSource="{Binding Versions}" SelectedItem="{Binding Version}" MaxDropDownHeight="360" ToolTip.Tip="Minecraft sürümü" />
+            <ComboBox Classes="flt" IsVisible="{Binding ShowLoader}" ItemsSource="{Binding LoaderOptions}" SelectedItem="{Binding Loader}" ToolTip.Tip="Yükleyici" />
+            <Button Classes="cact" Content="Kategoriler ▾">
+                <Button.Flyout>
+                    <Flyout Placement="BottomEdgeAlignedLeft">
+                        <ScrollViewer MaxHeight="420" Width="380">
+                            <StackPanel Margin="4" Spacing="4">
+                                <v:Loading Text="Filtreler yükleniyor…" HorizontalAlignment="Left" IsVisible="{Binding FiltersLoading}" />
+                                <ItemsControl ItemsSource="{Binding Groups}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:CategoryGroup">
+                                            <StackPanel Margin="0,0,0,10">
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Classes="dim" Margin="0,0,0,4" />
+                                                <ItemsControl ItemsSource="{Binding Chips}">
+                                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="vm:CategoryChip">
+                                                            <Button Classes="chip" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
+                                                                    Command="{Binding $parent[UserControl].((vm:ContentSearchViewModel)DataContext).ToggleCategoryCommand}" CommandParameter="{Binding}" />
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+            <CheckBox Content="Yalnızca açık kaynak" IsChecked="{Binding OpenSource}" IsVisible="{Binding !IsCurseForge}" VerticalAlignment="Center" />
+            <Button Classes="clink" Content="{Binding ClearText}" IsVisible="{Binding CanClear}" Command="{Binding ClearFiltersCommand}" VerticalAlignment="Center" />
+        </WrapPanel>
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Classes="dim" FontSize="12.5" Margin="0,0,0,10" TextWrapping="Wrap" />
+        <ScrollViewer>
+            <StackPanel Margin="0,0,0,8" Spacing="8">
+                <ItemsControl ItemsSource="{Binding Hits}" v:Reveal.Stagger="True">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ContentHit">
+                            <Border Classes="ccard" Padding="12" Margin="0,0,12,12">
+                                <DockPanel>
+                                    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,10,0,0">
+                                        <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                                            <Button Classes="clink" Content="Sürüm seç" Command="{Binding PickVersionCommand}" />
+                                            <Button Classes="clink" Content="Sayfa ↗" Command="{Binding OpenPageCommand}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Classes="cact" Classes.primary="{Binding IsPrimary}" Content="{Binding ButtonText}"
+                                                Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <Button Classes="flat" Padding="0" VerticalAlignment="Top" Command="{Binding DetailsCommand}" ToolTip.Tip="Ayrıntıları göster">
+                                            <Border Width="48" Height="48" CornerRadius="{DynamicResource ControlCornerRadius}" Background="{StaticResource Raised}" ClipToBounds="True">
+                                                <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                                            </Border>
+                                        </Button>
+                                        <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="2">
+                                            <Button Classes="clink" Command="{Binding DetailsCommand}" Foreground="{StaticResource Text}" HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                            </Button>
+                                            <TextBlock Text="{Binding Author}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Description}" Foreground="{StaticResource Muted}" FontSize="12.5" TextWrapping="Wrap" MaxLines="2"
+                                                       TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="11.5" TextTrimming="CharacterEllipsis" />
+                                            <Border Classes="ctag" IsVisible="{Binding ManualOnly}" HorizontalAlignment="Left" Margin="0,2,0,0"><TextBlock Text="Elle indirilir" /></Border>
+                                        </StackPanel>
+                                    </Grid>
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Content="Daha fazla göster" IsVisible="{Binding HasMore}" Command="{Binding MoreCommand}" HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center" Height="38" Margin="0,0,12,0" />
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

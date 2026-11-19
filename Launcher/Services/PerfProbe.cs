@@ -101,7 +101,7 @@ namespace VuluLauncher
             var host = window.FindControl<Views.PageHost>("PageHost")!;
 
             Line("── sekme geçişi (UI iş parçacığı: VM + görünüm kurma + yerleşim; sonra ilk kareye kadar) ──");
-            string[] order = { "discover", "servers", "social", "settings", "home", "social", "settings", "discover", "home", "social" };
+            string[] order = { "servers", "social", "settings", "home", "social", "settings", "servers", "home", "social" };
             foreach (string key in order)
             {
                 var tab = vm.Tabs.First(t => t.Key == key);
@@ -120,7 +120,7 @@ namespace VuluLauncher
             Line("");
 
             Line("── kaydırma (her karede 24 px, 90 kare; UI iş parçacığı kare aralıkları) ──");
-            foreach (string key in new[] { "home", "discover", "social", "settings" })
+            foreach (string key in new[] { "home", "servers", "social", "settings" })
             {
                 vm.SelectTabCommand.Execute(vm.Tabs.First(t => t.Key == key));
                 await Task.Delay(1500);
