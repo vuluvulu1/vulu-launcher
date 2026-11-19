@@ -33,6 +33,38 @@ namespace VuluLauncher.Views
             Posters.SelectionChanged += OnPosterSelected;
             SearchBox.TextChanged += (_, _) => Rebuild();
             DataContextChanged += (_, _) => Bind(DataContext as HomeViewModel);
+            KutPolish.AttachSearch(this, SearchBox);
+            PosterScroll.SizeChanged += (_, e) => FitPosters(e.NewSize.Width);
+            // Kapağa çift tık ya da seçiliyken Enter: oyunu aç
+            Posters.DoubleTapped += (_, e) =>
+            {
+                if (e.Source is Avalonia.Visual v && v.FindAncestorOfType<ListBoxItem>(true) is { DataContext: InstanceItem }) Play();
+            };
+            Posters.KeyDown += (_, e) =>
+            {
+                if (e.Key == Avalonia.Input.Key.Enter && Posters.SelectedItem is InstanceItem) { Play(); e.Handled = true; }
+            };
+        }
+
+        private void Play()
+        {
+            if (_vm?.PlayCommand.CanExecute(null) == true) _vm.PlayCommand.Execute(null);
+        }
+
+        /// <summary>
+        /// Kapaklar satırı boşluksuz doldurur: sığan sütun sayısına göre genişlik 170–240 arasında esner, oran (180×230) korunur.
+        /// </summary>
+        private double _fitWidth = -1;
+        private void FitPosters(double width)
+        {
+            const double gap = 18, min = 170, max = 240;
+            if (width <= 0 || Math.Abs(width - _fitWidth) < 1) return;
+            _fitWidth = width;
+            double room = width - 1;   // her öğe sağ boşluğuyla (gap) birlikte yer kaplar
+            int cols = Math.Max(1, (int)(room / (min + gap)));
+            double w = Math.Min(max, Math.Floor(room / cols - gap));
+            Resources["PosterW"] = w;
+            Resources["PosterH"] = Math.Round(w * 230 / 180);
         }
 
         private void Bind(HomeViewModel? vm)
@@ -56,9 +88,32 @@ namespace VuluLauncher.Views
 
         private void OnInstancesChanged(object? sender, NotifyCollectionChangedEventArgs e) => Rebuild();
 
+        // Güncelleme denetimi paketleri sonradan işaretler: sayılar ve "Güncellemesi olan" süzgeci tazelenir
+        private readonly HashSet<InstanceItem> _watched = new();
+        private bool _rebuildQueued;
+
+        private void WatchItems()
+        {
+            if (_vm == null) return;
+            var now = _vm.Instances.ToHashSet();
+            foreach (var gone in _watched.Where(i => !now.Contains(i)).ToList()) { gone.PropertyChanged -= OnItemChanged; _watched.Remove(gone); }
+            foreach (var item in now.Where(_watched.Add)) item.PropertyChanged += OnItemChanged;
+        }
+
+        private void OnItemChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is not (nameof(InstanceItem.HasUpdate) or nameof(InstanceItem.Name)) || _rebuildQueued) return;
+            _rebuildQueued = true;
+            Dispatcher.UIThread.Post(() => { _rebuildQueued = false; Rebuild(); }, DispatcherPriority.Background);
+        }
+
         private void OnVmChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(HomeViewModel.Selected)) SyncSelection();
+            if (e.PropertyName == nameof(HomeViewModel.Selected))
+            {
+                SyncSelection();
+                KutPolish.Swap(DrawerBody);
+            }
         }
 
         private void OnFilter(object? sender, RoutedEventArgs e)
@@ -71,7 +126,8 @@ namespace VuluLauncher.Views
 
         private void Rebuild()
         {
-            if (_vm == null) { _items.Clear(); return; }
+            if (_vm == null) { _items.Clear(); NoMatch.IsVisible = false; return; }
+            WatchItems();
             string q = SearchBox.Text?.Trim() ?? "";
             var tr = CultureInfo.GetCultureInfo("tr-TR");
             var list = _vm.Instances.Where(i => _filter switch
@@ -82,13 +138,24 @@ namespace VuluLauncher.Views
                     _ => true,
                 })
                 .Where(i => q.Length == 0 || tr.CompareInfo.IndexOf(i.Name, q, CompareOptions.IgnoreCase) >= 0)
-                .ToList();
+                .ToList<object>();
+            if (_filter is "all" or "mine" && q.Length == 0) list.Add(NewPackCard.Instance);
             _syncing = true;
-            _items.Clear();
-            foreach (var i in list) _items.Add(i);
-            if (_filter is "all" or "mine" && q.Length == 0) _items.Add(NewPackCard.Instance);
+            _items.SyncTo(list);
             _syncing = false;
-            CountText.Text = _vm.Instances.Count + " paket";
+            NoMatch.IsVisible = _items.Count == 0 && _vm.Instances.Count > 0;
+            NoMatch.Title = q.Length > 0 ? $"“{q}” ile eşleşen paket yok" : "Bu süzgeçte paket yok";
+
+            // Süzgeç haplarında sayılar; güncellemesi olan yoksa o hap gizlenir (seçiliyken kalır)
+            int all = _vm.Instances.Count, mine = _vm.Instances.Count(i => i.IsCustom), updates = _vm.Instances.Count(i => i.HasUpdate);
+            FilterAll.Content = KutPolish.ChipText("Tümü", all);
+            FilterMine.Content = KutPolish.ChipText("Kişisel", mine);
+            FilterVulu.Content = KutPolish.ChipText("vulu paketleri", all - mine);
+            FilterUpdate.Content = KutPolish.ChipText("Güncellemesi olan", updates);
+            FilterUpdate.IsVisible = updates > 0 || _filter == "update";
+            FilterMine.IsVisible = mine > 0 || _filter == "mine";
+            FilterVulu.IsVisible = all - mine > 0 || _filter == "vulu";
+            CountText.IsVisible = false;   // sayı "Tümü" hapında
             SyncSelection();
         }
 

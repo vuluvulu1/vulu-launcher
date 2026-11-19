@@ -33,6 +33,8 @@ namespace VuluLauncher.Views
 
             Scroll.ScrollChanged += (_, _) => MarkCurrentSection();
 
+            KutPolish.AttachSearch(this, KutSearch);
+            KutScroll.SizeChanged += (_, e) => FitCards(e.NewSize.Width);
             ApplyLayout();
             Themes.Changed += ApplyLayout;
             DataContextChanged += (_, _) => BindKut(DataContext as SettingsViewModel);
@@ -59,7 +61,15 @@ namespace VuluLauncher.Views
             ShowCards();
         }
 
-        private void OnSectionsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => ShowCards();
+        private void OnSectionsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            _shownKey = null;   // bölümler yeniden kuruldu; hepsi gelince bir kez gösterilir
+            if (_cardsQueued) return;
+            _cardsQueued = true;
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => { _cardsQueued = false; ShowCards(); }, Avalonia.Threading.DispatcherPriority.Background);
+        }
+
+        private bool _cardsQueued;
 
         private void OnVmChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -67,13 +77,37 @@ namespace VuluLauncher.Views
         }
 
         /// <summary>Arama boşsa seçili kategorinin satırları; aramada bütün kategorilerin uyan satırları.</summary>
+        /// <remarks>
+        /// Aramada bütün satırlar bir kez verilir; her tuşta kartlar yeniden kurulmaz, uymayanları satırın IsShown'ı gizler.
+        /// </remarks>
+        private object? _shownKey;
+
         private void ShowCards()
         {
             if (_kutVm == null || !Themes.IsKutuphane) return;
+            bool searching = !string.IsNullOrWhiteSpace(_kutVm.Search);
             var current = _kutVm.Sections.FirstOrDefault(s => s.IsCurrent) ?? _kutVm.Sections.FirstOrDefault();
-            KutCards.ItemsSource = string.IsNullOrWhiteSpace(_kutVm.Search)
-                ? current?.Rows.ToList()
-                : _kutVm.Sections.SelectMany(s => s.Rows).ToList();
+            object? key = searching ? "search" : current;
+            KutCards.Classes.Set("searching", searching);
+            if (Equals(key, _shownKey) && KutCards.ItemsSource != null) return;
+            _shownKey = key;
+            if (searching)
+                foreach (var s in _kutVm.Sections)
+                    foreach (var row in s.Rows) row.Category = s.Title.ToUpper(System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
+            KutCards.ItemsSource = searching ? _kutVm.Sections.SelectMany(s => s.Rows).ToList() : current?.Rows.ToList();
+            KutScroll.Offset = default;
+        }
+
+        /// <summary>Ayar kartları satırı boşluksuz doldurur (en az 410 px, Java listesi sığsın).</summary>
+        private double _fitWidth = -1;
+        private void FitCards(double width)
+        {
+            const double gap = 14, min = 410, max = 640;
+            if (width <= 0 || Math.Abs(width - _fitWidth) < 1) return;
+            _fitWidth = width;
+            double room = width - 1;   // her öğe sağ boşluğuyla (gap) birlikte yer kaplar
+            int cols = Math.Max(1, (int)(room / (min + gap)));
+            Resources["CardW"] = Math.Min(max, Math.Floor(room / cols - gap));
         }
 
         private void OnCategoryClick(object? sender, RoutedEventArgs e)

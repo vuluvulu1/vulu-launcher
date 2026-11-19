@@ -65,6 +65,11 @@ namespace VuluLauncher.Views
             }, Avalonia.Threading.DispatcherPriority.Loaded);
             Opened += (_, _) => Remeasure();
             Themes.Changed += Remeasure;
+            // Kütüphane rayı: seçili sekmenin işareti
+            void QueueRailMark() => Avalonia.Threading.Dispatcher.UIThread.Post(PlaceRailMark, Avalonia.Threading.DispatcherPriority.Loaded);
+            Opened += (_, _) => QueueRailMark();
+            Themes.Changed += QueueRailMark;
+            RailTabs.SizeChanged += (_, _) => QueueRailMark();
             // Simge rayından da pencere sürüklenebilir (düğmelerin üstünde değilse)
             Rail.PointerPressed += (_, e) =>
             {
@@ -94,7 +99,10 @@ namespace VuluLauncher.Views
                     m.PropertyChanged += (_, e) =>
                     {
                         if (e.PropertyName == nameof(MainViewModel.SelectedTab))
+                        {
                             Avalonia.Threading.Dispatcher.UIThread.Post(PlaceTabIndicator, Avalonia.Threading.DispatcherPriority.Loaded);
+                            Avalonia.Threading.Dispatcher.UIThread.Post(PlaceRailMark, Avalonia.Threading.DispatcherPriority.Loaded);
+                        }
                     };
             };
             // İndirme paneli: üstüne gelindiyse tamamlanınca kapanmaz
@@ -195,8 +203,32 @@ namespace VuluLauncher.Views
 
         private Rect _indicator;
 
+        /// <summary>Raydaki seçili sekmenin zemini ve amber çizgisi o sekmeye kayar; ilk konumda ve gizli sekmede (Profil) kaymadan.</summary>
+        private void PlaceRailMark()
+        {
+            if (!Rail.IsEffectivelyVisible) return;
+            var active = RailTabs.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Classes.Contains("active") && b.IsEffectivelyVisible);
+            if (active?.TranslatePoint(default, RailCanvas) is not { } p || active.Bounds.Height < 1)
+            {
+                RailMark.Opacity = 0;
+                return;
+            }
+            double top = p.Y + (active.Bounds.Height - RailMark.Height) / 2;
+            if (RailMark.Opacity == 0)
+            {
+                var transitions = RailMark.Transitions;
+                RailMark.Transitions = null;
+                Canvas.SetTop(RailMark, top);
+                RailMark.Transitions = transitions;
+            }
+            else Canvas.SetTop(RailMark, top);
+            RailMark.Opacity = 1;
+        }
+
         private void PlaceTabIndicator()
         {
+            // Sekmeler gizliyken (Kütüphane: sekmeler rayda) her yerleşim geçişinde boşuna aranmaz
+            if (!NavTabs.IsEffectivelyVisible) return;
             var active = NavTabs.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Classes.Contains("active") && b.IsEffectivelyVisible);
             if (active?.TranslatePoint(default, TabIndicator.GetVisualParent<Visual>()!) is not { } p || active.Bounds.Width < 1)
             {

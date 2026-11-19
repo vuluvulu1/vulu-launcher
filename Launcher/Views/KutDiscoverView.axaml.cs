@@ -12,6 +12,9 @@ namespace VuluLauncher.Views
     /// <summary>Kütüphane sayfalarının küçük çeviricileri.</summary>
     internal static class KutBrushes
     {
+        /// <summary>Resim yüklenince görünür (Opacity 0 → 1; geçişle yumuşakça belirir).</summary>
+        public static readonly IValueConverter Shown = new FuncValueConverter<object?, double>(o => o == null ? 0 : 1);
+
         public static readonly IValueConverter ErrorOrDim = new FuncValueConverter<bool, IBrush>(error =>
             error ? (Avalonia.Application.Current?.FindResource("Error") as IBrush ?? Brushes.OrangeRed)
                   : (Avalonia.Application.Current?.FindResource("Dim") as IBrush ?? Brushes.Gray));
@@ -31,6 +34,7 @@ namespace VuluLauncher.Views
             InitializeComponent();
             Featured.DataContext = null;
             Rest.ItemsSource = _rest;
+            KutPolish.AttachSearch(this, QueryBox);
             DataContextChanged += (_, _) => Bind((DataContext as DiscoverViewModel)?.Packs);
         }
 
@@ -47,11 +51,10 @@ namespace VuluLauncher.Views
 
         private void Rebuild()
         {
-            _rest.Clear();
             var cards = _packs?.Cards.ToList() ?? new List<PackCard>();
             Featured.DataContext = cards.FirstOrDefault();
             Featured.IsVisible = cards.Count > 0;
-            foreach (var c in cards.Skip(1)) _rest.Add(c);
+            _rest.SyncTo(cards.Skip(1).ToList());
             RestTitle.IsVisible = _rest.Count > 0;
         }
 

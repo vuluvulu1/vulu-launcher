@@ -21,6 +21,8 @@ namespace VuluLauncher.ViewModels
     internal abstract partial class SettingRow(string title, string? hint) : ObservableObject
     {
         public string Title { get; } = title;
+        /// <summary>Bulunduğu bölümün adı (Kütüphane'de aramada kartın üstünde yazar).</summary>
+        public string Category { get; set; } = "";
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasHint))]
         private string? _hint = hint;

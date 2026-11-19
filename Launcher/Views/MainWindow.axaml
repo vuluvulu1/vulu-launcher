@@ -347,6 +347,20 @@
                             </Border>
                         </Button>
                     </StackPanel>
+                    <Panel>
+                    <!-- Seçili sekmenin yuvarlak zemini ve soldaki amber çizgi: sekme değişince yeni sekmeye kayar (PlaceRailMark) -->
+                    <Canvas x:Name="RailCanvas" IsHitTestVisible="False">
+                        <Panel x:Name="RailMark" Width="84" Height="60" Opacity="0">
+                            <Panel.Transitions>
+                                <Transitions>
+                                    <DoubleTransition Property="Canvas.Top" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                                </Transitions>
+                            </Panel.Transitions>
+                            <Border Width="66" Height="60" CornerRadius="12" Background="#2A1E10" HorizontalAlignment="Center" />
+                            <Border Width="3" Height="26" CornerRadius="0,2,2,0" Background="#F2A33A" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        </Panel>
+                    </Canvas>
                     <ItemsControl x:Name="RailTabs" ItemsSource="{Binding Tabs}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:PageTab">
@@ -367,6 +381,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    </Panel>
                 </DockPanel>
             </Border>
 

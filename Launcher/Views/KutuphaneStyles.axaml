@@ -198,13 +198,26 @@
         <Setter Property="Background" Value="#17120D" />
         <Setter Property="Foreground" Value="#F3ECE2" />
     </Style>
-    <Style Selector="Button.rail-tab.active, Button.rail-tab.glow">
+    <Style Selector="Button.rail-tab /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions><BrushTransition Property="Background" Duration="0:0:0.15" /><BrushTransition Property="Foreground" Duration="0:0:0.2" /></Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.rail-tab.glow">
         <Setter Property="Background" Value="#2A1E10" />
         <Setter Property="Foreground" Value="#FFC873" />
     </Style>
-    <Style Selector="Button.rail-tab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#33240F" />
+    <!-- Seçili sekmenin zemini kayan işaretten gelir (MainWindow RailMark); düğmenin kendisi saydam kalır -->
+    <Style Selector="Button.rail-tab.active">
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="#FFC873" />
+    </Style>
+    <Style Selector="Button.rail-tab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#14FFC873" />
+        <Setter Property="Foreground" Value="#FFC873" />
+    </Style>
+    <Style Selector="Button.rail-tab:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.96)" />
     </Style>
     <Style Selector="Button.rail-tab Path.tab-icon">
         <Setter Property="Stroke" Value="{Binding $parent[Button].Foreground}" />
