@@ -36,6 +36,8 @@ namespace VuluLauncher.ViewModels
         public string Subtitle => Kind == "server" ? Name : $"{LoaderLabel} {McVersion}";
 
         [ObservableProperty] private Bitmap? _thumbnail;
+        /// <summary>Kütüphane temasındaki kapak: paketin arka planı, kapak boyunda (küçük simge kapağa büyütülünce bulanıklaşıyordu).</summary>
+        [ObservableProperty] private Bitmap? _poster;
         /// <summary>Paketin yeni revizyonu var (vulu Packs).</summary>
         [ObservableProperty] private bool _hasUpdate;
         /// <summary>Şeritteki ipucu: adı; o pakette oynayan varsa "Şu an oynayan: …" (web: pack-card title).</summary>
@@ -376,8 +378,11 @@ namespace VuluLauncher.ViewModels
             Refresh();
         }
 
-        private static async Task LoadThumbnailAsync(InstanceItem item) =>
+        private static async Task LoadThumbnailAsync(InstanceItem item)
+        {
             item.Thumbnail = await Images.LoadAsync(item.ThumbnailUrl ?? item.BackgroundUrl, 96);
+            item.Poster = await Images.LoadAsync(item.BackgroundUrl ?? item.ThumbnailUrl, 420);
+        }
 
         partial void OnSelectedChanged(InstanceItem? value)
         {

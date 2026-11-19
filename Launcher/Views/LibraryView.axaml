@@ -1,0 +1,447 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
+             xmlns:native="using:VuluLauncher.Native"
+             x:Class="VuluLauncher.Views.LibraryView"
+             x:DataType="vm:HomeViewModel">
+    <!--
+        Kütüphane temasının Oyna sayfası: üstte başlık ve süzgeçler, solda paketler kapak kapak bir ızgarada, sağda seçili
+        paketin çekmecesi (resim, bilgiler, sunucu, dünyalar/görüntüler/içerik/konsol, bellek, sürüm, OYNA). Aynı Oyna modeli
+        (HomeViewModel); yalnızca görünüş başka. Süzgeç ve arama bu görünümde (LibraryView.axaml.cs).
+    -->
+    <UserControl.Styles>
+        <Style Selector="ListBox.posters">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="ListBox.posters ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,18,18" />
+            <Setter Property="ClipToBounds" Value="False" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="ListBox.posters ListBoxItem /template/ ContentPresenter#PART_ContentPresenter, ListBox.posters ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.posters ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter, ListBox.posters ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBox.posters Border.art">
+            <Setter Property="RenderTransform" Value="none" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ListBox.posters ListBoxItem:pointerover Border.art">
+            <Setter Property="RenderTransform" Value="translateY(-3px)" />
+            <Setter Property="BoxShadow" Value="0 12 26 0 #99000000" />
+        </Style>
+        <Style Selector="ListBox.posters ListBoxItem:selected Border.art">
+            <Setter Property="BoxShadow" Value="0 0 0 2 #0B0A09, 0 0 0 4 #F2A33A" />
+        </Style>
+        <Style Selector="ListBox.posters ListBoxItem:selected TextBlock.pname">
+            <Setter Property="Foreground" Value="#FFC873" />
+        </Style>
+
+        <Style Selector="Button.chip-filter">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="#2E241A" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#D9CDBF" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.chip-filter /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="CornerRadius" Value="16" />
+        </Style>
+        <Style Selector="Button.chip-filter.on">
+            <Setter Property="Background" Value="#F3ECE2" />
+            <Setter Property="Foreground" Value="#0B0A09" />
+            <Setter Property="BorderBrush" Value="#F3ECE2" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.chip-filter.on:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Foreground" Value="#0B0A09" />
+        </Style>
+
+        <Style Selector="Border.stat2">
+            <Setter Property="Background" Value="#1B1510" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="9,7" />
+        </Style>
+        <Style Selector="Button.dtab">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0,0,0,2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="#A1958A" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,14,0" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="CornerRadius" Value="0" />
+        </Style>
+        <Style Selector="Button.dtab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="#F3ECE2" />
+        </Style>
+        <Style Selector="Button.dtab.active">
+            <Setter Property="BorderBrush" Value="#F2A33A" />
+            <Setter Property="Foreground" Value="#F3ECE2" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.dtab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="#F2A33A" />
+            <Setter Property="Foreground" Value="#F3ECE2" />
+        </Style>
+        <Style Selector="Button.dbtn">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Background" Value="#1B1510" />
+            <Setter Property="BorderBrush" Value="#2E241A" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.dbtn /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style Selector="ComboBox.dcombo">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Background" Value="#1B1510" />
+            <Setter Property="BorderBrush" Value="#2E241A" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button.bigplay">
+            <Setter Property="Height" Value="54" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Background" Value="{StaticResource PrimaryFill}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="LetterSpacing" Value="1.2" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.bigplay /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="CornerRadius" Value="14" />
+        </Style>
+        <Style Selector="Button.bigplay:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource PrimaryFillHover}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
+        </Style>
+        <Style Selector="Button.bigplay.small">
+            <Setter Property="Height" Value="44" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Background" Value="#1B1510" />
+            <Setter Property="Foreground" Value="#F3ECE2" />
+        </Style>
+        <Style Selector="Button.bigplay.small Path"><Setter Property="Fill" Value="#F3ECE2" /></Style>
+        <Style Selector="Ellipse.sdot"><Setter Property="Fill" Value="{StaticResource Muted}" /><Setter Property="Opacity" Value="0.5" /></Style>
+        <Style Selector="Ellipse.sdot.online"><Setter Property="Fill" Value="#7FC98A" /><Setter Property="Opacity" Value="1" /></Style>
+        <Style Selector="Ellipse.sdot.offline"><Setter Property="Fill" Value="{StaticResource Error}" /><Setter Property="Opacity" Value="1" /></Style>
+        <Style Selector="SelectableTextBlock.log">
+            <Setter Property="FontFamily" Value="{StaticResource Mono}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="*,372" RowDefinitions="Auto,*" Margin="28,14,20,20">
+        <!-- ── Başlık, süzgeçler, arama ── -->
+        <Grid Grid.ColumnSpan="2" ColumnDefinitions="Auto,Auto,*,Auto" Margin="0,0,0,16">
+            <TextBlock Text="Kütüphane" FontSize="30" FontWeight="SemiBold" LetterSpacing="-0.6" VerticalAlignment="Center" />
+            <TextBlock x:Name="CountText" Grid.Column="1" FontFamily="{StaticResource Mono}" FontSize="12" Classes="dim" VerticalAlignment="Center" Margin="12,8,18,0" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <Button x:Name="FilterAll" Classes="chip-filter on" Content="Tümü" Click="OnFilter" Tag="all" />
+                <Button x:Name="FilterMine" Classes="chip-filter" Content="Kişisel" Click="OnFilter" Tag="mine" />
+                <Button x:Name="FilterVulu" Classes="chip-filter" Content="vulu paketleri" Click="OnFilter" Tag="vulu" />
+                <Button x:Name="FilterUpdate" Classes="chip-filter" Content="Güncellemesi olan" Click="OnFilter" Tag="update" />
+            </StackPanel>
+            <TextBox x:Name="SearchBox" Grid.Column="3" Width="220" Height="36" Watermark="Paket ara" VerticalContentAlignment="Center" CornerRadius="10" />
+        </Grid>
+
+        <!-- ── Kapak ızgarası ── -->
+        <Grid Grid.Row="1" RowDefinitions="Auto,*">
+            <!-- Duyuru -->
+            <Border IsVisible="{Binding HasAnnouncement}" Classes="mcard announce" Padding="14,10" Margin="0,0,18,14">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="{Binding Announcement}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding AnnouncementMeta}" Classes="dim" FontSize="11.5" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Classes="flat" Content="×" FontSize="16" Padding="8,0" VerticalAlignment="Top"
+                            Command="{Binding DismissAnnouncementCommand}" ToolTip.Tip="Duyuruyu kapat" />
+                </Grid>
+            </Border>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ListBox x:Name="Posters" Classes="posters" SelectionMode="Single">
+                    <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
+                    <ListBox.DataTemplates>
+                        <DataTemplate DataType="v:NewPackCard">
+                            <Border Width="180" Height="230" CornerRadius="14" BorderBrush="#3A2D20" BorderThickness="1.5" Background="Transparent">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+                                    <TextBlock Text="+" FontSize="30" FontWeight="Light" HorizontalAlignment="Center" Classes="dim" />
+                                    <TextBlock Text="Yeni paket" FontSize="13.5" HorizontalAlignment="Center" Classes="dim" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:InstanceItem">
+                            <StackPanel Width="180" Spacing="0" ToolTip.Tip="{Binding Tip}" Background="Transparent" ContextRequested="OnPosterContextRequested">
+                                <StackPanel.ContextFlyout>
+                                    <MenuFlyout x:DataType="vm:HomeViewModel">
+                                        <MenuItem Header="▶ Oyna" Command="{Binding PlayCommand}" />
+                                        <MenuItem Header="Klasörü aç" Command="{Binding OpenFolderCommand}" />
+                                        <MenuItem Header="Dünyalar ve yedekler" Command="{Binding OpenWorldsCommand}" />
+                                        <Separator />
+                                        <MenuItem Header="Görünüm" Command="{Binding AppearanceCommand}" />
+                                        <MenuItem Header="Düzenle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding EditInstanceCommand}" />
+                                        <MenuItem Header="Çoğalt" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DuplicateCommand}" />
+                                        <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
+                                        <Separator IsVisible="{Binding SelectedIsCustom}" />
+                                        <MenuItem Header="Sil" IsVisible="{Binding SelectedIsCustom}" Foreground="{StaticResource Error}" Command="{Binding DeleteInstanceCommand}" />
+                                    </MenuFlyout>
+                                </StackPanel.ContextFlyout>
+                                <Border Classes="art" Height="230" CornerRadius="14" ClipToBounds="True" Background="{StaticResource Raised}">
+                                    <Panel>
+                                        <TextBlock Text="{Binding Initial}" FontSize="44" FontWeight="Bold" Foreground="{StaticResource Dim}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <Image Source="{Binding Poster}" Stretch="UniformToFill" />
+                                        <Border IsVisible="{Binding HasUpdate}" Background="#CC0B0A09" CornerRadius="6" Padding="8,3" Margin="10"
+                                                HorizontalAlignment="Left" VerticalAlignment="Top">
+                                            <TextBlock Text="Güncelleme" FontSize="11" FontWeight="SemiBold" Foreground="#FFC873" />
+                                        </Border>
+                                    </Panel>
+                                </Border>
+                                <TextBlock Classes="pname" Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" Margin="2,10,2,0" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Subtitle}" FontFamily="{StaticResource Mono}" FontSize="11.5" Classes="dim" Margin="2,2,2,0" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.DataTemplates>
+                </ListBox>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ── Çekmece: seçili paket ── -->
+        <Border Grid.Row="1" Grid.Column="1" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" ClipToBounds="True">
+            <DockPanel>
+                <!-- Resim -->
+                <Panel DockPanel.Dock="Top" Height="150">
+                    <Border Background="{StaticResource BannerFallback}" />
+                    <Image Source="{Binding Background}" Stretch="UniformToFill" />
+                    <Border IsHitTestVisible="False">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0.45" Color="#000B0A09" />
+                                <GradientStop Offset="1" Color="#CC14100C" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="16,0,16,12" VerticalAlignment="Bottom">
+                        <Border Background="#BF0B0A09" CornerRadius="6" Padding="9,3">
+                            <TextBlock FontSize="11.5" FontWeight="SemiBold"><Run Text="Minecraft " /><Run Text="{Binding Selected.McVersion}" /></TextBlock>
+                        </Border>
+                        <Border Background="#BF0B0A09" CornerRadius="6" Padding="9,3">
+                            <TextBlock Text="{Binding Selected.LoaderLabel}" FontSize="11.5" FontWeight="SemiBold" />
+                        </Border>
+                    </StackPanel>
+                </Panel>
+
+                <!-- Alt: durum, bellek, sürüm, OYNA -->
+                <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="18,10,18,18">
+                    <StackPanel Spacing="5" IsVisible="{Binding StatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="{Binding StatusText}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="1" Text="{Binding Progress, StringFormat='{}{0:0}%'}" Classes="dim" FontSize="12" IsVisible="{Binding !Indeterminate}" />
+                        </Grid>
+                        <ProgressBar Value="{Binding Progress}" Maximum="100" IsIndeterminate="{Binding Indeterminate}" />
+                    </StackPanel>
+                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
+                        <ComboBox Classes="dcombo" ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}" ToolTip.Tip="Oyuna ayrılacak bellek">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="x:Int32"><TextBlock Text="{Binding StringFormat='Bellek {0} GB'}" /></DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <ComboBox Grid.Column="1" Classes="dcombo" ItemsSource="{Binding McVersions}" SelectedItem="{Binding McVersion}" IsVisible="{Binding CanPickVersion}"
+                                  IsEnabled="{Binding CanPlay}" MaxDropDownHeight="360" ToolTip.Tip="Minecraft sürümü" />
+                        <Button Grid.Column="1" Classes="dbtn" IsVisible="{Binding !CanPickVersion}" Content="Klasörü aç" FontSize="13" HorizontalAlignment="Stretch"
+                                Command="{Binding OpenFolderCommand}" />
+                        <Button Grid.Column="2" Classes="dbtn" Width="42" Content="⋯" ToolTip.Tip="Diğer işlemler">
+                            <Button.Flyout>
+                                <MenuFlyout Placement="TopEdgeAlignedRight">
+                                    <MenuItem Header="Paketi güncelle" IsVisible="{Binding HasPackUpdate}" Command="{Binding UpdatePackCommand}" />
+                                    <MenuItem Header="Mod ekle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding AddContentCommand}" />
+                                    <MenuItem Header="Düzenle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding EditInstanceCommand}" />
+                                    <MenuItem Header="Görünüm" Command="{Binding AppearanceCommand}" />
+                                    <MenuItem Header="İçeriği yönet" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ManageContentCommand}" />
+                                    <MenuItem Header="Dünyalar ve yedekler" Command="{Binding OpenWorldsCommand}" />
+                                    <MenuItem Header="Dosyaları doğrula" Command="{Binding VerifyCommand}" />
+                                    <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
+                                    <MenuItem Header="Çoğalt" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DuplicateCommand}" />
+                                    <MenuItem Header=".mrpack olarak dışa aktar" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ExportMrpackCommand}" />
+                                    <MenuItem Header="{Binding ShareText}" IsVisible="{Binding CanShare}" Command="{Binding ShareCommand}" Foreground="{StaticResource Accent}" />
+                                    <Separator IsVisible="{Binding SelectedIsCustom}" />
+                                    <MenuItem Header="Sil" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DeleteInstanceCommand}" Foreground="{StaticResource Error}" />
+                                </MenuFlyout>
+                            </Button.Flyout>
+                        </Button>
+                    </Grid>
+                    <Button Classes="bigplay primary" IsVisible="{Binding ShowBarJoin}" Content="Sunucuya bağlan" Command="{Binding JoinPackServerCommand}" />
+                    <Button Classes="bigplay" Classes.small="{Binding ShowBarJoin}" Command="{Binding PlayCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding PlayLabel}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Orta: ad, açıklama, sayılar, sunucu, sekmeler -->
+                <DockPanel Margin="18,14,18,0">
+                    <StackPanel DockPanel.Dock="Top" Spacing="12">
+                        <StackPanel Spacing="4">
+                            <Image Source="{Binding Logo}" IsVisible="{Binding HasLogo}" MaxHeight="56" MaxWidth="300" HorizontalAlignment="Left" Stretch="Uniform" />
+                            <TextBlock Text="{Binding Selected.Name, FallbackValue=Paket seçilmedi}" IsVisible="{Binding !HasLogo}" FontSize="26" FontWeight="SemiBold"
+                                       LetterSpacing="-0.5" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Selected.Description}" FontSize="13.5" Classes="muted" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
+                            <Border Classes="stat2"><StackPanel><TextBlock Text="Mod" Classes="dim" FontSize="11" /><TextBlock Text="{Binding ModCount}" FontWeight="SemiBold" /></StackPanel></Border>
+                            <Border Grid.Column="1" Classes="stat2"><StackPanel><TextBlock Text="Boyut" Classes="dim" FontSize="11" /><TextBlock Text="{Binding Size}" FontWeight="SemiBold" /></StackPanel></Border>
+                            <Border Grid.Column="2" Classes="stat2"><StackPanel><TextBlock Text="Güncel" Classes="dim" FontSize="11" /><TextBlock Text="{Binding Updated}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" /></StackPanel></Border>
+                            <Border Grid.Column="3" Classes="stat2"><StackPanel><TextBlock Text="Oynama" Classes="dim" FontSize="11" /><TextBlock Text="{Binding PlayTime}" FontWeight="SemiBold" /></StackPanel></Border>
+                        </Grid>
+                        <!-- Paketin sunucusu -->
+                        <Border IsVisible="{Binding HasPackServer}" Background="#1B1510" CornerRadius="12" Padding="10">
+                            <Grid ColumnDefinitions="Auto,*,Auto" DataContext="{Binding PackServer}" x:DataType="vm:ServerCard">
+                                <Border Width="36" Height="36" CornerRadius="8" Background="#281F17" ClipToBounds="True" VerticalAlignment="Center">
+                                    <Panel>
+                                        <TextBlock Text="{Binding Initial}" FontWeight="Bold" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <Image Source="{Binding Favicon}" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="None" />
+                                    </Panel>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center" Spacing="2">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Ellipse Classes="sdot" Classes.online="{Binding IsOnline}" Classes.offline="{Binding IsOffline}" Width="8" Height="8" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="170" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Players, StringFormat='{}{0} oyuncu'}" IsVisible="{Binding IsOnline}" Classes="dim" FontSize="12" />
+                                    <TextBlock Text="kapalı" IsVisible="{Binding IsOffline}" Classes="dim" FontSize="12" />
+                                </StackPanel>
+                                <Button Grid.Column="2" Classes="dbtn" Height="32" Padding="12,0" FontSize="12.5" FontWeight="SemiBold" Content="Sunucuya gir" VerticalAlignment="Center"
+                                        Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).JoinPackServerCommand}" />
+                            </Grid>
+                        </Border>
+                        <!-- Burada oynayanlar -->
+                        <StackPanel IsVisible="{Binding HasPlayingHere}" Orientation="Horizontal" Spacing="6">
+                            <ItemsControl ItemsSource="{Binding PlayingHere}">
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PersonItem">
+                                        <Border Width="28" Height="28" CornerRadius="14" ClipToBounds="True" Background="{StaticResource Raised}" ToolTip.Tip="{Binding Username}"
+                                                BoxShadow="0 0 0 2 #14100C, 0 0 0 3.5 #7FC98A">
+                                            <Panel>
+                                                <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
+                                            </Panel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="{Binding PlayingHereText}" FontSize="12.5" VerticalAlignment="Center" Margin="4,0,0,0" />
+                        </StackPanel>
+                        <!-- Sekmeler -->
+                        <Border BorderBrush="#2A2118" BorderThickness="0,0,0,1">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Classes="dtab" Classes.active="{Binding IsWorlds}" Content="Dünyalar" Command="{Binding SelectInfoTabCommand}" CommandParameter="worlds" />
+                                <Button Classes="dtab" Classes.active="{Binding IsShots}" Content="Görüntüler" Command="{Binding SelectInfoTabCommand}" CommandParameter="shots" />
+                                <Button Classes="dtab" Classes.active="{Binding IsContent}" Content="İçerik" IsVisible="{Binding SelectedIsCustom}" Command="{Binding SelectInfoTabCommand}" CommandParameter="content" />
+                                <Button Classes="dtab" Classes.active="{Binding IsLog}" Command="{Binding SelectInfoTabCommand}" CommandParameter="log">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <TextBlock Text="Konsol" />
+                                        <Ellipse Width="6" Height="6" Fill="{StaticResource Error}" IsVisible="{Binding LogAlert}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Sekme içeriği -->
+                    <Panel Margin="0,8,0,0">
+                        <ItemsControl x:Name="LogList" IsVisible="{Binding IsLog}" ItemsSource="{Binding Console}">
+                            <ItemsControl.Template>
+                                <ControlTemplate>
+                                    <ScrollViewer Name="PART_ScrollViewer" HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:LogLine">
+                                    <SelectableTextBlock Classes="log" Classes.warn="{Binding IsWarn}" Classes.error="{Binding IsError}">
+                                        <Run Text="{Binding Time}" Foreground="{StaticResource Dim}" /><Run Text="  " /><Run Text="{Binding Text}" />
+                                    </SelectableTextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.Styles>
+                                <Style Selector="SelectableTextBlock.warn"><Setter Property="Foreground" Value="{StaticResource Warn}" /></Style>
+                                <Style Selector="SelectableTextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style>
+                            </ItemsControl.Styles>
+                        </ItemsControl>
+                        <ScrollViewer IsVisible="{Binding !IsLog}">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="{Binding InfoMessage}" IsVisible="{Binding InfoMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                           Classes="dim" FontSize="12.5" TextWrapping="Wrap" />
+                                <ItemsControl IsVisible="{Binding IsWorlds}" ItemsSource="{Binding Worlds}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:WorldTile">
+                                            <Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="4"
+                                                    Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenWorldsCommand}">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <Border Width="30" Height="30" CornerRadius="6" Background="{StaticResource Raised}" ClipToBounds="True">
+                                                        <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                                                    </Border>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="10,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding Meta}" Classes="dim" FontSize="11.5" VerticalAlignment="Center" />
+                                                </Grid>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <ItemsControl IsVisible="{Binding IsShots}" ItemsSource="{Binding Shots}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ShotTile">
+                                            <Button Classes="flat" Padding="0" Margin="0,0,6,6" Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenShotsCommand}">
+                                                <Border Width="160" Height="90" CornerRadius="8" Background="{StaticResource Raised}" ClipToBounds="True">
+                                                    <Image Source="{Binding Image}" Stretch="UniformToFill" />
+                                                </Border>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <StackPanel IsVisible="{Binding IsContent}" Spacing="8">
+                                    <TextBlock Text="{Binding ContentSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Button Classes="primary sm" Content="+ İçerik ekle" Command="{Binding AddContentCommand}" />
+                                        <Button Classes="sm" Content="İçeriği yönet" Command="{Binding ManageContentCommand}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Panel>
+                </DockPanel>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

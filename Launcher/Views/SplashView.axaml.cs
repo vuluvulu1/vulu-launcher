@@ -33,6 +33,8 @@ namespace VuluLauncher.Views
         private bool _grafit;
         /// <summary>Grafit açılışının kapanışı (ms): kartlar sönünce altta gerçek kartlar kalır.</summary>
         private const double GrafitOpenMs = 650;
+        /// <summary>Bu oynatma Kütüphane açılışı mı.</summary>
+        private bool _kut;
 
         public SplashView()
         {
@@ -66,13 +68,16 @@ namespace VuluLauncher.Views
             _grafit = Themes.IsGrafit;
             GrafitStage.IsVisible = _grafit;
             GrafitStage.Opacity = 1;
+            _kut = Themes.IsKutuphane;
+            KutStage.IsVisible = _kut;
+            KutStage.Opacity = 1;
             UfukStage.Opacity = 1;
             if (_ufuk)
             {
                 if (_vm is { Holding: true }) UfukScene.HoldSplash();
                 else UfukScene.StartSplash();
             }
-            Sheet.IsVisible = Glow.IsVisible = Title.IsVisible = Sparks.IsVisible = !_ufuk && !_grafit;
+            Sheet.IsVisible = Glow.IsVisible = Title.IsVisible = Sparks.IsVisible = !_ufuk && !_grafit && !_kut;
             _clock.Restart();
             _last = 0;
             Render(0, -1, 0);
@@ -105,7 +110,7 @@ namespace VuluLauncher.Views
             _last = now;
             double open = _openClock.IsRunning ? _openClock.Elapsed.TotalMilliseconds : -1;
             Render(now, open, dt);
-            bool openDone = open >= (_grafit ? GrafitOpenMs : BurnMs);
+            bool openDone = open >= (_grafit || _kut ? GrafitOpenMs : BurnMs);
             if (openDone || top == null || _vm is not { IsVisible: true })
             {
                 _running = false;
@@ -132,6 +137,7 @@ namespace VuluLauncher.Views
         {
             if (_ufuk) { RenderUfuk(t, open, dt); return; }
             if (_grafit) { RenderGrafit(t, open); return; }
+            if (_kut) { RenderKutuphane(t, open); return; }
             // Yazının yeri (sahneye göre)
             var size = Letters.Bounds.Size;
             var center = Letters.TranslatePoint(new Point(size.Width / 2, size.Height / 2), Stage) ?? new Point(Stage.Bounds.Width / 2, Stage.Bounds.Height / 2);
@@ -224,6 +230,32 @@ namespace VuluLauncher.Views
             if (open < 0) { GrafitStage.Opacity = 1; GrafitTitle.Opacity = 1; return; }
             GrafitTitle.Opacity = 1 - OutEase.Ease(Progress(open, 0, 300));
             GrafitStage.Opacity = 1 - OutEase.Ease(Progress(open, 150, GrafitOpenMs - 150));
+        }
+
+        /// <summary>
+        /// Kütüphane: ray ve çekmece 0,4 sn'de belirir; kapaklar 0,12 sn arayla yukarıdan düşüp yerine oturur; ardından
+        /// simge, yazı ve karşılama. Açılırken yazı söner, sonra her şey; altta gerçek kütüphane aynı yerde durur.
+        /// </summary>
+        private void RenderKutuphane(double t, double open)
+        {
+            KutRail.Opacity = OutEase.Ease(Progress(t, 100, 400));
+            KutDrawer.Opacity = OutEase.Ease(Progress(t, 250, 450));
+            KutDrawer.RenderTransform = new TranslateTransform(30 * (1 - OutEase.Ease(Progress(t, 250, 450))), 0);
+            var posters = new[] { KutPoster0, KutPoster1, KutPoster2, KutPoster3 };
+            for (int i = 0; i < posters.Length; i++)
+            {
+                double e = OutEase.Ease(Progress(t, 350 + i * 120, 420));
+                posters[i].Opacity = e;
+                posters[i].RenderTransform = new TranslateTransform(0, -36 * (1 - e));
+            }
+            KutMark.Opacity = OutEase.Ease(Progress(t, 950, 400));
+            double mark = 0.8 + 0.2 * OutEase.Ease(Progress(t, 950, 400));
+            KutMark.RenderTransform = new ScaleTransform(mark, mark);
+            Rise(KutWord, Progress(t, 1050, 450));
+            Rise(KutGreeting, Progress(t, 1650, 450));
+            if (open < 0) { KutStage.Opacity = 1; KutTitle.Opacity = 1; return; }
+            KutTitle.Opacity = 1 - OutEase.Ease(Progress(open, 0, 300));
+            KutStage.Opacity = 1 - OutEase.Ease(Progress(open, 150, GrafitOpenMs - 150));
         }
 
         private static void Settle(Control control, double p)

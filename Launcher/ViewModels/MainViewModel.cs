@@ -65,7 +65,7 @@ namespace VuluLauncher.ViewModels
         private bool _isHomePage = true;
         public bool HomeOverlay => ShowShell && IsHomePage;
         /// <summary>Oyna dışındaki sayfaların zemini: seçili paketin resmi, bulanık ve karartılmış.</summary>
-        public bool ShowBackdrop => ShowShell && !IsHomePage && !Themes.HasScene && !Themes.IsGrafit;
+        public bool ShowBackdrop => ShowShell && !IsHomePage && !Themes.HasScene && !Themes.IsGrafit && !Themes.IsKutuphane;
         /// <summary>Ufkun öbür ucu teması: Oyna dışındaki sayfalarda (girişte de) paket resmi yerine synthwave sahnesi.</summary>
         public bool ShowSynthwave => Themes.HasScene && !(ShowShell && IsHomePage);
 

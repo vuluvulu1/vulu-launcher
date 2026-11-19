@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             xmlns:v="using:VuluLauncher.Views"
+             x:Class="VuluLauncher.Views.RadioPanel"
+             x:DataType="vm:RadioViewModel">
+    <!-- Radyo menüsü: favoriler, türler, arama, istasyonlar. Oyna'nın alt çubuğundan ve Kütüphane temasının simge rayından
+         açılır; görünür olunca türler ve istasyonlar yüklenir (RadioPanel.axaml.cs). -->
+    <Border Width="340" MaxHeight="460" Background="{StaticResource Panel}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1" Padding="10">
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Spacing="8">
+                <StackPanel IsVisible="{Binding HasFavorites}" Spacing="2">
+                    <TextBlock Text="Favoriler" Classes="dim" FontSize="11.5" FontWeight="Bold" />
+                    <ItemsControl ItemsSource="{Binding Favorites}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FavoriteRow">
+                                <Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="6,4" Command="{Binding Play}">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="{Binding Name, StringFormat='★ {0}'}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1" Text="{Binding GenreLabel}" Classes="dim" FontSize="11.5" Margin="8,0,0,0" />
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding Genres}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:Choice">
+                            <Button Classes="seg loose" Classes.active="{Binding IsSelected}" Content="{Binding Label}" Margin="0,0,4,4" FontSize="11.5" Padding="8,3"
+                                    Command="{Binding $parent[ItemsControl].((vm:RadioViewModel)DataContext).PickGenreCommand}" CommandParameter="{Binding}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBox Text="{Binding Search}" Watermark="İstasyon ara…" IsVisible="{Binding ShowSearch}" />
+                <TextBlock Text="{Binding MenuNote}" IsVisible="{Binding MenuNote, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="dim" FontSize="12.5" />
+            </StackPanel>
+            <ScrollViewer Margin="0,6,0,0">
+                <ItemsControl ItemsSource="{Binding Stations}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:StationRow">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="6,4"
+                                        Command="{Binding PlayCommand}" ToolTip.Tip="{Binding Station.Country}">
+                                    <TextBlock Text="{Binding Station.Name}" Classes.current="{Binding IsCurrent}" TextTrimming="CharacterEllipsis">
+                                        <TextBlock.Styles><Style Selector="TextBlock.current"><Setter Property="Foreground" Value="{StaticResource Accent}" /></Style></TextBlock.Styles>
+                                    </TextBlock>
+                                </Button>
+                                <Button Grid.Column="1" Classes="flat" Content="{Binding Star}" Padding="6,2" Command="{Binding ToggleFavoriteCommand}" ToolTip.Tip="Favori" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</UserControl>

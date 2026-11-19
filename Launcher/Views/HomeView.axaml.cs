@@ -9,12 +9,6 @@ namespace VuluLauncher.Views
 {
     internal sealed partial class HomeView : UserControl
     {
-        /// <summary>Radyo menüsü açılınca türler ve istasyonlar yüklenir.</summary>
-        private void OnRadioMenuOpened(object? sender, EventArgs e)
-        {
-            if (TopLevel.GetTopLevel(this)?.DataContext is MainViewModel main) _ = main.Radio.OpenMenuAsync();
-        }
-
         /// <summary>Sağ tıklanan paket seçilir; menüdeki işlemler seçili pakete uygulanır.</summary>
         private void OnPackContextRequested(object? sender, Avalonia.Input.ContextRequestedEventArgs e)
         {
@@ -152,6 +146,10 @@ namespace VuluLauncher.Views
 
         private void ApplyLayout()
         {
+            // Kütüphane: Oyna'nın kendi görünümü (LibraryView); eski düzen gizlenir ve hiç çizilmez
+            bool kut = Themes.IsKutuphane;
+            Library.IsVisible = kut;
+            Classic.IsVisible = !kut;
             bool g = Themes.IsGrafit;
             if (_grafit == g) return;
             _grafit = g;

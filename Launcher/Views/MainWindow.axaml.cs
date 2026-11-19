@@ -46,7 +46,14 @@ namespace VuluLauncher.Views
 #endif
             Themes.Mark(this);
             Themes.Attach(NavTabs);
-            Themes.Attach(TitleBar);  // başlık çubuğunun da kendi stilleri var (neon alt çizgi)   // sekmelerin kendi stilleri var; temanınkiler onların üstüne
+            Themes.Attach(TitleBar);
+            Themes.Attach(Rail);
+            // Simge rayından da pencere sürüklenebilir (düğmelerin üstünde değilse)
+            Rail.PointerPressed += (_, e) =>
+            {
+                if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !IsOnButton(e.Source as Visual))
+                    BeginMoveDrag(e);
+            };  // başlık çubuğunun da kendi stilleri var (neon alt çizgi)   // sekmelerin kendi stilleri var; temanınkiler onların üstüne
             // Tema geçişi animasyonu (Ayarlar › Tema)
             DataContextChanged += (_, _) =>
             {

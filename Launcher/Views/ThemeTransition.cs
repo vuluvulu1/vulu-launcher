@@ -154,9 +154,45 @@ half4 main(float2 coord) {
             catch { return null; }
         });
 
+        /// <summary>
+        /// Kütüphane'ye geçiş: eski görüntü 110 px'lik dikey şeritlere bölünür; şeritler sağdan sola sırayla, sol kenarları
+        /// üstünde kitap sayfası gibi dönüp kapanır, arkalarından yeni tema görünür. Dönen şerit kararır, kenarında amber çizgi.
+        /// front: 0..1 ilerleme.
+        /// </summary>
+        public const string PagesShader = @"
+uniform shader img; uniform float2 size; uniform float2 imgSize; uniform float front; uniform float time;
+half4 main(float2 coord) {
+    float cell = 110.0;
+    float n = floor(size.x / cell) + 1.0;
+    float id = floor(coord.x / cell);
+    float lx = (coord.x - id * cell) / cell;
+    float order = (n - 1.0 - id) / max(n - 1.0, 1.0);
+    float t = clamp((front - order * 0.6) / 0.4, 0.0, 1.0);
+    t = t * t * (3.0 - 2.0 * t);
+    float w = cos(t * 1.5707963);
+    if (w < 0.002 || lx > w) { return half4(0.0); }
+    // Dönen sayfa hafifçe eğilir: üst ve alt kenarlar içe çekilir (perspektif)
+    float squeeze = 0.06 * t * (lx / w);
+    float y = (coord.y / size.y - 0.5) / (1.0 - squeeze) + 0.5;
+    if (y < 0.0 || y > 1.0) { return half4(0.0); }
+    float sx = id * cell + (lx / w) * cell;
+    half4 c = img.eval(float2(sx, y * size.y) * imgSize / size);
+    float shade = 1.0 - 0.65 * t * (0.4 + 0.6 * lx / w);
+    float edge = smoothstep(w - 2.5 / cell, w, lx) * step(0.001, t);
+    half3 amber = half3(0.949, 0.639, 0.227);
+    return half4(mix(c.rgb * half(shade), amber * c.a, half(edge * 0.8)), c.a);
+}";
+
+        private static readonly Lazy<SKRuntimeEffect?> Pages = new(() =>
+        {
+            try { return SKRuntimeEffect.CreateShader(PagesShader, out _); }
+            catch { return null; }
+        });
+
         private const double BurnMs = 1500;
         private const double SculkMs = 1800;
         private const double TilesMs = 1100;
+        private const double PagesMs = 1150;
         private SKImage? _snapshot;
         /// <summary>Eski görüntünün üstünden ilerleyen geçiş (yanma ya da sculk) sürüyor.</summary>
         private bool _burning;
@@ -183,6 +219,7 @@ half4 main(float2 coord) {
         ///   Meşale: ekranın görüntüsü alınır, tema hemen değişir, eski görüntü yanarak açılır.
         ///   Derin Karanlık: aynı düzen, eski görüntüyü sculk damarları yutar.
         ///   Grafit: aynı düzen, eski görüntü karolara bölünüp sırayla dönerek kaybolur.
+        ///   Kütüphane: aynı düzen, eski görüntü dikey şeritler halinde kitap sayfası gibi çevrilir.
         /// </summary>
         public Task PlayAsync(string theme, Action atMiddle)
         {
@@ -194,13 +231,13 @@ half4 main(float2 coord) {
                 try { pending(); } catch { }
             }
             _done?.TrySetResult();
-            var sheet = theme switch { Themes.Mesale => Burn.Value, Themes.Derin => Sculk.Value, Themes.Grafit => Tiles.Value, _ => null };
+            var sheet = theme switch { Themes.Mesale => Burn.Value, Themes.Derin => Sculk.Value, Themes.Grafit => Tiles.Value, Themes.Kutuphane => Pages.Value, _ => null };
             if (sheet != null && TakeSnapshot() is { } shot)
             {
                 _snapshot?.Dispose();
                 _snapshot = shot;
                 _sheetEffect = sheet;
-                _sheetMs = theme switch { Themes.Derin => SculkMs, Themes.Grafit => TilesMs, _ => BurnMs };
+                _sheetMs = theme switch { Themes.Derin => SculkMs, Themes.Grafit => TilesMs, Themes.Kutuphane => PagesMs, _ => BurnMs };
                 _burning = true;
                 // Tema hemen değil, eski görüntü ekrana geldikten sonra uygulanır: uygulama arayüzü bir süre meşgul eder,
                 // bu sırada ekranda donuk bir arayüz yerine eski görüntü durur; efekt tema uygulanınca başlar
@@ -314,7 +351,7 @@ half4 main(float2 coord) {
         {
             if (_burning && _snapshot != null && _sheetEffect != null)
                 context.Custom(new BurnDraw(_sheetEffect, new Rect(Bounds.Size), _snapshot,
-                    _sheetEffect == Tiles.Value ? _progress : Front(_progress), _clock.Elapsed.TotalSeconds));
+                    _sheetEffect == Tiles.Value || _sheetEffect == Pages.Value ? _progress : Front(_progress), _clock.Elapsed.TotalSeconds));
             else
                 context.Custom(new Draw(new Rect(Bounds.Size), _progress, _clock.Elapsed.TotalSeconds, _a, _b));
         }

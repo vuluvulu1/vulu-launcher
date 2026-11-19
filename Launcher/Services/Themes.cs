@@ -14,6 +14,8 @@ namespace VuluLauncher
         [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _hasScene;
         /// <summary>Grafit: kartlı düzen (Oyna sayfası başka yerleşir).</summary>
         [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _isGrafit;
+        /// <summary>Kütüphane: simge rayı, kapak ızgarası; başlık çubuğunda sekme yok.</summary>
+        [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _isKutuphane;
     }
 
     /// <summary>
@@ -22,6 +24,8 @@ namespace VuluLauncher
     ///   mesale: varsayılan, amber ve koyu kahve (vulu'nun kendi rengi)
     ///   ufuk:   "Ufkun öbür ucu" (vulu-web'deki /vulusalufuk sürprizi): synthwave, mor gökyüzü, pembe ve camgöbeği neon
     ///   derin:  "Derin Karanlık": Minecraft'ın sculk mağarası; neredeyse siyah zemin, biyolüminesans camgöbeği damarlar
+    ///   kutuphane: "Kütüphane": vulu'nun renkleri (Meşale paleti) ama bambaşka bir iskelet: solda simge rayı, Oyna'da
+    ///           paketler kapak ızgarasında, seçilenin ayrıntısı ve OYNA sağdaki çekmecede; başlık çubuğunda sekme yok
     ///   grafit: nötr grafit ve limon yeşili; sahne yok, her şey ayrı kartlarda (Oyna sayfası kartlı düzene geçer)
     /// Sahnesi olan temalarda sayfaların arkasında <see cref="Views.SynthwaveBackdrop"/> çizer (sahne temaya göre seçilir).
     /// Fırça olmayan değerler (BoxShadow ışıltıları) her temanın stil dosyasındadır; pencere tema adıyla aynı sınıfı
@@ -33,12 +37,14 @@ namespace VuluLauncher
         public const string Ufuk = "ufuk";
         public const string Derin = "derin";
         public const string Grafit = "grafit";
-        private static readonly string[] All = { Mesale, Ufuk, Derin, Grafit };
+        public const string Kutuphane = "kutuphane";
+        private static readonly string[] All = { Mesale, Ufuk, Derin, Grafit, Kutuphane };
 
         public static string Current { get; private set; } = Mesale;
         public static bool IsUfuk => Current == Ufuk;
         public static bool IsDerin => Current == Derin;
         public static bool IsGrafit => Current == Grafit;
+        public static bool IsKutuphane => Current == Kutuphane;
         /// <summary>Hareketli arka plan sahnesi olan tema.</summary>
         public static bool HasScene => Current is Ufuk or Derin;
         public static event Action? Changed;
@@ -235,6 +241,7 @@ namespace VuluLauncher
             Ufuk => (8, 12),
             Derin => (6, 8),
             Grafit => (8, 12),
+            Kutuphane => (10, 14),
             _ => (0, 0),
         };
 
@@ -288,13 +295,14 @@ namespace VuluLauncher
             ThemeState.Instance.IsUfuk = name == Ufuk;
             ThemeState.Instance.HasScene = name is Ufuk or Derin;
             ThemeState.Instance.IsGrafit = name == Grafit;
+            ThemeState.Instance.IsKutuphane = name == Kutuphane;
             if (changed) Changed?.Invoke();
         }
 
         private static Styles? _appStyles;
 
         /// <summary>Bütün temaların stil dosyaları; her biri yalnızca pencere kendi sınıfını taşırken geçerlidir.</summary>
-        private static Styles ThemeStyles() => new() { new Views.UfukStyles(), new Views.DerinStyles(), new Views.GrafitStyles() };
+        private static Styles ThemeStyles() => new() { new Views.UfukStyles(), new Views.DerinStyles(), new Views.GrafitStyles(), new Views.KutuphaneStyles() };
 
         /// <summary>
         /// Kendi stilleri olan sayfalar (Oyna) için: sayfanın stilleri uygulamanınkinden önce geldiği için temaya özel
