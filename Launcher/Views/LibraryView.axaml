@@ -22,8 +22,8 @@
             <Setter Property="Transitions"><Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.15" /><BrushTransition Property="Background" Duration="0:0:0.15" /></Transitions></Setter>
         </Style>
         <Style Selector="ListBox.posters ListBoxItem:pointerover Border.newpack">
-            <Setter Property="BorderBrush" Value="#F2A33A" />
-            <Setter Property="Background" Value="#14100C" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Background" Value="{StaticResource Panel}" />
         </Style>
         <Style Selector="ListBox.posters">
             <Setter Property="Background" Value="Transparent" />
@@ -55,7 +55,7 @@
             <Setter Property="BoxShadow" Value="0 0 0 2 #0B0A09, 0 0 0 4 #F2A33A" />
         </Style>
         <Style Selector="ListBox.posters ListBoxItem:selected TextBlock.pname">
-            <Setter Property="Foreground" Value="#FFC873" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
         </Style>
 
         <Style Selector="Button.chip-filter">
@@ -64,9 +64,9 @@
             <Setter Property="Padding" Value="14,0" />
             <Setter Property="CornerRadius" Value="16" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="#2E241A" />
+            <Setter Property="BorderBrush" Value="{StaticResource ControlLine}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#D9CDBF" />
+            <Setter Property="Foreground" Value="{StaticResource TextSoft}" />
             <Setter Property="FontSize" Value="13" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
@@ -74,18 +74,18 @@
             <Setter Property="CornerRadius" Value="16" />
         </Style>
         <Style Selector="Button.chip-filter.on">
-            <Setter Property="Background" Value="#F3ECE2" />
-            <Setter Property="Foreground" Value="#0B0A09" />
-            <Setter Property="BorderBrush" Value="#F3ECE2" />
+            <Setter Property="Background" Value="{StaticResource Text}" />
+            <Setter Property="Foreground" Value="{StaticResource Bg}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Text}" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="Button.chip-filter.on:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="Foreground" Value="#0B0A09" />
+            <Setter Property="Foreground" Value="{StaticResource Bg}" />
         </Style>
 
         <Style Selector="Border.stat2">
-            <Setter Property="Background" Value="#1B1510" />
+            <Setter Property="Background" Value="{StaticResource Surface}" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="9,7" />
         </Style>
@@ -93,7 +93,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0,0,0,2" />
             <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Foreground" Value="#A1958A" />
+            <Setter Property="Foreground" Value="{StaticResource Dim}" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="Margin" Value="0,0,14,0" />
             <Setter Property="Height" Value="32" />
@@ -103,22 +103,22 @@
         <Style Selector="Button.dtab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Foreground" Value="#F3ECE2" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
         </Style>
         <Style Selector="Button.dtab.active">
-            <Setter Property="BorderBrush" Value="#F2A33A" />
-            <Setter Property="Foreground" Value="#F3ECE2" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="Button.dtab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="BorderBrush" Value="#F2A33A" />
-            <Setter Property="Foreground" Value="#F3ECE2" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
         </Style>
         <Style Selector="Button.dbtn">
             <Setter Property="Height" Value="38" />
             <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Background" Value="#1B1510" />
-            <Setter Property="BorderBrush" Value="#2E241A" />
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ControlLine}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -129,8 +129,8 @@
         <Style Selector="ComboBox.dcombo">
             <Setter Property="Height" Value="38" />
             <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Background" Value="#1B1510" />
-            <Setter Property="BorderBrush" Value="#2E241A" />
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ControlLine}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
         </Style>
@@ -157,12 +157,12 @@
         <Style Selector="Button.bigplay.small">
             <Setter Property="Height" Value="44" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="Background" Value="#1B1510" />
-            <Setter Property="Foreground" Value="#F3ECE2" />
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
         </Style>
-        <Style Selector="Button.bigplay.small Path"><Setter Property="Fill" Value="#F3ECE2" /></Style>
+        <Style Selector="Button.bigplay.small Path"><Setter Property="Fill" Value="{StaticResource Text}" /></Style>
         <Style Selector="Ellipse.sdot"><Setter Property="Fill" Value="{StaticResource Muted}" /><Setter Property="Opacity" Value="0.5" /></Style>
-        <Style Selector="Ellipse.sdot.online"><Setter Property="Fill" Value="#7FC98A" /><Setter Property="Opacity" Value="1" /></Style>
+        <Style Selector="Ellipse.sdot.online"><Setter Property="Fill" Value="{StaticResource Online}" /><Setter Property="Opacity" Value="1" /></Style>
         <Style Selector="Ellipse.sdot.offline"><Setter Property="Fill" Value="{StaticResource Error}" /><Setter Property="Opacity" Value="1" /></Style>
         <Style Selector="SelectableTextBlock.log">
             <Setter Property="FontFamily" Value="{StaticResource Mono}" />
@@ -206,7 +206,7 @@
                     <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
                     <ListBox.DataTemplates>
                         <DataTemplate DataType="v:NewPackCard">
-                            <Border Classes="newpack" VerticalAlignment="Top" Width="{DynamicResource PosterW}" Height="{DynamicResource PosterH}" CornerRadius="14" BorderBrush="#3A2D20" BorderThickness="1.5" Background="Transparent">
+                            <Border Classes="newpack" VerticalAlignment="Top" Width="{DynamicResource PosterW}" Height="{DynamicResource PosterH}" CornerRadius="14" BorderBrush="{StaticResource CardLineHover}" BorderThickness="1.5" Background="Transparent">
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
                                     <TextBlock Text="+" FontSize="30" FontWeight="Light" HorizontalAlignment="Center" Classes="dim" />
                                     <TextBlock Text="Yeni paket" FontSize="13.5" HorizontalAlignment="Center" Classes="dim" />
@@ -236,7 +236,7 @@
                                         <Image Classes="poster" Source="{Binding Poster}" Opacity="{Binding Poster, Converter={x:Static v:KutBrushes.Shown}}" Stretch="UniformToFill" />
                                         <Border IsVisible="{Binding HasUpdate}" Background="#CC0B0A09" CornerRadius="6" Padding="8,3" Margin="10"
                                                 HorizontalAlignment="Left" VerticalAlignment="Top">
-                                            <TextBlock Text="Güncelleme" FontSize="11" FontWeight="SemiBold" Foreground="#FFC873" />
+                                            <TextBlock Text="Güncelleme" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentHi}" />
                                         </Border>
                                     </Panel>
                                 </Border>
@@ -250,7 +250,7 @@
         </Grid>
 
         <!-- ── Çekmece: seçili paket ── -->
-        <Border Grid.Row="1" Grid.Column="1" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" ClipToBounds="True">
+        <Border Grid.Row="1" Grid.Column="1" CornerRadius="18" Background="{StaticResource Panel}" BorderBrush="{StaticResource CardLine}" BorderThickness="1" ClipToBounds="True">
             <DockPanel x:Name="DrawerBody">
                 <!-- Resim -->
                 <Panel DockPanel.Dock="Top" Height="150">
@@ -338,9 +338,9 @@
                             <Border Grid.Column="3" Classes="stat2"><StackPanel><TextBlock Text="Oynama" Classes="dim" FontSize="11" /><TextBlock Text="{Binding PlayTime}" FontWeight="SemiBold" /></StackPanel></Border>
                         </Grid>
                         <!-- Paketin sunucusu -->
-                        <Border IsVisible="{Binding HasPackServer}" Background="#1B1510" CornerRadius="12" Padding="10">
+                        <Border IsVisible="{Binding HasPackServer}" Background="{StaticResource Surface}" CornerRadius="12" Padding="10">
                             <Grid ColumnDefinitions="Auto,*,Auto" DataContext="{Binding PackServer}" x:DataType="vm:ServerCard">
-                                <Border Width="36" Height="36" CornerRadius="8" Background="#281F17" ClipToBounds="True" VerticalAlignment="Center">
+                                <Border Width="36" Height="36" CornerRadius="8" Background="{StaticResource Raised}" ClipToBounds="True" VerticalAlignment="Center">
                                     <Panel>
                                         <TextBlock Text="{Binding Initial}" FontWeight="Bold" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         <Image Source="{Binding Favicon}" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="None" />
@@ -377,7 +377,7 @@
                             <TextBlock Text="{Binding PlayingHereText}" FontSize="12.5" VerticalAlignment="Center" Margin="4,0,0,0" />
                         </StackPanel>
                         <!-- Sekmeler -->
-                        <Border BorderBrush="#2A2118" BorderThickness="0,0,0,1">
+                        <Border BorderBrush="{StaticResource CardLine}" BorderThickness="0,0,0,1">
                             <StackPanel Orientation="Horizontal">
                                 <Button Classes="dtab" Classes.active="{Binding IsWorlds}" Content="Dünyalar" Command="{Binding SelectInfoTabCommand}" CommandParameter="worlds" />
                                 <Button Classes="dtab" Classes.active="{Binding IsShots}" Content="Görüntüler" Command="{Binding SelectInfoTabCommand}" CommandParameter="shots" />

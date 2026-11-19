@@ -75,24 +75,24 @@
             <Setter Property="Width" Value="{DynamicResource CardW}" />
             <Setter Property="Transitions"><Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.15" /></Transitions></Setter>
         </Style>
-        <Style Selector="Border.setcard:pointerover"><Setter Property="BorderBrush" Value="#3A2D20" /></Style>
+        <Style Selector="Border.setcard:pointerover"><Setter Property="BorderBrush" Value="{StaticResource CardLineHover}" /></Style>
         <Style Selector="Border.setcard">
             <Setter Property="Margin" Value="0,0,14,14" />
             <Setter Property="Padding" Value="18,16" />
             <Setter Property="CornerRadius" Value="16" />
-            <Setter Property="Background" Value="#14100C" />
-            <Setter Property="BorderBrush" Value="#2A2118" />
+            <Setter Property="Background" Value="{StaticResource Panel}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardLine}" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
         <Style Selector="Button.cat">
             <Setter Property="Height" Value="32" /><Setter Property="Padding" Value="14,0" /><Setter Property="CornerRadius" Value="16" />
-            <Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="#2E241A" /><Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#D9CDBF" /><Setter Property="FontSize" Value="13" /><Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="{StaticResource ControlLine}" /><Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource TextSoft}" /><Setter Property="FontSize" Value="13" /><Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
-        <Style Selector="Button.cat.on"><Setter Property="Background" Value="#F3ECE2" /><Setter Property="Foreground" Value="#0B0A09" /><Setter Property="BorderBrush" Value="#F3ECE2" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
-        <Style Selector="Button.cat.on:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="#FFFFFF" /><Setter Property="Foreground" Value="#0B0A09" /></Style>
+        <Style Selector="Button.cat.on"><Setter Property="Background" Value="{StaticResource Text}" /><Setter Property="Foreground" Value="{StaticResource Bg}" /><Setter Property="BorderBrush" Value="{StaticResource Text}" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+        <Style Selector="Button.cat.on:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="#FFFFFF" /><Setter Property="Foreground" Value="{StaticResource Bg}" /></Style>
         <Style Selector="Button.dbtn">
-            <Setter Property="Height" Value="36" /><Setter Property="Background" Value="#1B1510" /><Setter Property="BorderBrush" Value="#2E241A" />
+            <Setter Property="Height" Value="36" /><Setter Property="Background" Value="{StaticResource Surface}" /><Setter Property="BorderBrush" Value="{StaticResource ControlLine}" />
             <Setter Property="BorderThickness" Value="1" /><Setter Property="FontSize" Value="13" /><Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
         <!-- Kartlarda denetimler sola yaslı (klasik listede sağa) -->
@@ -237,7 +237,7 @@
                         <DataTemplate x:DataType="vm:SettingRow">
                             <Border Classes="setcard" IsVisible="{Binding IsShown}">
                                 <StackPanel Spacing="4">
-                                    <TextBlock Classes="cat-label" Text="{Binding Category}" FontSize="11" FontWeight="SemiBold" Foreground="#F2A33A" LetterSpacing="0.6" />
+                                    <TextBlock Classes="cat-label" Text="{Binding Category}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource Accent}" LetterSpacing="0.6" />
                                     <TextBlock Text="{Binding Title}" FontSize="15.5" FontWeight="SemiBold" TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding Hint}" IsVisible="{Binding HasHint}" FontSize="12.5" Classes="dim" TextWrapping="Wrap" />
                                     <ContentControl Content="{Binding}" HorizontalAlignment="Left" Margin="0,10,0,0" Classes="kut-control" />
@@ -249,7 +249,7 @@
             </StackPanel>
         </ScrollViewer>
         <!-- Çekmece: hesap ve launcher. Gizli: profil başlık çubuğunda, çıkış ve sürüm Hesap ve dosyalar'da (aynı şeyler iki yerde durmasın) -->
-        <Border x:Name="KutDrawer" Grid.Row="1" Grid.Column="1" Width="320" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" Padding="18" IsVisible="False">
+        <Border x:Name="KutDrawer" Grid.Row="1" Grid.Column="1" Width="320" CornerRadius="18" Background="{StaticResource Panel}" BorderBrush="{StaticResource CardLine}" BorderThickness="1" Padding="18" IsVisible="False">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Spacing="14">
                     <Grid ColumnDefinitions="Auto,*">
@@ -273,7 +273,7 @@
                         <TextBlock.Styles><Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{StaticResource Error}" /></Style></TextBlock.Styles>
                     </TextBlock>
                 </StackPanel>
-                <Border DockPanel.Dock="Bottom" Background="#1B1510" CornerRadius="12" Padding="12">
+                <Border DockPanel.Dock="Bottom" Background="{StaticResource Surface}" CornerRadius="12" Padding="12">
                     <StackPanel>
                         <TextBlock Text="vulu Launcher" FontSize="13.5" FontWeight="SemiBold" />
                         <TextBlock x:Name="AccVersion" FontSize="12" Classes="dim" />

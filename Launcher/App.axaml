@@ -92,6 +92,22 @@
             <SolidColorBrush x:Key="Ok" Color="#9CC3DE" />
             <SolidColorBrush x:Key="Warn" Color="#FFC873" />
             <SolidColorBrush x:Key="Error" Color="#E8693A" />
+            <!-- Kütüphane iskeletinin tonları (öbür temalar Services/Themes.cs içinde kendi karşılıklarını verir) -->
+            <SolidColorBrush x:Key="CardLine" Color="#2A2118" />
+            <SolidColorBrush x:Key="ControlLine" Color="#2E241A" />
+            <SolidColorBrush x:Key="CardLineHover" Color="#3A2D20" />
+            <SolidColorBrush x:Key="CardLineStrong" Color="#4A3A28" />
+            <SolidColorBrush x:Key="AccentTint" Color="#2A1E10" />
+            <SolidColorBrush x:Key="AccentTintHover" Color="#33240F" />
+            <SolidColorBrush x:Key="AccentTintStrong" Color="#3A2610" />
+            <SolidColorBrush x:Key="HoverFill" Color="#17120D" />
+            <SolidColorBrush x:Key="RailBg" Color="#090807" />
+            <SolidColorBrush x:Key="RailLine" Color="#221B14" />
+            <SolidColorBrush x:Key="TextSoft" Color="#DCD0C2" />
+            <SolidColorBrush x:Key="AccentHover" Color="#14FFC873" />
+            <!-- Çevrimiçi / oyunda yeşili: her temada aynı -->
+            <SolidColorBrush x:Key="Online" Color="#7FC98A" />
+            <SolidColorBrush x:Key="OnlineText" Color="#9ED9A5" />
 
             <FontFamily x:Key="Sans">avares://vulu Launcher/Assets/Fonts#IBM Plex Sans</FontFamily>
             <FontFamily x:Key="Mono">avares://vulu Launcher/Assets/Fonts#IBM Plex Mono</FontFamily>

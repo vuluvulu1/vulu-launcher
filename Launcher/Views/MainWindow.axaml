@@ -344,7 +344,7 @@
             </v:PageHost>
             <!-- ── Kütüphane teması: solda ince simge rayı (yalnızca sekmeler; Ayarlar en altta). Ad üstüne gelince görünür ── -->
             <Border x:Name="Rail" Grid.Row="0" Grid.RowSpan="2" ZIndex="4" Width="56" HorizontalAlignment="Left"
-                    Background="#090807" BorderBrush="#221B14" BorderThickness="0,0,1,0">
+                    Background="{StaticResource RailBg}" BorderBrush="{StaticResource RailLine}" BorderThickness="0,0,1,0">
                 <Panel IsVisible="{Binding ShowShell}">
                     <!-- Seçili sekmenin yuvarlak zemini ve soldaki amber çizgi: sekme değişince yeni sekmeye kayar (PlaceRailMark) -->
                     <Canvas x:Name="RailCanvas" IsHitTestVisible="False">
@@ -355,8 +355,8 @@
                                     <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
                                 </Transitions>
                             </Panel.Transitions>
-                            <Border Width="42" Height="42" CornerRadius="12" Background="#2A1E10" HorizontalAlignment="Center" />
-                            <Border Width="3" Height="20" CornerRadius="0,2,2,0" Background="#F2A33A" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                            <Border Width="42" Height="42" CornerRadius="12" Background="{StaticResource AccentTint}" HorizontalAlignment="Center" />
+                            <Border Width="3" Height="20" CornerRadius="0,2,2,0" Background="{StaticResource Accent}" HorizontalAlignment="Left" VerticalAlignment="Center" />
                         </Panel>
                     </Canvas>
                     <DockPanel Margin="0,62,0,12">

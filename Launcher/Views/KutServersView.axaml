@@ -17,23 +17,23 @@
             <Setter Property="Transitions"><Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.15" /><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" /></Transitions></Setter>
             <Setter Property="RenderTransform" Value="none" />
         </Style>
-        <Style Selector="ListBox.cards ListBoxItem:pointerover Border.scard"><Setter Property="BorderBrush" Value="#4A3A28" /><Setter Property="RenderTransform" Value="translateY(-2px)" /></Style>
-        <Style Selector="ListBox.cards ListBoxItem:selected Border.scard"><Setter Property="BorderBrush" Value="#F2A33A" /></Style>
+        <Style Selector="ListBox.cards ListBoxItem:pointerover Border.scard"><Setter Property="BorderBrush" Value="{StaticResource CardLineStrong}" /><Setter Property="RenderTransform" Value="translateY(-2px)" /></Style>
+        <Style Selector="ListBox.cards ListBoxItem:selected Border.scard"><Setter Property="BorderBrush" Value="{StaticResource Accent}" /></Style>
         <Style Selector="Border.scard.offline"><Setter Property="Opacity" Value="0.65" /></Style>
         <Style Selector="Ellipse.dot"><Setter Property="Fill" Value="{StaticResource Dim}" /></Style>
-        <Style Selector="Ellipse.dot.online"><Setter Property="Fill" Value="#7FC98A" /></Style>
+        <Style Selector="Ellipse.dot.online"><Setter Property="Fill" Value="{StaticResource Online}" /></Style>
         <Style Selector="Ellipse.dot.offline"><Setter Property="Fill" Value="{StaticResource Error}" /></Style>
-        <Style Selector="Ellipse.dot.playing"><Setter Property="Fill" Value="#7FC98A" /></Style>
+        <Style Selector="Ellipse.dot.playing"><Setter Property="Fill" Value="{StaticResource Online}" /></Style>
         <Style Selector="Button.chip-filter">
             <Setter Property="Transitions"><Transitions><BrushTransition Property="Background" Duration="0:0:0.15" /><BrushTransition Property="BorderBrush" Duration="0:0:0.15" /></Transitions></Setter>
             <Setter Property="Height" Value="32" /><Setter Property="Padding" Value="14,0" /><Setter Property="CornerRadius" Value="16" />
-            <Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="#2E241A" /><Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#D9CDBF" /><Setter Property="FontSize" Value="13" /><Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="{StaticResource ControlLine}" /><Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource TextSoft}" /><Setter Property="FontSize" Value="13" /><Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
-        <Style Selector="Button.chip-filter.on"><Setter Property="Background" Value="#F3ECE2" /><Setter Property="Foreground" Value="#0B0A09" /><Setter Property="BorderBrush" Value="#F3ECE2" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
-        <Style Selector="Button.chip-filter.on:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="#FFFFFF" /><Setter Property="Foreground" Value="#0B0A09" /></Style>
+        <Style Selector="Button.chip-filter.on"><Setter Property="Background" Value="{StaticResource Text}" /><Setter Property="Foreground" Value="{StaticResource Bg}" /><Setter Property="BorderBrush" Value="{StaticResource Text}" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+        <Style Selector="Button.chip-filter.on:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="#FFFFFF" /><Setter Property="Foreground" Value="{StaticResource Bg}" /></Style>
         <Style Selector="Button.dbtn">
-            <Setter Property="Height" Value="36" /><Setter Property="Background" Value="#1B1510" /><Setter Property="BorderBrush" Value="#2E241A" />
+            <Setter Property="Height" Value="36" /><Setter Property="Background" Value="{StaticResource Surface}" /><Setter Property="BorderBrush" Value="{StaticResource ControlLine}" />
             <Setter Property="BorderThickness" Value="1" /><Setter Property="Padding" Value="12,0" /><Setter Property="FontSize" Value="13" />
             <Setter Property="VerticalContentAlignment" Value="Center" /><Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
@@ -82,7 +82,7 @@
                     <ListBox.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2" VerticalAlignment="Top" /></ItemsPanelTemplate></ListBox.ItemsPanel>
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:ServerCard">
-                            <Border Classes="scard" Classes.offline="{Binding IsOffline}" CornerRadius="16" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" ClipToBounds="True">
+                            <Border Classes="scard" Classes.offline="{Binding IsOffline}" CornerRadius="16" Background="{StaticResource Panel}" BorderBrush="{StaticResource CardLine}" BorderThickness="1" ClipToBounds="True">
                                 <StackPanel>
                                     <!-- Üst bant: durum ve gecikme -->
                                     <Panel Height="92">
@@ -91,7 +91,7 @@
                                         <Border Background="#BF0B0A09" CornerRadius="6" Padding="8,3" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top">
                                             <StackPanel Orientation="Horizontal" Spacing="6">
                                                 <Ellipse Classes="dot" Classes.online="{Binding IsOnline}" Classes.offline="{Binding IsOffline}" Width="8" Height="8" VerticalAlignment="Center" />
-                                                <TextBlock Text="Açık" IsVisible="{Binding IsOnline}" FontSize="11.5" FontWeight="SemiBold" Foreground="#9ED9A5" />
+                                                <TextBlock Text="Açık" IsVisible="{Binding IsOnline}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource OnlineText}" />
                                                 <TextBlock Text="Kapalı" IsVisible="{Binding IsOffline}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource Error}" />
                                                 <TextBlock Text="Denetleniyor" IsVisible="{Binding State, Converter={x:Static vm:ServerStates.IsChecking}}" FontSize="11.5" Classes="dim" />
                                             </StackPanel>
@@ -99,7 +99,7 @@
                                     </Panel>
                                     <StackPanel Margin="16,0,16,16" Spacing="10">
                                         <Grid ColumnDefinitions="Auto,*">
-                                            <Border Width="48" Height="48" CornerRadius="11" Background="#281F17" ClipToBounds="True" Margin="0,-24,12,0" BoxShadow="0 0 0 3 #14100C">
+                                            <Border Width="48" Height="48" CornerRadius="11" Background="{StaticResource Raised}" ClipToBounds="True" Margin="0,-24,12,0" BoxShadow="0 0 0 3 #14100C">
                                                 <Grid>
                                                     <TextBlock Text="{Binding Initial}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                     <Image Source="{Binding Favicon}" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="None" />
@@ -116,10 +116,10 @@
                                             <TextBlock Grid.Column="1" Text="{Binding Players}" ToolTip.Tip="{Binding Sample}" FontFamily="{StaticResource Mono}" FontSize="12" Classes="muted" Margin="10,0,0,0" />
                                         </Grid>
                                         <Grid ColumnDefinitions="Auto,*,Auto">
-                                            <Border Background="#1B1510" CornerRadius="6" Padding="9,3" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding PackLabel}" FontSize="11.5" FontWeight="SemiBold" Foreground="#DCD0C2" />
+                                            <Border Background="{StaticResource Surface}" CornerRadius="6" Padding="9,3" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding PackLabel}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource TextSoft}" />
                                             </Border>
-                                            <TextBlock Grid.Column="1" Text="{Binding FriendsHere}" IsVisible="{Binding HasFriendsHere}" FontSize="12" Foreground="#9ED9A5"
+                                            <TextBlock Grid.Column="1" Text="{Binding FriendsHere}" IsVisible="{Binding HasFriendsHere}" FontSize="12" Foreground="{StaticResource OnlineText}"
                                                        VerticalAlignment="Center" Margin="10,0" TextTrimming="CharacterEllipsis" />
                                             <Button Grid.Column="2" Classes="join" Classes.primary="{Binding IsOnline}" Content="{Binding JoinText}" Command="{Binding JoinCommand}" />
                                         </Grid>
@@ -134,7 +134,7 @@
 
         <!-- ── Çekmece: seçili sunucu ── -->
         <!-- Seçili sunucu yoksa (liste boş) çekmece hiç görünmez, kartlar tüm genişliği alır -->
-        <Border Grid.Row="1" Grid.Column="1" Width="372" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" ClipToBounds="True"
+        <Border Grid.Row="1" Grid.Column="1" Width="372" CornerRadius="18" Background="{StaticResource Panel}" BorderBrush="{StaticResource CardLine}" BorderThickness="1" ClipToBounds="True"
                 IsVisible="{Binding #Drawer.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}">
             <Panel>
                 <DockPanel x:Name="Drawer" x:DataType="vm:ServerCard" IsVisible="{Binding $self.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}">
@@ -142,7 +142,7 @@
                         <Border Background="{StaticResource BannerFallback}" />
                         <Image Source="{Binding Favicon}" Stretch="UniformToFill" Opacity="0.35" RenderOptions.BitmapInterpolationMode="None" />
                         <Border Background="#BF0B0A09" CornerRadius="6" Padding="9,3" Margin="16,0,0,12" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                            <TextBlock Text="{Binding Status}" FontSize="11.5" FontWeight="SemiBold" Foreground="#DCD0C2" />
+                            <TextBlock Text="{Binding Status}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource TextSoft}" />
                         </Border>
                     </Panel>
                     <StackPanel DockPanel.Dock="Bottom" Margin="18,10,18,18" Spacing="8">
@@ -170,7 +170,7 @@
                                 <TextBlock native:RichText.Parts="{Binding Motd}" IsVisible="{Binding HasMotd}" FontFamily="{StaticResource Mono}" FontSize="12.5" Foreground="#AAAAAA" TextWrapping="Wrap" />
                                 <TextBlock Text="{Binding Description}" IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" FontSize="13.5" Classes="muted" TextWrapping="Wrap" />
                             </StackPanel>
-                            <Border Background="#1B1510" CornerRadius="12" Padding="12,8">
+                            <Border Background="{StaticResource Surface}" CornerRadius="12" Padding="12,8">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <TextBlock Text="{Binding Address}" FontFamily="{StaticResource Mono}" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                     <Button Grid.Column="1" Classes="dbtn" Height="30" Content="Kopyala" Command="{Binding CopyAddressCommand}" />
@@ -183,7 +183,7 @@
                             <TextBlock FontSize="12.5" Classes="dim"><Run Text="Paket: " /><Run Text="{Binding PackLabel}" /></TextBlock>
                         </StackPanel>
                         <!-- Oyun içi sohbet -->
-                        <Border IsVisible="{Binding ChatOpen}" Background="#1B1510" CornerRadius="12" Padding="10" Margin="0,12,0,0">
+                        <Border IsVisible="{Binding ChatOpen}" Background="{StaticResource Surface}" CornerRadius="12" Padding="10" Margin="0,12,0,0">
                             <DockPanel>
                                 <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,8,0,0">
                                     <TextBox Text="{Binding ChatDraft}" Watermark="Oyundakilere yaz" MaxLength="200">
@@ -227,11 +227,11 @@
                                                             <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
                                                         </Grid>
                                                     </Border>
-                                                    <Ellipse Classes="dot" Classes.playing="{Binding IsPlaying}" Width="9" Height="9" HorizontalAlignment="Right" VerticalAlignment="Bottom" Stroke="#14100C" StrokeThickness="2" />
+                                                    <Ellipse Classes="dot" Classes.playing="{Binding IsPlaying}" Width="9" Height="9" HorizontalAlignment="Right" VerticalAlignment="Bottom" Stroke="{StaticResource Panel}" StrokeThickness="2" />
                                                 </Panel>
                                                 <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding Username}" FontWeight="SemiBold" FontSize="13.5" />
-                                                    <TextBlock FontSize="12" TextTrimming="CharacterEllipsis"><Run Text="{Binding Game}" Foreground="#9ED9A5" /><Run Text="{Binding Rest}" Foreground="{StaticResource Dim}" /></TextBlock>
+                                                    <TextBlock FontSize="12" TextTrimming="CharacterEllipsis"><Run Text="{Binding Game}" Foreground="{StaticResource OnlineText}" /><Run Text="{Binding Rest}" Foreground="{StaticResource Dim}" /></TextBlock>
                                                 </StackPanel>
                                             </Grid>
                                         </DataTemplate>
