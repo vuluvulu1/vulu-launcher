@@ -45,7 +45,7 @@ namespace VuluLauncher.ViewModels
         public ContentSearchViewModel Search { get; }
         public InstanceEditorModal Blank { get; }
         public ObservableCollection<SourceItem> Sources { get; } = new();
-        public override double Width => 1040;
+        public override double Width => 1200;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsBlank), nameof(IsPacks), nameof(IsSearch))]
@@ -89,7 +89,7 @@ namespace VuluLauncher.ViewModels
         public InstanceItem Target { get; }
         public ContentSearchViewModel Search { get; }
         public ObservableCollection<Choice> Sources { get; } = new();
-        public override double Width => 1040;
+        public override double Width => 1200;
         public string Title => $"İçerik ekle: {Target.Name}";
         public string Subtitle => $"Minecraft {Target.McVersion}{(Target.Loader != "vanilla" ? " · " + Names.Loader(Target.Loader) : "")} ile uyumlu olanlar";
 

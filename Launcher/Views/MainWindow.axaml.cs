@@ -139,6 +139,16 @@ namespace VuluLauncher.Views
             };
         }
 
+        /// <summary>Kutunun dışına (karartmaya) tıklandı: kutu kapanır. Kutunun içine tıklamak kapatmaz.</summary>
+        private void OnBackdropPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (e.Source == sender && sender is Border { DataContext: ModalViewModel modal } && !modal.Closing)
+            {
+                modal.DismissCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+
         private void OnNotificationsOpened(object? sender, EventArgs e)
         {
             if (DataContext is MainViewModel vm) vm.Notifications.IsOpen = true;

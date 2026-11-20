@@ -7,6 +7,16 @@
     <!-- CurseForge / Modrinth araması: Yeni paket'te modpack, İçerik ekle'de mod, kaynak paketi ve shader -->
     <UserControl.Styles>
         <StyleInclude Source="avares://vulu Launcher/Views/CatalogStyles.axaml" />
+        <Style Selector="TextBlock.fhead"><Setter Property="FontSize" Value="11.5" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{StaticResource Dim}" /></Style>
+        <Style Selector="Button.catrow">
+            <Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /><Setter Property="Padding" Value="6,4" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" /><Setter Property="Foreground" Value="{StaticResource Muted}" />
+        </Style>
+        <Style Selector="Button.catrow:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{StaticResource Hover}" /><Setter Property="Foreground" Value="{StaticResource Text}" /></Style>
+        <Style Selector="Button.catrow.active"><Setter Property="Foreground" Value="{StaticResource AccentHi}" /></Style>
+        <Style Selector="Button.catrow Border.check"><Setter Property="BorderBrush" Value="{StaticResource LineStrong}" /><Setter Property="BorderThickness" Value="1.5" /><Setter Property="Background" Value="Transparent" /></Style>
+        <Style Selector="Button.catrow.active Border.check"><Setter Property="BorderBrush" Value="{StaticResource Accent}" /><Setter Property="Background" Value="{StaticResource Accent}" /></Style>
     </UserControl.Styles>
     <DockPanel>
         <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
@@ -21,42 +31,55 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </Grid>
-        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8" ItemSpacing="8" LineSpacing="8">
-            <ComboBox Classes="flt" ItemsSource="{Binding Sorts}" SelectedItem="{Binding Sort}" ToolTip.Tip="Sırala" />
-            <ComboBox Classes="flt" IsVisible="{Binding FreeBrowse}" ItemsSource="{Binding Versions}" SelectedItem="{Binding Version}" MaxDropDownHeight="360" ToolTip.Tip="Minecraft sürümü" />
-            <ComboBox Classes="flt" IsVisible="{Binding ShowLoader}" ItemsSource="{Binding LoaderOptions}" SelectedItem="{Binding Loader}" ToolTip.Tip="Yükleyici" />
-            <Button Classes="cact" Content="Kategoriler ▾">
-                <Button.Flyout>
-                    <Flyout Placement="BottomEdgeAlignedLeft">
-                        <ScrollViewer MaxHeight="420" Width="380">
-                            <StackPanel Margin="4" Spacing="4">
-                                <v:Loading Text="Filtreler yükleniyor…" HorizontalAlignment="Left" IsVisible="{Binding FiltersLoading}" />
-                                <ItemsControl ItemsSource="{Binding Groups}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="vm:CategoryGroup">
-                                            <StackPanel Margin="0,0,0,10">
-                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Classes="dim" Margin="0,0,0,4" />
-                                                <ItemsControl ItemsSource="{Binding Chips}">
-                                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate x:DataType="vm:CategoryChip">
-                                                            <Button Classes="chip" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
-                                                                    Command="{Binding $parent[UserControl].((vm:ContentSearchViewModel)DataContext).ToggleCategoryCommand}" CommandParameter="{Binding}" />
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </ScrollViewer>
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
-            <CheckBox Content="Yalnızca açık kaynak" IsChecked="{Binding OpenSource}" IsVisible="{Binding !IsCurseForge}" VerticalAlignment="Center" />
-            <Button Classes="clink" Content="{Binding ClearText}" IsVisible="{Binding CanClear}" Command="{Binding ClearFiltersCommand}" VerticalAlignment="Center" />
-        </WrapPanel>
+        <!-- Sağda süzgeç paneli: sıralama, sürüm, yükleyici, açık kaynak ve gruplanmış kategoriler (işaretlenebilir liste) -->
+        <Border DockPanel.Dock="Right" Width="250" Margin="14,0,8,8" Padding="14,12" CornerRadius="{DynamicResource OverlayCornerRadius}"
+                Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+            <DockPanel>
+                <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                    <TextBlock Text="Süzgeçler" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="clink" Content="{Binding ClearText}" IsVisible="{Binding CanClear}" Command="{Binding ClearFiltersCommand}" VerticalAlignment="Center" />
+                </Grid>
+                <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,12">
+                    <TextBlock Text="Sırala" Classes="fhead" />
+                    <ComboBox ItemsSource="{Binding Sorts}" SelectedItem="{Binding Sort}" HorizontalAlignment="Stretch" />
+                    <TextBlock Text="Minecraft sürümü" Classes="fhead" IsVisible="{Binding FreeBrowse}" Margin="0,6,0,0" />
+                    <ComboBox IsVisible="{Binding FreeBrowse}" ItemsSource="{Binding Versions}" SelectedItem="{Binding Version}" MaxDropDownHeight="360" HorizontalAlignment="Stretch" />
+                    <TextBlock Text="Yükleyici" Classes="fhead" IsVisible="{Binding ShowLoader}" Margin="0,6,0,0" />
+                    <ComboBox IsVisible="{Binding ShowLoader}" ItemsSource="{Binding LoaderOptions}" SelectedItem="{Binding Loader}" HorizontalAlignment="Stretch" />
+                    <CheckBox Content="Yalnızca açık kaynak" IsChecked="{Binding OpenSource}" IsVisible="{Binding !IsCurseForge}" Margin="0,6,0,0" />
+                </StackPanel>
+                <ScrollViewer>
+                    <StackPanel Spacing="4">
+                        <v:Loading Text="Kategoriler yükleniyor…" HorizontalAlignment="Left" IsVisible="{Binding FiltersLoading}" />
+                        <ItemsControl ItemsSource="{Binding Groups}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CategoryGroup">
+                                    <StackPanel Margin="0,0,0,12" Spacing="1">
+                                        <TextBlock Text="{Binding Title}" Classes="fhead" Margin="0,0,0,4" />
+                                        <ItemsControl ItemsSource="{Binding Chips}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:CategoryChip">
+                                                    <Button Classes="catrow" Classes.active="{Binding IsSelected}"
+                                                            Command="{Binding $parent[UserControl].((vm:ContentSearchViewModel)DataContext).ToggleCategoryCommand}" CommandParameter="{Binding}">
+                                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
+                                                            <Border Classes="check" Width="16" Height="16" CornerRadius="4" VerticalAlignment="Center">
+                                                                <Path Data="M5 12l4 4 10-10" Stroke="{StaticResource AccentInk}" StrokeThickness="2.6" StrokeLineCap="Round" StrokeJoin="Round"
+                                                                      Width="10" Height="10" Stretch="Uniform" IsVisible="{Binding IsSelected}" />
+                                                            </Border>
+                                                            <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="12.5" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                        </Grid>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
         <TextBlock DockPanel.Dock="Top" Text="{Binding Status}" Classes="dim" FontSize="12.5" Margin="0,0,0,10" TextWrapping="Wrap" />
         <ScrollViewer>
             <StackPanel Margin="0,0,0,8" Spacing="8">

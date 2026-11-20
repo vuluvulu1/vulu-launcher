@@ -67,7 +67,7 @@ namespace VuluLauncher.ViewModels
             _ = LoadAsync();
         }
 
-        public override double Width => 860;
+        public override double Width => 1040;
         public ContentHit Hit => _hit;
         public string PageText { get; }
         public ObservableCollection<Choice> Tabs { get; } = new();
@@ -105,7 +105,7 @@ namespace VuluLauncher.ViewModels
                 Tabs[1] = new Choice("gallery", Gallery.Count > 0 ? $"Galeri ({Gallery.Count})" : "Galeri") { IsSelected = Tab == "gallery" };
                 Message = null;
             }
-            catch (Exception ex) { Message = "Ayrıntılar alınamadı: " + ex.Message; }
+            catch (Exception ex) { Message = "Ayrıntılar alınamadı. " + Errors.Friendly(ex); }
         }
 
         [RelayCommand]

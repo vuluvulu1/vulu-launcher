@@ -224,6 +224,9 @@ namespace VuluLauncher.ViewModels
                                 if (m is NewPackModal np) { np.Search.LoadPreview(); np.Blank.LoadPreview(); }
                                 if (m is AddContentModal ac) ac.Search.LoadPreview();
                             }
+                            // VULU_UI_PROJECT=1: ilk sonucun ayrıntı penceresi açılır
+                            if (Environment.GetEnvironmentVariable("VULU_UI_PROJECT") == "1" && Modals.OfType<AddContentModal>().FirstOrDefault() is { } add && add.Search.Hits.Count > 0)
+                                add.Search.Hits[0].DetailsCommand.Execute(null);
                         }, TimeSpan.FromSeconds(2));
                     }, TimeSpan.FromSeconds(2));
                 // VULU_UI_SAMPLE=1: vulu Packs'e örnek paket kartları (kart görünümünü denemek için)

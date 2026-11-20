@@ -620,6 +620,10 @@ namespace VuluLauncher.ViewModels
                     gameVersions = new[] { "1.20.1" }, loaders = new[] { "forge" },
                 }), IsCurseForge));
             Status = $"{Hits.Count} sonuç";
+            Groups.Clear();
+            Groups.Add(new CategoryGroup("Kategoriler", new[] { "adventure", "magic", "technology", "storage", "food", "worldgen", "optimization", "library" }
+                .Select((n, i) => new CategoryChip(n) { IsSelected = i == 2 }).ToList()));
+            Groups.Add(new CategoryGroup("Özellikler", new[] { "client-side", "server-side" }.Select(n => new CategoryChip(n)).ToList()));
         }
 #endif
 

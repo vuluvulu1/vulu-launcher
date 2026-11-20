@@ -449,7 +449,8 @@
                     <Panel>
                         <v:EmptyState IsVisible="{Binding PageContent.IsEmpty}" Margin="0,30,0,0" VerticalAlignment="Top" Icon="🧩" Title="Henüz içerik yok"
                                       Text="CurseForge ya da Modrinth'ten mod, kaynak paketi ya da shader ekle." ActionText="+ İçerik ekle" Command="{Binding PageAddContentCommand}" />
-                        <ScrollViewer>
+                        <!-- Liste boşken kaydırma alanı gizli: yoksa boş durum kutusunun üstünü örtüp düğmeyi tıklanmaz yapıyordu -->
+                        <ScrollViewer IsVisible="{Binding !PageContent.IsEmpty}">
                             <ItemsControl ItemsSource="{Binding PageContent.Rows}" Margin="0,0,0,8">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:ContentRow">

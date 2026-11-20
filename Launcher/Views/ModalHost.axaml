@@ -401,7 +401,7 @@
 
             <!-- ── Yeni paket: solda kaynak, sağda içeriği (eski Keşfet sekmesi buraya taşındı) ── -->
             <DataTemplate DataType="vm:NewPackModal">
-                <Grid ColumnDefinitions="236,*" Height="660">
+                <Grid ColumnDefinitions="236,*" Height="700">
                     <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
                         <DockPanel Margin="14,18,14,14">
                             <StackPanel DockPanel.Dock="Top" Margin="8,0,8,16" Spacing="2">
@@ -470,7 +470,7 @@
 
             <!-- ── İçerik ekle: seçili instance'a mod, kaynak paketi, shader ── -->
             <DataTemplate DataType="vm:AddContentModal">
-                <DockPanel Height="660">
+                <DockPanel Height="700">
                     <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto" Margin="22,18,16,14">
                         <StackPanel Spacing="2">
                             <TextBlock Classes="modal-title" Text="{Binding Title}" />
@@ -1332,31 +1332,20 @@
 
             <!-- ── Proje ayrıntıları (CurseForge / Modrinth) ───────────── -->
             <DataTemplate DataType="vm:ProjectDetailsModal">
-                <DockPanel MaxHeight="700">
-                    <Grid DockPanel.Dock="Top" ColumnDefinitions="64,*,Auto" Margin="22,18,22,10">
-                        <Border Width="64" Height="64" Background="{StaticResource Raised}" ClipToBounds="True" VerticalAlignment="Top">
-                            <Image Source="{Binding Hit.Icon}" Stretch="UniformToFill" />
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="14,0" Spacing="4">
-                            <TextBlock Text="{Binding Hit.Title}" FontSize="20" FontWeight="Bold" TextWrapping="Wrap" />
-                            <TextBlock Text="{Binding Hit.Description}" Classes="muted" TextWrapping="Wrap" />
-                            <ItemsControl ItemsSource="{Binding Facts}" Margin="0,4,0,0">
-                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:Tag">
-                                        <Border Classes="tag" Margin="0,0,5,5" Padding="6,1"><TextBlock Text="{Binding Text}" FontSize="11.5" /></Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" Spacing="8" HorizontalAlignment="Right">
-                            <Button Classes="primary" Content="{Binding Hit.ButtonText}" IsEnabled="{Binding Hit.CanInstall}" Command="{Binding InstallCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
-                            <Button Classes="link" Content="{Binding PageText}" Command="{Binding OpenPageCommand}" HorizontalAlignment="Right" />
-                            <Button Classes="link" Content="Kapat" Command="{Binding DismissCommand}" HorizontalAlignment="Right" />
-                        </StackPanel>
-                    </Grid>
-                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="22,0,22,10">
-                        <ItemsControl Classes="segmented" ItemsSource="{Binding Tabs}">
+                <!-- Solda başlık, sekmeler ve içerik; sağda kur düğmesi, bilgiler ve bağlantılar (kapatma: köşedeki × ya da dışarı tıklama) -->
+                <Grid ColumnDefinitions="*,290" Height="700">
+                    <DockPanel Margin="24,22,8,0">
+                        <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" ColumnSpacing="16" Margin="0,0,0,16">
+                            <Border Width="76" Height="76" CornerRadius="16" Background="{StaticResource Raised}" ClipToBounds="True" VerticalAlignment="Top">
+                                <Image Source="{Binding Hit.Icon}" Stretch="UniformToFill" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Hit.Title}" FontSize="22" FontWeight="Bold" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Hit.Author}" Classes="dim" FontSize="12.5" />
+                                <TextBlock Text="{Binding Hit.Description}" Classes="muted" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Grid>
+                        <ItemsControl DockPanel.Dock="Top" Classes="segmented" ItemsSource="{Binding Tabs}" HorizontalAlignment="Left" Margin="0,0,0,14">
                             <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:Choice">
@@ -1365,17 +1354,8 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <ItemsControl Grid.Column="1" ItemsSource="{Binding Links}" VerticalAlignment="Center">
-                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="12" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:ProjectLink">
-                                    <Button Classes="link" Content="{Binding Label, StringFormat='{}{0} ↗'}" Command="{Binding Open}" ToolTip.Tip="{Binding Url}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Grid>
                     <ScrollViewer>
-                        <StackPanel Margin="22,0,22,18">
+                        <StackPanel Margin="0,0,16,18">
                             <TextBlock Text="{Binding Message}" IsVisible="{Binding Message, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="dim" />
                             <!-- Açıklama -->
                             <ItemsControl ItemsSource="{Binding Blocks}" IsVisible="{Binding IsAbout}">
@@ -1437,7 +1417,38 @@
                             </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
-                </DockPanel>
+                    </DockPanel>
+                    <!-- Sağ sütun -->
+                    <Border Grid.Column="1" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1,0,0,0" Padding="20,26,20,20">
+                        <ScrollViewer>
+                            <StackPanel Spacing="10">
+                                <Button Classes="primary" Height="46" FontSize="15" FontWeight="SemiBold" Content="{Binding Hit.ButtonText}" IsEnabled="{Binding Hit.CanInstall}"
+                                        Command="{Binding InstallCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                                <Button Content="Belirli bir sürümü seç" Height="38" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        Command="{Binding PickTabCommand}" CommandParameter="{Binding Tabs[2]}" />
+                                <TextBlock Text="BİLGİLER" Classes="dim" FontSize="11" FontWeight="SemiBold" LetterSpacing="0.6" Margin="0,14,0,2" />
+                                <ItemsControl ItemsSource="{Binding Facts}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:Tag">
+                                            <Border Classes="tag" Margin="0,0,6,6" Padding="8,3" CornerRadius="{DynamicResource ControlCornerRadius}"><TextBlock Text="{Binding Text}" FontSize="12" /></Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="BAĞLANTILAR" Classes="dim" FontSize="11" FontWeight="SemiBold" LetterSpacing="0.6" Margin="0,10,0,2" />
+                                <Button Classes="link" Content="{Binding PageText}" Command="{Binding OpenPageCommand}" HorizontalAlignment="Left" />
+                                <ItemsControl ItemsSource="{Binding Links}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ProjectLink">
+                                            <Button Classes="link" Content="{Binding Label, StringFormat='{}{0} ↗'}" Command="{Binding Open}" ToolTip.Tip="{Binding Url}" HorizontalAlignment="Left" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
             </DataTemplate>
 
             <!-- ── Tanıtım rehberi ─────────────────────────────────── -->
