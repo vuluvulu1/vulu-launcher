@@ -25,6 +25,10 @@ namespace VuluLauncher.ViewModels
         public bool HasBadge => Badge > 0;
         /// <summary>Sekme çubuğunda (ya da rayın üst kısmında) görünür. Ayarlar ayrı bir dişli simgesiyle açılır.</summary>
         public bool InBar => IsVisible && Key != "settings";
+        /// <summary>Kütüphane rayında üstüne gelince çıkan etiket: ad ve canlı bilgi ("Sunucular · 2 açık").</summary>
+        [ObservableProperty] private string _tip = title;
+        /// <summary>Canlı yeşil nokta (ör. açık bir sunucu var).</summary>
+        [ObservableProperty] private bool _live;
         partial void OnIsVisibleChanged(bool value) => OnPropertyChanged(nameof(InBar));
     }
 
@@ -111,7 +115,11 @@ namespace VuluLauncher.ViewModels
             // Güncellemesi olan paketler Oyna sekmesinde rozet olur
             Home.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(HomeViewModel.PackUpdateCount)) Tabs[0].Badge = Home.PackUpdateCount;
+                if (e.PropertyName == nameof(HomeViewModel.PackUpdateCount))
+            {
+                Tabs[0].Badge = Home.PackUpdateCount;
+                Tabs[0].Tip = Home.PackUpdateCount > 0 ? $"Oyna · {Home.PackUpdateCount} paket güncellemesi" : "Oyna";
+            }
             };
             Settings = new SettingsViewModel(this);
             Packs = new PacksViewModel(this);
@@ -205,6 +213,13 @@ namespace VuluLauncher.ViewModels
                 if (Environment.GetEnvironmentVariable("VULU_UI_SAMPLE") == "1")
                     Avalonia.Threading.DispatcherTimer.RunOnce(() =>
                     {
+                        // Raydaki canlı işaretler: açık sunucu noktası, okunmamış rozeti, etiketler
+                        var servers = Tabs.First(t => t.Key == "servers");
+                        servers.Live = true;
+                        servers.Tip = "Sunucular · 2 açık";
+                        var social = Tabs.First(t => t.Key == "social");
+                        social.Badge = 3;
+                        social.Tip = "Sosyal · 4 arkadaş çevrimiçi, 1 oyunda";
                         Packs.Skeleton = false;
                         Packs.Status = "4 paket";
                         Packs.StatusIsError = false;

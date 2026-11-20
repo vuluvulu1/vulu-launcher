@@ -31,7 +31,7 @@
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="BoxShadow" Value="none" />
     </Style>
-    <Style Selector="Window.kutuphane Border#TabsHost, Window.kutuphane Border#SearchIconHost, Window.kutuphane Border#SettingsIconHost">
+    <Style Selector="Window.kutuphane Border#TabsHost, Window.kutuphane Border#SearchIconHost, Window.kutuphane Border#SettingsIconHost, Window.kutuphane Border#ProfileHost">
         <Setter Property="IsVisible" Value="False" />
     </Style>
     <Style Selector="Window.kutuphane Border#SearchPillHost">
@@ -232,17 +232,27 @@
         <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
     </Style>
     <!-- Seçili sekmenin zemini kayan işaretten gelir (MainWindow RailMark); düğmenin kendisi saydam kalır -->
-    <!-- Seçili: simge açık renk; işaret soldaki amber hap (MainWindow RailMark) -->
+    <!-- Seçili: simge amber; işaret soldaki amber hap ve arkasındaki ışık (MainWindow RailMark) -->
     <Style Selector="Button.rail-tab.active">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource Text}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
     </Style>
     <Style Selector="Button.rail-tab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource Text}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
     </Style>
     <Style Selector="Button.rail-tab:pressed">
         <Setter Property="RenderTransform" Value="scale(0.96)" />
+    </Style>
+    <!-- Üstüne gelince simge hafifçe büyür -->
+    <Style Selector="Button.rail-tab Path.tab-icon">
+        <Setter Property="RenderTransform" Value="scale(1)" />
+        <Setter Property="Transitions">
+            <Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" /></Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.rail-tab:pointerover Path.tab-icon">
+        <Setter Property="RenderTransform" Value="scale(1.12)" />
     </Style>
     <Style Selector="Button.rail-tab Path.tab-icon">
         <Setter Property="Stroke" Value="{Binding $parent[Button].Foreground}" />

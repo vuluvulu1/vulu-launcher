@@ -319,6 +319,7 @@ namespace VuluLauncher.ViewModels
                 _outgoing = r.Items("outgoing").Select(x => x.GetString() ?? "").ToList();
                 _friendsLoaded = true;
                 _friendsError = null;
+                UpdateTip();
             }
             catch (Exception ex) { _friendsError = Errors.Friendly(ex); /* yüklenmiş eski liste varsa o kalır */ }
             UpdateBadge();
@@ -329,6 +330,17 @@ namespace VuluLauncher.ViewModels
         {
             try { _presence = (await _core.Call("community.presence")).Clone(); } catch { /* eski kalır */ }
             Main.Home.UpdatePlayingHere();
+            UpdateTip();
+        }
+
+        /// <summary>Kütüphane rayındaki etiket: kaç arkadaş çevrimiçi, kaçı oyunda.</summary>
+        private void UpdateTip()
+        {
+            if (Main.Tabs.FirstOrDefault(t => t.Key == "social") is not { } tab) return;
+            var online = _friends.Where(f => PresenceOf(f).ValueKind == JsonValueKind.Object).ToList();
+            int playing = online.Count(f => PresenceOf(f).Text("state") == "playing");
+            tab.Tip = online.Count == 0 ? "Sosyal"
+                : playing > 0 ? $"Sosyal · {online.Count} arkadaş çevrimiçi, {playing} oyunda" : $"Sosyal · {online.Count} arkadaş çevrimiçi";
         }
 
         /// <summary>Şu an bu pakette oynayanlar (kendin hariç; web: playingHere).</summary>

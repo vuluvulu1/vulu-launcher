@@ -157,6 +157,7 @@ namespace VuluLauncher.ViewModels
                 Motd = null;
                 MotdFallback = Description.Length > 0 ? Description : "Sunucu şu an kapalı.";
             }
+            _owner.UpdateTab();
         }
 
         // ── Oyun içi sohbet ───────────────────────────────────────────────
@@ -283,6 +284,15 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private string _onlineCount = "";
         [ObservableProperty] private bool _nobodyOnline;
         public bool IsAdmin => _main.IsAdmin;
+
+        /// <summary>Kütüphane rayı: açık sunucu varsa yeşil nokta, etikette kaç tane açık olduğu.</summary>
+        public void UpdateTab()
+        {
+            if (_main.Tabs.FirstOrDefault(t => t.Key == "servers") is not { } tab) return;
+            int open = Servers.Count(s => s.IsOnline);
+            tab.Live = open > 0;
+            tab.Tip = open > 0 ? $"Sunucular · {open} açık" : "Sunucular";
+        }
         /// <summary>Sunucular sekmesi şu an açık mı (sohbet yoklaması yalnızca açıkken).</summary>
         public bool IsVisible => _main.SelectedTab?.Page == this;
 

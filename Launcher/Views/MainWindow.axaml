@@ -346,40 +346,88 @@
                     <Style Selector="Window.kutuphane v|PageHost#PageHost, Window.kutuphane v|PageHost#PageHost.home"><Setter Property="Margin" Value="56,50,0,0" /></Style>
                 </v:PageHost.Styles>
             </v:PageHost>
-            <!-- ── Kütüphane teması: solda ince simge rayı, başlık çubuğunun altında (yalnızca sekmeler; Ayarlar en altta). Ad üstüne gelince görünür ── -->
+            <!-- ── Kütüphane teması: solda ince simge rayı, başlık çubuğunun altında. Üstte sekmeler, altta profil ve Ayarlar.
+                 Seçili sekme amber ve arkasında yumuşak ışık; solunda kayan amber hap. Üstüne gelince canlı bilgili ad etiketi. ── -->
             <Border x:Name="Rail" Grid.Row="1" ZIndex="4" Width="56" HorizontalAlignment="Left"
                     Background="{StaticResource RailBg}" BorderBrush="{StaticResource RailLine}" BorderThickness="0,0,1,0">
                 <Panel IsVisible="{Binding ShowShell}">
-                    <!-- Seçili sekmenin solundaki amber hap: sekme değişince yeni sekmeye kayar (PlaceRailMark); düğmelerin zemini yok -->
+                    <!-- Rayın tepesinde çok hafif sıcak parıltı (zemin dümdüz siyah kalmasın) -->
+                    <Border Height="220" VerticalAlignment="Top" IsHitTestVisible="False">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0" Color="#16F2A33A" />
+                                <GradientStop Offset="1" Color="#00F2A33A" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <!-- Seçili sekmenin işareti: soldaki amber hap ve simgenin arkasındaki ışık; sekme değişince esneyerek kayar (PlaceRailMark) -->
                     <Canvas x:Name="RailCanvas" IsHitTestVisible="False">
                         <Panel x:Name="RailMark" Width="56" Height="42" Opacity="0">
                             <Panel.Transitions>
                                 <Transitions>
-                                    <DoubleTransition Property="Canvas.Top" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                                    <DoubleTransition Property="Canvas.Top" Duration="0:0:0.38" Easing="BackEaseOut" />
                                     <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
                                 </Transitions>
                             </Panel.Transitions>
-                            <Border Width="4" Height="24" CornerRadius="0,4,4,0" Background="{StaticResource Accent}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                            <Border Width="34" Height="34" CornerRadius="17" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border.Background>
+                                    <RadialGradientBrush>
+                                        <GradientStop Offset="0" Color="#3DF2A33A" />
+                                        <GradientStop Offset="1" Color="#00F2A33A" />
+                                    </RadialGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <Border x:Name="RailPill" Width="4" Height="24" CornerRadius="0,4,4,0" Background="{StaticResource Accent}" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                    BoxShadow="0 0 10 1 #99F2A33A">
+                                <Border.Transitions>
+                                    <Transitions><DoubleTransition Property="Height" Duration="0:0:0.18" Easing="CubicEaseOut" /></Transitions>
+                                </Border.Transitions>
+                            </Border>
                         </Panel>
                     </Canvas>
                     <DockPanel Margin="0,12,0,12">
-                        <Button DockPanel.Dock="Bottom" Classes="rail-tab" Classes.active="{Binding SettingsTab.IsActive}" Classes.glow="{Binding SettingsTab.IsGlowing}"
-                                Command="{Binding SelectTabCommand}" CommandParameter="{Binding SettingsTab}" ToolTip.Tip="Ayarlar" ToolTip.Placement="Right"
-                                AutomationProperties.Name="Ayarlar">
-                            <Path Classes="tab-icon" Data="{Binding SettingsTab.Icon}" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" />
-                        </Button>
+                        <StackPanel DockPanel.Dock="Bottom" Spacing="8">
+                            <!-- Profil: yeşil halka çevrimiçi demek -->
+                            <Button Classes="rail-avatar" HorizontalAlignment="Center" Command="{Binding OpenMyProfileCommand}" ToolTip.Tip="Profilim"
+                                    ToolTip.Placement="Right" ToolTip.ShowDelay="150" AutomationProperties.Name="Profilim">
+                                <!-- Halka dıştaki kutuda (içteki resim kırpılır; kırpılan kutunun gölgesi görünmezdi) -->
+                                <Border Width="30" Height="30" CornerRadius="15" Margin="4" BoxShadow="0 0 0 2 #090807, 0 0 0 4 #7FC98A">
+                                    <Border CornerRadius="15" ClipToBounds="True" Background="{StaticResource Raised}">
+                                        <Grid>
+                                            <TextBlock Text="{Binding UserInitial}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <Image Source="{Binding MyAvatar}" Stretch="UniformToFill" />
+                                        </Grid>
+                                    </Border>
+                                </Border>
+                            </Button>
+                            <Button Classes="rail-tab" Classes.active="{Binding SettingsTab.IsActive}" Classes.glow="{Binding SettingsTab.IsGlowing}"
+                                    Command="{Binding SelectTabCommand}" CommandParameter="{Binding SettingsTab}" ToolTip.Tip="Ayarlar" ToolTip.Placement="Right" ToolTip.ShowDelay="150"
+                                    AutomationProperties.Name="Ayarlar">
+                                <Path Classes="tab-icon" Data="{Binding SettingsTab.Icon}" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" />
+                            </Button>
+                        </StackPanel>
                         <ItemsControl x:Name="RailTabs" ItemsSource="{Binding Tabs}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:PageTab">
                                     <Button Classes="rail-tab" Classes.active="{Binding IsActive}" Classes.glow="{Binding IsGlowing}" IsVisible="{Binding InBar}"
                                             Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SelectTabCommand}" CommandParameter="{Binding}"
-                                            ToolTip.Tip="{Binding Title}" ToolTip.Placement="Right" AutomationProperties.Name="{Binding Title}">
+                                            ToolTip.Tip="{Binding Tip}" ToolTip.Placement="Right" ToolTip.ShowDelay="150" AutomationProperties.Name="{Binding Title}">
                                         <Panel>
                                             <Path Classes="tab-icon" Data="{Binding Icon}" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             <Border IsVisible="{Binding HasBadge}" Background="{StaticResource Accent}" MinWidth="15" Height="15" CornerRadius="8" Padding="3,0"
                                                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,3,3,0">
                                                 <TextBlock Text="{Binding Badge}" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource AccentInk}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
+                                            <!-- Canlı: yeşil nokta (rozet yoksa) -->
+                                            <Ellipse Width="9" Height="9" Fill="{StaticResource Online}" Stroke="{StaticResource RailBg}" StrokeThickness="2"
+                                                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,7,0">
+                                                <Ellipse.IsVisible>
+                                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                        <Binding Path="Live" />
+                                                        <Binding Path="!HasBadge" />
+                                                    </MultiBinding>
+                                                </Ellipse.IsVisible>
+                                            </Ellipse>
                                         </Panel>
                                     </Button>
                                 </DataTemplate>

@@ -221,7 +221,13 @@ namespace VuluLauncher.Views
                 Canvas.SetTop(RailMark, top);
                 RailMark.Transitions = transitions;
             }
-            else Canvas.SetTop(RailMark, top);
+            else if (Math.Abs(Canvas.GetTop(RailMark) - top) > 1)
+            {
+                // Kayarken hap uzar, yerine varınca eski boyuna döner (esneyerek oturur)
+                Canvas.SetTop(RailMark, top);
+                RailPill.Height = 36;
+                Avalonia.Threading.DispatcherTimer.RunOnce(() => RailPill.Height = 24, TimeSpan.FromMilliseconds(200));
+            }
             RailMark.Opacity = 1;
         }
 
