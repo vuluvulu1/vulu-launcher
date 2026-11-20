@@ -615,8 +615,6 @@ namespace VuluLauncher.ViewModels
             if (value?.Page is AdminViewModel admin) _ = admin.OpenAsync();
             // Başka sayfada mod kurulduysa ya da kaldırıldıysa Oyna'daki sayılar güncel olsun
             if (value?.Page is HomeViewModel && LoggedIn) Home.RefreshDetails();
-            // Kütüphane: Oyna'daki "Şu an" satırı (açık sunucular, oyundaki arkadaşlar)
-            if (value?.Page is HomeViewModel && LoggedIn && Themes.IsKutuphane) _ = Social.RefreshLiveForHomeAsync();
         }
 
         /// <summary>Launcher içindeki küçük bilgi kartı (ör. "Kopyalandı"); asıl bildirimler masaüstünde çıkar.</summary>

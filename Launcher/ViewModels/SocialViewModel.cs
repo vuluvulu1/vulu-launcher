@@ -543,20 +543,6 @@ namespace VuluLauncher.ViewModels
         }
 #endif
 
-        private DateTime _homeLiveAt;
-
-        /// <summary>
-        /// Kütüphane'de Oyna açıldı: kapakların altındaki "Şu an" satırı için canlı kartlar tazelenir (en çok dakikada bir;
-        /// arkadaş listesi Sosyal hiç açılmadıysa da alınır).
-        /// </summary>
-        public async Task RefreshLiveForHomeAsync()
-        {
-            if (DateTime.UtcNow - _homeLiveAt < TimeSpan.FromMinutes(1)) return;
-            _homeLiveAt = DateTime.UtcNow;
-            if (!_friendsLoaded) await RefreshFriendsAsync();
-            await RefreshLiveAsync();
-        }
-
         /// <summary>Canlı kartlar: duyuru, açık sunucular (içerideki oyuncularla), oyundaki arkadaşlar.</summary>
         private async Task RefreshLiveAsync()
         {

@@ -299,59 +299,6 @@
                     </ListBox.DataTemplates>
                 </ListBox>
 
-                <!-- Şu an: açık sunucular (içerideki oyuncularla) ve oyundaki arkadaşlar; kapakların altındaki boşluk anlamlı dolsun.
-                     Veri Sosyal'in canlı kartlarından (SocialViewModel.Live); Oyna açılınca tazelenir. -->
-                <StackPanel Margin="0,22,18,8" Spacing="10" IsVisible="{Binding Main.Social.HasLive}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Ellipse Width="8" Height="8" Fill="{StaticResource Online}" VerticalAlignment="Center" />
-                        <TextBlock Text="Şu an" FontSize="18" FontWeight="SemiBold" />
-                    </StackPanel>
-                    <ItemsControl ItemsSource="{Binding Main.Social.Live}">
-                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                        <ItemsControl.DataTemplates>
-                            <!-- Duyuru zaten sayfanın üstünde -->
-                            <DataTemplate DataType="vm:LiveAnnouncement"><Panel IsVisible="False" /></DataTemplate>
-                            <DataTemplate DataType="vm:LiveServer">
-                                <Border Width="258" Padding="12" Margin="0,0,12,12" CornerRadius="14" Background="{StaticResource Panel}" BorderBrush="{StaticResource CardLine}" BorderThickness="1">
-                                    <Grid ColumnDefinitions="40,*,Auto">
-                                        <Border Width="40" Height="40" CornerRadius="10" Background="{StaticResource Raised}" ClipToBounds="True">
-                                            <Grid>
-                                                <TextBlock Text="{Binding Server.Initial}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                <Image Source="{Binding Server.Favicon}" RenderOptions.BitmapInterpolationMode="None" />
-                                            </Grid>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center" Spacing="2">
-                                            <TextBlock Text="{Binding Server.Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding Players}" Foreground="{StaticResource OnlineText}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                                        </StackPanel>
-                                        <Button Grid.Column="2" Classes="dbtn" Height="32" Padding="14,0" FontSize="12.5" FontWeight="SemiBold" Content="Gir"
-                                                Command="{Binding JoinCommand}" VerticalAlignment="Center" ToolTip.Tip="Oyunu açıp sunucuya bağlanır" />
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                            <DataTemplate DataType="vm:LiveFriend">
-                                <Border Width="258" Padding="12" Margin="0,0,12,12" CornerRadius="14" Background="{StaticResource Panel}" BorderBrush="{StaticResource CardLine}" BorderThickness="1">
-                                    <Grid ColumnDefinitions="40,*,Auto">
-                                        <Border Width="40" Height="40" CornerRadius="20" Background="{StaticResource Raised}" ClipToBounds="True">
-                                            <Grid>
-                                                <TextBlock Text="{Binding Person.Initial}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                <Image Source="{Binding Person.Avatar}" Stretch="UniformToFill" />
-                                            </Grid>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center" Spacing="2">
-                                            <TextBlock Text="{Binding Person.Username}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding Detail}" Foreground="{StaticResource OnlineText}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                                        </StackPanel>
-                                        <Button Grid.Column="2" Classes="dbtn" Height="32" Padding="14,0" FontSize="12.5" FontWeight="SemiBold" Content="Katıl" IsVisible="{Binding CanJoin}"
-                                                Command="{Binding JoinCommand}" VerticalAlignment="Center" />
-                                        <Button Grid.Column="2" Classes="dbtn" Height="32" Padding="14,0" FontSize="12.5" Content="Yaz" IsVisible="{Binding !CanJoin}"
-                                                Command="{Binding OpenCommand}" VerticalAlignment="Center" />
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.DataTemplates>
-                    </ItemsControl>
-                </StackPanel>
                 </StackPanel>
             </ScrollViewer>
         </Grid>
