@@ -72,13 +72,12 @@
             <Setter Property="Transitions"><Transitions><BrushTransition Property="Background" Duration="0:0:0.15" /><BrushTransition Property="BorderBrush" Duration="0:0:0.15" /></Transitions></Setter>
         </Style>
         <Style Selector="Border.setcard">
-            <Setter Property="Width" Value="{DynamicResource CardW}" />
             <Setter Property="Transitions"><Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.15" /></Transitions></Setter>
         </Style>
         <Style Selector="Border.setcard:pointerover"><Setter Property="BorderBrush" Value="{StaticResource CardLineHover}" /></Style>
         <Style Selector="Border.setcard">
-            <Setter Property="Margin" Value="0,0,14,14" />
-            <Setter Property="Padding" Value="18,16" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="Padding" Value="20,14" />
             <Setter Property="CornerRadius" Value="16" />
             <Setter Property="Background" Value="{StaticResource Panel}" />
             <Setter Property="BorderBrush" Value="{StaticResource CardLine}" />
@@ -232,16 +231,19 @@
                 <TextBlock Text="{Binding LoadError}" IsVisible="{Binding LoadError, Converter={x:Static ObjectConverters.IsNotNull}}" Foreground="{StaticResource Error}" TextWrapping="Wrap" />
                 <TextBlock Text="Aramana uyan bir ayar yok." IsVisible="{Binding NoResults}" Classes="muted" />
                 <ItemsControl x:Name="KutCards">
-                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:SettingRow">
+                            <!-- Tek sütun: yazı solda, denetim sağda; kartların yüksekliği içeriğe göre, satırda boşluk kalmaz -->
                             <Border Classes="setcard" IsVisible="{Binding IsShown}">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Classes="cat-label" Text="{Binding Category}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource Accent}" LetterSpacing="0.6" />
-                                    <TextBlock Text="{Binding Title}" FontSize="15.5" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding Hint}" IsVisible="{Binding HasHint}" FontSize="12.5" Classes="dim" TextWrapping="Wrap" />
-                                    <ContentControl Content="{Binding}" HorizontalAlignment="Left" Margin="0,10,0,0" Classes="kut-control" />
-                                </StackPanel>
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+                                    <StackPanel Spacing="3" VerticalAlignment="Center">
+                                        <TextBlock Classes="cat-label" Text="{Binding Category}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource Accent}" LetterSpacing="0.6" />
+                                        <TextBlock Text="{Binding Title}" FontSize="14.5" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Hint}" IsVisible="{Binding HasHint}" FontSize="12.5" Classes="dim" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <ContentControl Grid.Column="1" Content="{Binding}" HorizontalAlignment="Right" VerticalAlignment="Center" Classes="kut-control" />
+                                </Grid>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

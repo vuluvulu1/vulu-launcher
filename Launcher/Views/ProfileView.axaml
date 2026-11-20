@@ -19,13 +19,15 @@
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="Margin" Value="0,0,0,8" />
         </Style>
+        <!-- İçerik en fazla 820 genişlikte, ortada (Kütüphane'de sınırsız, drawer'a kadar uzanır: KutuphaneStyles) -->
+        <Style Selector=":is(Control).profile-body"><Setter Property="MaxWidth" Value="820" /></Style>
     </UserControl.Styles>
 
     <Grid ColumnDefinitions="*,280">
         <ScrollViewer>
             <Panel>
-            <Border Classes="card skel" Height="420" Margin="28,22,28,30" MaxWidth="820" VerticalAlignment="Top" IsHitTestVisible="False" IsVisible="{Binding ShowSkeleton}"><v:Skeleton Kind="profile" /></Border>
-            <StackPanel Margin="28,22,28,30" MaxWidth="820" Spacing="18" IsVisible="{Binding !ShowSkeleton}">
+            <Border Classes="card skel profile-body" Height="420" Margin="28,22,28,30" VerticalAlignment="Top" IsHitTestVisible="False" IsVisible="{Binding ShowSkeleton}"><v:Skeleton Kind="profile" /></Border>
+            <StackPanel Classes="profile-body" Margin="28,22,28,30" Spacing="18" IsVisible="{Binding !ShowSkeleton}">
                 <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
 
                 <!-- Banner -->

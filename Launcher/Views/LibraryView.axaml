@@ -276,7 +276,7 @@
 
                 <!-- Alt: durum, bellek, sürüm, OYNA -->
                 <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="18,10,18,18">
-                    <StackPanel Spacing="5" IsVisible="{Binding StatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <StackPanel Spacing="5" IsVisible="{Binding ShowStatusRow}">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="{Binding StatusText}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
                             <TextBlock Grid.Column="1" Text="{Binding Progress, StringFormat='{}{0:0}%'}" Classes="dim" FontSize="12" IsVisible="{Binding !Indeterminate}" />
@@ -284,15 +284,16 @@
                         <ProgressBar Value="{Binding Progress}" Maximum="100" IsIndeterminate="{Binding Indeterminate}" />
                     </StackPanel>
                     <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
-                        <ComboBox Classes="dcombo" ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}" ToolTip.Tip="Oyuna ayrılacak bellek">
+                        <!-- Sürüm seçilemeyen pakette bellek iki sütunu birden kaplar (araya dolgu düğmesi konmaz) -->
+                        <ComboBox Classes="dcombo" ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}" ToolTip.Tip="Oyuna ayrılacak bellek"
+                                  Grid.ColumnSpan="{Binding CanPickVersion, Converter={x:Static v:KutBrushes.SpanUnless}}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="x:Int32"><TextBlock Text="{Binding StringFormat='Bellek {0} GB'}" /></DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                         <ComboBox Grid.Column="1" Classes="dcombo" ItemsSource="{Binding McVersions}" SelectedItem="{Binding McVersion}" IsVisible="{Binding CanPickVersion}"
                                   IsEnabled="{Binding CanPlay}" MaxDropDownHeight="360" ToolTip.Tip="Minecraft sürümü" />
-                        <Button Grid.Column="1" Classes="dbtn" IsVisible="{Binding !CanPickVersion}" Content="Klasörü aç" FontSize="13" HorizontalAlignment="Stretch"
-                                Command="{Binding OpenFolderCommand}" />
+
                         <Button Grid.Column="2" Classes="dbtn" Width="42" Content="⋯" ToolTip.Tip="Diğer işlemler">
                             <Button.Flyout>
                                 <MenuFlyout Placement="TopEdgeAlignedRight">
@@ -303,6 +304,7 @@
                                     <MenuItem Header="İçeriği yönet" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ManageContentCommand}" />
                                     <MenuItem Header="Dünyalar ve yedekler" Command="{Binding OpenWorldsCommand}" />
                                     <MenuItem Header="Dosyaları doğrula" Command="{Binding VerifyCommand}" />
+                                    <MenuItem Header="Klasörü aç" Command="{Binding OpenFolderCommand}" />
                                     <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
                                     <MenuItem Header="Çoğalt" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DuplicateCommand}" />
                                     <MenuItem Header=".mrpack olarak dışa aktar" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ExportMrpackCommand}" />

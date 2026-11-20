@@ -169,7 +169,7 @@
         <ScrollViewer x:Name="FeedPane" Grid.Column="1" Grid.RowSpan="2" IsVisible="{Binding IsFeed}">
             <StackPanel Margin="26,22,26,28" Spacing="14">
                 <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel Spacing="4">
+                    <StackPanel Spacing="4" VerticalAlignment="Center">
                         <TextBlock x:Name="FeedTitle" Text="Akış" Classes="page-title" />
                         <TextBlock Text="Oyuncuların paylaştığı ekran görüntüleri. Yalnızca vulu üyeleri görebilir." Classes="muted" />
                     </StackPanel>

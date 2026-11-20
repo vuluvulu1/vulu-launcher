@@ -86,7 +86,7 @@ namespace VuluLauncher.Views
                 Grid.SetColumn(pane, k ? 0 : 1);
                 Grid.SetRow(pane, k ? 1 : 0);
                 Grid.SetRowSpan(pane, k ? 1 : 2);
-                pane.Margin = k ? new Avalonia.Thickness(8, 0, 12, 0) : default;
+                pane.Margin = k ? new Avalonia.Thickness(2, -8, 12, 0) : default;
             }
         }
     }

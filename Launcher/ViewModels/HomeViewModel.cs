@@ -247,7 +247,11 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private bool _launching;
         [ObservableProperty] private bool _canLaunchGame = true;
 
-        [ObservableProperty] private string _statusText = "";
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowStatusRow))]
+        private string _statusText = "";
+        /// <summary>Kütüphane çekmecesi: durum ve ilerleme çubuğu yalnızca söylenecek bir şey varken (boşta "Hazır %100" gösterilmez).</summary>
+        public bool ShowStatusRow => StatusText.Length > 0 && StatusText != "Hazır";
         [ObservableProperty] private double _progress;
         [ObservableProperty] private bool _indeterminate;
         [ObservableProperty] private string _playLabel = "OYNA";

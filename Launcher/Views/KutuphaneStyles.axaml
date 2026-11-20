@@ -173,7 +173,19 @@
         <Setter Property="Margin" Value="14,6,0,16" />
     </Style>
     <Style Selector="Window.kutuphane Border.side-right">
-        <Setter Property="Margin" Value="0,6,16,16" />
+        <Setter Property="Margin" Value="0,22,20,20" />
+    </Style>
+    <!-- Profil: içerik ortalanmış dar sütun yerine öbür sayfalar gibi sol kenardan yan panele kadar -->
+    <Style Selector="Window.kutuphane StackPanel.profile-body, Window.kutuphane Border.profile-body">
+        <Setter Property="MaxWidth" Value="100000" />
+    </Style>
+    <!-- Sosyal › Liderlik / Harita: sekme adı zaten üstte; büyük başlık tekrarlanmaz -->
+    <Style Selector="Window.kutuphane v|WorldView TextBlock.page-title">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <!-- Başlık çubuğundaki logo sayfa başlıklarıyla aynı hizada (ray 56 + kenar 28) -->
+    <Style Selector="Window.kutuphane StackPanel#TitleLogo">
+        <Setter Property="Margin" Value="28,0,14,0" />
     </Style>
 
     <!-- Sosyal: Akış/Liderlik/Harita üstteki sekmelerde; listedeki satırları gizlenir -->

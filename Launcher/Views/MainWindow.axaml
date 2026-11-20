@@ -33,6 +33,9 @@
                         <Setter Property="BoxShadow" Value="none" />
                     </Style>
                     <!-- Küçük düğmeler resmin üstünde de kaybolmasın (mesale.css .tb-btn) -->
+                    <Style Selector="StackPanel#TitleLogo">
+                        <Setter Property="Margin" Value="14,0" />
+                    </Style>
                     <Style Selector="Button.tb">
                         <Setter Property="Width" Value="38" />
                         <Setter Property="Height" Value="34" />
@@ -69,7 +72,8 @@
                     </Style>
                 </Border.Styles>
                 <Grid x:Name="TitleGrid" ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch">
-                    <StackPanel x:Name="TitleLogo" Orientation="Horizontal" Spacing="9" Margin="14,0" VerticalAlignment="Center">
+                    <!-- Kenar boşluğu stilde (Kütüphane kendi hizasını verir; yerel değer olsaydı tema stili onu değiştiremezdi) -->
+                    <StackPanel x:Name="TitleLogo" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                         <Image Source="avares://vulu Launcher/Assets/logo.png" Width="20" Height="20" />
                         <TextBlock Text="vulu Launcher" FontWeight="Bold" VerticalAlignment="Center" />
                         <Border Background="{StaticResource AccentSoft}" Padding="5,1" VerticalAlignment="Center">
