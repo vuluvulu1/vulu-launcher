@@ -82,6 +82,7 @@ namespace VuluLauncher
 
             _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion"), args.Bool("ignoreMissing"), args.Str("join"), args.Bool("ignoreFiles")));
             _bridge.On("mods.installMissing", async args => await InstallMissingAsync(RequireGameDevice(args.Str("instanceId")), args));
+            _bridge.On("game.stop", _ => { _game.Stop(); return Task.FromResult<object?>(null); });
             _bridge.On("game.versions", async _ => { RequireLogin(); return await LoaderCatalog.MinecraftVersionsAsync(); });
 
             RegisterInstanceCommands();
@@ -591,6 +592,12 @@ namespace VuluLauncher
                     if (m.Warning == null) return;
                     ShowNotification(m.Tight ? "Bellek yetmeyebilir" : "RAM düşürüldü", m.Warning, "memory");
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                // Kullanıcı "Durdur"a bastı: hata değil
+                Log("Başlatma durduruldu.", "warn");
+                return new { started = false, error = (string?)null };
             }
             catch (Exception ex)
             {

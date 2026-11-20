@@ -270,6 +270,20 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private bool _detailsOpen;
         private bool _detailsAutoOpened;
         [RelayCommand] private void ToggleDetails() { DetailsOpen = !DetailsOpen; _detailsAutoOpened = false; }
+
+        /// <summary>Durdur: açılış sürerken (hazırlık ya da oyun penceresi açılana kadar) ya da oyun çalışırken.</summary>
+        public bool CanStop => Launching || GameRunning;
+        public string StopText => Launching || _boot != null ? "Durdur" : "Oyunu kapat";
+
+        [RelayCommand]
+        private async Task StopGame()
+        {
+            // Oyun tamamen açıldıysa kaydedilmemiş ilerleme gidebilir: önce sorulur
+            if (!Launching && _boot == null && GameRunning &&
+                !await Main.ConfirmAsync("Oyunu kapat", "Oyun hemen kapatılır; kaydedilmemiş ilerleme kaybolabilir. Normalde oyunun içinden çıkmak daha iyidir.", "Kapat", danger: true))
+                return;
+            try { await _core.Call("game.stop"); } catch (Exception ex) { AppendLog(ex.Message, "error"); }
+        }
         /// <summary>Boş sekmenin simgesi (Kütüphane çekmecesindeki boş durum kutusu).</summary>
         public string InfoIcon => InfoTab switch { "shots" => "🖼", "content" => "🧩", _ => "🗺" };
         public bool IsWorlds => InfoTab == "worlds";
@@ -397,8 +411,65 @@ namespace VuluLauncher.ViewModels
             item.Poster = await Images.LoadAsync(item.BackgroundUrl ?? item.ThumbnailUrl, 420);
         }
 
+        // ── Kütüphane: instance sayfası (kapağa tıklayınca kütüphanenin yerine açılır) ──
+        /// <summary>Instance sayfası açık: solda sekmeler (İçerik, Dünyalar, Görüntüler, Konsol, Ayarlar), sağda paketin çekmecesi.</summary>
+        [ObservableProperty] private bool _pageOpen;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsPageContent), nameof(IsPageWorlds), nameof(IsPageShots), nameof(IsPageLog), nameof(IsPageSettings), nameof(IsPageInfo))]
+        private string _pageTab = "worlds";
+        public bool IsPageContent => PageTab == "content";
+        public bool IsPageWorlds => PageTab == "worlds";
+        public bool IsPageShots => PageTab == "shots";
+        public bool IsPageLog => PageTab == "log";
+        public bool IsPageSettings => PageTab == "settings";
+        /// <summary>Dünyalar ya da Görüntüler: bilgi mesajı (boş, alınamadı) bu sekmelerde görünür.</summary>
+        public bool IsPageInfo => PageTab is "worlds" or "shots";
+        /// <summary>İçerik sekmesinin modeli (mod listesi: aç/kapa, güncelle, kaldır); sekme her açılışta tazelenir.</summary>
+        [ObservableProperty] private ContentModal? _pageContent;
+        private string? _pageItemId;
+
+        [RelayCommand]
+        private void OpenPage(InstanceItem item)
+        {
+            if (Selected != item) Selected = item;
+            _pageItemId = item.Id;
+            PageOpen = true;
+            SelectPageTab(item.IsCustom ? "content" : "worlds");
+        }
+
+        [RelayCommand] private void ClosePage() { PageOpen = false; _pageItemId = null; PageContent = null; }
+
+        [RelayCommand]
+        private void SelectPageTab(string tab)
+        {
+            if (tab == "content" && Selected is not { IsCustom: true }) tab = "worlds";
+            PageTab = tab;
+            if (tab is "worlds" or "shots" or "log") SelectInfoTab(tab);
+            if (tab == "content" && Selected is { } s && Main != null) PageContent = new ContentModal(Main, s);
+        }
+
+        /// <summary>Sayfadaki "+ İçerik ekle": pencere kapanınca liste tazelenir.</summary>
+        [RelayCommand]
+        private async Task PageAddContent()
+        {
+            if (Selected is not { IsCustom: true } s || Main == null) return;
+            await Main.OpenAddContentAsync(s);
+            if (PageContent != null) await PageContent.LoadAsync();
+        }
+
+        /// <summary>Kapağın üstündeki ▶: o paket seçilir ve başlatılır (sayfa açılmaz).</summary>
+        [RelayCommand]
+        private async Task PlayItem(InstanceItem item)
+        {
+            if (Selected != item) Selected = item;
+            await Task.Yield();
+            if (PlayCommand.CanExecute(null)) await PlayCommand.ExecuteAsync(null);
+        }
+
         partial void OnSelectedChanged(InstanceItem? value)
         {
+            // Sayfa açıkken başka bir pakete geçildiyse (ör. paket silindi) sayfa kapanır; aynı paketin yeniden yüklenmesi kapatmaz
+            if (PageOpen && value?.Id != _pageItemId) ClosePage();
             Background = null;
             BackgroundBlurred = null;
             Logo = null;
@@ -740,6 +811,8 @@ namespace VuluLauncher.ViewModels
             else if (Installed == false) { StatusText = "İlk açılışta oyun dosyaları indirilecek"; Progress = 0; }
             else { StatusText = "Hazır"; Progress = 100; }
 
+            OnPropertyChanged(nameof(CanStop));
+            OnPropertyChanged(nameof(StopText));
             PlayLabel = Launching ? "Başlatılıyor…" : _boot != null && GameRunning ? "Açılıyor…" : GameRunning ? "Oyun çalışıyor" : !CanLaunchGame ? "Telefonda oyun yakında" : "OYNA";
             CanPlay = !Launching && !GameRunning && CanLaunchGame && Selected != null;
             PlayCommand.NotifyCanExecuteChanged();

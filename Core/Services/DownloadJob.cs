@@ -90,6 +90,9 @@ namespace VuluLauncher
 
         public bool IsFinished => _state != "running";
 
+        /// <summary>İşi iptal eder (ör. oyunun açılışı "Durdur" ile).</summary>
+        public void Cancel() => _cancel.Cancel();
+
         public DownloadJob(string title)
         {
             _title = title;

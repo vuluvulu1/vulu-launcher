@@ -674,12 +674,22 @@
                 </ComboBox>
                 </StackPanel>
 
-                <Button Grid.Column="4" Classes="play" Classes.small="{Binding ShowBarJoin}" Command="{Binding PlayCommand}" BorderThickness="0" VerticalAlignment="Center">
+                <!-- Açılış ya da oyun sürerken OYNA'nın solunda Durdur -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button IsVisible="{Binding CanStop}" Command="{Binding StopGameCommand}" Height="52" Padding="18,0" VerticalAlignment="Center"
+                        ToolTip.Tip="Açılışı durdurur ya da oyunu kapatır">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Border Width="11" Height="11" CornerRadius="2" Background="{StaticResource Error}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding StopText}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button Classes="play" Classes.small="{Binding ShowBarJoin}" Command="{Binding PlayCommand}" BorderThickness="0" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="13" Height="13" Stretch="Uniform" />
                         <TextBlock Text="{Binding PlayLabel}" />
                     </StackPanel>
                 </Button>
+                </StackPanel>
                 <Button Grid.Column="5" Classes="primary" IsVisible="{Binding ShowBarJoin}" Content="Sunucuya bağlan" Height="52" Padding="24,0" FontSize="15"
                         FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center" Command="{Binding JoinPackServerCommand}" />
             </Grid>

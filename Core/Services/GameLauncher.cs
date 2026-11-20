@@ -58,6 +58,17 @@ namespace VuluLauncher
         }
 
         public bool IsRunning => _running == 1;
+
+        // Durdur (launcher'daki "Durdur" düğmesi): hazırlık sürüyorsa iş iptal edilir, oyun süreci başladıysa kapatılır
+        private DownloadJob? _launchJob;
+        private System.Diagnostics.Process? _process;
+
+        public void Stop()
+        {
+            _launchJob?.Cancel();
+            try { if (_process is { HasExited: false } p) p.Kill(entireProcessTree: true); }
+            catch (Exception ex) { LogFile.Write("[oyun] durdurulamadı: " + ex.Message); }
+        }
         /// <summary>Son açılıştaki bellek denetimi (uyarı ve bellek sıkışık mı).</summary>
         public MemoryCheck.Result? LastMemory { get; private set; }
         private volatile bool _downloadingGameFiles;   // CmlLib bayt bildirdiyse dosya inmekte demektir
@@ -184,6 +195,8 @@ namespace VuluLauncher
 
             // Her şey kuruluysa iş hızla biter ve panelde görünmez; ilk açılışta indirilenler panelde izlenir
             using var job = new DownloadJob($"{target.Name} hazırlanıyor") { Phase = "Hazırlanıyor" };
+            _launchJob = job;
+            _process = null;
             try
             {
                 var settings = AppSettings.Current;
@@ -302,7 +315,9 @@ namespace VuluLauncher
                     Exited?.Invoke();
                 };
 
+                _process = process;
                 process.Start();
+                _launchJob = null;
                 if (!closeAfterStart)
                 {
                     process.BeginOutputReadLine();
@@ -328,8 +343,11 @@ namespace VuluLauncher
             }
             catch (Exception ex)
             {
-                job.Fail(ex.Message);
+                _launchJob = null;
+                bool stopped = job.Token.IsCancellationRequested;
+                job.Fail(stopped ? "Durduruldu" : ex.Message);
                 Interlocked.Exchange(ref _running, 0);
+                if (stopped) throw new OperationCanceledException("Başlatma durduruldu.");
                 throw;
             }
         }

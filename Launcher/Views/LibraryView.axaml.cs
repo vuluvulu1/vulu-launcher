@@ -35,14 +35,20 @@ namespace VuluLauncher.Views
             DataContextChanged += (_, _) => Bind(DataContext as HomeViewModel);
             KutPolish.AttachSearch(this, SearchBox);
             PosterScroll.SizeChanged += (_, e) => FitPosters(e.NewSize.Width);
-            // Kapağa çift tık ya da seçiliyken Enter: oyunu aç
-            Posters.DoubleTapped += (_, e) =>
+            // Kapağa tıklayınca ya da seçiliyken Enter: paketin sayfası açılır (kapağın üstündeki ▶ doğrudan başlatır)
+            Posters.Tapped += (_, e) =>
             {
-                if (e.Source is Avalonia.Visual v && v.FindAncestorOfType<ListBoxItem>(true) is { DataContext: InstanceItem }) Play();
+                if (e.Source is not Avalonia.Visual v || v.FindAncestorOfType<Button>(true) != null) return;
+                if (v.FindAncestorOfType<ListBoxItem>(true) is { DataContext: InstanceItem item }) _vm?.OpenPageCommand.Execute(item);
             };
             Posters.KeyDown += (_, e) =>
             {
-                if (e.Key == Avalonia.Input.Key.Enter && Posters.SelectedItem is InstanceItem) { Play(); e.Handled = true; }
+                if (e.Key == Avalonia.Input.Key.Enter && Posters.SelectedItem is InstanceItem item) { _vm?.OpenPageCommand.Execute(item); e.Handled = true; }
+            };
+            // Esc: sayfadan kütüphaneye dön
+            KeyDown += (_, e) =>
+            {
+                if (e.Key == Avalonia.Input.Key.Escape && _vm is { PageOpen: true }) { _vm.ClosePageCommand.Execute(null); e.Handled = true; }
             };
         }
 

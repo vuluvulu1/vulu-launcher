@@ -193,6 +193,14 @@ namespace VuluLauncher.ViewModels
                         _ = ShowAsync(dialog);
                         Avalonia.Threading.DispatcherTimer.RunOnce(() => dialog.Close(), TimeSpan.FromSeconds(7));
                     }, TimeSpan.FromSeconds(2.5));
+                // VULU_UI_INSTANCE=settings: Kütüphane'de ilk kişisel paketin sayfası o sekmeyle açılır
+                if (Environment.GetEnvironmentVariable("VULU_UI_INSTANCE") is { Length: > 0 } instTab)
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                    {
+                        if (Home.Instances.FirstOrDefault(i => i.IsCustom) is not { } custom) return;
+                        Home.OpenPageCommand.Execute(custom);
+                        Home.SelectPageTabCommand.Execute(instTab);
+                    }, TimeSpan.FromSeconds(2));
                 // VULU_UI_GUIDE=1: ilk açılış rehberi açılır
                 if (Environment.GetEnvironmentVariable("VULU_UI_GUIDE") == "1")
                     Avalonia.Threading.DispatcherTimer.RunOnce(() => _ = ShowTourAsync(), TimeSpan.FromSeconds(2));

@@ -284,7 +284,7 @@ namespace VuluLauncher.ViewModels
         {
             JsonElement content;
             try { content = await _core.Call("instances.content", new { id = _item.Id }); }
-            catch (Exception ex) { Summary = "Hata: " + ex.Message; return; }
+            catch (Exception ex) { Summary = "İçerik alınamadı. " + Errors.Friendly(ex); return; }
             Rows.Clear();
             foreach (var i in content.Items("items"))
             {
