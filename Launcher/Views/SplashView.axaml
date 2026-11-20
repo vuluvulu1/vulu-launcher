@@ -50,6 +50,7 @@
                 </Border.Background>
             </Border>
             <Canvas x:Name="KutBooks" IsHitTestVisible="False" />
+            <Canvas x:Name="KutDust" IsHitTestVisible="False" />
             <StackPanel x:Name="KutTitle" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,470,0,0" IsHitTestVisible="False">
                 <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center">
                     <Border x:Name="KutMark" Width="48" Height="48" CornerRadius="13" Background="#F2A33A" VerticalAlignment="Center" Opacity="0">
