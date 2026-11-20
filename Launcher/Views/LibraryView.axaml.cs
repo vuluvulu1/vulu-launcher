@@ -30,6 +30,22 @@ namespace VuluLauncher.Views
         {
             InitializeComponent();
             Posters.ItemsSource = _items;
+            // Sonradan eklenen kapak (yeni paket, kurulan modpack) birden değil belirerek gelir
+            Posters.ContainerPrepared += (_, e) =>
+            {
+                if (_welcomeShown == null || !IsEffectivelyVisible || _bulk) return;
+                var c = e.Container;
+                c.Opacity = 0;
+                c.RenderTransform = new Avalonia.Media.ScaleTransform(0.94, 0.94);
+                Dispatcher.UIThread.Post(() =>
+                {
+                    c.Transitions ??= new Avalonia.Animation.Transitions();
+                    c.Transitions.Add(new Avalonia.Animation.DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(320), Easing = new Avalonia.Animation.Easings.CubicEaseOut() });
+                    c.Transitions.Add(new Avalonia.Animation.TransformOperationsTransition { Property = RenderTransformProperty, Duration = TimeSpan.FromMilliseconds(360), Easing = new Avalonia.Animation.Easings.CubicEaseOut() });
+                    c.Opacity = 1;
+                    c.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("none");
+                }, DispatcherPriority.Background);
+            };
             Posters.SelectionChanged += OnPosterSelected;
             SearchBox.TextChanged += (_, _) => Rebuild();
             DataContextChanged += (_, _) => Bind(DataContext as HomeViewModel);
@@ -156,8 +172,12 @@ namespace VuluLauncher.Views
                 .Where(i => q.Length == 0 || tr.CompareInfo.IndexOf(i.Name, q, CompareOptions.IgnoreCase) >= 0)
                 .ToList<object>();
             if (_filter is "all" or "mine" && q.Length == 0) list.Add(NewPackCard.Instance);
+            // Süzgeç ya da arama değişince kapaklar tek tek belirmesin; yalnızca eklenen yeni paket belirsin
+            _bulk = _filter != _lastFilter || q != _lastQuery;
+            _lastFilter = _filter; _lastQuery = q;
             _syncing = true;
             _items.SyncTo(list);
+            _bulk = false;
             _syncing = false;
             NoMatch.IsVisible = _items.Count == 0 && _vm.Instances.Count > 0;
             NoMatch.Title = q.Length > 0 ? $"“{q}” ile eşleşen paket yok" : "Bu süzgeçte paket yok";
@@ -174,9 +194,66 @@ namespace VuluLauncher.Views
             FilterVulu.IsVisible = vulu > 0 || _filter == "vulu";
             CountText.IsVisible = false;   // sayı "Tümü" hapında
             // Kendi ya da vulu paketin yoksa karşılama alanı (yalnızca "Tümü" ve aramasızken)
-            Welcome.IsVisible = !_vm.Instances.Any(i => i.IsCustom) && _filter == "all" && q.Length == 0;
+            SetWelcome(!_vm.Instances.Any(i => i.IsCustom) && _filter == "all" && q.Length == 0);
             SyncSelection();
         }
+
+        // Karşılama alanı birden belirip kaybolmasın: yüksekliği ve saydamlığı birlikte kayar, altındaki kapaklar
+        // yumuşakça yer değiştirir. İlk çizimde animasyon yok (kütüphane açılırken zaten olduğu gibi görünür).
+        private bool? _welcomeShown;
+        private bool _bulk;
+        private string? _lastFilter, _lastQuery;
+        private DispatcherTimer? _welcomeTimer;
+
+        private void SetWelcome(bool show)
+        {
+            if (_welcomeShown == show) return;
+            bool first = _welcomeShown == null || !IsEffectivelyVisible;
+            _welcomeShown = show;
+            _welcomeTimer?.Stop();
+            if (first)
+            {
+                Welcome.IsVisible = show;
+                Welcome.Height = double.NaN; Welcome.Opacity = 1; Welcome.Margin = WelcomeMargin; Welcome.RenderTransform = null;
+                return;
+            }
+            // Başlangıç ve hedef yükseklik: açılırken doğal boyu ölçülür, kapanırken şimdiki boydan sıfıra
+            double from, to;
+            if (show)
+            {
+                Welcome.IsVisible = true;
+                Welcome.Height = double.NaN;
+                Welcome.Measure(new Avalonia.Size(Math.Max(1, PosterScroll.Bounds.Width), double.PositiveInfinity));
+                from = 0; to = Welcome.DesiredSize.Height - WelcomeMargin.Bottom;
+            }
+            else { from = Welcome.Bounds.Height; to = 0; }
+            double fromO = show ? 0 : Welcome.Opacity, toO = show ? 1 : 0;
+            var started = DateTime.UtcNow;
+            const double ms = 360;
+            Apply(0);
+            _welcomeTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(15), DispatcherPriority.Render, (_, _) =>
+            {
+                double p = Math.Clamp((DateTime.UtcNow - started).TotalMilliseconds / ms, 0, 1);
+                Apply(p);
+                if (p < 1) return;
+                _welcomeTimer!.Stop();
+                if (!show) Welcome.IsVisible = false;
+                Welcome.Height = double.NaN; Welcome.Margin = WelcomeMargin; Welcome.RenderTransform = null;
+            });
+            _welcomeTimer.Start();
+
+            void Apply(double p)
+            {
+                double e = 1 - Math.Pow(1 - p, 3);                       // yavaşlayarak dur
+                double k = show ? e : 1 - e;                              // 0 = kapalı, 1 = açık
+                Welcome.Height = from + (to - from) * e;
+                Welcome.Opacity = fromO + (toO - fromO) * (show ? Math.Clamp((p - 0.25) / 0.75, 0, 1) : Math.Clamp(p / 0.6, 0, 1));
+                Welcome.Margin = new Avalonia.Thickness(0, 0, WelcomeMargin.Right, WelcomeMargin.Bottom * k);
+                Welcome.RenderTransform = new Avalonia.Media.TranslateTransform(0, -10 * (1 - k));
+            }
+        }
+
+        private static readonly Avalonia.Thickness WelcomeMargin = new(0, 0, 18, 20);
 
         private void SyncSelection()
         {
