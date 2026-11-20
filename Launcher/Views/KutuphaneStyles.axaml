@@ -1,4 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui"
+﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:v="using:VuluLauncher.Views"
         x:Class="VuluLauncher.Views.KutuphaneStyles">
@@ -337,6 +337,10 @@
     </Style>
     <Style Selector="Window.kutuphane Button.primary /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <!-- Küçük açıklamalar koyu zeminde daha okunur olsun: soluk yazı bir ton açık -->
+    <Style Selector="Window.kutuphane TextBlock.dim">
+        <Setter Property="Foreground" Value="#BBAFA2" />
     </Style>
     <Style Selector="Window.kutuphane TextBlock.page-title">
         <Setter Property="FontWeight" Value="SemiBold" />

@@ -149,7 +149,7 @@ namespace VuluLauncher.ViewModels
 
         public async Task OpenAsync(string username)
         {
-            if (username != Username) Editing = false;
+            if (username != Username) { Editing = false; Avatar = null; Banner = null; Skin = null; SkinBytes = null; CapeBytes = null; }
             Username = username;
             int request = ++_requestId;
             Loaded = false;
@@ -182,20 +182,19 @@ namespace VuluLauncher.ViewModels
             OnPropertyChanged(nameof(BioText));
             OnPropertyChanged(nameof(BioEmpty));
 
+            // Görseller aynı anda iner; yazılar beklemeden görünür, görseller gelince yerine oturur
+            int request = _requestId;
             long avatarVersion = (long)user.Num("avatarVersion"), bannerVersion = (long)user.Num("bannerVersion");
             HasAvatar = avatarVersion > 0;
             HasBanner = bannerVersion > 0;
-            Avatar = await Images.LoadAsync(Avatars.Url(Username, avatarVersion), 256);
-            Banner = bannerVersion > 0 ? await Images.LoadAsync($"{Avatars.ApiBase}/users/{Uri.EscapeDataString(Username)}/banner?v={bannerVersion}", 1600) : null;
-
             HasSkin = user.Text("skinHash") is { Length: > 0 };
             Slim = user.Text("skinModel") == "slim";
-            SkinBytes = HasSkin ? await Images.LoadBytesAsync($"{Avatars.ApiBase}/yggdrasil/textures/{user.Text("skinHash")}?c=1") : null;
-            Skin = SkinBytes is { } png ? SkinRenderer.RenderFront(png, Slim) : null;
-            CapeBytes = user.Text("capeHash") is { Length: > 0 } capeHash ? await Images.LoadBytesAsync($"{Avatars.ApiBase}/yggdrasil/textures/{capeHash}?c=1") : null;
+            var avatarTask = Images.LoadAsync(Avatars.Url(Username, avatarVersion), 256);
+            var bannerTask = bannerVersion > 0 ? Images.LoadAsync($"{Avatars.ApiBase}/users/{Uri.EscapeDataString(Username)}/banner?v={bannerVersion}", 1600) : null;
+            var skinTask = HasSkin ? Images.LoadBytesAsync($"{Avatars.ApiBase}/yggdrasil/textures/{user.Text("skinHash")}?c=1") : null;
+            var capeTask = user.Text("capeHash") is { Length: > 0 } capeHash ? Images.LoadBytesAsync($"{Avatars.ApiBase}/yggdrasil/textures/{capeHash}?c=1") : null;
             _ = LoadProgressAsync(_requestId);
             if (IsOwn) _ = LoadWardrobeAsync();
-            OnPropertyChanged(nameof(ShowSkin));
             OnPropertyChanged(nameof(SkinButton));
 
             Playtime.Clear();
@@ -219,6 +218,22 @@ namespace VuluLauncher.ViewModels
 
             FriendState = main.Social.FriendState(Username);
             Loaded = true;
+
+            var avatar = await avatarTask;
+            if (request != _requestId) return;
+            Avatar = avatar;
+            var banner = bannerTask != null ? await bannerTask : null;
+            if (request != _requestId) return;
+            Banner = banner;
+            var skin = skinTask != null ? await skinTask : null;
+            if (request != _requestId) return;
+            SkinBytes = skin;
+            Skin = skin is { } png ? SkinRenderer.RenderFront(png, Slim) : null;
+            OnPropertyChanged(nameof(ShowSkin));
+            var cape = capeTask != null ? await capeTask : null;
+            if (request != _requestId) return;
+            CapeBytes = cape;
+            OnPropertyChanged(nameof(ShowSkin));
         }
 
         public static string FormatPlayTime(double seconds)

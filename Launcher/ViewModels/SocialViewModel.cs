@@ -15,7 +15,13 @@ namespace VuluLauncher.ViewModels
         public bool HasCount => Count > 0;
     }
 
-    internal sealed record SocialHint(string Text, bool Loading = false);
+    internal sealed record SocialHint(string Text, bool Loading = false, System.Func<Task>? Retry = null)
+    {
+        /// <summary>Hata satırıysa "Tekrar dene" düğmesiyle kutu olarak gösterilir.</summary>
+        public bool IsError => Retry != null;
+        public bool IsPlain => !Loading && Retry == null;
+        public System.Windows.Input.ICommand? RetryCommand { get; } = Retry == null ? null : new AsyncRelayCommand(Retry);
+    }
 
     internal sealed partial class SocialFeedLink(SocialViewModel owner, bool active, string kind = "feed") : ObservableObject
     {
@@ -320,6 +326,13 @@ namespace VuluLauncher.ViewModels
             catch { /* sunucuya ulaşılamazsa eski liste kalır */ }
         }
 
+        private Task RetryFriendsAsync()
+        {
+            _friendsError = null;
+            RenderList();
+            return RefreshFriendsAsync();
+        }
+
         private async Task RefreshFriendsAsync()
         {
             try
@@ -428,7 +441,7 @@ namespace VuluLauncher.ViewModels
                 List.Add(row);
             }
             if (people.Count == 0)
-                List.Add(!_friendsLoaded && _friendsError != null ? new SocialHint("Kişiler yüklenemedi. " + _friendsError)
+                List.Add(!_friendsLoaded && _friendsError != null ? new SocialHint(_friendsError, Retry: RetryFriendsAsync)
                     : !_friendsLoaded ? new SocialHint("Yükleniyor…", true) : new SocialHint(query.Length > 0 ? "Bu adla bir arkadaşın ya da konuşman yok." : "Henüz kimse yok. Yukarıdan birini ara ve arkadaş ekle."));
 
             var outgoing = _outgoing.Where(Match).ToList();

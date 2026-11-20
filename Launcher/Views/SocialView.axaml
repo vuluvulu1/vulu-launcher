@@ -122,7 +122,9 @@
                             </DataTemplate>
                             <DataTemplate DataType="vm:SocialHint">
                                 <Panel>
-                                    <TextBlock Text="{Binding Text}" IsVisible="{Binding !Loading}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" Margin="12,4" />
+                                    <TextBlock Text="{Binding Text}" IsVisible="{Binding IsPlain}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" Margin="12,4" />
+                                    <v:EmptyState IsVisible="{Binding IsError}" Margin="0,16,0,0" Icon="!" Title="Kişiler yüklenemedi"
+                                                  Text="{Binding Text}" ActionText="Tekrar dene" Command="{Binding RetryCommand}" />
                                     <!-- Kişiler yüklenirken: kişi satırı şeklinde yer tutucular -->
                                     <StackPanel IsVisible="{Binding Loading}" IsHitTestVisible="False">
                                         <v:Skeleton Kind="row" Height="50" />
