@@ -36,31 +36,29 @@
 
         <v:EmberSparks x:Name="Sparks" />
 
-        <!-- Kütüphane açılışı: ortada bir raf ve üstünde dizili kitaplar; soldaki kitap devrilince öbürleri domino gibi sırayla
-             sağa yaslanır, sonra altta simge, yazı ve karşılama belirir. Kitaplar kodla çizilir (SplashView.axaml.cs BuildBooks).
-             Açılırken her şey söner, altta gerçek kütüphane görünür. -->
+        <!-- Kütüphane açılışı: Meşale'deki el yazısı "vulu Launcher", ama yanmaz: her harf ince kalemle yazılır, sonra
+             mürekkeple dolar (ScriptTitle.Render); altına kalemle bir kuyruk çekilir, ardından karşılama. Açılırken her şey
+             söner, altta gerçek kütüphane görünür. -->
         <Panel x:Name="KutStage" IsVisible="False">
             <Border Background="#0B0A09" />
-            <Border IsHitTestVisible="False">
+            <Border x:Name="KutGlow" IsHitTestVisible="False" Opacity="0">
                 <Border.Background>
-                    <RadialGradientBrush Center="50%,46%" GradientOrigin="50%,46%" RadiusX="55%" RadiusY="55%">
-                        <GradientStop Offset="0" Color="#1FF2A33A" />
-                        <GradientStop Offset="1" Color="#00F2A33A" />
+                    <RadialGradientBrush Center="50%,47%" GradientOrigin="50%,47%" RadiusX="42%" RadiusY="34%">
+                        <GradientStop Offset="0" Color="#26F2C27A" />
+                        <GradientStop Offset="1" Color="#00F2C27A" />
                     </RadialGradientBrush>
                 </Border.Background>
             </Border>
-            <Canvas x:Name="KutBooks" IsHitTestVisible="False" />
-            <Canvas x:Name="KutDust" IsHitTestVisible="False" />
-            <StackPanel x:Name="KutTitle" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,470,0,0" IsHitTestVisible="False">
-                <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center">
-                    <Border x:Name="KutMark" Width="48" Height="48" CornerRadius="13" Background="#F2A33A" VerticalAlignment="Center" Opacity="0">
-                        <Image Source="avares://vulu Launcher/Assets/logo.png" Width="26" Height="26" />
-                    </Border>
-                    <TextBlock x:Name="KutWord" Text="vulu Launcher" FontSize="46" FontWeight="SemiBold" LetterSpacing="-1.2" Foreground="#F3ECE2" Opacity="0" />
-                </StackPanel>
-                <TextBlock x:Name="KutGreeting" Text="{Binding Greeting}" Margin="0,18,0,0" HorizontalAlignment="Center" Opacity="0"
-                           FontSize="13.5" FontWeight="Medium" Foreground="#C9BDAF" />
-                <TextBlock Text="{Binding Status}" MinHeight="18" Margin="0,10,0,0" HorizontalAlignment="Center"
+            <StackPanel x:Name="KutTitle" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                <Grid>
+                    <sh:ScriptTitle x:Name="KutLetters" Width="560" />
+                    <!-- Kuyruk: "r"nin ucundan sola, harflerin altından geçen kalem çizgisi -->
+                    <Path x:Name="KutTail" Data="M 548,112 C 590,150 330,126 170,140 C 110,145 60,150 30,146" Stroke="#E3B37A" StrokeThickness="2.6"
+                          StrokeLineCap="Round" StrokeJoin="Round" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                </Grid>
+                <TextBlock x:Name="KutGreeting" Text="{Binding Greeting}" Margin="0,30,0,0" HorizontalAlignment="Center" Opacity="0"
+                           FontSize="13.5" FontWeight="Medium" LetterSpacing="0.4" Foreground="#E9DCCB" />
+                <TextBlock Text="{Binding Status}" MinHeight="18" Margin="0,14,0,0" HorizontalAlignment="Center"
                            FontSize="12" FontWeight="Medium" Foreground="#A1958A" />
             </StackPanel>
         </Panel>

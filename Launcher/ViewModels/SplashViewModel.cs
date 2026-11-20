@@ -10,7 +10,8 @@ namespace VuluLauncher.ViewModels
     internal sealed partial class SplashViewModel : ObservableObject
     {
         /// <summary>Perdeler en erken bu kadar süre sonra açılır (ms): yazı çizilip karşılama görünmüş olur.</summary>
-        public const int OpenAtMs = 2400;
+        /// <summary>Perdenin en erken açılacağı an; Kütüphane'de imza yazılıp kuyruğu çekilene kadar.</summary>
+        public static int OpenAtMs => Themes.IsKutuphane ? 2550 : 2400;
 
         private readonly Stopwatch _clock = new();
 

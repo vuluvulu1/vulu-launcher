@@ -234,175 +234,50 @@ namespace VuluLauncher.Views
         }
 
         /// <summary>
-        /// Kütüphane: raf yıkılır. Raf ve kitaplar belirir; raf titrer, ortadan kırılır (iki yarısı aşağı eğilir), kitaplar
-        /// raftan boşalıp yerçekimiyle aşağı düşer, ardından rafın parçaları da düşer. Ekran sarsılır, her yerden toz kalkar;
-        /// büyük toz bulutu dağılırken ortada simge, yazı ve karşılama belirir. Açılırken yazı ve sahne söner.
+        /// Kütüphane: Meşale'deki el yazısı başlık, ama tutuşmaz: harfler sırayla ince kalemle yazılıp mürekkeple dolar,
+        /// altına sağdan sola bir kuyruk çekilir, arkada sıcak bir ışık belirir; sonra karşılama. Açılırken söner.
         /// </summary>
         private void RenderKutuphane(double t, double open)
         {
-            if (_books.Count == 0) BuildBooks();
-            double appear = OutEase.Ease(Progress(t, 60, 380));
-            KutBooks.Opacity = appear;
-
-            // Sarsıntı: kırılma anında güçlü, hızla söner; kırılmadan önce raf titrer
-            double shake = 0;
-            if (t > Crack - 260 && t < Crack) shake = 1.6 * Math.Sin(t * 0.25);
-            else if (t >= Crack) shake = 9 * Math.Exp(-(t - Crack) / 170) * Math.Sin(t * 0.11);
-            KutBooks.RenderTransform = new TranslateTransform(shake, Math.Abs(shake) * 0.4 + 10 * (1 - appear));
-            KutDust.RenderTransform = new TranslateTransform(shake * 0.6, 0);
-
-            // Raf yarıları: sol yarı sol ucu, sağ yarı sağ ucu çevresinde aşağı eğilir; sonra düşer
-            double tilt = Math.Pow(Progress(t, Crack, 240), 2) * 34;   // derece
-            PlaceHalf(_shelfLeft!, t, tilt, +1);
-            PlaceHalf(_shelfRight!, t, tilt, -1);
-
-            foreach (var b in _books)
-            {
-                double cx = b.X + b.W / 2, cy = ShelfY - b.H / 2;
-                double release = Crack + b.Delay;
-                double x = cx, y = cy, angle = 0;
-                if (t >= release)
-                {
-                    double dt = (t - release) / 1000;
-                    x = cx + b.Vx * dt;
-                    y = cy + b.Vy * dt + 0.5 * Gravity * dt * dt;
-                    angle = b.Spin * dt;
-                }
-                else if (t >= Crack)
-                {
-                    // Kırılan raf yarısıyla birlikte biraz eğilir, ortaya doğru kayar (bırakılana kadar)
-                    double k = Progress(t, Crack, b.Delay);
-                    bool left = cx < Mid;
-                    angle = (left ? 1 : -1) * tilt * 0.6;
-                    x = cx + (left ? 1 : -1) * 6 * k;
-                    y = cy + Math.Abs(cx - (left ? ShelfLeft : ShelfLeft + ShelfWidth)) * Math.Sin(tilt * Math.PI / 180) * 0.55;
-                }
-                var g = (TransformGroup)b.Spine.RenderTransform!;
-                ((RotateTransform)g.Children[0]).Angle = angle;
-                ((TranslateTransform)g.Children[1]).X = x - cx;
-                ((TranslateTransform)g.Children[1]).Y = y - cy;
-            }
-
-            // Toz: kırılma çevresinde ve kitapların düştüğü yolda bulutlar; büyür, yükselir, söner
-            foreach (var d in _dust)
-            {
-                double p = Progress(t, Crack + d.Delay, d.Life);
-                if (p <= 0 || p >= 1) { d.Puff.Opacity = 0; continue; }
-                double size = d.Size0 + (d.Size1 - d.Size0) * OutEase.Ease(p);
-                d.Puff.Width = d.Puff.Height = size;
-                Canvas.SetLeft(d.Puff, d.X + d.Vx * p - size / 2);
-                Canvas.SetTop(d.Puff, d.Y + d.Vy * p - size / 2);
-                d.Puff.Opacity = d.Alpha * Math.Sin(p * Math.PI);
-            }
-            // Büyük toz dalgası ekranı kaplar ve dağılır: "etraf açılır"
-            double wave = Progress(t, Crack + 380, 1150);
-            KutWave.Opacity = wave <= 0 ? 0 : 0.85 * Math.Sin(Math.Min(1, wave * 1.15) * Math.PI);
-            double ws = 0.4 + 1.8 * OutEase.Ease(wave);
-            KutWave.RenderTransform = new ScaleTransform(ws, ws);
-
-            double titleAt = Crack + 950;
-            KutMark.Opacity = OutEase.Ease(Progress(t, titleAt, 400));
-            double mark = 0.7 + 0.3 * OutEase.Ease(Progress(t, titleAt, 400));
-            KutMark.RenderTransform = new ScaleTransform(mark, mark);
-            Rise(KutWord, Progress(t, titleAt + 80, 450));
-            Rise(KutGreeting, Progress(t, titleAt + 450, 450));
+            const double writeAt = 320, tailAt = writeAt + VuluShared.ScriptTitle.Duration - 250, tailMs = 520;
+            KutLetters.Render(t - writeAt);
+            KutGlow.Opacity = OutEase.Ease(Progress(t, writeAt, 1400));
+            if (_tailLength == 0) _tailLength = TailLength();
+            double dash = _tailLength / KutTail.StrokeThickness + 1;
+            if (KutTail.StrokeDashArray is not { Count: 2 }) KutTail.StrokeDashArray = new Avalonia.Collections.AvaloniaList<double> { dash, dash };
+            KutTail.StrokeDashOffset = dash * (1 - TailEase.Ease(Progress(t, tailAt, tailMs)));
+            Rise(KutGreeting, Progress(t, tailAt + 250, 500));
             if (open < 0) { KutStage.Opacity = 1; KutTitle.Opacity = 1; return; }
             KutTitle.Opacity = 1 - OutEase.Ease(Progress(open, 0, 300));
             KutStage.Opacity = 1 - OutEase.Ease(Progress(open, 150, GrafitOpenMs - 150));
         }
 
-        private void PlaceHalf(Border half, double t, double tilt, int side)
+        private static readonly Avalonia.Animation.Easings.Easing TailEase = new Avalonia.Animation.Easings.SplineEasing(0.3, 0, 0.2, 1);
+        private double _tailLength;
+
+        /// <summary>Kuyruk çizgisinin yaklaşık boyu (kesik çizgiyle çizilerek açılması için).</summary>
+        private double TailLength()
         {
-            // Yarı, dış ucu çevresinde eğilir; 0,45 sn sonra kopup düşer
-            double fall = Math.Max(0, (t - Crack - 450) / 1000);
-            var g = (TransformGroup)half.RenderTransform!;
-            ((RotateTransform)g.Children[0]).Angle = side * tilt + side * 40 * fall;
-            ((TranslateTransform)g.Children[1]).Y = 0.5 * Gravity * fall * fall;
-        }
-
-        private const double Crack = 720, Gravity = 2600, ShelfY = 420, ShelfLeft = 390, ShelfWidth = 540, Mid = ShelfLeft + ShelfWidth / 2;
-        private sealed record Book(Border Spine, double X, double W, double H, double Delay, double Vx, double Vy, double Spin);
-        private sealed record Dust(Ellipse Puff, double X, double Y, double Vx, double Vy, double Size0, double Size1, double Delay, double Life, double Alpha);
-        private readonly List<Book> _books = new();
-        private readonly List<Dust> _dust = new();
-        private Border? _shelfLeft, _shelfRight;
-        private Ellipse KutWave = new();
-
-        private void BuildBooks()
-        {
-            var rng = new Random(11);
-            string[] colors = { "#7A4A22", "#5C3A1E", "#9C6B30", "#3F2B1C", "#B07A35", "#6E4B2A", "#8C3F2A", "#2F4A44", "#4A3322", "#A85F28", "#584030", "#7E5A2E" };
-            KutBooks.Children.Clear();
-            KutDust.Children.Clear();
-            _books.Clear();
-            _dust.Clear();
-
-            Border Half(double left, double width, RelativePoint origin) => new()
+            // Data'daki iki kübik eğri örneklenir
+            (double X, double Y)[][] curves =
             {
-                Width = width, Height = 9, CornerRadius = new CornerRadius(3), Background = new SolidColorBrush(Color.Parse("#4A3523")),
-                BorderBrush = new SolidColorBrush(Color.Parse("#6B4D33")), BorderThickness = new Thickness(0, 1, 0, 0),
-                RenderTransformOrigin = origin, RenderTransform = new TransformGroup { Children = { new RotateTransform(0), new TranslateTransform() } },
-                [Canvas.LeftProperty] = left, [Canvas.TopProperty] = ShelfY,
+                new[] { (548.0, 112.0), (590.0, 150.0), (330.0, 126.0), (170.0, 140.0) },
+                new[] { (170.0, 140.0), (110.0, 145.0), (60.0, 150.0), (30.0, 146.0) },
             };
-            _shelfLeft = Half(ShelfLeft, ShelfWidth / 2, new RelativePoint(0, 0.5, RelativeUnit.Relative));
-            _shelfRight = Half(Mid, ShelfWidth / 2, new RelativePoint(1, 0.5, RelativeUnit.Relative));
-
-            double x = ShelfLeft + 16;
-            while (x < ShelfLeft + ShelfWidth - 30)
+            double len = 0;
+            foreach (var c in curves)
             {
-                double w = 20 + rng.Next(0, 15), h = 96 + rng.Next(0, 52);
-                if (x + w > ShelfLeft + ShelfWidth - 14) break;
-                var color = Color.Parse(colors[_books.Count % colors.Length]);
-                var lighter = Color.FromRgb((byte)Math.Min(255, color.R + 40), (byte)Math.Min(255, color.G + 30), (byte)Math.Min(255, color.B + 20));
-                var spine = new Grid { RowDefinitions = new RowDefinitions("10,*,6,10") };
-                spine.Children.Add(new Border { [Grid.RowProperty] = 2, Background = new SolidColorBrush(Color.Parse("#66F2A33A")), Margin = new Thickness(3, 0) });
-                var book = new Border
+                (double X, double Y) prev = c[0];
+                for (int i = 1; i <= 60; i++)
                 {
-                    Width = w, Height = h, CornerRadius = new CornerRadius(3, 3, 1, 1),
-                    Background = new LinearGradientBrush
-                    {
-                        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
-                        GradientStops = { new GradientStop(lighter, 0), new GradientStop(color, 0.35), new GradientStop(color, 0.8), new GradientStop(Color.FromRgb((byte)(color.R * 0.7), (byte)(color.G * 0.7), (byte)(color.B * 0.7)), 1) },
-                    },
-                    Child = spine,
-                    RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
-                    RenderTransform = new TransformGroup { Children = { new RotateTransform(0), new TranslateTransform() } },
-                    [Canvas.LeftProperty] = x, [Canvas.TopProperty] = ShelfY - h,
-                };
-                KutBooks.Children.Add(book);
-                // Ortadakiler önce boşalır, kenarlara doğru sırayla; aşağı düşer, hafifçe döner ve biraz savrulur
-                double fromMid = Math.Abs(x + w / 2 - Mid) / (ShelfWidth / 2);
-                double side = x + w / 2 < Mid ? 1 : -1;
-                _books.Add(new Book(book, x, w, h, 60 + fromMid * 260 + rng.Next(0, 60),
-                    side * (40 + rng.Next(0, 120)) + rng.Next(-40, 40), -120 - rng.Next(0, 160), (rng.NextDouble() - 0.5) * 520));
-                x += w + 3 + rng.Next(0, 3);
+                    double u = i / 60.0, v = 1 - u;
+                    double x = v * v * v * c[0].X + 3 * v * v * u * c[1].X + 3 * v * u * u * c[2].X + u * u * u * c[3].X;
+                    double y = v * v * v * c[0].Y + 3 * v * v * u * c[1].Y + 3 * v * u * u * c[2].Y + u * u * u * c[3].Y;
+                    len += Math.Sqrt((x - prev.X) * (x - prev.X) + (y - prev.Y) * (y - prev.Y));
+                    prev = (x, y);
+                }
             }
-            KutBooks.Children.Add(_shelfLeft);
-            KutBooks.Children.Add(_shelfRight);
-
-            // Toz bulutları: sıcak gri, yumuşak kenarlı
-            IBrush Puff(byte a) => new RadialGradientBrush
-            {
-                GradientStops = { new GradientStop(Color.FromArgb(a, 0xB0, 0x9C, 0x84), 0), new GradientStop(Color.FromArgb((byte)(a / 3), 0x8C, 0x7A, 0x66), 0.55), new GradientStop(Color.FromArgb(0, 0x8C, 0x7A, 0x66), 1) },
-            };
-            for (int i = 0; i < 46; i++)
-            {
-                bool burst = i < 26;   // ilk grup kırılma noktasında patlar, kalanı düşüş yolunda
-                double px = burst ? Mid + rng.Next(-90, 90) : ShelfLeft + rng.NextDouble() * ShelfWidth;
-                double py = burst ? ShelfY + rng.Next(-30, 20) : ShelfY + rng.Next(40, 360);
-                var e = new Ellipse { Fill = Puff(200), Opacity = 0 };
-                KutDust.Children.Add(e);
-                _dust.Add(new Dust(e, px, py, rng.Next(-160, 160), -rng.Next(20, 140), 20 + rng.Next(0, 30), 140 + rng.Next(0, 160),
-                    burst ? rng.Next(0, 160) : 150 + rng.Next(0, 450), 900 + rng.Next(0, 600), 0.45 + rng.NextDouble() * 0.35));
-            }
-            // Ekranı kaplayan büyük dalga
-            KutWave = new Ellipse
-            {
-                Width = 1000, Height = 1000, Opacity = 0, Fill = Puff(150),
-                RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
-                [Canvas.LeftProperty] = Mid - 500, [Canvas.TopProperty] = ShelfY - 500,
-            };
-            KutDust.Children.Add(KutWave);
+            return len;
         }
 
         private static void Settle(Control control, double p)
