@@ -243,6 +243,17 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private string _shotsStatus = "";
         [ObservableProperty] private bool _shotsEmpty;
         public bool HasLive => Live.Count > 0;
+        /// <summary>Sosyal akışındaki "Şimdi": duyuru ve oyundaki arkadaşlar (sunucular Sunucular sekmesinde; Kütüphane'nin "Şu an"ı hepsini gösterir).</summary>
+        public ObservableCollection<object> FeedLive { get; } = new();
+        public bool HasFeedLive => FeedLive.Count > 0;
+
+        private void SyncFeedLive()
+        {
+            FeedLive.Clear();
+            foreach (var item in Live.Where(i => i is not LiveServer)) FeedLive.Add(item);
+            OnPropertyChanged(nameof(HasLive));
+            OnPropertyChanged(nameof(HasFeedLive));
+        }
 
         // Sohbet
         [ObservableProperty] private string? _active;
@@ -528,7 +539,7 @@ namespace VuluLauncher.ViewModels
             Live.Add(new LiveServer(server, "5 kişi oyunda", new(), () => Task.CompletedTask));
             Live.Add(new LiveFriend(new PersonItem("KaiKaen", 0), "vulu Resmi · 1 sa", () => Task.CompletedTask, () => Task.CompletedTask));
             Live.Add(new LiveFriend(new PersonItem("deneme", 0), "Çevrimiçi", () => Task.CompletedTask, null));
-            OnPropertyChanged(nameof(HasLive));
+            SyncFeedLive();
         }
 #endif
 
@@ -577,7 +588,7 @@ namespace VuluLauncher.ViewModels
                 Live.Add(new LiveFriend(person, $"{person.Game} · {person.Rest}".Trim(' ', '·'), () => OpenConversationAsync(name),
                     server != null ? () => Main.Servers.JoinAsync(server) : null));
             }
-            OnPropertyChanged(nameof(HasLive));
+            SyncFeedLive();
         }
 
         /// <summary>Bildirimden: o ekran görüntüsü açılır (akışta yoksa başa eklenir).</summary>

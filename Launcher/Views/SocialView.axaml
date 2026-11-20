@@ -185,13 +185,13 @@
                 </Grid>
 
                 <!-- Şimdi: duyuru, açık sunucular, oyundaki arkadaşlar -->
-                <StackPanel IsVisible="{Binding HasLive}" Spacing="8">
+                <StackPanel IsVisible="{Binding HasFeedLive}" Spacing="8">
                     <!-- Bölüm başlığı (web: .feed-section-title) ve nabız gibi atan canlı noktası (.live-dot) -->
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,2">
                         <v:LiveDot VerticalAlignment="Center" />
                         <TextBlock Text="ŞİMDİ" Classes="section" />
                     </StackPanel>
-                    <ItemsControl ItemsSource="{Binding Live}">
+                    <ItemsControl ItemsSource="{Binding FeedLive}">
                         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                         <ItemsControl.DataTemplates>
                             <DataTemplate DataType="vm:LiveAnnouncement">
