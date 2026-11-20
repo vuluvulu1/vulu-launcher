@@ -247,10 +247,10 @@ namespace VuluLauncher.Views
             }
             else if (Math.Abs(Canvas.GetTop(RailMark) - top) > 1)
             {
-                // Kayarken hap uzar, yerine varınca eski boyuna döner (esneyerek oturur)
+                // Kayarken hap biraz uzar, yerine varınca eski boyuna döner (taşma ve sekme yok)
                 Canvas.SetTop(RailMark, top);
-                RailPill.Height = 36;
-                Avalonia.Threading.DispatcherTimer.RunOnce(() => RailPill.Height = 24, TimeSpan.FromMilliseconds(200));
+                RailPill.Height = 28;
+                Avalonia.Threading.DispatcherTimer.RunOnce(() => RailPill.Height = 24, TimeSpan.FromMilliseconds(160));
             }
             RailMark.Opacity = 1;
         }

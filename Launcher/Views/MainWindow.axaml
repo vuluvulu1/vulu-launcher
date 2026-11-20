@@ -352,12 +352,12 @@
                             </LinearGradientBrush>
                         </Border.Background>
                     </Border>
-                    <!-- Seçili sekmenin işareti: soldaki amber hap ve simgenin arkasındaki ışık; sekme değişince esneyerek kayar (PlaceRailMark) -->
+                    <!-- Seçili sekmenin işareti: soldaki amber hap ve simgenin arkasındaki ışık; sekme değişince yumuşakça kayar, hafifçe uzayıp kısalır (PlaceRailMark) -->
                     <Canvas x:Name="RailCanvas" IsHitTestVisible="False">
                         <Panel x:Name="RailMark" Width="56" Height="42" Opacity="0">
                             <Panel.Transitions>
                                 <Transitions>
-                                    <DoubleTransition Property="Canvas.Top" Duration="0:0:0.38" Easing="BackEaseOut" />
+                                    <DoubleTransition Property="Canvas.Top" Duration="0:0:0.26" Easing="CubicEaseOut" />
                                     <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
                                 </Transitions>
                             </Panel.Transitions>
