@@ -175,6 +175,14 @@
     <Style Selector="Window.kutuphane Border.side-right">
         <Setter Property="Margin" Value="0,22,20,20" />
     </Style>
+    <!-- Admin paneli: başlık ve sekmeler tek satırda, öbür Kütüphane sayfalarıyla aynı üst boşluk -->
+    <Style Selector="Window.kutuphane StackPanel#AdminTitleRow">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="Spacing" Value="16" />
+    </Style>
+    <Style Selector="Window.kutuphane DockPanel#AdminRoot">
+        <Setter Property="Margin" Value="28,14,20,0" />
+    </Style>
     <!-- Profil: içerik ortalanmış dar sütun yerine öbür sayfalar gibi sol kenardan yan panele kadar -->
     <Style Selector="Window.kutuphane StackPanel.profile-body, Window.kutuphane Border.profile-body">
         <Setter Property="MaxWidth" Value="100000" />

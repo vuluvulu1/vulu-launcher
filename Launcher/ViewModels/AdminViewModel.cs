@@ -137,11 +137,12 @@ namespace VuluLauncher.ViewModels
         private bool _loading;
         public bool ShowOverviewSkeleton => Loading && IsOverview && Cards.Count == 0;
 
-        private async Task SelectAsync(string key)
+        internal async Task SelectAsync(string key)
         {
             Tab = key;
             foreach (var t in Tabs) t.IsSelected = t.Key == key;
             Status = "Yükleniyor…";
+            LoadError = null;
             Loading = true;
             try
             {
@@ -159,9 +160,16 @@ namespace VuluLauncher.ViewModels
                 }
                 Status = "";
             }
-            catch (Exception ex) { Status = "Hata: " + ex.Message; }
+            catch (Exception ex) { Status = ""; LoadError = Errors.Friendly(ex); }
             finally { Loading = false; }
         }
+
+        /// <summary>Sekme yüklenemedi: içeriğin yerinde açıklama ve "Tekrar dene".</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasLoadError))]
+        private string? _loadError;
+        public bool HasLoadError => LoadError != null;
+        [RelayCommand] private Task Retry() => SelectAsync(Tab);
 
         // ── Özet ─────────────────────────────────────────────────────────
         private async Task LoadOverviewAsync()

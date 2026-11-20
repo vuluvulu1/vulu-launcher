@@ -36,10 +36,12 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <DockPanel Margin="28,22,28,0">
+    <DockPanel x:Name="AdminRoot" Margin="28,22,28,0">
         <StackPanel DockPanel.Dock="Top" Spacing="12" Margin="0,0,0,14">
-            <TextBlock Text="Admin paneli" Classes="page-title" />
-            <ItemsControl Classes="segmented" ItemsSource="{Binding Tabs}">
+            <!-- Kütüphane'de başlık ve sekmeler öbür sayfalar gibi tek satırda (KutuphaneStyles) -->
+            <StackPanel x:Name="AdminTitleRow" Spacing="12">
+            <TextBlock Text="Admin paneli" Classes="page-title" VerticalAlignment="Center" />
+            <ItemsControl Classes="segmented" ItemsSource="{Binding Tabs}" VerticalAlignment="Center">
                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:Choice">
@@ -48,10 +50,13 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            </StackPanel>
             <TextBlock Text="{Binding Status}" Classes="dim" IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
         </StackPanel>
-
-        <ScrollViewer>
+        <Panel>
+        <v:EmptyState IsVisible="{Binding HasLoadError}" Margin="0,30,0,0" VerticalAlignment="Top" Icon="!" Title="Bu bölüm yüklenemedi"
+                      Text="{Binding LoadError}" ActionText="Tekrar dene" Command="{Binding RetryCommand}" />
+        <ScrollViewer IsVisible="{Binding !HasLoadError}">
             <Panel Margin="0,0,0,28">
                 <WrapPanel IsVisible="{Binding ShowOverviewSkeleton}" VerticalAlignment="Top">
                     <Border Classes="card skel" Width="290" Height="130" Margin="0,0,12,12" IsHitTestVisible="False"><v:Skeleton Kind="tile" /></Border>
@@ -59,11 +64,12 @@
                     <Border Classes="card skel" Width="290" Height="130" Margin="0,0,12,12" IsHitTestVisible="False"><v:Skeleton Kind="tile" /></Border>
                 </WrapPanel>
                 <!-- Özet -->
-                <ItemsControl ItemsSource="{Binding Cards}" IsVisible="{Binding IsOverview}" v:Reveal.Stagger="True">
-                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <!-- Kartlar dört sütunda satırı doldurur (sağda boşluk kalmaz) -->
+                <ItemsControl ItemsSource="{Binding Cards}" IsVisible="{Binding IsOverview}" VerticalAlignment="Top" v:Reveal.Stagger="True">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:AdminCard">
-                            <Border Classes="card" Classes.attention="{Binding Attention}">
+                            <Border Classes="card" Classes.attention="{Binding Attention}" Width="NaN" MinHeight="146">
                                 <StackPanel Spacing="6">
                                     <TextBlock Text="{Binding Title}" Classes="dim" FontSize="12" FontWeight="SemiBold" />
                                     <TextBlock Text="{Binding Value}" FontSize="26" FontWeight="Bold" />
@@ -610,5 +616,6 @@
                 </StackPanel>
             </Panel>
         </ScrollViewer>
+        </Panel>
     </DockPanel>
 </UserControl>
