@@ -161,10 +161,12 @@ namespace VuluLauncher.ViewModels
                 Version = "v" + (await _core.Call("app.init")).Text("version");
                 Home.LoadPreview();
                 // VULU_UI_SPLASH=1: temanın açılışı oynar, 6 sn sonra açılır (açılış animasyonunu denemek için)
-                if (Environment.GetEnvironmentVariable("VULU_UI_SPLASH") == "1")
+                // VULU_UI_SPLASH=3200 gibi bir sayı: açılış o ms'de başlar
+                if (Environment.GetEnvironmentVariable("VULU_UI_SPLASH") is { } splashEnv && (splashEnv == "1" || int.TryParse(splashEnv, out _)))
                 {
                     Splash.Begin(Username);
-                    Avalonia.Threading.DispatcherTimer.RunOnce(() => _ = Splash.OpenAsync(), TimeSpan.FromSeconds(6));
+                    int openMs = int.TryParse(splashEnv, out int ms) && ms > 1 ? ms : 6000;
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() => _ = Splash.OpenAsync(), TimeSpan.FromMilliseconds(openMs));
                 }
                 // VULU_UI_PAGE=settings: o sekmeyle açılır
                 if (Tabs.FirstOrDefault(t => t.Key == Environment.GetEnvironmentVariable("VULU_UI_PAGE")) is { } page) SelectedTab = page;

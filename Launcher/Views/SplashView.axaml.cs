@@ -72,6 +72,14 @@ namespace VuluLauncher.Views
             _kut = Themes.IsKutuphane;
             KutStage.IsVisible = _kut;
             KutStage.Opacity = 1;
+            _kutBook = KutSplashChoice() != "signature";
+            KutBookStage.IsVisible = _kutBook;
+            KutBookStage.Opacity = KutBg.Opacity = 1;
+            KutBookStage.RenderTransform = null;
+            KutSignatureBox.IsVisible = KutGlow.IsVisible = !_kutBook;
+            KutTitle.VerticalAlignment = _kutBook ? Avalonia.Layout.VerticalAlignment.Bottom : Avalonia.Layout.VerticalAlignment.Center;
+            KutTitle.Margin = _kutBook ? new Thickness(0, 0, 0, 56) : default;
+            KutRush.Update(-1, default);
             UfukStage.Opacity = 1;
             if (_ufuk)
             {
@@ -111,7 +119,7 @@ namespace VuluLauncher.Views
             _last = now;
             double open = _openClock.IsRunning ? _openClock.Elapsed.TotalMilliseconds : -1;
             Render(now, open, dt);
-            bool openDone = open >= (_grafit || _kut ? GrafitOpenMs : BurnMs);
+            bool openDone = open >= (_kut && _kutBook ? KutRush.Total : _grafit || _kut ? GrafitOpenMs : BurnMs);
             if (openDone || top == null || _vm is not { IsVisible: true })
             {
                 _running = false;
@@ -239,6 +247,7 @@ namespace VuluLauncher.Views
         /// </summary>
         private void RenderKutuphane(double t, double open)
         {
+            if (_kutBook) { RenderKutBook(t, open); return; }
             const double writeAt = 320, tailAt = writeAt + VuluShared.ScriptTitle.Duration - 250, tailMs = 520;
             KutLetters.Render(t - writeAt);
             KutGlow.Opacity = OutEase.Ease(Progress(t, writeAt, 1400));
@@ -250,6 +259,55 @@ namespace VuluLauncher.Views
             if (open < 0) { KutStage.Opacity = 1; KutTitle.Opacity = 1; return; }
             KutTitle.Opacity = 1 - OutEase.Ease(Progress(open, 0, 300));
             KutStage.Opacity = 1 - OutEase.Ease(Progress(open, 150, GrafitOpenMs - 150));
+        }
+
+        private bool _kutBook, _kutInk;
+
+        /// <summary>Kütüphane açılışı seçimi: ayar; geliştirmede VULU_KUT_SPLASH=book|signature ile denenebilir.</summary>
+        private static string KutSplashChoice()
+        {
+#if DEBUG
+            if (Environment.GetEnvironmentVariable("VULU_KUT_SPLASH") is { Length: > 0 } env) return env;
+#endif
+            return AppSettings.Current.KutuphaneSplash;
+        }
+
+        /// <summary>
+        /// Kitap açılışı: kitap açılır, sayfalar çevrilir, sağ sayfaya el yazısıyla "vulu Launcher" (kahverengi mürekkep)
+        /// yazılır. Açılırken kamera yazının içine dalar (sahne üstel büyür), hız çizgileri ve kâğıt (KutRush) gelir;
+        /// kâğıt ekranı doldurunca kitap gizlenir ve kâğıdın ortası açılarak launcher görünür.
+        /// </summary>
+        private void RenderKutBook(double t, double open)
+        {
+            if (!_kutInk)
+            {
+                _kutInk = true;
+                KutPageLetters.SetInk(Color.Parse("#6B4A2E"), Color.Parse("#4A2E18"), Color.Parse("#2E1A0C"), Color.Parse("#5A3A20"));
+            }
+            KutBook.Update(t);
+            var page = KutBook.PageRect;
+            double letterH = page.Width * 1182 / 4401;
+            KutPageLetters.Width = page.Width;
+            KutPageLetters.Margin = new Thickness(page.X, page.Y + (page.Height - letterH) / 2, 0, 0);
+            const double speed = 1.5;
+            KutPageLetters.Render((t - KutBook.WriteAt) * speed);
+            Rise(KutGreeting, Progress(t, KutBook.WriteAt + VuluShared.ScriptTitle.Duration / speed - 100, 500));
+            var focus = new Point(page.X + page.Width * 0.5, page.Y + page.Height / 2);
+            if (open < 0)
+            {
+                KutBookStage.RenderTransform = null;
+                KutStage.Opacity = KutTitle.Opacity = KutBookStage.Opacity = KutBg.Opacity = 1;
+                KutRush.Update(-1, focus);
+                return;
+            }
+            double z = Math.Clamp(open / KutRush.ZoomMs, 0, 1);
+            double scale = Math.Exp(Math.Log(30) * z * z * z);
+            KutBookStage.RenderTransform = new MatrixTransform(Matrix.CreateTranslation(-focus.X, -focus.Y) * Matrix.CreateScale(scale, scale) * Matrix.CreateTranslation(focus.X, focus.Y));
+            KutTitle.Opacity = 1 - OutEase.Ease(Progress(open, 0, 220));
+            KutRush.Update(open, focus);
+            bool paperFull = open >= KutRush.PaperFull;
+            KutBookStage.Opacity = KutBg.Opacity = paperFull ? 0 : 1;
+            KutStage.Opacity = 1;
         }
 
         private static readonly Avalonia.Animation.Easings.Easing TailEase = new Avalonia.Animation.Easings.SplineEasing(0.3, 0, 0.2, 1);

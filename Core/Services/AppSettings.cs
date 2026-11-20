@@ -72,6 +72,8 @@ namespace VuluLauncher
         public int ThemeDefaultsVersion { get; set; }
         /// <summary>Ufkun öbür ucu temasında arka plan akar mı; kapalıyken sabit bir kare (yavaş bilgisayarlar için).</summary>
         public bool AnimatedBackground { get; set; } = true;
+        /// <summary>Kütüphane temasının açılışı: "book" (kitap açılır, içine dalınır; varsayılan) ya da "signature" (el yazısı imza).</summary>
+        public string KutuphaneSplash { get; set; } = "book";
 
         private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
         private static readonly object Gate = new();
@@ -135,6 +137,7 @@ namespace VuluLauncher
             MusicVolume = Math.Clamp(MusicVolume, 0, 100);
             if (!System.Text.RegularExpressions.Regex.IsMatch(AccentColor ?? "", "^#[0-9a-fA-F]{6}$")) AccentColor = "#c27e3e";
             if (Theme is not ("mesale" or "ufuk" or "derin" or "grafit" or "kutuphane")) Theme = "kutuphane";
+            if (KutuphaneSplash is not ("book" or "signature")) KutuphaneSplash = "book";
             if (ThemeDefaultsVersion < 1)
             {
                 if (Theme == "mesale") Theme = "kutuphane";
