@@ -35,7 +35,8 @@ namespace VuluLauncher.ViewModels
         /// <summary>Büyük görünüm için tam boyutlu resim (ilk açılışta yüklenir).</summary>
         [ObservableProperty] private Bitmap? _full;
         private async Task Load(string url) => Image = await Images.LoadAsync(url, 480);
-        public async Task LoadFullAsync() { if (Full == null) Full = await Images.LoadAsync(Url, 1600) ?? Image; }
+        /// <summary>Asıl boyutunda (en çok 2400 px genişlik): büyütünce bulanık görünmesin.</summary>
+        public async Task LoadFullAsync() { if (Full == null) Full = await Images.LoadAsync(Url, 2400) ?? Image; }
     }
 
     internal sealed record ProjectLink(string Label, string Url)
@@ -77,13 +78,28 @@ namespace VuluLauncher.ViewModels
         [NotifyPropertyChangedFor(nameof(HasViewer), nameof(ViewerCounter))]
         private GalleryItem? _viewer;
         public bool HasViewer => Viewer != null;
-        public string ViewerCounter => Viewer == null ? "" : $"{Gallery.IndexOf(Viewer) + 1} / {Gallery.Count}";
+        public string ViewerCounter => Viewer == null ? "" : $"{_viewerList.IndexOf(Viewer) + 1} / {_viewerList.Count}";
+        /// <summary>Büyük görünümde gezilen liste: galeri ya da açıklamadaki resimler.</summary>
+        private IList<GalleryItem> _viewerList = new List<GalleryItem>();
+        private List<GalleryItem>? _descImages;
 
         [RelayCommand]
         private async Task OpenImage(GalleryItem item)
         {
+            if (Gallery.Contains(item)) _viewerList = Gallery;
             Viewer = item;
+            OnPropertyChanged(nameof(ViewerCounter));
             await item.LoadFullAsync();
+        }
+
+        /// <summary>Açıklamadaki bir resme tıklandı: açıklamanın resimleri arasında büyük görünüm.</summary>
+        [RelayCommand]
+        private Task OpenDescImage(DescriptionItem item)
+        {
+            _descImages ??= Blocks.Where(b => b.Block.ImageUrl != null).Select(b => new GalleryItem(b.Block.ImageUrl!, b.Block.ImageUrl!, null)).ToList();
+            _viewerList = _descImages;
+            var target = _descImages.FirstOrDefault(g => g.Url == item.Block.ImageUrl);
+            return target != null ? OpenImage(target) : Task.CompletedTask;
         }
 
         [RelayCommand] private void CloseImage() => Viewer = null;
@@ -92,9 +108,9 @@ namespace VuluLauncher.ViewModels
 
         private async Task StepImage(int step)
         {
-            if (Viewer == null || Gallery.Count == 0) return;
-            int i = (Gallery.IndexOf(Viewer) + step + Gallery.Count) % Gallery.Count;
-            await OpenImage(Gallery[i]);
+            if (Viewer == null || _viewerList.Count == 0) return;
+            int i = (_viewerList.IndexOf(Viewer) + step + _viewerList.Count) % _viewerList.Count;
+            await OpenImage(_viewerList[i]);
         }
         public ContentHit Hit => _hit;
         public string PageText { get; }

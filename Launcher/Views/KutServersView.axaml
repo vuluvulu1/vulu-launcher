@@ -87,7 +87,7 @@
                                     <!-- Üst bant: durum ve gecikme -->
                                     <Panel Height="92" ClipToBounds="True">
                                         <Border Background="{StaticResource BannerFallback}" />
-                                        <Image Source="{Binding Favicon}" Stretch="UniformToFill" Opacity="0.55" RenderOptions.BitmapInterpolationMode="HighQuality" Margin="-40"><Image.Effect><BlurEffect Radius="40" /></Image.Effect></Image>
+                                        <Image Source="{Binding Banner}" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
                                         <Border Background="#BF0B0A09" CornerRadius="6" Padding="8,3" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top">
                                             <StackPanel Orientation="Horizontal" Spacing="6">
                                                 <Ellipse Classes="dot" Classes.online="{Binding IsOnline}" Classes.offline="{Binding IsOffline}" Width="8" Height="8" VerticalAlignment="Center" />
@@ -140,7 +140,7 @@
                 <DockPanel x:Name="Drawer" x:DataType="vm:ServerCard" IsVisible="{Binding $self.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}">
                     <Panel DockPanel.Dock="Top" Height="120" ClipToBounds="True">
                         <Border Background="{StaticResource BannerFallback}" />
-                        <Image Source="{Binding Favicon}" Stretch="UniformToFill" Opacity="0.55" RenderOptions.BitmapInterpolationMode="HighQuality" Margin="-40"><Image.Effect><BlurEffect Radius="40" /></Image.Effect></Image>
+                        <Image Source="{Binding Banner}" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
                         <Border Background="#BF0B0A09" CornerRadius="6" Padding="9,3" Margin="16,0,0,12" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                             <TextBlock Text="{Binding Status}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource TextSoft}" />
                         </Border>
@@ -212,8 +212,14 @@
                             </DockPanel>
                         </Border>
                         <!-- Sohbet kapalıyken: çevrimiçi arkadaşlar -->
-                        <DockPanel IsVisible="{Binding !#Drawer.((vm:ServerCard)DataContext).ChatOpen, FallbackValue=True}" Margin="0,14,0,0" DataContext="{Binding $parent[UserControl].DataContext}" x:DataType="vm:ServersViewModel">
-                            <TextBlock DockPanel.Dock="Top" FontSize="12" Classes="dim" LetterSpacing="0.8" Margin="0,0,0,8"><Run Text="ÇEVRİMİÇİ ARKADAŞLAR · " /><Run Text="{Binding OnlineCount}" /></TextBlock>
+                        <!-- Sunucudan bağımsız: ayrı bir kartta, "bu sunucuda olmayabilirler" diye açıkça -->
+                        <Border IsVisible="{Binding !#Drawer.((vm:ServerCard)DataContext).ChatOpen, FallbackValue=True}" Margin="0,16,0,0" Padding="12,10"
+                                CornerRadius="12" Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}" BorderThickness="1">
+                        <DockPanel DataContext="{Binding $parent[UserControl].DataContext}" x:DataType="vm:ServersViewModel">
+                            <StackPanel DockPanel.Dock="Top" Spacing="2" Margin="0,0,0,10">
+                                <TextBlock FontSize="13" FontWeight="SemiBold"><Run Text="Çevrimiçi arkadaşların · " /><Run Text="{Binding OnlineCount}" /></TextBlock>
+                                <TextBlock Text="Bu sunucuda olmayabilirler; çağırmak için Davet et." Classes="dim" FontSize="11.5" TextWrapping="Wrap" />
+                            </StackPanel>
                             <TextBlock DockPanel.Dock="Top" Text="Şu an çevrimiçi kimse yok." IsVisible="{Binding NobodyOnline}" Classes="dim" FontSize="12.5" />
                             <ScrollViewer>
                                 <ItemsControl ItemsSource="{Binding Online}">
@@ -239,6 +245,7 @@
                                 </ItemsControl>
                             </ScrollViewer>
                         </DockPanel>
+                        </Border>
                     </DockPanel>
                 </DockPanel>
             </Panel>

@@ -87,9 +87,10 @@ namespace VuluLauncher.ViewModels
     {
         private readonly ServersViewModel _owner;
 
-        public ServerCard(ServersViewModel owner, JsonElement s, string packLabel)
+        public ServerCard(ServersViewModel owner, JsonElement s, string packLabel, string? bannerUrl = null)
         {
             _owner = owner;
+            if (bannerUrl != null) _ = LoadBannerAsync(bannerUrl);
             Id = s.Text("id") ?? "";
             Name = s.Text("name") ?? "";
             Address = s.Text("address") ?? "";
@@ -115,6 +116,9 @@ namespace VuluLauncher.ViewModels
         public bool IsAdmin => _owner.IsAdmin;
 
         [ObservableProperty] private Bitmap? _favicon;
+        /// <summary>Kartın afişi: sunucunun paketinin kapak resmi (net, olduğu gibi).</summary>
+        [ObservableProperty] private Bitmap? _banner;
+        private async Task LoadBannerAsync(string url) => Banner = await Images.LoadAsync(url, 760);
         /// <summary>"checking", "online", "offline".</summary>
         [ObservableProperty] private string _state = "checking";
         [ObservableProperty] private string _players = "";
@@ -323,7 +327,9 @@ namespace VuluLauncher.ViewModels
                     string label = packId != null
                         ? packs.Items("packs").FirstOrDefault(p => p.Text("id") == packId).Text("name") ?? "vulu paketi"
                         : "Vanilla" + (s.Text("mcVersion") is { Length: > 0 } v ? " " + v : "");
-                    Servers.Add(new ServerCard(this, s, label));
+                    // Afiş: sunucunun paketinin kapak resmi (vulu Packs); paket yoksa temanın düz zemini
+                    string? banner = packId != null ? packs.Items("packs").FirstOrDefault(p => p.Text("id") == packId).Text("coverUrl") : null;
+                    Servers.Add(new ServerCard(this, s, label, banner));
                 }
                 IsEmpty = Servers.Count == 0;
                 foreach (var card in Servers) if (card.HasChat && openChats.Contains(card.Id)) card.ChatOpen = true;
