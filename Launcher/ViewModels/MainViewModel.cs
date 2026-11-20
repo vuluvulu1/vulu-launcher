@@ -201,6 +201,18 @@ namespace VuluLauncher.ViewModels
                         Home.OpenPageCommand.Execute(custom);
                         Home.SelectPageTabCommand.Execute(instTab);
                     }, TimeSpan.FromSeconds(2));
+                // VULU_UI_DOWNLOAD=1: örnek indirme paneli (yerini görmek için)
+                if (Environment.GetEnvironmentVariable("VULU_UI_DOWNLOAD") == "1")
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                    {
+                        Downloads.Title = "Fabric 1.21 hazırlanıyor";
+                        Downloads.Phase = "Mod yükleyici hazırlanıyor";
+                        Downloads.Running = true;
+                        Downloads.Percent = 34;
+                        Downloads.PercentText = "34%";
+                        Downloads.Stats = "1.420 / 4.225 dosya";
+                        Downloads.Visible = true;
+                    }, TimeSpan.FromSeconds(2));
                 // VULU_UI_GUIDE=1: ilk açılış rehberi açılır
                 if (Environment.GetEnvironmentVariable("VULU_UI_GUIDE") == "1")
                     Avalonia.Threading.DispatcherTimer.RunOnce(() => _ = ShowTourAsync(), TimeSpan.FromSeconds(2));

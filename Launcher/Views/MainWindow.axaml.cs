@@ -85,6 +85,17 @@ namespace VuluLauncher.Views
             void QueueRailMark() => Avalonia.Threading.Dispatcher.UIThread.Post(PlaceRailMark, Avalonia.Threading.DispatcherPriority.Loaded);
             Opened += (_, _) => QueueRailMark();
             Themes.Changed += QueueRailMark;
+            // İndirme paneli: Kütüphane'de sağ üst köşe paketin çekmecesiyle çakışıyordu; orada sol altta, rayın yanında durur
+            void PlaceDownloads()
+            {
+                bool k = Themes.IsKutuphane;
+                DownloadsPanel.HorizontalAlignment = k ? Avalonia.Layout.HorizontalAlignment.Left : Avalonia.Layout.HorizontalAlignment.Right;
+                DownloadsPanel.VerticalAlignment = k ? Avalonia.Layout.VerticalAlignment.Bottom : Avalonia.Layout.VerticalAlignment.Top;
+                DownloadsPanel.Margin = k ? new Thickness(72, 0, 0, 20) : new Thickness(0, 14, 18, 0);
+                DownloadsPanel.CornerRadius = new CornerRadius(k ? 14 : 0);
+            }
+            PlaceDownloads();
+            Themes.Changed += PlaceDownloads;
             RailTabs.SizeChanged += (_, _) => QueueRailMark();
             // Simge rayından da pencere sürüklenebilir (düğmelerin üstünde değilse)
             Rail.PointerPressed += (_, e) =>
