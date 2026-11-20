@@ -10,7 +10,12 @@ namespace VuluLauncher.Views
         public PaletteView()
         {
             InitializeComponent();
-            AttachedToVisualTree += (_, _) => Search.Focus();
+            // Kutu açılırken (giriş animasyonu, yerleşim) hemen verilen odak tutmuyordu: yerleşim bitince, sonra bir kez daha
+            AttachedToVisualTree += (_, _) =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(FocusSearch, Avalonia.Threading.DispatcherPriority.Loaded);
+                Avalonia.Threading.DispatcherTimer.RunOnce(FocusSearch, TimeSpan.FromMilliseconds(120));
+            };
             Search.AddHandler(KeyDownEvent, (_, e) =>
             {
                 if (DataContext is not PaletteModal m) return;
@@ -21,6 +26,12 @@ namespace VuluLauncher.Views
                     case Key.Enter: m.Choose(); e.Handled = true; break;
                 }
             }, RoutingStrategies.Tunnel);
+        }
+
+        private void FocusSearch()
+        {
+            if (!Search.IsFocused) Search.Focus(NavigationMethod.Tab);
+            Search.CaretIndex = Search.Text?.Length ?? 0;
         }
     }
 }
