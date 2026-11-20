@@ -32,7 +32,10 @@ namespace VuluLauncher.ViewModels
         public string? Title { get; }
         public bool HasTitle => !string.IsNullOrEmpty(Title);
         [ObservableProperty] private Bitmap? _image;
+        /// <summary>Büyük görünüm için tam boyutlu resim (ilk açılışta yüklenir).</summary>
+        [ObservableProperty] private Bitmap? _full;
         private async Task Load(string url) => Image = await Images.LoadAsync(url, 480);
+        public async Task LoadFullAsync() { if (Full == null) Full = await Images.LoadAsync(Url, 1600) ?? Image; }
     }
 
     internal sealed record ProjectLink(string Label, string Url)
@@ -68,6 +71,31 @@ namespace VuluLauncher.ViewModels
         }
 
         public override double Width => 1040;
+
+        // ── Galeri: resme tıklayınca pencerenin içinde büyük görünüm (önceki / sonraki, Esc ya da × ile kapanır) ──
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasViewer), nameof(ViewerCounter))]
+        private GalleryItem? _viewer;
+        public bool HasViewer => Viewer != null;
+        public string ViewerCounter => Viewer == null ? "" : $"{Gallery.IndexOf(Viewer) + 1} / {Gallery.Count}";
+
+        [RelayCommand]
+        private async Task OpenImage(GalleryItem item)
+        {
+            Viewer = item;
+            await item.LoadFullAsync();
+        }
+
+        [RelayCommand] private void CloseImage() => Viewer = null;
+        [RelayCommand] private Task NextImage() => StepImage(1);
+        [RelayCommand] private Task PrevImage() => StepImage(-1);
+
+        private async Task StepImage(int step)
+        {
+            if (Viewer == null || Gallery.Count == 0) return;
+            int i = (Gallery.IndexOf(Viewer) + step + Gallery.Count) % Gallery.Count;
+            await OpenImage(Gallery[i]);
+        }
         public ContentHit Hit => _hit;
         public string PageText { get; }
         public ObservableCollection<Choice> Tabs { get; } = new();

@@ -1376,16 +1376,21 @@
                             <!-- Galeri -->
                             <StackPanel IsVisible="{Binding IsGallery}">
                                 <TextBlock Text="Bu projede galeri yok." IsVisible="{Binding !Gallery.Count}" Classes="dim" />
+                                <!-- İki sütunlu düzenli ızgara; resme tıklayınca büyük görünüm -->
                                 <ItemsControl ItemsSource="{Binding Gallery}">
-                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="vm:GalleryItem">
-                                            <StackPanel Width="390" Margin="0,0,12,12" Spacing="4">
-                                                <Border Height="220" Background="{StaticResource Raised}" ClipToBounds="True">
-                                                    <Image Source="{Binding Image}" Stretch="UniformToFill" />
-                                                </Border>
-                                                <TextBlock Text="{Binding Title}" IsVisible="{Binding HasTitle}" Classes="dim" FontSize="12" TextWrapping="Wrap" />
-                                            </StackPanel>
+                                            <Button Classes="flat" Padding="0" Margin="0,0,12,14" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Cursor="Hand"
+                                                    Command="{Binding $parent[ItemsControl].((vm:ProjectDetailsModal)DataContext).OpenImageCommand}" CommandParameter="{Binding}"
+                                                    ToolTip.Tip="Büyüt">
+                                                <StackPanel Spacing="6">
+                                                    <Border Height="190" CornerRadius="{DynamicResource OverlayCornerRadius}" Background="{StaticResource Raised}" ClipToBounds="True">
+                                                        <Image Source="{Binding Image}" Stretch="UniformToFill" />
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Title}" IsVisible="{Binding HasTitle}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Button>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -1448,6 +1453,22 @@
                             </StackPanel>
                         </ScrollViewer>
                     </Border>
+                    <!-- Büyük görünüm: pencerenin tamamını kaplar -->
+                    <Grid Grid.ColumnSpan="2" IsVisible="{Binding HasViewer}" Background="#F00B0A09" RowDefinitions="Auto,*,Auto">
+                        <Grid Margin="20,16,20,8" ColumnDefinitions="*,Auto">
+                            <TextBlock Text="{Binding Viewer.Title}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Content="Galeriye dön" Command="{Binding CloseImageCommand}" Padding="14,6" />
+                        </Grid>
+                        <Panel Grid.Row="1" Margin="20,0">
+                            <Image Source="{Binding Viewer.Full}" Stretch="Uniform" />
+                            <v:Loading Text="Yükleniyor…" IsVisible="{Binding Viewer.Full, Converter={x:Static ObjectConverters.IsNull}}" VerticalAlignment="Center" />
+                        </Panel>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center" Margin="0,10,0,16">
+                            <Button Content="‹ Önceki" Command="{Binding PrevImageCommand}" Padding="16,6" />
+                            <TextBlock Text="{Binding ViewerCounter}" Classes="dim" VerticalAlignment="Center" />
+                            <Button Content="Sonraki ›" Command="{Binding NextImageCommand}" Padding="16,6" />
+                        </StackPanel>
+                    </Grid>
                 </Grid>
             </DataTemplate>
 

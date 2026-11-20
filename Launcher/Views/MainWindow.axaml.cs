@@ -67,6 +67,8 @@ namespace VuluLauncher.Views
             }
             if (PerfProbe.Enabled) Opened += (_, _) => PerfProbe.WindowOpened(this);
 #endif
+            Current = this;
+            Opened += (_, _) => { if (AppSettings.Current.LauncherFullscreen) SetFullscreen(true); };
             Themes.Mark(this);
             Themes.Attach(NavTabs);
             Themes.Attach(TitleBar);
@@ -101,7 +103,7 @@ namespace VuluLauncher.Views
             Rail.PointerPressed += (_, e) =>
             {
                 if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !IsOnButton(e.Source as Visual))
-                    BeginMoveDrag(e);
+                    if (!IsFullscreen) BeginMoveDrag(e);   // tam ekranda pencere sürüklenmez
             };  // başlık çubuğunun da kendi stilleri var (neon alt çizgi)   // sekmelerin kendi stilleri var; temanınkiler onların üstüne
             // Tema geçişi animasyonu (Ayarlar › Tema)
             DataContextChanged += (_, _) =>
@@ -116,7 +118,7 @@ namespace VuluLauncher.Views
             TitleBar.PointerPressed += (_, e) =>
             {
                 if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !IsOnButton(e.Source as Visual))
-                    BeginMoveDrag(e);
+                    if (!IsFullscreen) BeginMoveDrag(e);   // tam ekranda pencere sürüklenmez
             };
             // Seçili sekmenin çizgisi yeni sekmeye kayar; ilk konumda ve sekme gizliyken (Profil) animasyonsuz
             NavTabs.LayoutUpdated += (_, _) => PlaceTabIndicator();
@@ -138,6 +140,12 @@ namespace VuluLauncher.Views
             // Esc en üstteki kutuyu kapatır; Ctrl+K hızlı aramayı açar
             KeyDown += (_, e) =>
             {
+                if (e.Key == Key.F11)
+                {
+                    SetFullscreen(!IsFullscreen);
+                    e.Handled = true;
+                    return;
+                }
                 if (e.Key == Key.K && e.KeyModifiers.HasFlag(KeyModifiers.Control) && DataContext is MainViewModel main)
                 {
                     main.OpenPaletteCommand.Execute(null);
@@ -146,7 +154,9 @@ namespace VuluLauncher.Views
                 }
                 if (e.Key == Key.Escape && DataContext is MainViewModel { Modals.Count: > 0 } vm)
                 {
-                    vm.Modals[^1].DismissCommand.Execute(null);
+                    // Galerideki büyük görünüm açıksa önce o kapanır
+                    if (vm.Modals[^1] is ProjectDetailsModal { HasViewer: true } details) details.Viewer = null;
+                    else vm.Modals[^1].DismissCommand.Execute(null);
                     e.Handled = true;
                 }
             };
@@ -309,9 +319,45 @@ namespace VuluLauncher.Views
         /// <summary>Pencere boyutu (DIP) ve arayüz ölçeği (Ayarlar → launcher boyutu, yazı ve arayüz boyutu).</summary>
         public void ApplyLayout(double width, double height, double scale)
         {
+            _windowed = (width, height, scale);
+            if (WindowState == WindowState.FullScreen) return;   // tam ekrandan çıkınca uygulanır
             Width = width;
             Height = height;
             Scaler.LayoutTransform = new ScaleTransform(scale, scale);
+        }
+
+        /// <summary>Açık ana pencere (Ayarlar'daki tam ekran seçeneği için).</summary>
+        public static MainWindow? Current { get; private set; }
+
+        private (double Width, double Height, double Scale) _windowed;
+        public bool IsFullscreen => WindowState == WindowState.FullScreen;
+
+        /// <summary>
+        /// Tam ekran: pencere ekranı kaplar, kenarlardan boyutlandırılamaz; arayüz ekranın yüksekliğine göre ölçeklenir
+        /// (tasarım 820 birim yüksekliğinde; geniş ekranda içerik yana doğru genişler).
+        /// </summary>
+        public void SetFullscreen(bool on)
+        {
+            if (on == IsFullscreen) return;
+            if (on)
+            {
+                var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
+                double heightDip = screen != null ? screen.Bounds.Height / screen.Scaling : Height;
+                double scale = heightDip / 820 * Math.Clamp(AppSettings.Current.UiScale, 60, 300) / 100.0;
+                WindowState = WindowState.FullScreen;
+                Scaler.LayoutTransform = new ScaleTransform(scale, scale);
+            }
+            else
+            {
+                WindowState = WindowState.Normal;
+                if (_windowed.Width > 0)
+                {
+                    Width = _windowed.Width;
+                    Height = _windowed.Height;
+                    Scaler.LayoutTransform = new ScaleTransform(_windowed.Scale, _windowed.Scale);
+                }
+            }
+            if (DataContext is MainViewModel vm) vm.IsFullscreen = on;
         }
     }
 }

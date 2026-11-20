@@ -188,6 +188,13 @@ namespace VuluLauncher.ViewModels
                 .Add(new ChoiceRow("Oyun açılınca", "\"Kapat\" seçilirse oyun çıktısı konsolda görünmez ve oynama süresi sayılmaz.",
                     new[] { ("keep", "Açık kalsın"), ("minimize", "Küçült"), ("close", "Kapat") }, S("onGameStart", "keep"), value => Change(("onGameStart", value))))
                 .Add(new ToggleRow("Açılış animasyonunu atla", null, B("skipSplash"), toggle("skipSplash")))
+                .Add(new ToggleRow("Tam ekran aç", "Launcher bütün ekranı kaplar, arayüz ekrana göre büyür. Başlık çubuğundaki tam ekran düğmesi ya da F11 ile de açılıp kapanır.",
+                    B("launcherFullscreen"), async value =>
+                    {
+                        bool ok = await Change(("launcherFullscreen", value));
+                        if (ok) Views.MainWindow.Current?.SetFullscreen(value);
+                        return ok;
+                    }))
                 .Add(new ChoiceRow("Launcher boyutu", "Pencerenin boyutu; arayüz pencereyle birlikte ölçeklenir. Ekrana sığmayan boyutlar gösterilmez.",
                     sizes, current, value => Change(("windowSize", value))))
                 .Add(new ToggleRow("Bilgisayar açılınca başlat", "Pencere açılmaz; launcher simge durumunda başlar, mesaj ve bildirimler gelir. Simgeye tıklayınca açılır.",

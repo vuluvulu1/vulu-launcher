@@ -85,9 +85,9 @@
                             <Border Classes="scard" Classes.offline="{Binding IsOffline}" CornerRadius="16" Background="{StaticResource Panel}" BorderBrush="{StaticResource CardLine}" BorderThickness="1" ClipToBounds="True">
                                 <StackPanel>
                                     <!-- Üst bant: durum ve gecikme -->
-                                    <Panel Height="92">
+                                    <Panel Height="92" ClipToBounds="True">
                                         <Border Background="{StaticResource BannerFallback}" />
-                                        <Image Source="{Binding Favicon}" Stretch="UniformToFill" Opacity="0.35" RenderOptions.BitmapInterpolationMode="None" />
+                                        <Image Source="{Binding Favicon}" Stretch="UniformToFill" Opacity="0.55" RenderOptions.BitmapInterpolationMode="HighQuality" Margin="-40"><Image.Effect><BlurEffect Radius="40" /></Image.Effect></Image>
                                         <Border Background="#BF0B0A09" CornerRadius="6" Padding="8,3" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top">
                                             <StackPanel Orientation="Horizontal" Spacing="6">
                                                 <Ellipse Classes="dot" Classes.online="{Binding IsOnline}" Classes.offline="{Binding IsOffline}" Width="8" Height="8" VerticalAlignment="Center" />
@@ -138,9 +138,9 @@
                 IsVisible="{Binding #Drawer.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}">
             <Panel>
                 <DockPanel x:Name="Drawer" x:DataType="vm:ServerCard" IsVisible="{Binding $self.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <Panel DockPanel.Dock="Top" Height="120">
+                    <Panel DockPanel.Dock="Top" Height="120" ClipToBounds="True">
                         <Border Background="{StaticResource BannerFallback}" />
-                        <Image Source="{Binding Favicon}" Stretch="UniformToFill" Opacity="0.35" RenderOptions.BitmapInterpolationMode="None" />
+                        <Image Source="{Binding Favicon}" Stretch="UniformToFill" Opacity="0.55" RenderOptions.BitmapInterpolationMode="HighQuality" Margin="-40"><Image.Effect><BlurEffect Radius="40" /></Image.Effect></Image>
                         <Border Background="#BF0B0A09" CornerRadius="6" Padding="9,3" Margin="16,0,0,12" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                             <TextBlock Text="{Binding Status}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource TextSoft}" />
                         </Border>

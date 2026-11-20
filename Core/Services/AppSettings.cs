@@ -30,6 +30,8 @@ namespace VuluLauncher
         /// <summary>"keep" | "minimize" | "close"</summary>
         public string OnGameStart { get; set; } = "keep";
         public bool SkipSplash { get; set; }
+        /// <summary>Launcher tam ekran açılır (pencere boyutlandırılamaz; arayüz ekrana göre ölçeklenir).</summary>
+        public bool LauncherFullscreen { get; set; }
         /// <summary>Kapat tuşu launcher'ı bildirim alanına küçültür (mesaj ve oyun bildirimleri gelmeye devam eder).</summary>
         public bool CloseToTray { get; set; } = true;
         /// <summary>Bilgisayar açılınca launcher pencere açmadan bildirim alanında başlar (mesaj ve bildirimler gelir).</summary>

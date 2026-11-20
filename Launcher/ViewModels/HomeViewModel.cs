@@ -31,6 +31,8 @@ namespace VuluLauncher.ViewModels
         public string? PackId { get; init; }
 
         public bool IsCustom => Kind == "custom";
+        /// <summary>vulu Packs'ten kurulmuş paket (kişisel instance olarak saklanır ama ekibin paketidir).</summary>
+        public bool IsVuluPack => !string.IsNullOrEmpty(SharedPackId);
         public string Initial => Name.Length > 0 ? Name[..1].ToUpper(CultureInfo.GetCultureInfo("tr-TR")) : "?";
         public string LoaderLabel => Names.Loader(Loader);
         public string Subtitle => Kind == "server" ? Name : $"{LoaderLabel} {McVersion}";
@@ -282,8 +284,13 @@ namespace VuluLauncher.ViewModels
             if (!Launching && _boot == null && GameRunning &&
                 !await Main.ConfirmAsync("Oyunu kapat", "Oyun hemen kapatılır; kaydedilmemiş ilerleme kaybolabilir. Normalde oyunun içinden çıkmak daha iyidir.", "Kapat", danger: true))
                 return;
+            _stopping = true;
+            Refresh();
             try { await _core.Call("game.stop"); } catch (Exception ex) { AppendLog(ex.Message, "error"); }
         }
+
+        /// <summary>Durdur'a basıldı, açılış daha kapanmadı: düğmede "Durduruluyor…".</summary>
+        private bool _stopping;
         /// <summary>Boş sekmenin simgesi (Kütüphane çekmecesindeki boş durum kutusu).</summary>
         public string InfoIcon => InfoTab switch { "shots" => "🖼", "content" => "🧩", _ => "🗺" };
         public bool IsWorlds => InfoTab == "worlds";
@@ -811,9 +818,10 @@ namespace VuluLauncher.ViewModels
             else if (Installed == false) { StatusText = "İlk açılışta oyun dosyaları indirilecek"; Progress = 0; }
             else { StatusText = "Hazır"; Progress = 100; }
 
+            if (!Launching && !GameRunning) _stopping = false;
             OnPropertyChanged(nameof(CanStop));
             OnPropertyChanged(nameof(StopText));
-            PlayLabel = Launching ? "Başlatılıyor…" : _boot != null && GameRunning ? "Açılıyor…" : GameRunning ? "Oyun çalışıyor" : !CanLaunchGame ? "Telefonda oyun yakında" : "OYNA";
+            PlayLabel = _stopping ? "Durduruluyor…" : Launching ? "Başlatılıyor…" : _boot != null && GameRunning ? "Açılıyor…" : GameRunning ? "Oyun çalışıyor" : !CanLaunchGame ? "Telefonda oyun yakında" : "OYNA";
             CanPlay = !Launching && !GameRunning && CanLaunchGame && Selected != null;
             PlayCommand.NotifyCanExecuteChanged();
         }

@@ -19,6 +19,8 @@ namespace VuluLauncher
         private readonly CurseForgeService _curseforge;
         private readonly RadioService _radio = new();
         private readonly GameLauncher _game;
+        /// <summary>Süren açılışın iptali (game.stop).</summary>
+        private CancellationTokenSource? _playCancel;
         private readonly DiscordPresence _discord = new();
 
         private VuluShared.ReleaseManifest? _latestLauncher;
@@ -82,7 +84,7 @@ namespace VuluLauncher
 
             _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion"), args.Bool("ignoreMissing"), args.Str("join"), args.Bool("ignoreFiles")));
             _bridge.On("mods.installMissing", async args => await InstallMissingAsync(RequireGameDevice(args.Str("instanceId")), args));
-            _bridge.On("game.stop", _ => { _game.Stop(); return Task.FromResult<object?>(null); });
+            _bridge.On("game.stop", _ => { _playCancel?.Cancel(); _game.Stop(); return Task.FromResult<object?>(null); });
             _bridge.On("game.versions", async _ => { RequireLogin(); return await LoaderCatalog.MinecraftVersionsAsync(); });
 
             RegisterInstanceCommands();
@@ -510,6 +512,11 @@ namespace VuluLauncher
             if (!_host.CanLaunchGame)
                 return new { started = false, error = "Bu cihazda oyun başlatma henüz desteklenmiyor." };
 
+            // Durdur: açılışın her aşaması (dosya kontrolü, bağımlılıklar, oturum, skin) iptal edilebilir; indirmede GameLauncher.Stop
+            var cancel = new CancellationTokenSource();   // bırakılmaz: Durdur sonradan basılsa da (açılış bittikten sonra) Cancel güvenli
+            _playCancel = cancel;
+            var token = cancel.Token;
+            using var stopOnCancel = token.Register(() => _game.Stop());
             var timer = new PhaseTimer("Oyun açılışı");
             // vulu paketleri vulu oturumu ve skinleriyle açılır; diğerleri Microsoft hesabı bağlıysa gerçek oturumla
             var microsoftTask = UsesVuluSession(instanceId) ? Task.FromResult<MicrosoftSession?>(null) : MicrosoftSessionForGameAsync();
@@ -519,10 +526,10 @@ namespace VuluLauncher
             {
                 var (target, recommendedRamGb) = ResolveTarget(instanceId);
                 timer.Mark("paket");
-                if (!ignoreFiles && await FileProblemsAsync(instanceId, target) is { } files)
+                if (!ignoreFiles && await FileProblemsAsync(instanceId, target).WaitAsync(token) is { } files)
                     return new { started = false, error = (string?)null, files };
                 timer.Mark("dosya kontrolü");
-                if (!ignoreMissing && await MissingDependenciesAsync(instanceId, target) is { } missing)
+                if (!ignoreMissing && await MissingDependenciesAsync(instanceId, target).WaitAsync(token) is { } missing)
                     return new { started = false, error = (string?)null, missing };
                 timer.Mark("bağımlılıklar");
 
@@ -538,18 +545,19 @@ namespace VuluLauncher
                 if (!PackCatalog.RamOptionsGb.Contains(ramGb))
                     ramGb = PackCatalog.FitRam(AppSettings.Current.DefaultRamGb > 0 ? AppSettings.Current.DefaultRamGb : recommendedRamGb);
 
-                var microsoft = await microsoftTask;
+                var microsoft = await microsoftTask.WaitAsync(token);
                 timer.Mark("microsoft");
                 // Sunucu yavaşsa açılış takılmasın: skin oturumu en fazla birkaç saniye beklenir
                 SkinSession? skins = null;
                 if (microsoft != null) _ = skinsTask.ContinueWith(t => _ = t.Exception, TaskScheduler.Default);
-                else if (await Task.WhenAny(skinsTask, Task.Delay(TimeSpan.FromSeconds(6))) == skinsTask) skins = await skinsTask;
+                else if (await Task.WhenAny(skinsTask, Task.Delay(TimeSpan.FromSeconds(6), token)) == skinsTask) skins = await skinsTask;
                 else Log("Skin sunucusu yanıt vermedi; oyun varsayılan skinlerle açılıyor.", "warn");
                 timer.Mark("skin");
                 if (string.IsNullOrWhiteSpace(join)) join = null;
                 else if (!System.Text.RegularExpressions.Regex.IsMatch(join, @"^[A-Za-z0-9](?:[A-Za-z0-9.\-]{0,118}[A-Za-z0-9])?(?::\d{1,5})?$"))
                     throw new InvalidOperationException("Sunucu adresi geçersiz.");
 
+                token.ThrowIfCancellationRequested();
                 await _game.LaunchAsync(target, _login.Username, ramGb, skins, join, timer, microsoft);
                 timer.Write();
                 StartPlayTime(instanceId);

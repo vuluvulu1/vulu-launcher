@@ -594,6 +594,9 @@ namespace VuluLauncher.ViewModels
         }
 
         [RelayCommand] private void Minimize() => _core.Send("window.minimize");
+        /// <summary>Başlık çubuğundaki tam ekran düğmesi (F11 de aynı işi yapar).</summary>
+        [ObservableProperty] private bool _isFullscreen;
+        [RelayCommand] private void ToggleFullscreen() => Views.MainWindow.Current?.SetFullscreen(!IsFullscreen);
         [RelayCommand] private void Close() => _core.Send("window.close");
 
         [RelayCommand]

@@ -138,8 +138,10 @@ namespace VuluLauncher.Views
             var tr = CultureInfo.GetCultureInfo("tr-TR");
             var list = _vm.Instances.Where(i => _filter switch
                 {
-                    "mine" => i.IsCustom,
-                    "vulu" => !i.IsCustom,
+                    // Kişisel: kendi oluşturduğun ya da CurseForge/Modrinth'ten kurduğun; vulu paketleri: vulu Packs'ten kurulanlar.
+                    // Hazır Vanilla ikisinde de değil (yalnızca "Tümü"de).
+                    "mine" => i.IsCustom && !i.IsVuluPack,
+                    "vulu" => i.IsVuluPack,
                     "update" => i.HasUpdate,
                     _ => true,
                 })
@@ -153,14 +155,15 @@ namespace VuluLauncher.Views
             NoMatch.Title = q.Length > 0 ? $"“{q}” ile eşleşen paket yok" : "Bu süzgeçte paket yok";
 
             // Süzgeç haplarında sayılar; güncellemesi olan yoksa o hap gizlenir (seçiliyken kalır)
-            int all = _vm.Instances.Count, mine = _vm.Instances.Count(i => i.IsCustom), updates = _vm.Instances.Count(i => i.HasUpdate);
+            int all = _vm.Instances.Count, mine = _vm.Instances.Count(i => i.IsCustom && !i.IsVuluPack), vulu = _vm.Instances.Count(i => i.IsVuluPack),
+                updates = _vm.Instances.Count(i => i.HasUpdate);
             FilterAll.Content = KutPolish.ChipText("Tümü", all);
             FilterMine.Content = KutPolish.ChipText("Kişisel", mine);
-            FilterVulu.Content = KutPolish.ChipText("vulu paketleri", all - mine);
+            FilterVulu.Content = KutPolish.ChipText("vulu paketleri", vulu);
             FilterUpdate.Content = KutPolish.ChipText("Güncellemesi olan", updates);
             FilterUpdate.IsVisible = updates > 0 || _filter == "update";
             FilterMine.IsVisible = mine > 0 || _filter == "mine";
-            FilterVulu.IsVisible = all - mine > 0 || _filter == "vulu";
+            FilterVulu.IsVisible = vulu > 0 || _filter == "vulu";
             CountText.IsVisible = false;   // sayı "Tümü" hapında
             SyncSelection();
         }

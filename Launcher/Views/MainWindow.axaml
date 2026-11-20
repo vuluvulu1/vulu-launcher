@@ -284,6 +284,13 @@
                         <Button Classes="flat tb" Command="{Binding MinimizeCommand}" ToolTip.Tip="Küçült" AutomationProperties.Name="Küçült">
                             <Path Classes="icon" Data="M1 6h10" Width="12" Height="12" Stretch="None" />
                         </Button>
+                        <!-- Tam ekran (F11): pencere ekranı kaplar, arayüz ekrana göre büyür; boyutlandırılamaz -->
+                        <Button Classes="flat tb" Command="{Binding ToggleFullscreenCommand}" ToolTip.Tip="Tam ekran (F11)" AutomationProperties.Name="Tam ekran">
+                            <Panel>
+                                <Path Classes="icon" Data="M1 4V1h3M8 1h3v3M11 8v3H8M4 11H1V8" Width="12" Height="12" Stretch="None" StrokeThickness="1.4" IsVisible="{Binding !IsFullscreen}" />
+                                <Path Classes="icon" Data="M4 1v3H1M11 4H8V1M8 11V8h3M1 8h3v3" Width="12" Height="12" Stretch="None" StrokeThickness="1.4" IsVisible="{Binding IsFullscreen}" />
+                            </Panel>
+                        </Button>
                         <Button Classes="flat tb close" Command="{Binding CloseCommand}" ToolTip.Tip="Kapat" AutomationProperties.Name="Kapat">
                             <Path Classes="icon" Data="M1.5 1.5l9 9M10.5 1.5l-9 9" Width="12" Height="12" Stretch="None" StrokeThickness="1.4" />
                         </Button>
