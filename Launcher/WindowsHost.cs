@@ -69,6 +69,17 @@ namespace VuluLauncher
                 _hwnd = _window.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
                 RoundCorners(_hwnd);
             };
+            // Simge durumuna küçültülünce (oyun açılınca küçült ayarı dahil) bildirim alanındaki gibi verimlilik modu ve
+            // bellek geri verme; pencere geri gelince normale döner
+            _window.PropertyChanged += (_, e) =>
+            {
+                if (e.Property != Window.WindowStateProperty) return;
+                bool minimized = _window.WindowState == WindowState.Minimized;
+                if (minimized == _minimizedEco) return;
+                _minimizedEco = minimized;
+                if (minimized) { Efficiency.Enter(); StartTrimTimer(); }
+                else if (_visible) { _trimTimer?.Stop(); Efficiency.Leave(); }
+            };
             _window.Activated += (_, _) => _active = true;
             _window.Deactivated += (_, _) => _active = false;
             // Alt+F4 ya da görev çubuğundan kapatma, kapat düğmesiyle aynı yoldan gider (ayara göre bildirim alanı)
@@ -99,6 +110,13 @@ namespace VuluLauncher
         {
             WindowVisibilityChanged?.Invoke(false);
             Efficiency.Enter();
+            StartTrimTimer();
+        }
+
+        private bool _minimizedEco;
+
+        private void StartTrimTimer()
+        {
             _trimTimer ??= new DispatcherTimer(TimeSpan.FromMinutes(5), DispatcherPriority.Background, (_, _) => Efficiency.Trim());
             _trimTimer.Start();
         }
@@ -106,6 +124,7 @@ namespace VuluLauncher
         private void LeaveTray()
         {
             WindowVisibilityChanged?.Invoke(true);
+            if (_minimizedEco) return;   // pencere küçültülmüş hâlde geri geldiyse verimlilik modu sürer
             _trimTimer?.Stop();
             Efficiency.Leave();
         }
