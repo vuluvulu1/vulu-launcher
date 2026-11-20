@@ -415,15 +415,18 @@
                             <!-- Profil: yeşil halka çevrimiçi demek -->
                             <Button Classes="rail-avatar" HorizontalAlignment="Center" Command="{Binding OpenMyProfileCommand}" ToolTip.Tip="Profilim"
                                     ToolTip.Placement="Right" ToolTip.ShowDelay="150" AutomationProperties.Name="Profilim">
-                                <!-- Halka dıştaki kutuda (içteki resim kırpılır; kırpılan kutunun gölgesi görünmezdi) -->
-                                <Border Width="30" Height="30" CornerRadius="15" Margin="4" BoxShadow="0 0 0 2 #090807, 0 0 0 4 #7FC98A">
-                                    <Border CornerRadius="15" ClipToBounds="True" Background="{StaticResource Raised}">
+                                <!-- Yuvarlak resim, ince çerçeve; sağ altta yeşil çevrimiçi noktası (kalın halka yerine) -->
+                                <Panel Width="34" Height="34">
+                                    <Border CornerRadius="17" ClipToBounds="True" Background="{StaticResource Raised}" BorderBrush="{StaticResource CardLineStrong}" BorderThickness="1">
                                         <Grid>
-                                            <TextBlock Text="{Binding UserInitial}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding UserInitial}" FontWeight="SemiBold" FontSize="13" TextAlignment="Center" LineHeight="32"
+                                                       HorizontalAlignment="Stretch" VerticalAlignment="Center" />
                                             <Image Source="{Binding MyAvatar}" Stretch="UniformToFill" />
                                         </Grid>
                                     </Border>
-                                </Border>
+                                    <Ellipse Width="11" Height="11" Fill="{StaticResource Online}" Stroke="{StaticResource RailBg}" StrokeThickness="2.5"
+                                             HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-1,-1" />
+                                </Panel>
                             </Button>
                             <Button Classes="rail-tab" Classes.active="{Binding SettingsTab.IsActive}" Classes.glow="{Binding SettingsTab.IsGlowing}"
                                     Command="{Binding SelectTabCommand}" CommandParameter="{Binding SettingsTab}" ToolTip.Tip="Ayarlar" ToolTip.Placement="Right" ToolTip.ShowDelay="150"
