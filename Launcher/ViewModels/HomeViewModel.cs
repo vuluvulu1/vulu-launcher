@@ -271,6 +271,20 @@ namespace VuluLauncher.ViewModels
         /// </summary>
         [ObservableProperty] private bool _detailsOpen;
         private bool _detailsAutoOpened;
+        /// <summary>Konsol: oyunun günlük klasörü (logs/latest.log ve çökme kayıtları).</summary>
+        [RelayCommand]
+        private async Task OpenLogs()
+        {
+            if (Selected is not { } s) return;
+            try { await _core.Call("files.open", new { target = "logs", id = s.Id }); } catch (Exception ex) { AppendLog(ex.Message, "error"); }
+        }
+
+        /// <summary>Konsoldaki bütün satırlar düz yazı olarak (panoya kopyalamak için).</summary>
+        public string ConsoleText() => string.Join(Environment.NewLine, Console.Select(l => $"{l.Time}  {l.Text}"));
+
+        /// <summary>Boş kütüphanedeki karşılama düğmeleri: Yeni paket penceresi o kaynakla açılır.</summary>
+        [RelayCommand] private Task NewPackFrom(string source) => Main.OpenNewPackAsync(source);
+
         [RelayCommand] private void ToggleDetails() { DetailsOpen = !DetailsOpen; _detailsAutoOpened = false; }
 
         /// <summary>Durdur: açılış sürerken (hazırlık ya da oyun penceresi açılana kadar) ya da oyun çalışırken.</summary>

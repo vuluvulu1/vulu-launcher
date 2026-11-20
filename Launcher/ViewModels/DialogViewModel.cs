@@ -21,6 +21,9 @@ namespace VuluLauncher.ViewModels
         /// <summary>Kapanıyor: kutu ve karartma kısa bir çıkış animasyonuyla kaybolur, sonra listeden çıkar.</summary>
         [ObservableProperty] private bool _closing;
 
+        /// <summary>En üstteki kutu: yalnızca onun köşesindeki kapat düğmesi görünür (alttakininki karartmanın altında kalsa da seçilmesin).</summary>
+        [ObservableProperty] private bool _isTop = true;
+
         /// <summary>Vazgeç, Kapat ya da Esc.</summary>
         [RelayCommand] private void Dismiss() => Close(null);
 

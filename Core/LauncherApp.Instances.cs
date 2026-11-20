@@ -650,6 +650,7 @@ namespace VuluLauncher
                 "instances" => AppPaths.Instances,
                 "instance" => Path.Combine(AppPaths.Instances, ResolveTarget(id).Target.Folder),
                 "screenshots" => Path.Combine(AppPaths.Instances, ResolveTarget(id).Target.Folder, "screenshots"),
+                "logs" => Path.Combine(AppPaths.Instances, ResolveTarget(id).Target.Folder, "logs"),
                 _ => AppPaths.Base
             };
 

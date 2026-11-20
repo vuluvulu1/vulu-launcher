@@ -52,6 +52,14 @@ namespace VuluLauncher.Views
             };
         }
 
+        /// <summary>Konsol › Kopyala: bütün satırlar panoya.</summary>
+        private async void OnCopyLog(object? sender, RoutedEventArgs e)
+        {
+            if (_vm == null || TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard) return;
+            await Avalonia.Input.Platform.ClipboardExtensions.SetTextAsync(clipboard, _vm.ConsoleText());
+            _vm.Main?.ShowToast("Kopyalandı", "Konsol panoya kopyalandı.");
+        }
+
         private void Play()
         {
             if (_vm?.PlayCommand.CanExecute(null) == true) _vm.PlayCommand.Execute(null);
@@ -165,6 +173,8 @@ namespace VuluLauncher.Views
             FilterMine.IsVisible = mine > 0 || _filter == "mine";
             FilterVulu.IsVisible = vulu > 0 || _filter == "vulu";
             CountText.IsVisible = false;   // sayı "Tümü" hapında
+            // Kendi ya da vulu paketin yoksa karşılama alanı (yalnızca "Tümü" ve aramasızken)
+            Welcome.IsVisible = !_vm.Instances.Any(i => i.IsCustom) && _filter == "all" && q.Length == 0;
             SyncSelection();
         }
 

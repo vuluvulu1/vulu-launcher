@@ -105,7 +105,14 @@
             </ScrollViewer>
 
             <!-- ── Harita ─────────────────────────────────────────────── -->
-            <Grid IsVisible="{Binding IsMap}" RowDefinitions="*,Auto">
+            <!-- Harita yüklenemediyse çerçeve gizlenir (üstte hata kutusu ve "Tekrar dene" durur) -->
+            <Grid RowDefinitions="*,Auto">
+                <Grid.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="IsMap" />
+                        <Binding Path="Error" Converter="{x:Static ObjectConverters.IsNull}" />
+                    </MultiBinding>
+                </Grid.IsVisible>
                 <Border Classes="card" ClipToBounds="True">
                     <Panel>
                         <v:WorldMapControl x:Name="MapView" Markers="{Binding Markers}" Background="{StaticResource Surface}" Accent="{StaticResource Accent}"

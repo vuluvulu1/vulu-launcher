@@ -604,7 +604,7 @@
                                     <v:ModalHost />
                                 </Border>
                                 <!-- Her kutuda sağ üst köşede büyük, yuvarlak kapat düğmesi: köşeden yarı dışarıda (kutu kırpılsa da kesilmez, içerikle çakışmaz) -->
-                                <Button Classes="modal-close" Command="{Binding DismissCommand}" ToolTip.Tip="Kapat (Esc)" AutomationProperties.Name="Kapat">
+                                <Button Classes="modal-close" IsVisible="{Binding IsTop}" Command="{Binding DismissCommand}" ToolTip.Tip="Kapat (Esc)" AutomationProperties.Name="Kapat">
                                     <Path Data="M6 6l12 12M18 6L6 18" Stroke="{StaticResource Text}" StrokeThickness="2" StrokeLineCap="Round" Width="12" Height="12" Stretch="Uniform" />
                                 </Button>
                             </Grid>

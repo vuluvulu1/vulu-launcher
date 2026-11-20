@@ -112,6 +112,8 @@ namespace VuluLauncher.ViewModels
         public MainViewModel()
         {
             Toasts = new ToastStack(tag => { if (tag != null) _ = RouteAsync(tag); });
+            // Üst üste açılan kutularda yalnızca en üsttekinin kapat düğmesi görünür
+            Modals.CollectionChanged += (_, _) => { foreach (var m in Modals) m.IsTop = m == Modals[^1]; };
             Login = new LoginViewModel(EnterAsync);
             Home = new HomeViewModel();
             Home.Main = this;
@@ -200,6 +202,12 @@ namespace VuluLauncher.ViewModels
                         if (Home.Instances.FirstOrDefault(i => i.IsCustom) is not { } custom) return;
                         Home.OpenPageCommand.Execute(custom);
                         Home.SelectPageTabCommand.Execute(instTab);
+                    }, TimeSpan.FromSeconds(2));
+                // VULU_UI_EMPTY=1: kişisel paket yokmuş gibi (Kütüphane'nin karşılama alanını görmek için)
+                if (Environment.GetEnvironmentVariable("VULU_UI_EMPTY") == "1")
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                    {
+                        foreach (var i in Home.Instances.Where(i => i.IsCustom).ToList()) Home.Instances.Remove(i);
                     }, TimeSpan.FromSeconds(2));
                 // VULU_UI_DOWNLOAD=1: örnek indirme paneli (yerini görmek için)
                 if (Environment.GetEnvironmentVariable("VULU_UI_DOWNLOAD") == "1")

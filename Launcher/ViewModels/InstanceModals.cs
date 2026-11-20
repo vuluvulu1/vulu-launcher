@@ -271,6 +271,12 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private bool _canCheck = true;
         [ObservableProperty] private int _stableUpdates;
         [ObservableProperty] private bool _isEmpty;
+        /// <summary>İçerik listesi alınamadı: sayfada "Tekrar dene"li kutu.</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasLoadError))]
+        private string? _loadError;
+        public bool HasLoadError => LoadError != null;
+        [RelayCommand] private Task Retry() => LoadAsync();
         public bool HasStableUpdates => StableUpdates > 0;
         public string UpdateAllText => $"Tümünü güncelle ({StableUpdates})";
 
@@ -284,7 +290,8 @@ namespace VuluLauncher.ViewModels
         {
             JsonElement content;
             try { content = await _core.Call("instances.content", new { id = _item.Id }); }
-            catch (Exception ex) { Summary = "İçerik alınamadı. " + Errors.Friendly(ex); return; }
+            catch (Exception ex) { Summary = ""; LoadError = Errors.Friendly(ex); return; }
+            LoadError = null;
             Rows.Clear();
             foreach (var i in content.Items("items"))
             {
