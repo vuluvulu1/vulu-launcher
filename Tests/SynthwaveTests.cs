@@ -43,11 +43,29 @@ namespace VuluLauncher.Tests
         [InlineData("kutuphane")]
         public void SettingsKeepEveryTheme(string theme)
         {
-            var settings = new AppSettings { Theme = theme };
-            typeof(AppSettings).GetMethod("Normalize", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(settings, null);
+            // Varsayılan tema geçişi yapılmış ayarlar: seçilen tema (Meşale dahil) korunur
+            var settings = new AppSettings { Theme = theme, ThemeDefaultsVersion = 1 };
+            NormalizeSettings(settings);
             Assert.Equal(theme, settings.Theme);
             Assert.Equal(theme, Themes.Normalize(theme));
         }
+
+        [Fact]
+        public void MesaleMovesToKutuphaneOnce()
+        {
+            // 0.28.0: Meşale'deki herkes bir kez Kütüphane'ye geçer; diğer temalar olduğu gibi kalır
+            var old = new AppSettings { Theme = "mesale" };
+            NormalizeSettings(old);
+            Assert.Equal("kutuphane", old.Theme);
+            Assert.Equal(1, old.ThemeDefaultsVersion);
+            var ufuk = new AppSettings { Theme = "ufuk" };
+            NormalizeSettings(ufuk);
+            Assert.Equal("ufuk", ufuk.Theme);
+            Assert.Equal("kutuphane", new AppSettings().Theme);
+        }
+
+        private static void NormalizeSettings(AppSettings settings) =>
+            typeof(AppSettings).GetMethod("Normalize", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(settings, null);
 
         [Fact]
         public void SculkTransitionCompiles()

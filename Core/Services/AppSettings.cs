@@ -63,8 +63,13 @@ namespace VuluLauncher
         public bool MusicEnabled { get; set; } = true;
         public int MusicVolume { get; set; } = 40;
         public string AccentColor { get; set; } = "#c27e3e";
-        /// <summary>Launcher teması: "mesale" (varsayılan), "ufuk" (Ufkun öbür ucu, synthwave) "derin" (Derin Karanlık, sculk) "grafit" (Grafit, kartlı düzen) ya da "kutuphane" (Kütüphane: simge rayı, kapak ızgarası).</summary>
-        public string Theme { get; set; } = "mesale";
+        /// <summary>Launcher teması: "kutuphane" (varsayılan, 0.28.0'dan beri), "mesale", "ufuk" (Ufkun öbür ucu, synthwave) "derin" (Derin Karanlık, sculk) "grafit" (Grafit, kartlı düzen) ya da "kutuphane" (Kütüphane: simge rayı, kapak ızgarası).</summary>
+        public string Theme { get; set; } = "kutuphane";
+        /// <summary>
+        /// Varsayılan tema geçişi yapıldı mı: 0.28.0'da varsayılan Kütüphane oldu ve Meşale'deki herkes bir kez Kütüphane'ye
+        /// geçirildi. Sonradan Meşale'yi seçen kendi seçiminde kalır.
+        /// </summary>
+        public int ThemeDefaultsVersion { get; set; }
         /// <summary>Ufkun öbür ucu temasında arka plan akar mı; kapalıyken sabit bir kare (yavaş bilgisayarlar için).</summary>
         public bool AnimatedBackground { get; set; } = true;
 
@@ -129,7 +134,12 @@ namespace VuluLauncher
             if (OnGameStart is not ("minimize" or "close")) OnGameStart = "keep";
             MusicVolume = Math.Clamp(MusicVolume, 0, 100);
             if (!System.Text.RegularExpressions.Regex.IsMatch(AccentColor ?? "", "^#[0-9a-fA-F]{6}$")) AccentColor = "#c27e3e";
-            if (Theme is not ("mesale" or "ufuk" or "derin" or "grafit" or "kutuphane")) Theme = "mesale";
+            if (Theme is not ("mesale" or "ufuk" or "derin" or "grafit" or "kutuphane")) Theme = "kutuphane";
+            if (ThemeDefaultsVersion < 1)
+            {
+                if (Theme == "mesale") Theme = "kutuphane";
+                ThemeDefaultsVersion = 1;
+            }
         }
     }
 }
