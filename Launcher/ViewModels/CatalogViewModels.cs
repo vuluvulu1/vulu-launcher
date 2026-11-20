@@ -327,7 +327,7 @@ namespace VuluLauncher.ViewModels
             foreach (var c in h.Items("categories")) Tags.Add(new Tag(Names.Category(c.GetString() ?? "")));
             if (Type == "mod" || isPack) foreach (var l in Loaders) Tags.Add(new Tag(Names.Loader(l)));
 
-            _buttonText = isPack ? "Instance olarak kur" : Installed ? "Güncelle" : "Kur";
+            _buttonText = Installed && !isPack ? "Güncelle" : "Kur";
             _isPrimary = !Installed || isPack;
             _ = LoadIconAsync(h.Text("iconUrl"));
         }

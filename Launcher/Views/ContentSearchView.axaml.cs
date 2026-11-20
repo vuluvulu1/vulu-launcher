@@ -1,4 +1,7 @@
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.VisualTree;
+using VuluLauncher.ViewModels;
 
 namespace VuluLauncher.Views
 {
@@ -13,6 +16,14 @@ namespace VuluLauncher.Views
                 if (e.Property == IsVisibleProperty && IsVisible) Focus();
             };
             AttachedToVisualTree += (_, _) => { if (IsEffectivelyVisible) Focus(); };
+        }
+
+        /// <summary>Kartın boş yerine tıklanınca ayrıntılar açılır (sürümler, galeri, sayfa); Kur düğmesi kendi işini yapar.</summary>
+        private void OnHitTapped(object? sender, TappedEventArgs e)
+        {
+            for (var v = e.Source as Avalonia.Visual; v != null && v != sender; v = v.GetVisualParent())
+                if (v is Button) return;
+            if (sender is Control { DataContext: ContentHit hit }) hit.DetailsCommand.Execute(null);
         }
 
         private new void Focus() =>
