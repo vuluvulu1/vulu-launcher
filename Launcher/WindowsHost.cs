@@ -80,8 +80,21 @@ namespace VuluLauncher
                 if (minimized) { Efficiency.Enter(); StartTrimTimer(); }
                 else if (_visible) { _trimTimer?.Stop(); Efficiency.Leave(); }
             };
-            _window.Activated += (_, _) => _active = true;
-            _window.Deactivated += (_, _) => _active = false;
+            _window.Activated += (_, _) => { _active = true; _backgroundTrim?.Stop(); };
+            _window.Deactivated += (_, _) =>
+            {
+                _active = false;
+                // Pencere 2 dakikadan uzun arkada kalırsa (ör. oyun öndeyken) bellek toparlanıp Windows'a geri verilir,
+                // arkada kaldığı sürece 5 dakikada bir yinelenir. Launcher'a dönünce gereken sayfalar geri yüklenir.
+                _backgroundTrim ??= new DispatcherTimer(TimeSpan.FromMinutes(2), DispatcherPriority.Background, (_, _) =>
+                {
+                    if (_active) { _backgroundTrim!.Stop(); return; }
+                    _backgroundTrim!.Interval = TimeSpan.FromMinutes(5);
+                    Efficiency.Compact();
+                });
+                _backgroundTrim.Interval = TimeSpan.FromMinutes(2);
+                _backgroundTrim.Start();
+            };
             // Alt+F4 ya da görev çubuğundan kapatma, kapat düğmesiyle aynı yoldan gider (ayara göre bildirim alanı)
             _window.Closing += (_, e) =>
             {
@@ -114,6 +127,7 @@ namespace VuluLauncher
         }
 
         private bool _minimizedEco;
+        private DispatcherTimer? _backgroundTrim;
 
         private void StartTrimTimer()
         {

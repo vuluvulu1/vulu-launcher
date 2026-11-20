@@ -13,7 +13,9 @@ namespace VuluLauncher.Views
             Themes.Attach(this);   // Ufkun öbür ucu: sayfanın kendi stillerinin üstüne
             KutTabs.ItemsSource = _links;
             ApplyLayout();
-            Themes.Changed += ApplyLayout;
+            // Tema aboneliği yalnızca sayfa ağaçtayken (uzun süre açılmayan sayfa PageHost'tan atılınca bellekte kalmasın)
+            AttachedToVisualTree += (_, _) => { Themes.Changed -= ApplyLayout; Themes.Changed += ApplyLayout; ApplyLayout(); };
+            DetachedFromVisualTree += (_, _) => Themes.Changed -= ApplyLayout;
             // Enter gönderir, Shift+Enter yeni satır
             Compose.AddHandler(KeyDownEvent, (_, e) =>
             {

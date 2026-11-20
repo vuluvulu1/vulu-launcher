@@ -15,6 +15,23 @@ namespace VuluLauncher
         /// <summary>Gizliyken arka plandaki işler belleği yavaşça geri doldurur; arada bir yeniden boşaltılır.</summary>
         public static void Trim() => Apply(eco: true, onlyTrim: true);
 
+        /// <summary>
+        /// Pencere uzun süre arkadayken: kullanılmayan .NET belleği toplanıp sıkıştırılır (bırakılan görseller ve sayfalar
+        /// gerçekten boşalır), sonra çalışma kümesi Windows'a geri verilir. Öncelik ve hız değişmez.
+        /// </summary>
+        public static void Compact()
+        {
+            try
+            {
+                System.Runtime.GCSettings.LargeObjectHeapCompactionMode = System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
+                GC.Collect(2, GCCollectionMode.Forced, blocking: true, compacting: true);
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+            catch { }
+            Apply(eco: true, onlyTrim: true);
+        }
+
         private static void Apply(bool eco, bool onlyTrim = false)
         {
             try
@@ -25,6 +42,7 @@ namespace VuluLauncher
                     SetEcoQoS(process.Handle, eco);
                     process.PriorityClass = eco ? ProcessPriorityClass.Idle : ProcessPriorityClass.Normal;
                 }
+                if (eco && !onlyTrim) { GC.Collect(); GC.WaitForPendingFinalizers(); }
                 if (eco) EmptyWorkingSet(process.Handle);
             }
             catch { }

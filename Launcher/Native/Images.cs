@@ -9,7 +9,54 @@ namespace VuluLauncher.Native
     /// </summary>
     internal static class Images
     {
-        private static readonly ConcurrentDictionary<string, Task<Bitmap?>> Cache = new();
+        private static readonly ConcurrentDictionary<string, Entry> Cache = new();
+
+        /// <summary>Önbellekteki görsel: en son ne zaman istendiği ve çözülmüş hâlinin kapladığı bellek.</summary>
+        private sealed class Entry(Task<Bitmap?> task)
+        {
+            public readonly Task<Bitmap?> Task = task;
+            public long LastUse = Environment.TickCount64;
+            public long Bytes;
+        }
+
+        /// <summary>
+        /// Önbellek bütçesi (çözülmüş piksel). Aşılınca en uzun süredir istenmeyenler önbellekten çıkar; ekranda hâlâ
+        /// gösterilen görseli onu tutan sayfa tutmaya devam eder, yalnızca kimsenin tutmadığı eski görseller boşalır
+        /// (önceden bir oturumda görülen her kapak, galeri resmi ve akış görseli launcher kapanana kadar bellekte kalıyordu).
+        /// </summary>
+        private const long Budget = 48L * 1024 * 1024;
+        /// <summary>Genişlik verilmeyen görseller de en fazla bu genişlikte çözülür (ör. 4K ekran görüntüsü).</summary>
+        private const int MaxWidth = 2560;
+        private static long _total;
+        private static int _evicting;
+
+        private static Task<Bitmap?> Get(string key, Func<Task<Bitmap?>> load)
+        {
+            if (Cache.TryGetValue(key, out var hit)) { hit.LastUse = Environment.TickCount64; return hit.Task; }
+            var entry = Cache.GetOrAdd(key, _ => new Entry(System.Threading.Tasks.Task.Run(load)));
+            entry.LastUse = Environment.TickCount64;
+            _ = entry.Task.ContinueWith(t =>
+            {
+                if (t.Result is not { } bmp || entry.Bytes != 0 || !Cache.TryGetValue(key, out var current) || current != entry) return;
+                entry.Bytes = (long)bmp.PixelSize.Width * bmp.PixelSize.Height * 4;
+                if (Interlocked.Add(ref _total, entry.Bytes) > Budget) Evict();
+            }, TaskContinuationOptions.OnlyOnRanToCompletion);
+            return entry.Task;
+        }
+
+        private static void Evict()
+        {
+            if (Interlocked.Exchange(ref _evicting, 1) == 1) return;
+            try
+            {
+                foreach (var (key, entry) in Cache.Where(kv => kv.Value.Task.IsCompleted).OrderBy(kv => kv.Value.LastUse).ToList())
+                {
+                    if (Interlocked.Read(ref _total) <= Budget * 3 / 4) break;
+                    if (Cache.TryRemove(key, out var gone)) Interlocked.Add(ref _total, -gone.Bytes);
+                }
+            }
+            finally { Volatile.Write(ref _evicting, 0); }
+        }
         private static readonly HttpClient Http = CreateHttp();
 
         private static HttpClient CreateHttp()
@@ -24,7 +71,8 @@ namespace VuluLauncher.Native
         public static Task<Bitmap?> LoadAsync(string? url, int width = 0)
         {
             if (string.IsNullOrWhiteSpace(url)) return Task.FromResult<Bitmap?>(null);
-            return Cache.GetOrAdd($"{width}|{url}", _ => Task.Run(() => LoadCoreAsync(url, width)));
+            if (width <= 0 || width > MaxWidth) width = MaxWidth;
+            return Get($"{width}|{url}", () => LoadCoreAsync(url, width));
         }
 
         /// <summary>
@@ -35,7 +83,7 @@ namespace VuluLauncher.Native
         public static Task<Bitmap?> LoadBlurredAsync(string? url, int width = 640, float sigma = 5f)
         {
             if (string.IsNullOrWhiteSpace(url)) return Task.FromResult<Bitmap?>(null);
-            return Cache.GetOrAdd($"blur{width}:{sigma}|{url}", _ => Task.Run(async () =>
+            return Get($"blur{width}:{sigma}|{url}", async () =>
             {
                 try
                 {
@@ -58,7 +106,7 @@ namespace VuluLauncher.Native
                     LogFile.Write($"[ui] bulanık zemin hazırlanamadı ({url}): {ex.Message}");
                     return null;
                 }
-            }));
+            });
         }
 
         /// <summary>Görselin baytları (skin gibi önce işlenecek resimler için); alınamazsa null.</summary>
@@ -81,7 +129,7 @@ namespace VuluLauncher.Native
         {
             if (url == null) return;
             foreach (var key in Cache.Keys.Where(k => k.EndsWith("|" + url, StringComparison.Ordinal)))
-                Cache.TryRemove(key, out _);
+                if (Cache.TryRemove(key, out var gone)) Interlocked.Add(ref _total, -gone.Bytes);
         }
 
         private static async Task<Bitmap?> LoadCoreAsync(string url, int width)

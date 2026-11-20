@@ -36,7 +36,9 @@ namespace VuluLauncher.Views
             KutPolish.AttachSearch(this, KutSearch);
             KutScroll.SizeChanged += (_, e) => FitCards(e.NewSize.Width);
             ApplyLayout();
-            Themes.Changed += ApplyLayout;
+            // Tema aboneliği yalnızca sayfa ağaçtayken (uzun süre açılmayan sayfa PageHost'tan atılınca bellekte kalmasın)
+            AttachedToVisualTree += (_, _) => { Themes.Changed -= ApplyLayout; Themes.Changed += ApplyLayout; ApplyLayout(); };
+            DetachedFromVisualTree += (_, _) => Themes.Changed -= ApplyLayout;
             DataContextChanged += (_, _) => BindKut(DataContext as SettingsViewModel);
             AttachedToVisualTree += (_, _) => FillAccount();
         }
