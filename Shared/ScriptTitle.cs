@@ -93,21 +93,6 @@ namespace VuluShared
             }
         }
 
-        /// <summary>
-        /// Mürekkep rengini değiştirir (ör. Kütüphane açılışında kâğıda kahverengi mürekkep): kalem çizgisi tek renk,
-        /// dolgu verilen renklerle yukarıdan aşağı geçişli.
-        /// </summary>
-        public void SetInk(Color pen, params Color[] fill)
-        {
-            var stops = new GradientStops();
-            for (int i = 0; i < fill.Length; i++) stops.Add(new GradientStop(fill[i], fill.Length == 1 ? 0 : i / (double)(fill.Length - 1)));
-            foreach (var (_, _, brush, stroke) in _letters)
-            {
-                if (brush is LinearGradientBrush g) g.GradientStops = stops;
-                if (stroke is SolidColorBrush s) s.Color = pen;
-            }
-        }
-
         private List<SolidColorBrush>? _ember;
         private static readonly (double At, Color Color)[] EmberStops =
         {

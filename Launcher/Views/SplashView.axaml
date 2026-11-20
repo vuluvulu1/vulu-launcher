@@ -36,16 +36,11 @@
 
         <v:EmberSparks x:Name="Sparks" />
 
-        <!-- Kütüphane açılışı, iki seçenek (Ayarlar: KutuphaneSplash):
-             kitap (varsayılan): kapalı kitap açılır, sayfalar çevrilir, sağ sayfaya el yazısıyla "vulu Launcher" yazılır;
-               açılırken kamera yazının içine dalar, ekran kâğıtla dolar ve ortası açılıp launcher görünür (KutBook.cs).
-             imza: Meşale'deki el yazısı başlık kalemle yazılıp mürekkeple dolar, altına kuyruk çekilir. -->
+        <!-- Kütüphane açılışı: Meşale'deki el yazısı "vulu Launcher", ama yanmaz: her harf ince kalemle yazılır, sonra
+             mürekkeple dolar (ScriptTitle.Render); altına kalemle bir kuyruk çekilir, ardından karşılama. Açılırken her şey
+             söner, altta gerçek kütüphane görünür. -->
         <Panel x:Name="KutStage" IsVisible="False">
-            <Border x:Name="KutBg" Background="#0B0A09" />
-            <Panel x:Name="KutBookStage" IsVisible="False" RenderTransformOrigin="0,0">
-                <v:KutBook x:Name="KutBook" IsHitTestVisible="False" />
-                <sh:ScriptTitle x:Name="KutPageLetters" HorizontalAlignment="Left" VerticalAlignment="Top" />
-            </Panel>
+            <Border Background="#0B0A09" />
             <Border x:Name="KutGlow" IsHitTestVisible="False" Opacity="0">
                 <Border.Background>
                     <RadialGradientBrush Center="50%,47%" GradientOrigin="50%,47%" RadiusX="42%" RadiusY="34%">
@@ -55,7 +50,7 @@
                 </Border.Background>
             </Border>
             <StackPanel x:Name="KutTitle" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
-                <Grid x:Name="KutSignatureBox">
+                <Grid>
                     <sh:ScriptTitle x:Name="KutLetters" Width="560" />
                     <!-- Kuyruk: "r"nin ucundan sola, harflerin altından geçen kalem çizgisi -->
                     <Path x:Name="KutTail" Data="M 548,112 C 590,150 330,126 170,140 C 110,145 60,150 30,146" Stroke="#E3B37A" StrokeThickness="2.6"
@@ -66,7 +61,6 @@
                 <TextBlock Text="{Binding Status}" MinHeight="18" Margin="0,14,0,0" HorizontalAlignment="Center"
                            FontSize="12" FontWeight="Medium" Foreground="#A1958A" />
             </StackPanel>
-            <v:KutRush x:Name="KutRush" />
         </Panel>
 
         <!-- Grafit açılışı: boş grafit zemine launcher'ın üç kartı sırayla, hafifçe aşağıdan gelip oturur; yazı ortadaki
