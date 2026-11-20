@@ -350,7 +350,7 @@
             <Border x:Name="Rail" Grid.Row="1" ZIndex="4" Width="56" HorizontalAlignment="Left"
                     Background="{StaticResource RailBg}" BorderBrush="{StaticResource RailLine}" BorderThickness="0,0,1,0">
                 <Panel IsVisible="{Binding ShowShell}">
-                    <!-- Seçili sekmenin yuvarlak zemini ve soldaki amber çizgi: sekme değişince yeni sekmeye kayar (PlaceRailMark) -->
+                    <!-- Seçili sekmenin solundaki amber hap: sekme değişince yeni sekmeye kayar (PlaceRailMark); düğmelerin zemini yok -->
                     <Canvas x:Name="RailCanvas" IsHitTestVisible="False">
                         <Panel x:Name="RailMark" Width="56" Height="42" Opacity="0">
                             <Panel.Transitions>
@@ -359,8 +359,7 @@
                                     <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
                                 </Transitions>
                             </Panel.Transitions>
-                            <Border Width="42" Height="42" CornerRadius="12" Background="{StaticResource AccentTint}" HorizontalAlignment="Center" />
-                            <Border Width="3" Height="20" CornerRadius="0,2,2,0" Background="{StaticResource Accent}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                            <Border Width="4" Height="24" CornerRadius="0,4,4,0" Background="{StaticResource Accent}" HorizontalAlignment="Left" VerticalAlignment="Center" />
                         </Panel>
                     </Canvas>
                     <DockPanel Margin="0,12,0,12">

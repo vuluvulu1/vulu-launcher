@@ -209,13 +209,18 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Foreground" Value="{StaticResource Dim}" />
+        <Setter Property="Cursor" Value="Hand" />
     </Style>
     <Style Selector="Button.rail-tab /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="CornerRadius" Value="12" />
     </Style>
+    <!-- Zemin yok: üstüne gelince yalnızca simge aydınlanır (simgenin rengi düğmenin Foreground'undan gelir) -->
+    <Style Selector="Button.rail-tab:pointerover:not(.active)">
+        <Setter Property="Foreground" Value="{StaticResource TextSoft}" />
+    </Style>
     <Style Selector="Button.rail-tab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource HoverFill}" />
-        <Setter Property="Foreground" Value="{StaticResource Text}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource TextSoft}" />
     </Style>
     <Style Selector="Button.rail-tab /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Transitions">
@@ -223,24 +228,25 @@
         </Setter>
     </Style>
     <Style Selector="Button.rail-tab.glow">
-        <Setter Property="Background" Value="{StaticResource AccentTint}" />
-        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
-    </Style>
-    <!-- Seçili sekmenin zemini kayan işaretten gelir (MainWindow RailMark); düğmenin kendisi saydam kalır -->
-    <Style Selector="Button.rail-tab.active">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
     </Style>
+    <!-- Seçili sekmenin zemini kayan işaretten gelir (MainWindow RailMark); düğmenin kendisi saydam kalır -->
+    <!-- Seçili: simge açık renk; işaret soldaki amber hap (MainWindow RailMark) -->
+    <Style Selector="Button.rail-tab.active">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource Text}" />
+    </Style>
     <Style Selector="Button.rail-tab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{StaticResource AccentHover}" />
-        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource Text}" />
     </Style>
     <Style Selector="Button.rail-tab:pressed">
         <Setter Property="RenderTransform" Value="scale(0.96)" />
     </Style>
     <Style Selector="Button.rail-tab Path.tab-icon">
         <Setter Property="Stroke" Value="{Binding $parent[Button].Foreground}" />
-        <Setter Property="StrokeThickness" Value="1.8" />
+        <Setter Property="StrokeThickness" Value="2" />
         <Setter Property="StrokeLineCap" Value="Round" />
         <Setter Property="StrokeJoin" Value="Round" />
         <Setter Property="Fill" Value="Transparent" />
