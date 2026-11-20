@@ -23,9 +23,12 @@
     <Style Selector="Window.grafit Border#RadioHost">
         <Setter Property="IsVisible" Value="False" />
     </Style>
+    <!-- Başlık çubuğu tam genişlik (sol üst köşe boş kalmasın); logo köşede, ray çubuğun altından başlar -->
     <Style Selector="Window.kutuphane Border#TitleBar, Window.kutuphane Border#TitleBar.overlay">
-        <Setter Property="Margin" Value="56,0,0,0" />
-        <Setter Property="Background" Value="{StaticResource Bg}" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Background" Value="{StaticResource RailBg}" />
+        <Setter Property="BorderBrush" Value="{StaticResource RailLine}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="BoxShadow" Value="none" />
     </Style>
     <Style Selector="Window.kutuphane Border#TabsHost, Window.kutuphane Border#SearchIconHost, Window.kutuphane Border#SettingsIconHost">
@@ -183,9 +186,9 @@
     <Style Selector="Window.kutuphane v|WorldView TextBlock.page-title">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-    <!-- Başlık çubuğundaki logo sayfa başlıklarıyla aynı hizada (ray 56 + kenar 28) -->
+    <!-- Logo simgesi rayın simgeleriyle aynı dikey çizgide (ray 56 genişliğinde, simge 20) -->
     <Style Selector="Window.kutuphane StackPanel#TitleLogo">
-        <Setter Property="Margin" Value="28,0,14,0" />
+        <Setter Property="Margin" Value="18,0,14,0" />
     </Style>
 
     <!-- Sosyal: Akış/Liderlik/Harita üstteki sekmelerde; listedeki satırları gizlenir -->

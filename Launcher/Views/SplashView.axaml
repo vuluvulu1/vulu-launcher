@@ -41,7 +41,7 @@
         <Panel x:Name="KutStage" IsVisible="False">
             <Border Background="#0B0A09" />
             <Canvas IsHitTestVisible="False">
-                <Border x:Name="KutRail" Canvas.Left="0" Canvas.Top="0" Width="56" Height="820" Background="#090807" BorderBrush="#221B14" BorderThickness="0,0,1,0" Opacity="0" />
+                <Border x:Name="KutRail" Canvas.Left="0" Canvas.Top="50" Width="56" Height="770" Background="#090807" BorderBrush="#221B14" BorderThickness="0,0,1,0" Opacity="0" />
                 <Border x:Name="KutPoster0" Canvas.Left="84" Canvas.Top="119" Width="180" Height="230" CornerRadius="14" Background="#281F17" Opacity="0" />
                 <Border x:Name="KutPoster1" Canvas.Left="282" Canvas.Top="119" Width="180" Height="230" CornerRadius="14" Background="#2A2016" Opacity="0" />
                 <Border x:Name="KutPoster2" Canvas.Left="480" Canvas.Top="119" Width="180" Height="230" CornerRadius="14" Background="#241B14" Opacity="0" />

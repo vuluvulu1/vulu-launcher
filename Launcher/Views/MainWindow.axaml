@@ -346,8 +346,8 @@
                     <Style Selector="Window.kutuphane v|PageHost#PageHost, Window.kutuphane v|PageHost#PageHost.home"><Setter Property="Margin" Value="56,50,0,0" /></Style>
                 </v:PageHost.Styles>
             </v:PageHost>
-            <!-- ── Kütüphane teması: solda ince simge rayı (yalnızca sekmeler; Ayarlar en altta). Ad üstüne gelince görünür ── -->
-            <Border x:Name="Rail" Grid.Row="0" Grid.RowSpan="2" ZIndex="4" Width="56" HorizontalAlignment="Left"
+            <!-- ── Kütüphane teması: solda ince simge rayı, başlık çubuğunun altında (yalnızca sekmeler; Ayarlar en altta). Ad üstüne gelince görünür ── -->
+            <Border x:Name="Rail" Grid.Row="1" ZIndex="4" Width="56" HorizontalAlignment="Left"
                     Background="{StaticResource RailBg}" BorderBrush="{StaticResource RailLine}" BorderThickness="0,0,1,0">
                 <Panel IsVisible="{Binding ShowShell}">
                     <!-- Seçili sekmenin yuvarlak zemini ve soldaki amber çizgi: sekme değişince yeni sekmeye kayar (PlaceRailMark) -->
@@ -363,7 +363,7 @@
                             <Border Width="3" Height="20" CornerRadius="0,2,2,0" Background="{StaticResource Accent}" HorizontalAlignment="Left" VerticalAlignment="Center" />
                         </Panel>
                     </Canvas>
-                    <DockPanel Margin="0,62,0,12">
+                    <DockPanel Margin="0,12,0,12">
                         <Button DockPanel.Dock="Bottom" Classes="rail-tab" Classes.active="{Binding SettingsTab.IsActive}" Classes.glow="{Binding SettingsTab.IsGlowing}"
                                 Command="{Binding SelectTabCommand}" CommandParameter="{Binding SettingsTab}" ToolTip.Tip="Ayarlar" ToolTip.Placement="Right"
                                 AutomationProperties.Name="Ayarlar">
