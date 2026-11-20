@@ -47,6 +47,10 @@ namespace VuluLauncher.ViewModels
             _settings = JsonNode.Parse(info.Get("settings").GetRawText())!.AsObject();
             Build(info);
             Filter();
+#if DEBUG
+            // Yalnızca geliştirmede: VULU_UI_SEARCH=java ile Ayarlar o aramayla açılır (gizli bölümleri görüntülemek için)
+            if (Environment.GetEnvironmentVariable("VULU_UI_SEARCH") is { Length: > 0 } search) Search = search;
+#endif
         }
 
         // ── Kaydetme ─────────────────────────────────────────────────────
@@ -86,16 +90,22 @@ namespace VuluLauncher.ViewModels
         private void Build(JsonElement info)
         {
             Sections.Clear();
-            Sections.Add(GameSection(info));
+            var (game, advanced) = GameSections(info);
+            Sections.Add(game);
             Sections.Add(LauncherSection(info));
             Sections.Add(LookSection());
             Sections.Add(StorageSection());
             Sections.Add(AccountSection(info));
+            Sections.Add(advanced);
             Sections[0].IsCurrent = true;
             _ = LoadMicrosoftAsync();
         }
 
-        private SettingSection GameSection(JsonElement info)
+        /// <summary>
+        /// Oyun: çoğu kişinin değiştirdiği ayarlar (RAM, pencere, tam ekran). Gelişmiş: Java seçimi, bulunan ve indirilen
+        /// Java sürümleri, JVM argümanları, büyük konsol; bunlara nadiren dokunulur, en sonda durur.
+        /// </summary>
+        private (SettingSection Game, SettingSection Advanced) GameSections(JsonElement info)
         {
             var ram = new List<(string, string)> { ("0", "Önerilen") };
             ram.AddRange(info.Items("ramOptionsGb").Select(gb => (gb.GetInt32().ToString(CultureInfo.InvariantCulture), gb.GetInt32() + " GB")));
@@ -143,19 +153,23 @@ namespace VuluLauncher.ViewModels
                 await LoadAsync();
             }, danger: true) { IsEnabled = installed.Count > 0 };
 
-            return new SettingSection("Oyun")
+            var game = new SettingSection("Oyun")
                 .Add(new ChoiceRow("Varsayılan RAM", "Bir paket için ayrıca seçim yapmadıysan kullanılır.", ram,
                     I("defaultRamGb").ToString(CultureInfo.InvariantCulture), value => Change(("defaultRamGb", int.Parse(value, CultureInfo.InvariantCulture)))))
+                .Add(new GameSizeRow("Oyun penceresi", "Oyun açıldığında pencerenin boyutu. Varsayılan: oyunun kendi boyutu.",
+                    I("gameWidth"), I("gameHeight"), (w, h) => Change(("gameWidth", w), ("gameHeight", h))))
+                .Add(new ToggleRow("Tam ekran başlat", null, B("fullscreen"), value => Change(("fullscreen", value))));
+
+            var advanced = new SettingSection("Gelişmiş")
                 .Add(javaMode)
                 .Add(javaPath)
                 .Add(detected)
                 .Add(new ActionRow("İndirilen Java sürümleri", installed.Count > 0 ? "İndirilmiş: " + string.Join(", ", installed) : "Henüz indirilmiş Java yok; ilk oyun açılışında indirilir.")
                     .With(removeJava))
-                .Add(new TextRow("Ek JVM argümanları", "İleri düzey. Boş bırakılırsa varsayılanlar kullanılır.", S("jvmArgs"), "Örn. -XX:+UseZGC",
+                .Add(new TextRow("Ek JVM argümanları", "Boş bırakılırsa varsayılanlar kullanılır. Ne yaptığını bilmiyorsan dokunma.", S("jvmArgs"), "Örn. -XX:+UseZGC",
                     value => Change(("jvmArgs", value))))
-                .Add(new GameSizeRow("Oyun penceresi", "Oyun açıldığında pencerenin boyutu. Varsayılan: oyunun kendi boyutu.",
-                    I("gameWidth"), I("gameHeight"), (w, h) => Change(("gameWidth", w), ("gameHeight", h))))
-                .Add(new ToggleRow("Tam ekran başlat", null, B("fullscreen"), value => Change(("fullscreen", value))));
+                .Add(new ToggleRow("Konsolu büyük aç", "Oyun çıktısı Oyna sayfasında geniş açılır.", B("consoleExpanded"), value => Change(("consoleExpanded", value))));
+            return (game, advanced);
         }
 
         private SettingSection LauncherSection(JsonElement info)
@@ -189,8 +203,7 @@ namespace VuluLauncher.ViewModels
                 .Add(new ToggleRow("Beğeni ve yorum bildirimi", "Ekran görüntün beğenilince ya da yorum gelince haber verir.", B("socialNotifications", true), toggle("socialNotifications")))
                 .Add(new ToggleRow("Oynama süremi profilimde göster", "Toplam oynama süren ve en çok oynadığın paketler profilinde görünür.", B("showPlaytimeOnProfile", true), toggle("showPlaytimeOnProfile")))
                 .Add(new ToggleRow("Paket güncelleme bildirimi", "Kurduğun bir vulu pack güncellenince haber verir.", B("packUpdateNotifications", true), toggle("packUpdateNotifications")))
-                .Add(new ToggleRow("Discord'da durum göster", "Discord açıksa arkadaşların ne oynadığını görür: \"vulu Launcher · AGLR SMP oynuyor\".", B("discordPresence", true), toggle("discordPresence")))
-                .Add(new ToggleRow("Konsolu büyük aç", null, B("consoleExpanded"), toggle("consoleExpanded")));
+                .Add(new ToggleRow("Discord'da durum göster", "Discord açıksa arkadaşların ne oynadığını görür: \"vulu Launcher · AGLR SMP oynuyor\".", B("discordPresence", true), toggle("discordPresence")));
         }
 
         private SettingSection LookSection() =>
@@ -231,7 +244,7 @@ namespace VuluLauncher.ViewModels
             var cache = new ActionRow("Önbellek", "Hesaplanıyor…");
             var instances = new ActionRow("Paketler", "Kurulu paketlerin modları, ayarları ve dünyaları.");
             var game = new ActionRow("Minecraft dosyaları", "Paketlerin ortak kullandığı oyun sürümleri, kütüphaneler ve sesler/dokular.");
-            var java = new ActionRow("Java", "Launcher'ın indirdiği Java sürümleri (yukarıdan silinebilir).");
+            var java = new ActionRow("Java", "Launcher'ın indirdiği Java sürümleri (Gelişmiş'ten silinebilir).");
 
             async Task Load()
             {
