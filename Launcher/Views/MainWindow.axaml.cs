@@ -163,6 +163,39 @@ namespace VuluLauncher.Views
         }
 
         /// <summary>Kutunun dışına (karartmaya) tıklandı: kutu kapanır. Kutunun içine tıklamak kapatmaz.</summary>
+        // Kutu açılışı: ilk çizim (görünmez hâlde) bittikten sonra başlar; içi ağır kutularda da kare atlamadan oynar.
+        private void OnModalLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (sender is not Border { DataContext: ModalViewModel modal } back || back.Child is not Control card || back.Tag is "anim") return;
+            back.Tag = "anim";
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (modal.Closing) return;
+                back.Transitions = new Avalonia.Animation.Transitions { Fade(200, new Avalonia.Animation.Easings.CubicEaseOut()) };
+                card.Transitions = new Avalonia.Animation.Transitions
+                {
+                    Fade(240, new Avalonia.Animation.Easings.CubicEaseOut()),
+                    Move(380, new Avalonia.Animation.Easings.SplineEasing(0.16, 1, 0.3, 1)),
+                };
+                back.Opacity = 1;
+                card.Opacity = 1;
+                card.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("none");
+            }, Avalonia.Threading.DispatcherPriority.Background);
+            modal.PropertyChanged += (_, a) =>
+            {
+                if (a.PropertyName != nameof(ModalViewModel.Closing) || !modal.Closing) return;
+                back.Transitions = new Avalonia.Animation.Transitions { Fade(150, new Avalonia.Animation.Easings.CubicEaseIn()) };
+                card.Transitions = new Avalonia.Animation.Transitions { Move(150, new Avalonia.Animation.Easings.CubicEaseIn()) };
+                back.Opacity = 0;
+                card.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("scale(0.97)");
+            };
+
+            static Avalonia.Animation.DoubleTransition Fade(int ms, Avalonia.Animation.Easings.Easing easing) =>
+                new() { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(ms), Easing = easing };
+            static Avalonia.Animation.TransformOperationsTransition Move(int ms, Avalonia.Animation.Easings.Easing easing) =>
+                new() { Property = RenderTransformProperty, Duration = TimeSpan.FromMilliseconds(ms), Easing = easing };
+        }
+
         private void OnBackdropPressed(object? sender, PointerPressedEventArgs e)
         {
             if (e.Source == sender && sender is Border { DataContext: ModalViewModel modal } && !modal.Closing)

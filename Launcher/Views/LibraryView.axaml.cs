@@ -184,7 +184,8 @@ namespace VuluLauncher.Views
             _lastFilter = _filter; _lastQuery = q;
             if (_removing) return;   // solma bitince yeniden kurulur
             var newKeys = list.Select(KeyOf).ToHashSet();
-            if (!_bulk && _welcomeShown != null && Posters.IsEffectivelyVisible)
+            bool animate = !_bulk && _welcomeShown != null && Posters.IsEffectivelyVisible;
+            if (animate && !_faded)
             {
                 var fading = _items.Where(o => !newKeys.Contains(KeyOf(o))).Select(o => Posters.ContainerFromItem(o)).OfType<Control>().ToList();
                 if (fading.Count > 0)
@@ -204,16 +205,44 @@ namespace VuluLauncher.Views
                     DispatcherTimer.RunOnce(() =>
                     {
                         _removing = false;
-                        foreach (var c in fading) c.IsHitTestVisible = true;
+                        _faded = true;   // solan kapak bu kez gerçekten kaldırılsın (yeniden soldurulmasın)
                         Rebuild();
                     }, TimeSpan.FromMilliseconds(270));
                     return;
                 }
             }
+            _faded = false;
+            // Kalan kapaklar yeni yerlerine kayarak gitsin: eski konumlar kaydedilir, yerleşimden sonra aradaki fark
+            // kaydırmayla başlatılıp sıfıra indirilir (ör. paket silinince "Yeni paket" kartı sola kayar)
+            var before = new Dictionary<string, Avalonia.Point>();
+            if (animate)
+                foreach (var o in _items)
+                    if (Posters.ContainerFromItem(o) is { } c && c.Opacity > 0.01) before[KeyOf(o)] = c.Bounds.Position;
             _syncing = true;
             _items.SyncTo(list);
             _bulk = false;
             _prevKeys = newKeys;
+            if (before.Count > 0)
+                Dispatcher.UIThread.Post(() =>
+                {
+                    foreach (var o in _items)
+                    {
+                        if (!before.TryGetValue(KeyOf(o), out var old) || Posters.ContainerFromItem(o) is not { } c) continue;
+                        var d = old - c.Bounds.Position;
+                        if (Math.Abs(d.X) < 1 && Math.Abs(d.Y) < 1) continue;
+                        c.Transitions = null;
+                        c.Opacity = 1;
+                        c.RenderTransform = new Avalonia.Media.TranslateTransform(d.X, d.Y);
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            c.Transitions = new Avalonia.Animation.Transitions
+                            {
+                                new Avalonia.Animation.TransformOperationsTransition { Property = RenderTransformProperty, Duration = TimeSpan.FromMilliseconds(380), Easing = new Avalonia.Animation.Easings.SplineEasing(0.16, 1, 0.3, 1) },
+                            };
+                            c.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("none");
+                        }, DispatcherPriority.Background);
+                    }
+                }, DispatcherPriority.Background);
             _syncing = false;
             NoMatch.IsVisible = _items.Count == 0 && _vm.Instances.Count > 0;
             NoMatch.Title = q.Length > 0 ? $"“{q}” ile eşleşen paket yok" : "Bu süzgeçte paket yok";
@@ -237,7 +266,7 @@ namespace VuluLauncher.Views
         // Karşılama alanı birden belirip kaybolmasın: yüksekliği ve saydamlığı birlikte kayar, altındaki kapaklar
         // yumuşakça yer değiştirir. İlk çizimde animasyon yok (kütüphane açılırken zaten olduğu gibi görünür).
         private bool? _welcomeShown;
-        private bool _bulk, _removing;
+        private bool _bulk, _removing, _faded;
         private HashSet<string> _prevKeys = new();
         private static string KeyOf(object? o) => o is InstanceItem i ? i.Id : o?.GetType().Name ?? "";
         private string? _lastFilter, _lastQuery;
