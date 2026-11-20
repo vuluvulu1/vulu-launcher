@@ -519,6 +519,33 @@ namespace VuluLauncher.ViewModels
             finally { if (request == _shotsRequest) { _shotsLoading = false; ShotSkeleton = false; } }
         }
 
+#if DEBUG
+        /// <summary>Yalnızca önizlemede (VULU_UI_SAMPLE): "Şu an" kartları için örnek açık sunucu ve oyundaki arkadaşlar.</summary>
+        public void LoadLivePreview()
+        {
+            Live.Clear();
+            var server = new ServerCard(Main.Servers, JsonSerializer.SerializeToElement(new { id = "s1", name = "vulu Resmi", address = "mc.vulu.test" }), "vulu Resmi");
+            Live.Add(new LiveServer(server, "5 kişi oyunda", new(), () => Task.CompletedTask));
+            Live.Add(new LiveFriend(new PersonItem("KaiKaen", 0), "vulu Resmi · 1 sa", () => Task.CompletedTask, () => Task.CompletedTask));
+            Live.Add(new LiveFriend(new PersonItem("deneme", 0), "Çevrimiçi", () => Task.CompletedTask, null));
+            OnPropertyChanged(nameof(HasLive));
+        }
+#endif
+
+        private DateTime _homeLiveAt;
+
+        /// <summary>
+        /// Kütüphane'de Oyna açıldı: kapakların altındaki "Şu an" satırı için canlı kartlar tazelenir (en çok dakikada bir;
+        /// arkadaş listesi Sosyal hiç açılmadıysa da alınır).
+        /// </summary>
+        public async Task RefreshLiveForHomeAsync()
+        {
+            if (DateTime.UtcNow - _homeLiveAt < TimeSpan.FromMinutes(1)) return;
+            _homeLiveAt = DateTime.UtcNow;
+            if (!_friendsLoaded) await RefreshFriendsAsync();
+            await RefreshLiveAsync();
+        }
+
         /// <summary>Canlı kartlar: duyuru, açık sunucular (içerideki oyuncularla), oyundaki arkadaşlar.</summary>
         private async Task RefreshLiveAsync()
         {

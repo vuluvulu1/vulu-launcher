@@ -56,14 +56,14 @@ namespace VuluLauncher.ViewModels
         public ObservableCollection<ModalViewModel> Modals { get; } = new();
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowShell), nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave))]
+        [NotifyPropertyChangedFor(nameof(ShowShell), nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave), nameof(ShowAmbient))]
         private bool _loggedIn;
         /// <summary>
         /// Kayıtlı hesapla açılışta ana ekran, perdenin animasyonu başlamadan önce perdenin arkasında kurulur: kurulum arayüzü
         /// bir süre meşgul eder ve bu, animasyonun ortası yerine henüz hiçbir şeyin oynamadığı ilk ana denk gelir.
         /// </summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowShell), nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave))]
+        [NotifyPropertyChangedFor(nameof(ShowShell), nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave), nameof(ShowAmbient))]
         private bool _warming;
         /// <summary>Ana ekran (sekmeler, sayfa) görünür: giriş yapıldı ya da perde arkasında önceden kuruluyor.</summary>
         public bool ShowShell => LoggedIn || Warming;
@@ -76,6 +76,8 @@ namespace VuluLauncher.ViewModels
         public bool ShowBackdrop => ShowShell && !IsHomePage && !Themes.HasScene && !Themes.IsGrafit && !Themes.IsKutuphane;
         /// <summary>Ufkun öbür ucu teması: Oyna dışındaki sayfalarda (girişte de) paket resmi yerine synthwave sahnesi.</summary>
         public bool ShowSynthwave => Themes.HasScene && !(ShowShell && IsHomePage);
+        /// <summary>Kütüphane: bütün sayfaların arkasında seçili paketin resmi, çok bulanık ve koyu; üstten aşağı sönen sıcak renk.</summary>
+        public bool ShowAmbient => ShowShell && Themes.IsKutuphane;
 
         /// <summary>Pencere verir: geçiş animasyonu (MainWindow.Transition).</summary>
         public Func<string, Action, Task>? PlayThemeTransition { get; set; }
@@ -95,6 +97,7 @@ namespace VuluLauncher.ViewModels
         {
             OnPropertyChanged(nameof(ShowBackdrop));
             OnPropertyChanged(nameof(ShowSynthwave));
+            OnPropertyChanged(nameof(ShowAmbient));
         }
         [ObservableProperty] private string _username = "";
         [ObservableProperty] private string _userInitial = "";
@@ -220,6 +223,8 @@ namespace VuluLauncher.ViewModels
                         var social = Tabs.First(t => t.Key == "social");
                         social.Badge = 3;
                         social.Tip = "Sosyal · 4 arkadaş çevrimiçi, 1 oyunda";
+                        Social.LoadLivePreview();
+                        Home.InfoMessage = "Henüz dünya yok. Oyunu açıp bir dünya oluşturunca burada görünür.";
                         Packs.Skeleton = false;
                         Packs.Status = "4 paket";
                         Packs.StatusIsError = false;
@@ -578,6 +583,8 @@ namespace VuluLauncher.ViewModels
             if (value?.Page is AdminViewModel admin) _ = admin.OpenAsync();
             // Başka sayfada mod kurulduysa ya da kaldırıldıysa Oyna'daki sayılar güncel olsun
             if (value?.Page is HomeViewModel && LoggedIn) Home.RefreshDetails();
+            // Kütüphane: Oyna'daki "Şu an" satırı (açık sunucular, oyundaki arkadaşlar)
+            if (value?.Page is HomeViewModel && LoggedIn && Themes.IsKutuphane) _ = Social.RefreshLiveForHomeAsync();
         }
 
         /// <summary>Launcher içindeki küçük bilgi kartı (ör. "Kopyalandı"); asıl bildirimler masaüstünde çıkar.</summary>

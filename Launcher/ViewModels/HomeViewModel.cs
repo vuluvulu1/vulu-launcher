@@ -261,7 +261,7 @@ namespace VuluLauncher.ViewModels
 
         /// <summary>Alt bilgi alanında açık sekme: worlds, shots, content, log.</summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsWorlds), nameof(IsShots), nameof(IsContent), nameof(IsLog))]
+        [NotifyPropertyChangedFor(nameof(IsWorlds), nameof(IsShots), nameof(IsContent), nameof(IsLog), nameof(InfoIcon))]
         private string _infoTab = UiState.Get("infoTab") is { } t && InfoTabs.Contains(t) ? t : "worlds";
         /// <summary>
         /// Meşale ve sahneli temalar: dünyalar, ekran görüntüleri, içerik ve konsol sağdan kayan çekmecede; "Ayrıntılar" açar.
@@ -270,6 +270,8 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private bool _detailsOpen;
         private bool _detailsAutoOpened;
         [RelayCommand] private void ToggleDetails() { DetailsOpen = !DetailsOpen; _detailsAutoOpened = false; }
+        /// <summary>Boş sekmenin simgesi (Kütüphane çekmecesindeki boş durum kutusu).</summary>
+        public string InfoIcon => InfoTab switch { "shots" => "🖼", "content" => "🧩", _ => "🗺" };
         public bool IsWorlds => InfoTab == "worlds";
         public bool IsShots => InfoTab == "shots";
         public bool IsContent => InfoTab == "content";

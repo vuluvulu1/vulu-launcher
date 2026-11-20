@@ -336,6 +336,31 @@
                 <Image Source="{Binding Home.BackgroundBlurred}" Stretch="UniformToFill" Margin="-40" RenderOptions.BitmapInterpolationMode="MediumQuality" />
                 <Border Background="#D9080706" />
             </Panel>
+            <!-- Kütüphane: bütün sayfaların (Oyna dahil) arkasında seçili paketin resmi; çok bulanık, koyu, üstte sıcak bir renk lekesi
+                 olarak başlar ve aşağı doğru zemine söner. Paket değişince renk de değişir. -->
+            <Panel Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding ShowAmbient}" IsHitTestVisible="False" ClipToBounds="True">
+                <Image Source="{Binding Home.BackgroundBlurred}" Stretch="UniformToFill" Margin="-120" RenderOptions.BitmapInterpolationMode="MediumQuality">
+                    <Image.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.4" /></Transitions></Image.Transitions>
+                </Image>
+                <Border>
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                            <GradientStop Offset="0" Color="#A60B0A09" />
+                            <GradientStop Offset="0.45" Color="#E60B0A09" />
+                            <GradientStop Offset="1" Color="#FA0B0A09" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                <!-- Kenarlar biraz daha koyu: renk ortada toplanır -->
+                <Border>
+                    <Border.Background>
+                        <RadialGradientBrush Center="50%,20%" GradientOrigin="50%,20%" RadiusX="75%" RadiusY="90%">
+                            <GradientStop Offset="0.5" Color="#000B0A09" />
+                            <GradientStop Offset="1" Color="#990B0A09" />
+                        </RadialGradientBrush>
+                    </Border.Background>
+                </Border>
+            </Panel>
             <!-- Sayfalar bir kez kurulup saklanır; sekme değişince yalnızca görünürlük değişir (Views/PageHost.cs) -->
             <v:PageHost x:Name="PageHost" Grid.Row="0" Grid.RowSpan="2" Classes.home="{Binding IsHomePage}"
                         Page="{Binding SelectedTab.Page}" IsVisible="{Binding ShowShell}">
@@ -349,7 +374,7 @@
             <!-- ── Kütüphane teması: solda ince simge rayı, başlık çubuğunun altında. Üstte sekmeler, altta profil ve Ayarlar.
                  Seçili sekme amber ve arkasında yumuşak ışık; solunda kayan amber hap. Üstüne gelince canlı bilgili ad etiketi. ── -->
             <Border x:Name="Rail" Grid.Row="1" ZIndex="4" Width="56" HorizontalAlignment="Left"
-                    Background="{StaticResource RailBg}" BorderBrush="{StaticResource RailLine}" BorderThickness="0,0,1,0">
+                    Background="#B3090807" BorderBrush="{StaticResource RailLine}" BorderThickness="0,0,1,0">
                 <Panel IsVisible="{Binding ShowShell}">
                     <!-- Rayın tepesinde çok hafif sıcak parıltı (zemin dümdüz siyah kalmasın) -->
                     <Border Height="220" VerticalAlignment="Top" IsHitTestVisible="False">

@@ -37,7 +37,7 @@ namespace VuluLauncher.Views
                 StrokeDashArray = new AvaloniaList<double> { 4, 3 },
             };
             _icon = new TextBlock { FontSize = 22, Foreground = Brush("AccentHi"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-            _title = new TextBlock { FontSize = 16, FontWeight = FontWeight.SemiBold, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap };
+            _title = new TextBlock { FontSize = 16, FontWeight = FontWeight.SemiBold, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, IsVisible = false };
             _text = new TextBlock { FontSize = 13, LineHeight = 19.5, Foreground = Brush("Muted"), TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap };
             _action = new Button { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 6, 0, 0), Padding = new Thickness(16, 6), IsVisible = false };
             Children.Add(_frame);
@@ -67,7 +67,7 @@ namespace VuluLauncher.Views
         {
             base.OnPropertyChanged(change);
             if (change.Property == IconProperty) _icon.Text = Icon;
-            else if (change.Property == TitleProperty) _title.Text = Title;
+            else if (change.Property == TitleProperty) { _title.Text = Title; _title.IsVisible = Title.Length > 0; }
             else if (change.Property == TextProperty) { _text.Text = Text; _text.IsVisible = Text.Length > 0; }
             else if (change.Property == DashedProperty) _frame.IsVisible = Dashed;
             else if (change.Property == ActionTextProperty) { _action.Content = ActionText; _action.IsVisible = ActionText.Length > 0; }

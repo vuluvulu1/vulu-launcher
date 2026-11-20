@@ -26,7 +26,8 @@
     <!-- Başlık çubuğu tam genişlik (sol üst köşe boş kalmasın); logo köşede, ray çubuğun altından başlar -->
     <Style Selector="Window.kutuphane Border#TitleBar, Window.kutuphane Border#TitleBar.overlay">
         <Setter Property="Margin" Value="0" />
-        <Setter Property="Background" Value="{StaticResource RailBg}" />
+        <!-- Yarı saydam: arkadaki ortam rengi çubuğa da hafifçe vursun -->
+        <Setter Property="Background" Value="#B3090807" />
         <Setter Property="BorderBrush" Value="{StaticResource RailLine}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="BoxShadow" Value="none" />
