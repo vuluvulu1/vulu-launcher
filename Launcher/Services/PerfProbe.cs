@@ -180,6 +180,8 @@ namespace VuluLauncher
             {
                 vm.SelectTabCommand.Execute(vm.Tabs[0]);
                 vm.Home.InfoTab = "log";
+                // Kütüphane: konsol paketin sayfasında
+                if (Themes.IsKutuphane && vm.Home.Instances.FirstOrDefault() is { } first) { vm.Home.OpenPageCommand.Execute(first); vm.Home.PageTab = "log"; }
                 await Task.Delay(1500);
                 _phase = "oyun çıktısı";
                 var times = new List<double>();
@@ -208,6 +210,7 @@ namespace VuluLauncher
                 times.RemoveAt(0); times.Sort();
                 Line($"kare ort {times.Average(),5:0.0} ms   p95 {times[(int)(times.Count * 0.95)],5:0.0} ms   en uzun {times[^1],6:0.0} ms   >25 ms: {times.Count(t => t > 25)} / {times.Count}   en ağır 20 satır {worstBatch:0.0} ms   işlemci %{cpu:0}");
                 vm.Home.InfoTab = "worlds";
+                if (Themes.IsKutuphane) vm.Home.ClosePageCommand.Execute(null);
             }
             Line("");
 

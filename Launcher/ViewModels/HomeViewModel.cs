@@ -69,6 +69,33 @@ namespace VuluLauncher.ViewModels
     }
 
     /// <summary>Konsoldaki satır.</summary>
+    /// <summary>
+    /// Konsol satırları. Oyun saniyede yüzlerce satır yazabilir: satırlar birikip tek seferde eklenir (toplu
+    /// bildirim), her satır için ayrı ekle/sil değil.
+    /// </summary>
+    internal sealed class LogCollection : System.Collections.ObjectModel.ObservableCollection<LogLine>
+    {
+        public void AppendRange(List<LogLine> lines, int max)
+        {
+            if (lines.Count == 0) return;
+            CheckReentrancy();
+            var added = lines.Count > max ? lines.GetRange(lines.Count - max, max) : lines.ToList();
+            int extra = Math.Min(Items.Count, Items.Count + added.Count - max);
+            // Önce baştan taşanlar, sonra sona yeniler: iki toplu bildirim (liste yalnızca değişen yeri günceller)
+            if (extra > 0)
+            {
+                var removed = ((List<LogLine>)Items).GetRange(0, extra);
+                ((List<LogLine>)Items).RemoveRange(0, extra);
+                OnCollectionChanged(new System.Collections.Specialized.NotifyCollectionChangedEventArgs(System.Collections.Specialized.NotifyCollectionChangedAction.Remove, removed, 0));
+            }
+            int at = Items.Count;
+            ((List<LogLine>)Items).AddRange(added);
+            OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("Count"));
+            OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("Item[]"));
+            OnCollectionChanged(new System.Collections.Specialized.NotifyCollectionChangedEventArgs(System.Collections.Specialized.NotifyCollectionChangedAction.Add, added, at));
+        }
+    }
+
     internal sealed record LogLine(string Time, string Text, string Level)
     {
         public bool IsWarn => Level == "warn";
@@ -190,7 +217,7 @@ namespace VuluLauncher.ViewModels
         private Task JoinPackServer() => PackServer is { } s ? Main.Servers.JoinAsync(s) : Task.CompletedTask;
 
         public ObservableCollection<InstanceItem> Instances { get; } = new();
-        public ObservableCollection<LogLine> Console { get; } = new();
+        public LogCollection Console { get; } = new();
         public ObservableCollection<int> RamOptions { get; } = new();
         public ObservableCollection<WorldTile> Worlds { get; } = new();
         public ObservableCollection<ShotTile> Shots { get; } = new();
@@ -280,7 +307,7 @@ namespace VuluLauncher.ViewModels
         }
 
         /// <summary>Konsoldaki bütün satırlar düz yazı olarak (panoya kopyalamak için).</summary>
-        public string ConsoleText() => string.Join(Environment.NewLine, Console.Select(l => $"{l.Time}  {l.Text}"));
+        public string ConsoleText() { FlushLog(); return string.Join(Environment.NewLine, Console.Select(l => $"{l.Time}  {l.Text}")); }
 
         /// <summary>Boş kütüphanedeki karşılama düğmeleri: Yeni paket penceresi o kaynakla açılır.</summary>
         [RelayCommand] private Task NewPackFrom(string source) => Main.OpenNewPackAsync(source);
@@ -931,6 +958,19 @@ namespace VuluLauncher.ViewModels
         public void AppendLog(string text, string level = "info", bool replace = false, string? time = null)
         {
             var line = new LogLine(time ?? DateTime.Now.ToString("HH:mm:ss"), text, level);
+            // Oyunun kendi çıktısı biriktirilir, kısa aralıklarla topluca eklenir (launcher arkadayken daha seyrek)
+            if (level is "game" or "gameError" && !replace)
+            {
+                _pendingLog.Add(line);
+                if (line.IsError && !IsLog) LogAlert = true;
+                if (_logFlush == null)
+                {
+                    bool front = Views.MainWindow.Current is { IsActive: true, WindowState: not Avalonia.Controls.WindowState.Minimized };
+                    _logFlush = Avalonia.Threading.DispatcherTimer.RunOnce(FlushLog, TimeSpan.FromMilliseconds(front ? 120 : 1000), Avalonia.Threading.DispatcherPriority.Background);
+                }
+                return;
+            }
+            FlushLog();
             // İlerleme satırları art arda gelirse aynı satır güncellenir
             if (replace && _lastLineWasProgress && Console.Count > 0) Console[^1] = line;
             else
@@ -949,9 +989,23 @@ namespace VuluLauncher.ViewModels
             }
         }
 
+        private readonly List<LogLine> _pendingLog = new();
+        private IDisposable? _logFlush;
+
+        private void FlushLog()
+        {
+            _logFlush?.Dispose();
+            _logFlush = null;
+            if (_pendingLog.Count == 0) return;
+            Console.AppendRange(_pendingLog, MaxLogLines);
+            _pendingLog.Clear();
+            _lastLineWasProgress = false;
+        }
+
         [RelayCommand]
         private void ClearConsole()
         {
+            _pendingLog.Clear();
             Console.Clear();
             _lastLineWasProgress = false;
         }

@@ -290,7 +290,8 @@ half4 main(float2 local) {
             var window = TopLevel.GetTopLevel(this) as Window;
             bool visible = IsEffectivelyVisible && window is { IsVisible: true, WindowState: not WindowState.Minimized };
             var state = new SceneState(Themes.IsDerin, Manual, _splashStart, _splashOpen,
-                Active: IsEffectivelyVisible && (Manual || (visible && Animated && !GameRunning)), Focused: window?.IsActive ?? true, Parallax: _parallaxTarget);
+                Active: IsEffectivelyVisible && (Manual || (visible && Animated && !GameRunning)),
+                Focused: (window?.IsActive ?? true) && (Manual || Stopwatch.GetElapsedTime(_lastInput).TotalSeconds < IdleSeconds), Parallax: _parallaxTarget);
             if (state == _lastSent) return;
             _lastSent = state;
             _sky.Send(state);
@@ -329,6 +330,9 @@ half4 main(float2 local) {
             AnimatedChanged += InvalidateVisual;
             _top = TopLevel.GetTopLevel(this);
             _top?.AddHandler(Avalonia.Input.InputElement.PointerMovedEvent, OnPointerMoved, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+            _top?.AddHandler(Avalonia.Input.InputElement.KeyDownEvent, OnUserInput, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+            _top?.AddHandler(Avalonia.Input.InputElement.PointerWheelChangedEvent, OnUserInput, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+            _lastInput = Stopwatch.GetTimestamp();
             _watch.Start();
             SendState();
         }
@@ -339,6 +343,8 @@ half4 main(float2 local) {
             AnimatedChanged -= InvalidateVisual;
             Themes.Changed -= OnThemeChanged;
             _top?.RemoveHandler(Avalonia.Input.InputElement.PointerMovedEvent, OnPointerMoved);
+            _top?.RemoveHandler(Avalonia.Input.InputElement.KeyDownEvent, OnUserInput);
+            _top?.RemoveHandler(Avalonia.Input.InputElement.PointerWheelChangedEvent, OnUserInput);
             _top = null;
             base.OnDetachedFromVisualTree(e);
         }
@@ -355,8 +361,23 @@ half4 main(float2 local) {
             InvalidateVisual();
         }
 
+        /// <summary>
+        /// Kullanıcı bu kadar süre fareye ya da klavyeye dokunmazsa sahne arkadaki pencere gibi yavaşlar (saniyede birkaç
+        /// kare): launcher açık bırakılıp başka işe dönülünce işlemci ve ekran kartı boşa çalışmasın. İlk dokunuşta akar.
+        /// </summary>
+        private const double IdleSeconds = 45;
+        private long _lastInput = Stopwatch.GetTimestamp();
+
+        private void OnUserInput(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            bool idle = Stopwatch.GetElapsedTime(_lastInput).TotalSeconds >= IdleSeconds;
+            _lastInput = Stopwatch.GetTimestamp();
+            if (idle) SendState();
+        }
+
         private void OnPointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
         {
+            OnUserInput(sender, e);
             if (_top == null || _top.Bounds.Width < 1) return;
             double target = Math.Clamp(e.GetPosition(_top).X / _top.Bounds.Width * 2 - 1, -1, 1);
             if (Math.Abs(target - _parallaxTarget) < 0.02) return;
