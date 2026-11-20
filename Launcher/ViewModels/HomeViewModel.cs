@@ -259,6 +259,13 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsWorlds), nameof(IsShots), nameof(IsContent), nameof(IsLog))]
         private string _infoTab = UiState.Get("infoTab") is { } t && InfoTabs.Contains(t) ? t : "worlds";
+        /// <summary>
+        /// Meşale ve sahneli temalar: dünyalar, ekran görüntüleri, içerik ve konsol sağdan kayan çekmecede; "Ayrıntılar" açar.
+        /// Oyun açılırken konsol görünsün diye kendiliğinden açılır, oyun kapanınca (kendiliğinden açıldıysa) kapanır.
+        /// </summary>
+        [ObservableProperty] private bool _detailsOpen;
+        private bool _detailsAutoOpened;
+        [RelayCommand] private void ToggleDetails() { DetailsOpen = !DetailsOpen; _detailsAutoOpened = false; }
         public bool IsWorlds => InfoTab == "worlds";
         public bool IsShots => InfoTab == "shots";
         public bool IsContent => InfoTab == "content";
@@ -756,6 +763,7 @@ namespace VuluLauncher.ViewModels
             Launching = true;
             // Açılış sırasında konsol görünsün (seçilen sekme hatırlanmaya devam eder)
             InfoTab = "log";
+            if (!DetailsOpen) { DetailsOpen = true; _detailsAutoOpened = true; }
             JsonElement result = default;
             try
             {
@@ -873,6 +881,8 @@ namespace VuluLauncher.ViewModels
                     GameRunning = false;
                     _infoCache.Clear();
                     InfoTab = UiState.Get("infoTab") is { } t && InfoTabs.Contains(t) ? t : "worlds";
+                    if (_detailsAutoOpened && !LogAlert) DetailsOpen = false;
+                    _detailsAutoOpened = false;
                     RefreshDetails();
                     break;
                 case "gameCrashed":

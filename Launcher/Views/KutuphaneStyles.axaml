@@ -13,11 +13,15 @@
 
     <!-- ── İskelet ── -->
     <!-- Varsayılan: gizli (öbür temalarda); Kütüphane'de görünür. Yerel IsVisible stili ezeceği için burada. -->
-    <Style Selector="Border#Rail, Border#SearchPillHost, Border#RadioHost">
+    <Style Selector="Border#Rail, Border#SearchPillHost">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="Window.kutuphane Border#Rail, Window.kutuphane Border#RadioHost">
+    <Style Selector="Window.kutuphane Border#Rail">
         <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <!-- Başlık çubuğundaki radyo: Grafit'te radyo Oyna'nın sol kartında durduğu için orada gizli (öbür temalarda görünür) -->
+    <Style Selector="Window.grafit Border#RadioHost">
+        <Setter Property="IsVisible" Value="False" />
     </Style>
     <Style Selector="Window.kutuphane Border#TitleBar, Window.kutuphane Border#TitleBar.overlay">
         <Setter Property="Margin" Value="56,0,0,0" />

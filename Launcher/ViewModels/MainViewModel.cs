@@ -182,6 +182,9 @@ namespace VuluLauncher.ViewModels
                         _ = ShowAsync(dialog);
                         Avalonia.Threading.DispatcherTimer.RunOnce(() => dialog.Close(), TimeSpan.FromSeconds(7));
                     }, TimeSpan.FromSeconds(2.5));
+                // VULU_UI_DETAILS=1: Oyna'daki Ayrıntılar çekmecesi açık gelir
+                if (Environment.GetEnvironmentVariable("VULU_UI_DETAILS") == "1")
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() => Home.DetailsOpen = true, TimeSpan.FromSeconds(2));
                 // VULU_UI_OPEN=packs / curseforge / modrinth / blank: Yeni paket penceresi o kaynakla; content: İçerik ekle
                 if (Environment.GetEnvironmentVariable("VULU_UI_OPEN") is { Length: > 0 } open)
                     Avalonia.Threading.DispatcherTimer.RunOnce(() =>

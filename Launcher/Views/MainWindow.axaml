@@ -250,7 +250,7 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                        <!-- Kütüphane: radyo burada (öbür temalarda Oyna'daki oyun çubuğunda) -->
+                        <!-- Radyo (Grafit hariç; Grafit'te Oyna'nın sol kartında) -->
                         <Border x:Name="RadioHost">
                         <Button Classes="flat tb big" IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).ShowShell}" ToolTip.Tip="Radyo" AutomationProperties.Name="Radyo"
                                 DataContext="{Binding Radio}" x:DataType="vm:RadioViewModel">

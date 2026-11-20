@@ -216,6 +216,23 @@
             <Setter Property="Foreground" Value="{StaticResource Muted}" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
+        <!-- Meşale ve sahneli temalar: bilgi paneli sağdan kayan çekmece (Ayrıntılar açar). Grafit'te "drawer" sınıfı yok, panel hep yerinde. -->
+        <Style Selector="Border#InfoPanel.drawer">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="RenderTransform" Value="translateX(40px)" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="CubicEaseOut" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.24" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border#InfoPanel.drawer.open">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="IsHitTestVisible" Value="True" />
+            <Setter Property="RenderTransform" Value="none" />
+        </Style>
     </UserControl.Styles>
 
     <Panel>
@@ -357,7 +374,13 @@
                     <TextBlock.Effect><DropShadowEffect OffsetX="0" OffsetY="2" BlurRadius="34" Color="Black" Opacity="0.62" /></TextBlock.Effect>
                 </TextBlock>
                 <TextBlock Text="{Binding Selected.Description}" FontSize="15.5" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Left" />
-                <StackPanel Orientation="Horizontal" Spacing="6">
+                <!-- Meşale ve sahneli temalar: sürüm, yükleyici ve sayılar tek satır yazı; Grafit'te etiketler ve kutular (ApplyLayout) -->
+                <TextBlock x:Name="StatsLine" FontSize="13.5" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis">
+                    <Run Text="Minecraft " /><Run Text="{Binding Selected.McVersion}" /><Run Text="  ·  " /><Run Text="{Binding Selected.LoaderLabel}" />
+                    <Run Text="  ·  " /><Run Text="{Binding ModCount}" /><Run Text=" mod  ·  " /><Run Text="{Binding Size}" />
+                    <Run Text="  ·  " /><Run Text="{Binding PlayTime}" /><Run Text=" oynandı" />
+                </TextBlock>
+                <StackPanel x:Name="ChipsRow" Orientation="Horizontal" Spacing="6">
                     <Border Classes="chip">
                         <TextBlock FontSize="11.5" FontWeight="SemiBold">
                             <Run Text="Minecraft " /><Run Text="{Binding Selected.McVersion}" />
@@ -367,7 +390,7 @@
                         <TextBlock Text="{Binding Selected.LoaderLabel}" FontSize="11.5" FontWeight="SemiBold" />
                     </Border>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="6">
+                <StackPanel x:Name="StatsRow" Orientation="Horizontal" Spacing="6">
                     <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Modlar" Classes="label" /><TextBlock Text="{Binding ModCount}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
                     <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Boyut" Classes="label" /><TextBlock Text="{Binding Size}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
                     <Border Classes="stat"><StackPanel Spacing="1"><TextBlock Text="Güncelleme" Classes="label" /><TextBlock Text="{Binding Updated}" FontWeight="Bold" FontSize="15" /></StackPanel></Border>
@@ -379,6 +402,12 @@
                     <Button Classes="primary hero" Content="Paketi güncelle" IsVisible="{Binding HasPackUpdate}" Command="{Binding UpdatePackCommand}"
                             ToolTip.Tip="{Binding PackUpdateText}" />
                     <Button Classes="hero" Content="Mod ekle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding AddContentCommand}" />
+                    <Button x:Name="DetailsButton" Classes="hero" Command="{Binding ToggleDetailsCommand}" ToolTip.Tip="Dünyalar, ekran görüntüleri, içerik ve konsol">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <TextBlock Text="Ayrıntılar" VerticalAlignment="Center" />
+                            <Ellipse Width="7" Height="7" Fill="{StaticResource Error}" IsVisible="{Binding LogAlert}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                     <Button Classes="hero" Content="⋯" ToolTip.Tip="Diğer işlemler">
                         <Button.Flyout>
                             <MenuFlyout Placement="TopEdgeAlignedLeft">
@@ -450,7 +479,7 @@
 
             <!-- ── Sağ panel: dünyalar, ekran görüntüleri, içerik, konsol ── -->
             <!-- Sağ sütun: kenarsız, gölgeli kart; en fazla 560 yüksekliğinde, alta yaslı (mesale.css #console) -->
-            <Border x:Name="InfoPanel" Grid.Column="2" Margin="0,8,18,16" Classes="mcard console" MaxHeight="560" VerticalAlignment="Bottom">
+            <Border x:Name="InfoPanel" Grid.Column="2" Margin="0,8,18,16" Classes="mcard console" Classes.open="{Binding DetailsOpen}" MaxHeight="560" VerticalAlignment="Bottom">
                 <Grid RowDefinitions="40,*">
                     <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="6,0">
                         <Grid ColumnDefinitions="*,Auto">
@@ -465,7 +494,10 @@
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
-                            <Button Grid.Column="1" Classes="info-tab" Content="Temizle" IsVisible="{Binding IsLog}" Command="{Binding ClearConsoleCommand}" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button Classes="info-tab" Content="Temizle" IsVisible="{Binding IsLog}" Command="{Binding ClearConsoleCommand}" />
+                                <Button x:Name="DetailsClose" Classes="info-tab" Content="×" FontSize="16" Command="{Binding ToggleDetailsCommand}" ToolTip.Tip="Kapat" />
+                            </StackPanel>
                         </Grid>
                     </Border>
 

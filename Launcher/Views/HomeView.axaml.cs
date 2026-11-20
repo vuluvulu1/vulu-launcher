@@ -202,9 +202,16 @@ namespace VuluLauncher.Views
             HeroLogo.MaxHeight = g ? 72 : 130;
             HeroLogo.MaxWidth = g ? 360 : 480;
 
+            // Sayılar: Grafit'te etiket ve kutular; öbürlerinde tek satır yazı
+            StatsLine.IsVisible = !g;
+            ChipsRow.IsVisible = StatsRow.IsVisible = g;
+
+            // Bilgi paneli: Grafit'te sağda hep yerinde; öbürlerinde "Ayrıntılar" ile sağdan kayan tam boy çekmece
             InfoPanel.Margin = g ? new Thickness(Gap, 0, 0, 0) : new Thickness(0, 8, 18, 16);
-            InfoPanel.MaxHeight = g ? double.PositiveInfinity : 560;
-            InfoPanel.VerticalAlignment = g ? Avalonia.Layout.VerticalAlignment.Stretch : Avalonia.Layout.VerticalAlignment.Bottom;
+            InfoPanel.MaxHeight = double.PositiveInfinity;
+            InfoPanel.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch;
+            InfoPanel.Classes.Set("drawer", !g);
+            DetailsButton.IsVisible = DetailsClose.IsVisible = !g;
 
             // Oyun çubuğu ortadaki kartın dibine oturur; seçili paketin adı zaten kartta yazdığı için çubukta gizlenir
             Bar.Margin = g ? new Thickness(left + 1, 0, right + 1, Gap + 1) : default;
@@ -214,8 +221,10 @@ namespace VuluLauncher.Views
             // Radyo: Grafit'te sol kartın altına, iki satır (istasyon üstte, düğmeler altta)
             if (RadioBox.Parent is Panel oldPanel) oldPanel.Children.Remove(RadioBox);
             else if (RadioBox.Parent is Decorator oldHost) oldHost.Child = null;
+            // Öbür temalarda radyo başlık çubuğunda (MainWindow RadioHost); oyun çubuğunda yalnızca paket, ilerleme, sürüm ve OYNA
             if (g) RadioHost.Child = RadioBox;
             else BarGrid.Children.Add(RadioBox);
+            RadioBox.IsVisible = g;
             Grid.SetColumn(RadioBox, g ? 0 : 1);
             RadioBox.Margin = g ? default : new Thickness(8, 0, 0, 0);
             RadioBox.RowSpacing = g ? 8 : 0;
