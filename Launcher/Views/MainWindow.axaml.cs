@@ -19,7 +19,9 @@ namespace VuluLauncher.Views
             if (Environment.GetEnvironmentVariable("VULU_UI_SHOT") is { Length: > 0 } shotDir)
             {
                 int n = 0;
-                var timer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+                // VULU_UI_SHOT_MS=200: daha sık ve numaralı görüntü (animasyonu kare kare görmek için)
+                int shotMs = int.TryParse(Environment.GetEnvironmentVariable("VULU_UI_SHOT_MS"), out int ms) && ms >= 50 ? ms : 0;
+                var timer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(shotMs > 0 ? shotMs : 4000) };
                 timer.Tick += (_, _) =>
                 {
                     try
@@ -43,7 +45,7 @@ namespace VuluLauncher.Views
                             rtb.Save(System.IO.Path.Combine(shotDir, $"tour-{tour.SelectedTab?.Key ?? "none"}.png"));
                             if (tabs.Count > 0) tour.SelectTabCommand.Execute(tabs[(tabs.IndexOf(tour.SelectedTab!) + 1) % tabs.Count]);
                         }
-                        else rtb.Save(System.IO.Path.Combine(shotDir, $"shot-{n++ % 4}.png"));
+                        else rtb.Save(System.IO.Path.Combine(shotDir, shotMs > 0 ? $"frame-{n++:000}.png" : $"shot-{n++ % 4}.png"));
                         // VULU_UI_RADIO=1: radyo paneli açılır; ayrı penceresi de radio.png olarak çizilir
                         if (Environment.GetEnvironmentVariable("VULU_UI_RADIO") == "1")
                         {

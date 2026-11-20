@@ -233,29 +233,83 @@ namespace VuluLauncher.Views
         }
 
         /// <summary>
-        /// Kütüphane: ray ve çekmece 0,4 sn'de belirir; kapaklar 0,12 sn arayla yukarıdan düşüp yerine oturur; ardından
-        /// simge, yazı ve karşılama. Açılırken yazı söner, sonra her şey; altta gerçek kütüphane aynı yerde durur.
+        /// Kütüphane: raftaki kitaplar. Raf ve kitaplar belirir; soldaki kitap devrilir, öbürleri domino gibi sırayla sağa
+        /// yaslanır (düşerken hızlanır, yaslanınca hafifçe seker). Ardından simge, yazı ve karşılama. Açılırken yazı söner,
+        /// sonra her şey; altta gerçek kütüphane durur.
         /// </summary>
         private void RenderKutuphane(double t, double open)
         {
-            KutRail.Opacity = OutEase.Ease(Progress(t, 100, 400));
-            KutDrawer.Opacity = OutEase.Ease(Progress(t, 250, 450));
-            KutDrawer.RenderTransform = new TranslateTransform(30 * (1 - OutEase.Ease(Progress(t, 250, 450))), 0);
-            var posters = new[] { KutPoster0, KutPoster1, KutPoster2, KutPoster3 };
-            for (int i = 0; i < posters.Length; i++)
+            if (_books.Count == 0) BuildBooks();
+            double appear = OutEase.Ease(Progress(t, 80, 420));
+            KutBooks.Opacity = appear;
+            KutBooks.RenderTransform = new TranslateTransform(0, 10 * (1 - appear));
+            for (int i = 0; i < _books.Count; i++)
             {
-                double e = OutEase.Ease(Progress(t, 350 + i * 120, 420));
-                posters[i].Opacity = e;
-                posters[i].RenderTransform = new TranslateTransform(0, -36 * (1 - e));
+                var (book, _, lean) = _books[i];
+                double start = BookFallStart + i * BookStep;
+                double fall = Progress(t, start, BookFallMs);
+                double angle = lean * fall * fall;                       // yerçekimi: yavaş başlar, hızlanır
+                double settle = Progress(t, start + BookFallMs, 180);
+                if (settle > 0) angle = lean - 3.2 * Math.Sin(settle * Math.PI) * (1 - settle);   // yaslanınca küçük bir sekme
+                ((RotateTransform)book.RenderTransform!).Angle = angle;
             }
-            KutMark.Opacity = OutEase.Ease(Progress(t, 950, 400));
-            double mark = 0.8 + 0.2 * OutEase.Ease(Progress(t, 950, 400));
+            double titleAt = BookFallStart + _books.Count * BookStep + 120;
+            KutMark.Opacity = OutEase.Ease(Progress(t, titleAt, 400));
+            double mark = 0.8 + 0.2 * OutEase.Ease(Progress(t, titleAt, 400));
             KutMark.RenderTransform = new ScaleTransform(mark, mark);
-            Rise(KutWord, Progress(t, 1050, 450));
-            Rise(KutGreeting, Progress(t, 1650, 450));
+            Rise(KutWord, Progress(t, titleAt + 100, 450));
+            Rise(KutGreeting, Progress(t, titleAt + 500, 450));
             if (open < 0) { KutStage.Opacity = 1; KutTitle.Opacity = 1; return; }
             KutTitle.Opacity = 1 - OutEase.Ease(Progress(open, 0, 300));
             KutStage.Opacity = 1 - OutEase.Ease(Progress(open, 150, GrafitOpenMs - 150));
+        }
+
+        // Raf: pencerenin ortasında; kitaplar sağa yaslanır (dönme noktası kitabın sağ alt köşesi). Hepsi aynı açıyla yaslandığı
+        // için yan yana iki kitap birbirinin içine girmez (aralarındaki boşluk korunur).
+        private const double BookFallStart = 520, BookStep = 62, BookFallMs = 270, ShelfY = 420, ShelfLeft = 390, ShelfWidth = 540;
+        private readonly List<(Border Book, double X, double Lean)> _books = new();
+
+        private void BuildBooks()
+        {
+            var rng = new Random(7);
+            string[] colors = { "#7A4A22", "#5C3A1E", "#9C6B30", "#3F2B1C", "#B07A35", "#6E4B2A", "#8C3F2A", "#2F4A44", "#4A3322", "#A85F28", "#584030", "#7E5A2E" };
+            KutBooks.Children.Clear();
+            _books.Clear();
+            // Raf tahtası ve gölgesi
+            KutBooks.Children.Add(new Border { Width = ShelfWidth + 40, Height = 18, CornerRadius = new CornerRadius(9), Background = new SolidColorBrush(Color.Parse("#40000000")),
+                [Canvas.LeftProperty] = ShelfLeft - 20, [Canvas.TopProperty] = ShelfY + 6 });
+            KutBooks.Children.Add(new Border { Width = ShelfWidth, Height = 8, CornerRadius = new CornerRadius(3), Background = new SolidColorBrush(Color.Parse("#4A3523")),
+                BorderBrush = new SolidColorBrush(Color.Parse("#6B4D33")), BorderThickness = new Thickness(0, 1, 0, 0),
+                [Canvas.LeftProperty] = ShelfLeft, [Canvas.TopProperty] = ShelfY });
+            double x = ShelfLeft + 24;
+            for (int i = 0; i < 15; i++)
+            {
+                double w = 20 + rng.Next(0, 15), h = 96 + rng.Next(0, 52);
+                var color = Color.Parse(colors[i % colors.Length]);
+                var lighter = Color.FromRgb((byte)Math.Min(255, color.R + 40), (byte)Math.Min(255, color.G + 30), (byte)Math.Min(255, color.B + 20));
+                var spine = new Grid { RowDefinitions = new RowDefinitions("10,*,6,10") };
+                spine.Children.Add(new Border { [Grid.RowProperty] = 2, Background = new SolidColorBrush(Color.Parse("#66F2A33A")), Margin = new Thickness(3, 0) });
+                var book = new Border
+                {
+                    Width = w, Height = h, CornerRadius = new CornerRadius(3, 3, 1, 1),
+                    Background = new LinearGradientBrush
+                    {
+                        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
+                        GradientStops = { new GradientStop(lighter, 0), new GradientStop(color, 0.35), new GradientStop(color, 0.8), new GradientStop(Color.FromRgb((byte)(color.R * 0.7), (byte)(color.G * 0.7), (byte)(color.B * 0.7)), 1) },
+                    },
+                    Child = spine,
+                    RenderTransformOrigin = new RelativePoint(1, 1, RelativeUnit.Relative),
+                    RenderTransform = new RotateTransform(0),
+                    [Canvas.LeftProperty] = x, [Canvas.TopProperty] = ShelfY - h,
+                };
+                KutBooks.Children.Add(book);
+                _books.Add((book, x, 27 + rng.NextDouble() * 2));
+                x += w + 4 + rng.Next(0, 4);
+                if (x > ShelfLeft + ShelfWidth - 150) break;   // sağda yaslanma payı kalsın
+            }
+            // Hepsi aynı açıyla yaslansın (iç içe geçmesinler)
+            double lean = _books.Count > 0 ? _books[0].Lean : 28;
+            for (int i = 0; i < _books.Count; i++) _books[i] = (_books[i].Book, _books[i].X, lean);
         }
 
         private static void Settle(Control control, double p)

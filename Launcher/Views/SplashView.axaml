@@ -36,19 +36,21 @@
 
         <v:EmberSparks x:Name="Sparks" />
 
-        <!-- Kütüphane açılışı: simge rayı ve çekmece belirir, kapaklar ızgaraya sırayla yukarıdan düşer; ortada yazı.
-             Açılırken her şey söner, altta aynı yerde duran gerçek kütüphane görünür (LibraryView yerleşimiyle aynı). -->
+        <!-- Kütüphane açılışı: ortada bir raf ve üstünde dizili kitaplar; soldaki kitap devrilince öbürleri domino gibi sırayla
+             sağa yaslanır, sonra altta simge, yazı ve karşılama belirir. Kitaplar kodla çizilir (SplashView.axaml.cs BuildBooks).
+             Açılırken her şey söner, altta gerçek kütüphane görünür. -->
         <Panel x:Name="KutStage" IsVisible="False">
             <Border Background="#0B0A09" />
-            <Canvas IsHitTestVisible="False">
-                <Border x:Name="KutRail" Canvas.Left="0" Canvas.Top="50" Width="56" Height="770" Background="#090807" BorderBrush="#221B14" BorderThickness="0,0,1,0" Opacity="0" />
-                <Border x:Name="KutPoster0" Canvas.Left="84" Canvas.Top="119" Width="180" Height="230" CornerRadius="14" Background="#281F17" Opacity="0" />
-                <Border x:Name="KutPoster1" Canvas.Left="282" Canvas.Top="119" Width="180" Height="230" CornerRadius="14" Background="#2A2016" Opacity="0" />
-                <Border x:Name="KutPoster2" Canvas.Left="480" Canvas.Top="119" Width="180" Height="230" CornerRadius="14" Background="#241B14" Opacity="0" />
-                <Border x:Name="KutPoster3" Canvas.Left="678" Canvas.Top="119" Width="180" Height="230" CornerRadius="14" Background="#2C2117" Opacity="0" />
-                <Border x:Name="KutDrawer" Canvas.Left="929" Canvas.Top="119" Width="371" Height="681" CornerRadius="18" Background="#14100C" BorderBrush="#2A2118" BorderThickness="1" Opacity="0" />
-            </Canvas>
-            <StackPanel x:Name="KutTitle" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="84,470,0,0" Width="802" IsHitTestVisible="False">
+            <Border IsHitTestVisible="False">
+                <Border.Background>
+                    <RadialGradientBrush Center="50%,46%" GradientOrigin="50%,46%" RadiusX="55%" RadiusY="55%">
+                        <GradientStop Offset="0" Color="#1FF2A33A" />
+                        <GradientStop Offset="1" Color="#00F2A33A" />
+                    </RadialGradientBrush>
+                </Border.Background>
+            </Border>
+            <Canvas x:Name="KutBooks" IsHitTestVisible="False" />
+            <StackPanel x:Name="KutTitle" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,470,0,0" IsHitTestVisible="False">
                 <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center">
                     <Border x:Name="KutMark" Width="48" Height="48" CornerRadius="13" Background="#F2A33A" VerticalAlignment="Center" Opacity="0">
                         <Image Source="avares://vulu Launcher/Assets/logo.png" Width="26" Height="26" />
