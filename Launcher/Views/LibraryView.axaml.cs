@@ -33,8 +33,9 @@ namespace VuluLauncher.Views
             // Sonradan eklenen kapak (yeni paket, kurulan modpack) birden değil belirerek gelir
             Posters.ContainerPrepared += (_, e) =>
             {
-                if (_welcomeShown == null || !IsEffectivelyVisible || _bulk) return;
                 var c = e.Container;
+                c.Transitions = null; c.Opacity = 1; c.RenderTransform = null;   // geri dönüştürülen kap solmuş kalmasın
+                if (_welcomeShown == null || !Posters.IsEffectivelyVisible || _bulk || _prevKeys.Contains(KeyOf(Posters.ItemFromContainer(c)))) return;
                 c.Opacity = 0;
                 c.RenderTransform = new Avalonia.Media.ScaleTransform(0.94, 0.94);
                 Dispatcher.UIThread.Post(() =>
@@ -116,7 +117,13 @@ namespace VuluLauncher.Views
             Rebuild();
         }
 
-        private void OnInstancesChanged(object? sender, NotifyCollectionChangedEventArgs e) => Rebuild();
+        // Liste yenilenirken (Clear + tek tek Add) kapaklar her adımda yeniden çizilmesin: değişiklikler tek seferde uygulanır
+        private void OnInstancesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (_rebuildQueued) return;
+            _rebuildQueued = true;
+            Dispatcher.UIThread.Post(() => { _rebuildQueued = false; Rebuild(); }, DispatcherPriority.Background);
+        }
 
         // Güncelleme denetimi paketleri sonradan işaretler: sayılar ve "Güncellemesi olan" süzgeci tazelenir
         private readonly HashSet<InstanceItem> _watched = new();
@@ -175,9 +182,38 @@ namespace VuluLauncher.Views
             // Süzgeç ya da arama değişince kapaklar tek tek belirmesin; yalnızca eklenen yeni paket belirsin
             _bulk = _filter != _lastFilter || q != _lastQuery;
             _lastFilter = _filter; _lastQuery = q;
+            if (_removing) return;   // solma bitince yeniden kurulur
+            var newKeys = list.Select(KeyOf).ToHashSet();
+            if (!_bulk && _welcomeShown != null && Posters.IsEffectivelyVisible)
+            {
+                var fading = _items.Where(o => !newKeys.Contains(KeyOf(o))).Select(o => Posters.ContainerFromItem(o)).OfType<Control>().ToList();
+                if (fading.Count > 0)
+                {
+                    _removing = true;
+                    foreach (var c in fading)
+                    {
+                        c.IsHitTestVisible = false;
+                        c.Transitions = new Avalonia.Animation.Transitions
+                        {
+                            new Avalonia.Animation.DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(240), Easing = new Avalonia.Animation.Easings.CubicEaseIn() },
+                            new Avalonia.Animation.TransformOperationsTransition { Property = RenderTransformProperty, Duration = TimeSpan.FromMilliseconds(260), Easing = new Avalonia.Animation.Easings.CubicEaseIn() },
+                        };
+                        c.Opacity = 0;
+                        c.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("scale(0.9)");
+                    }
+                    DispatcherTimer.RunOnce(() =>
+                    {
+                        _removing = false;
+                        foreach (var c in fading) c.IsHitTestVisible = true;
+                        Rebuild();
+                    }, TimeSpan.FromMilliseconds(270));
+                    return;
+                }
+            }
             _syncing = true;
             _items.SyncTo(list);
             _bulk = false;
+            _prevKeys = newKeys;
             _syncing = false;
             NoMatch.IsVisible = _items.Count == 0 && _vm.Instances.Count > 0;
             NoMatch.Title = q.Length > 0 ? $"“{q}” ile eşleşen paket yok" : "Bu süzgeçte paket yok";
@@ -201,7 +237,9 @@ namespace VuluLauncher.Views
         // Karşılama alanı birden belirip kaybolmasın: yüksekliği ve saydamlığı birlikte kayar, altındaki kapaklar
         // yumuşakça yer değiştirir. İlk çizimde animasyon yok (kütüphane açılırken zaten olduğu gibi görünür).
         private bool? _welcomeShown;
-        private bool _bulk;
+        private bool _bulk, _removing;
+        private HashSet<string> _prevKeys = new();
+        private static string KeyOf(object? o) => o is InstanceItem i ? i.Id : o?.GetType().Name ?? "";
         private string? _lastFilter, _lastQuery;
         private DispatcherTimer? _welcomeTimer;
 
