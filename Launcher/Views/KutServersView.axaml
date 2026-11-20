@@ -212,40 +212,7 @@
                             </DockPanel>
                         </Border>
                         <!-- Sohbet kapalıyken: çevrimiçi arkadaşlar -->
-                        <!-- Sunucudan bağımsız: ayrı bir kartta, "bu sunucuda olmayabilirler" diye açıkça -->
-                        <Border IsVisible="{Binding !#Drawer.((vm:ServerCard)DataContext).ChatOpen, FallbackValue=True}" Margin="0,16,0,0" Padding="12,10"
-                                CornerRadius="12" Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}" BorderThickness="1">
-                        <DockPanel DataContext="{Binding $parent[UserControl].DataContext}" x:DataType="vm:ServersViewModel">
-                            <StackPanel DockPanel.Dock="Top" Spacing="2" Margin="0,0,0,10">
-                                <TextBlock FontSize="13" FontWeight="SemiBold"><Run Text="Çevrimiçi arkadaşların · " /><Run Text="{Binding OnlineCount}" /></TextBlock>
-                                <TextBlock Text="Bu sunucuda olmayabilirler; çağırmak için Davet et." Classes="dim" FontSize="11.5" TextWrapping="Wrap" />
-                            </StackPanel>
-                            <TextBlock DockPanel.Dock="Top" Text="Şu an çevrimiçi kimse yok." IsVisible="{Binding NobodyOnline}" Classes="dim" FontSize="12.5" />
-                            <ScrollViewer>
-                                <ItemsControl ItemsSource="{Binding Online}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="vm:PersonItem">
-                                            <Grid ColumnDefinitions="36,*" Margin="0,0,0,8">
-                                                <Panel Width="30" Height="30">
-                                                    <Border Background="{StaticResource Raised}" CornerRadius="15" ClipToBounds="True">
-                                                        <Grid>
-                                                            <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                            <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
-                                                        </Grid>
-                                                    </Border>
-                                                    <Ellipse Classes="dot" Classes.playing="{Binding IsPlaying}" Width="9" Height="9" HorizontalAlignment="Right" VerticalAlignment="Bottom" Stroke="{StaticResource Panel}" StrokeThickness="2" />
-                                                </Panel>
-                                                <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Username}" FontWeight="SemiBold" FontSize="13.5" />
-                                                    <TextBlock FontSize="12" TextTrimming="CharacterEllipsis"><Run Text="{Binding Game}" Foreground="{StaticResource OnlineText}" /><Run Text="{Binding Rest}" Foreground="{StaticResource Dim}" /></TextBlock>
-                                                </StackPanel>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </DockPanel>
-                        </Border>
+                        <!-- Çevrimiçi arkadaşlar burada gösterilmez (sunucudaymışlar gibi anlaşılıyordu); Sosyal sekmesinde duruyorlar -->
                     </DockPanel>
                 </DockPanel>
             </Panel>
