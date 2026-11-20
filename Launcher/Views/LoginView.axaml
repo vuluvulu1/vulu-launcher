@@ -7,7 +7,7 @@
         <!-- Meşale: karanlıkta ortadan yayılan sıcak ışık -->
         <Border Background="{StaticResource LoginBg}" />
 
-        <Border Width="380" HorizontalAlignment="Center" VerticalAlignment="Center"
+        <Border Classes="login-card" Width="380" HorizontalAlignment="Center" VerticalAlignment="Center"
                 Background="{StaticResource Card}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
                 Padding="34,30" BoxShadow="0 18 44 0 #9E000000">
             <Panel>

@@ -340,7 +340,7 @@
             </v:PageHost>
             <!-- ── Kütüphane teması: solda ince simge rayı, başlık çubuğunun altında. Üstte sekmeler, altta profil ve Ayarlar.
                  Seçili sekme amber ve arkasında yumuşak ışık; solunda kayan amber hap. Üstüne gelince canlı bilgili ad etiketi. ── -->
-            <Border x:Name="Rail" Grid.Row="1" ZIndex="4" Width="56" HorizontalAlignment="Left"
+            <Border x:Name="Rail" Grid.Row="1" ZIndex="4" Width="56" HorizontalAlignment="Left" Opacity="{Binding ShowShell, Converter={x:Static v:KutBrushes.OneIfTrue}}"
                     Background="#B3090807" BorderBrush="{StaticResource RailLine}" BorderThickness="0,0,1,0">
                 <Panel IsVisible="{Binding ShowShell}">
                     <!-- Rayın tepesinde çok hafif sıcak parıltı (zemin dümdüz siyah kalmasın) -->

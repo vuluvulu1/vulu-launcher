@@ -175,6 +175,12 @@
     <Style Selector="Window.kutuphane Border.side-right">
         <Setter Property="Margin" Value="0,22,20,20" />
     </Style>
+    <!-- Giriş ekranı: kart öbür Kütüphane kartları gibi yuvarlak, ince sıcak çizgili -->
+    <Style Selector="Window.kutuphane Border.login-card">
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Background" Value="{StaticResource Panel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardLine}" />
+    </Style>
     <!-- Admin paneli: başlık ve sekmeler tek satırda, öbür Kütüphane sayfalarıyla aynı üst boşluk -->
     <Style Selector="Window.kutuphane StackPanel#AdminTitleRow">
         <Setter Property="Orientation" Value="Horizontal" />

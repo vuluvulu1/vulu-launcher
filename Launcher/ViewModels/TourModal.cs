@@ -15,9 +15,9 @@ namespace VuluLauncher.ViewModels
     {
         private static readonly TourStep[] Steps =
         {
-            new("home", "Paket kur", "Oyna'daki \"+ Yeni\" ile paket eklersin: vulu Packs'ten ekibin hazırladığı paketleri, CurseForge ya da Modrinth'ten modpack'leri kurarsın ya da boş bir instance açarsın. Modlar, ayarlar ve görev kitapları kendiliğinden iner."),
-            new("home", "Oyna", "Soldan paketi seç, sağ alttaki OYNA'ya bas. RAM düğmesiyle belleği ayarlarsın. Alttaki sekmelerde dünyaların, ekran görüntülerin ve modların durur."),
-            new("social", "Arkadaş ekle", "Sosyal'de soldaki kutudan birini ara ve \"+ Ekle\"ye bas. Arkadaşlarınla uçtan uca şifreli mesajlaşır, ekran görüntüsü paylaşırsın; oyundalarsa yanlarında \"Katıl\" çıkar."),
+            new("home", "Paket kur", "Oyna'daki \"Yeni paket\" ile paket eklersin: vulu Packs'ten ekibin hazırladığı paketleri, CurseForge ya da Modrinth'ten modpack'leri kurarsın ya da boş bir instance açarsın. Modlar, ayarlar ve görev kitapları kendiliğinden iner."),
+            new("home", "Oyna", "Paketini seç ve OYNA'ya bas. Belleği OYNA'nın yanındaki seçiciden ayarlarsın. Dünyaların, ekran görüntülerin ve modların paketin ayrıntılarında durur."),
+            new("social", "Arkadaş ekle", "Sosyal'deki arama kutusundan birini bul ve \"+ Ekle\"ye bas. Arkadaşlarınla uçtan uca şifreli mesajlaşır, ekran görüntüsü paylaşırsın; oyundalarsa yanlarında \"Katıl\" çıkar."),
             new("servers", "Sunucuya bağlan", "Sunucular'da \"Bağlan\"a bas: doğru paket açılır (gerekirse önce kurulur) ve oyun doğrudan sunucuya girer. Ctrl+K ile her şeyi hızlıca arayabilirsin."),
         };
 
