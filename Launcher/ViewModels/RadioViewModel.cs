@@ -8,16 +8,37 @@ using VuluLauncher.Native;
 
 namespace VuluLauncher.ViewModels
 {
-    internal sealed record RadioStation(string Id, string Name, string Url, string Kind, string? Country);
-
-    internal sealed partial class StationRow(RadioViewModel owner, RadioStation station, int index, bool current, bool favorite) : ObservableObject
+    internal sealed record RadioStation(string Id, string Name, string Url, string Kind, string? Country, string? Favicon = null, int Bitrate = 0)
     {
-        public RadioStation Station { get; } = station;
-        public bool IsCurrent { get; } = current;
-        public string Star => favorite ? "★" : "☆";
-        [RelayCommand] private Task Play() => owner.PlayAtAsync(index, fromMenu: true);
-        [RelayCommand] private void ToggleFavorite() => owner.ToggleFavorite(Station);
+        /// <summary>Logo yoksa yerine baş harfler (en çok iki).</summary>
+        public string Initials => RadioViewModel.InitialsOf(Name);
     }
+
+    internal sealed partial class StationRow : ObservableObject
+    {
+        private readonly RadioViewModel _owner;
+        private readonly int _index;
+
+        public StationRow(RadioViewModel owner, RadioStation station, int index, bool current, bool favorite)
+        {
+            _owner = owner;
+            _index = index;
+            Station = station;
+            IsCurrent = current;
+            Star = favorite ? "★" : "☆";
+            if (station.Favicon != null) _ = LoadLogoAsync();
+        }
+
+        public RadioStation Station { get; }
+        public bool IsCurrent { get; }
+        public string Star { get; }
+        /// <summary>İstasyonun logosu (radio-browser'dan; yoksa baş harfler görünür).</summary>
+        [ObservableProperty] private Avalonia.Media.Imaging.Bitmap? _logo;
+        private async Task LoadLogoAsync() => Logo = await Images.LoadAsync(Station.Favicon, 64);
+        [RelayCommand] private Task Play() => _owner.PlayAtAsync(_index, fromMenu: true);
+        [RelayCommand] private void ToggleFavorite() => _owner.ToggleFavorite(Station);
+    }
+
 
     internal sealed record FavoriteRow(RadioViewModel Owner, string Genre, string Name, string GenreLabel)
     {
@@ -124,7 +145,8 @@ namespace VuluLauncher.ViewModels
             Genre = genre;
             UiState.Set("radioGenre", genre);
             _stations = (await _core.Call("radio.stations", new { genre })).Items()
-                .Select(s => new RadioStation(s.Text("id") ?? "", s.Text("name") ?? "", s.Text("url") ?? "", s.Text("kind") ?? "station", s.Text("country"))).ToList();
+                .Select(s => new RadioStation(s.Text("id") ?? "", s.Text("name") ?? "", s.Text("url") ?? "", s.Text("kind") ?? "station", s.Text("country"),
+                    s.Text("favicon"), s.Int("bitrate"))).ToList();
             string? saved = UiState.Get("radioStation");
             _index = Math.Max(0, _stations.FindIndex(s => s.Id == saved));
         }
@@ -188,6 +210,49 @@ namespace VuluLauncher.ViewModels
             Title = station?.Name ?? "Radyo";
             Live = Playing && station != null && station.Kind != "song";
             Subtitle = station == null ? "Çalmak için ▶" : string.Join(" · ", new[] { GenreLabel(Genre), station.Country }.Where(x => !string.IsNullOrEmpty(x)));
+            Details = station == null ? "" : string.Join(" · ", new[] { GenreLabel(Genre), station.Country, station.Bitrate > 0 ? $"{station.Bitrate} kbps" : null }.Where(x => !string.IsNullOrEmpty(x)));
+            Initials = InitialsOf(Title);
+            IsFavorite = station != null && LoadFavorites().Any(f => f.Genre == Genre && f.Name == station.Name);
+            if (station?.Favicon != _logoUrl)
+            {
+                _logoUrl = station?.Favicon;
+                Logo = null;
+                if (_logoUrl != null) _ = LoadLogoAsync(_logoUrl);
+            }
+        }
+
+        // ── Çalar görünümü (başlık çubuğundaki mini çalar ve panelin "şimdi çalıyor" kartı) ──
+        private string? _logoUrl;
+        /// <summary>Çalan istasyonun logosu; yoksa baş harfler.</summary>
+        [ObservableProperty] private Avalonia.Media.Imaging.Bitmap? _logo;
+        [ObservableProperty] private string _initials = "R";
+        /// <summary>Tür · ülke · bit hızı.</summary>
+        [ObservableProperty] private string _details = "";
+        [ObservableProperty] private bool _isFavorite;
+        public string NowLabel => Playing ? (Live ? "ŞİMDİ ÇALIYOR · CANLI" : "ŞİMDİ ÇALIYOR") : "DURAKLATILDI";
+        partial void OnPlayingChanged(bool value) => OnPropertyChanged(nameof(NowLabel));
+        partial void OnLiveChanged(bool value) => OnPropertyChanged(nameof(NowLabel));
+
+        private async Task LoadLogoAsync(string url)
+        {
+            var logo = await Images.LoadAsync(url, 128);
+            if (_logoUrl == url) Logo = logo;
+        }
+
+        public static string InitialsOf(string name)
+        {
+            var words = name.Split(new[] { ' ', '-', '_', '.' }, StringSplitOptions.RemoveEmptyEntries).Where(w => char.IsLetterOrDigit(w[0])).ToList();
+            if (words.Count == 0) return "R";
+            return (words.Count == 1 ? words[0][..Math.Min(2, words[0].Length)] : $"{words[0][0]}{words[1][0]}").ToUpper(CultureInfo.GetCultureInfo("tr-TR"));
+        }
+
+        /// <summary>Çalan istasyonu favorilere ekler ya da çıkarır.</summary>
+        [RelayCommand]
+        private void ToggleCurrentFavorite()
+        {
+            if (Current is not { } station) return;
+            ToggleFavorite(station);
+            IsFavorite = LoadFavorites().Any(f => f.Genre == Genre && f.Name == station.Name);
         }
 
         [RelayCommand]
@@ -209,6 +274,7 @@ namespace VuluLauncher.ViewModels
             MenuNote = "Yükleniyor…";
             try { await EnsureAsync(); }
             catch { MenuNote = "İstasyonlar alınamadı."; return; }
+            Refresh();   // çalmıyorken de "şimdi çalıyor" kartında sıradaki istasyon görünsün
             RenderMenu();
         }
 

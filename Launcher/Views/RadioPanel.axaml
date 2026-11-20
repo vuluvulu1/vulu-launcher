@@ -4,50 +4,156 @@
              xmlns:v="using:VuluLauncher.Views"
              x:Class="VuluLauncher.Views.RadioPanel"
              x:DataType="vm:RadioViewModel">
-    <!-- Radyo menüsü: favoriler, türler, arama, istasyonlar. Oyna'nın alt çubuğundan ve Kütüphane temasının simge rayından
-         açılır; görünür olunca türler ve istasyonlar yüklenir (RadioPanel.axaml.cs). -->
-    <Border Width="340" MaxHeight="460" Background="{StaticResource Panel}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1" Padding="10">
+    <!-- Radyo paneli: üstte "şimdi çalıyor" kartı (logo, istasyon, tür/ülke/bit hızı), kontroller ve ses; altında favoriler,
+         türler, arama ve logolu istasyon listesi. Başlık çubuğundaki mini çalardan açılır (RadioPill); görünür olunca
+         türler ve istasyonlar yüklenir (RadioPanel.axaml.cs). Yalnızca tema fırçaları. -->
+    <UserControl.Styles>
+        <Style Selector="Button.rctl">
+            <Setter Property="Width" Value="36" /><Setter Property="Height" Value="36" /><Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="18" /><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+        </Style>
+        <Style Selector="Button.rctl /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="CornerRadius" Value="18" /></Style>
+        <Style Selector="Button.rctl:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{StaticResource Hover}" /></Style>
+        <Style Selector="Button.rctl Path"><Setter Property="Fill" Value="{Binding $parent[Button].Foreground}" /><Setter Property="Stretch" Value="Uniform" /></Style>
+        <Style Selector="Button.rctl:pointerover"><Setter Property="Foreground" Value="{StaticResource Text}" /></Style>
+        <Style Selector="Button.rctl.fav"><Setter Property="Foreground" Value="{StaticResource AccentHi}" /></Style>
+        <Style Selector="Button.rplay">
+            <Setter Property="Width" Value="46" /><Setter Property="Height" Value="46" /><Setter Property="Padding" Value="0" /><Setter Property="CornerRadius" Value="23" />
+            <Setter Property="Background" Value="{StaticResource Accent}" /><Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.rplay /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="CornerRadius" Value="23" /></Style>
+        <Style Selector="Button.rplay:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{StaticResource AccentHi}" /></Style>
+        <Style Selector="Button.rchip">
+            <Setter Property="Padding" Value="10,3" /><Setter Property="Margin" Value="0,0,5,5" /><Setter Property="FontSize" Value="11.5" /><Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="{StaticResource LineStrong}" /><Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+        </Style>
+        <Style Selector="Button.rchip /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="CornerRadius" Value="12" /></Style>
+        <Style Selector="Button.rchip.active"><Setter Property="Background" Value="{StaticResource Accent}" /><Setter Property="BorderBrush" Value="{StaticResource Accent}" /><Setter Property="Foreground" Value="{StaticResource AccentInk}" /></Style>
+        <Style Selector="Button.rchip.active /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{StaticResource Accent}" /><Setter Property="Foreground" Value="{StaticResource AccentInk}" /></Style>
+        <Style Selector="Button.rrow">
+            <Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /><Setter Property="Padding" Value="8,5" />
+            <Setter Property="CornerRadius" Value="10" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button.rrow /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="CornerRadius" Value="10" /></Style>
+        <Style Selector="Button.rrow:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{StaticResource Hover}" /></Style>
+        <Style Selector="Button.rrow.current /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{StaticResource AccentSoft}" /></Style>
+        <Style Selector="TextBlock.rhead"><Setter Property="FontSize" Value="11" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{StaticResource Dim}" /><Setter Property="LetterSpacing" Value="0.6" /></Style>
+    </UserControl.Styles>
+
+    <Border Width="340" MaxHeight="560" Background="{StaticResource Panel}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1" CornerRadius="16" ClipToBounds="True">
         <DockPanel>
-            <StackPanel DockPanel.Dock="Top" Spacing="8">
+            <!-- Şimdi çalıyor -->
+            <Border DockPanel.Dock="Top" Padding="16,16,16,12">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Offset="0" Color="#2EF2A33A" />
+                        <GradientStop Offset="1" Color="#00F2A33A" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <StackPanel Spacing="14">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                        <Border Width="68" Height="68" CornerRadius="16" Background="{StaticResource Raised}" ClipToBounds="True" BoxShadow="0 6 18 0 #66000000">
+                            <Grid>
+                                <TextBlock Text="{Binding Initials}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource AccentHi}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Image Source="{Binding Logo}" Stretch="UniformToFill" />
+                            </Grid>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                <v:EqBars IsVisible="{Binding Playing}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding NowLabel}" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource AccentHi}" LetterSpacing="0.8" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Details}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Grid>
+                    <!-- Kontroller ve ses -->
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,12,Auto,*,Auto" VerticalAlignment="Center">
+                        <Button Classes="rctl" Command="{Binding PrevCommand}" ToolTip.Tip="Önceki istasyon">
+                            <Path Data="M6 5h2v14H6zM20 5v14L9 12z" Width="13" Height="13" />
+                        </Button>
+                        <Button Grid.Column="1" Classes="rplay" Margin="4,0" Command="{Binding ToggleCommand}" ToolTip.Tip="Çal / durdur">
+                            <Panel>
+                                <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="15" Height="15" Stretch="Uniform" IsVisible="{Binding !Playing}" Margin="3,0,0,0" />
+                                <Path Data="M6 4h4v16H6zM14 4h4v16h-4z" Fill="{StaticResource AccentInk}" Width="14" Height="15" Stretch="Uniform" IsVisible="{Binding Playing}" />
+                            </Panel>
+                        </Button>
+                        <Button Grid.Column="2" Classes="rctl" Command="{Binding NextCommand}" ToolTip.Tip="Sonraki istasyon">
+                            <Path Data="M16 5h2v14h-2zM4 5v14l11-7z" Width="13" Height="13" />
+                        </Button>
+                        <Button Grid.Column="4" Classes="rctl" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="Sesi kapat / aç">
+                            <Panel>
+                                <Path Data="M4 9h4l5-4v14l-5-4H4zM15.5 8.5a5 5 0 0 1 0 7l-1.2-1.2a3.3 3.3 0 0 0 0-4.6z" Width="16" Height="16" IsVisible="{Binding !Muted}" />
+                                <Path Data="M4 9h4l5-4v14l-5-4H4zM15 9l1.2-1.2 2.3 2.3 2.3-2.3L22 9l-2.3 2.3L22 13.6l-1.2 1.2-2.3-2.3-2.3 2.3L15 13.6l2.3-2.3z" Width="16" Height="16" IsVisible="{Binding Muted}" />
+                            </Panel>
+                        </Button>
+                        <Slider Grid.Column="5" Minimum="0" Maximum="100" Value="{Binding Volume}" VerticalAlignment="Center" Margin="2,0,6,0" ToolTip.Tip="Ses düzeyi" />
+                        <Button Grid.Column="6" Classes="rctl" Classes.fav="{Binding IsFavorite}" Command="{Binding ToggleCurrentFavoriteCommand}" ToolTip.Tip="Favorilere ekle / çıkar">
+                            <Panel>
+                                <Path Data="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" Width="16" Height="16" IsVisible="{Binding IsFavorite}" />
+                                <Path Data="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9zM12 7.3l-1.6 3.3-3.6.5 2.6 2.5-.6 3.6 3.2-1.7 3.2 1.7-.6-3.6 2.6-2.5-3.6-.5z" Width="16" Height="16" IsVisible="{Binding !IsFavorite}" />
+                            </Panel>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Favoriler, türler, arama -->
+            <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="16,4,16,0">
                 <StackPanel IsVisible="{Binding HasFavorites}" Spacing="2">
-                    <TextBlock Text="Favoriler" Classes="dim" FontSize="11.5" FontWeight="Bold" />
+                    <TextBlock Text="FAVORİLER" Classes="rhead" Margin="0,0,0,2" />
                     <ItemsControl ItemsSource="{Binding Favorites}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:FavoriteRow">
-                                <Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="6,4" Command="{Binding Play}">
-                                    <Grid ColumnDefinitions="*,Auto">
-                                        <TextBlock Text="{Binding Name, StringFormat='★ {0}'}" TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Grid.Column="1" Text="{Binding GenreLabel}" Classes="dim" FontSize="11.5" Margin="8,0,0,0" />
+                                <Button Classes="rrow" Command="{Binding Play}">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <TextBlock Text="★" Foreground="{StaticResource AccentHi}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="2" Text="{Binding GenreLabel}" Classes="dim" FontSize="11.5" VerticalAlignment="Center" />
                                     </Grid>
                                 </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
+                <TextBlock Text="TÜRLER" Classes="rhead" />
                 <ItemsControl ItemsSource="{Binding Genres}">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:Choice">
-                            <Button Classes="seg loose" Classes.active="{Binding IsSelected}" Content="{Binding Label}" Margin="0,0,4,4" FontSize="11.5" Padding="8,3"
+                            <Button Classes="rchip" Classes.active="{Binding IsSelected}" Content="{Binding Label}"
                                     Command="{Binding $parent[ItemsControl].((vm:RadioViewModel)DataContext).PickGenreCommand}" CommandParameter="{Binding}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBox Text="{Binding Search}" Watermark="İstasyon ara…" IsVisible="{Binding ShowSearch}" />
+                <TextBox Text="{Binding Search}" Watermark="İstasyon ara…" IsVisible="{Binding ShowSearch}" CornerRadius="10" />
                 <TextBlock Text="{Binding MenuNote}" IsVisible="{Binding MenuNote, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="dim" FontSize="12.5" />
             </StackPanel>
-            <ScrollViewer Margin="0,6,0,0">
+
+            <!-- İstasyonlar -->
+            <ScrollViewer Margin="8,8,8,10">
                 <ItemsControl ItemsSource="{Binding Stations}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:StationRow">
                             <Grid ColumnDefinitions="*,Auto">
-                                <Button Classes="flat" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="6,4"
-                                        Command="{Binding PlayCommand}" ToolTip.Tip="{Binding Station.Country}">
-                                    <TextBlock Text="{Binding Station.Name}" Classes.current="{Binding IsCurrent}" TextTrimming="CharacterEllipsis">
-                                        <TextBlock.Styles><Style Selector="TextBlock.current"><Setter Property="Foreground" Value="{StaticResource Accent}" /></Style></TextBlock.Styles>
-                                    </TextBlock>
+                                <Button Classes="rrow" Classes.current="{Binding IsCurrent}" Command="{Binding PlayCommand}" ToolTip.Tip="{Binding Station.Country}">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Border Width="28" Height="28" CornerRadius="7" Background="{StaticResource Raised}" ClipToBounds="True">
+                                            <Grid>
+                                                <TextBlock Text="{Binding Station.Initials}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource Dim}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <Image Source="{Binding Logo}" Stretch="UniformToFill" />
+                                            </Grid>
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Text="{Binding Station.Name}" Classes.current="{Binding IsCurrent}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center">
+                                            <TextBlock.Styles><Style Selector="TextBlock.current"><Setter Property="Foreground" Value="{StaticResource AccentHi}" /><Setter Property="FontWeight" Value="SemiBold" /></Style></TextBlock.Styles>
+                                        </TextBlock>
+                                    </Grid>
                                 </Button>
-                                <Button Grid.Column="1" Classes="flat" Content="{Binding Star}" Padding="6,2" Command="{Binding ToggleFavoriteCommand}" ToolTip.Tip="Favori" />
+                                <Button Grid.Column="1" Classes="rctl" Width="30" Height="30" Content="{Binding Star}" FontSize="14" Command="{Binding ToggleFavoriteCommand}" ToolTip.Tip="Favori" />
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

@@ -44,6 +44,20 @@ namespace VuluLauncher.Views
                             if (tabs.Count > 0) tour.SelectTabCommand.Execute(tabs[(tabs.IndexOf(tour.SelectedTab!) + 1) % tabs.Count]);
                         }
                         else rtb.Save(System.IO.Path.Combine(shotDir, $"shot-{n++ % 4}.png"));
+                        // VULU_UI_RADIO=1: radyo paneli açılır; ayrı penceresi de radio.png olarak çizilir
+                        if (Environment.GetEnvironmentVariable("VULU_UI_RADIO") == "1")
+                        {
+                            if (RadioPanel.Last is null)
+                                this.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Classes.Contains("rpill"))?.Flyout?.ShowAt(
+                                    this.GetVisualDescendants().OfType<Button>().First(b => b.Classes.Contains("rpill")));
+                            else if (TopLevel.GetTopLevel(RadioPanel.Last) is { } popup && popup != this)
+                            {
+                                var ps = new Avalonia.PixelSize((int)popup.Bounds.Width, (int)popup.Bounds.Height);
+                                using var prtb = new Avalonia.Media.Imaging.RenderTargetBitmap(ps);
+                                prtb.Render(popup);
+                                prtb.Save(System.IO.Path.Combine(shotDir, "radio.png"));
+                            }
+                        }
                     }
                     catch (Exception ex) { LogFile.Write("[ui] görüntü alınamadı: " + ex.Message); }
                 };

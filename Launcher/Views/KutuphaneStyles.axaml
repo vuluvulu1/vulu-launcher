@@ -19,10 +19,6 @@
     <Style Selector="Window.kutuphane Border#Rail">
         <Setter Property="IsVisible" Value="True" />
     </Style>
-    <!-- Başlık çubuğundaki radyo: Grafit'te radyo Oyna'nın sol kartında durduğu için orada gizli (öbür temalarda görünür) -->
-    <Style Selector="Window.grafit Border#RadioHost">
-        <Setter Property="IsVisible" Value="False" />
-    </Style>
     <!-- Başlık çubuğu tam genişlik (sol üst köşe boş kalmasın); logo köşede, ray çubuğun altından başlar -->
     <Style Selector="Window.kutuphane Border#TitleBar, Window.kutuphane Border#TitleBar.overlay">
         <Setter Property="Margin" Value="0" />

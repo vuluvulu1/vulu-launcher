@@ -179,7 +179,8 @@ namespace VuluLauncher.Views
             RailCard.BorderThickness = new Thickness(g ? 1 : 0);
             RailCard.CornerRadius = new CornerRadius(g ? 14 : 0);
             RailCard.ClipToBounds = g;
-            RailHeader.IsVisible = RadioHost.IsVisible = g;
+            RailHeader.IsVisible = g;
+            RadioHost.IsVisible = false;   // radyo artık her temada başlık çubuğundaki mini çalarda (Views/RadioPill)
             Rail.Padding = g ? new Thickness(8, 0, 8, 0) : new Thickness(18, 10, 12, 0);
             NewButton.Width = g ? double.NaN : 58;
             NewButton.Height = g ? 44 : 58;
@@ -224,7 +225,7 @@ namespace VuluLauncher.Views
             // Öbür temalarda radyo başlık çubuğunda (MainWindow RadioHost); oyun çubuğunda yalnızca paket, ilerleme, sürüm ve OYNA
             if (g) RadioHost.Child = RadioBox;
             else BarGrid.Children.Add(RadioBox);
-            RadioBox.IsVisible = g;
+            RadioBox.IsVisible = false;   // eski çalar kullanılmıyor; radyo başlık çubuğundaki mini çalarda
             Grid.SetColumn(RadioBox, g ? 0 : 1);
             RadioBox.Margin = g ? default : new Thickness(8, 0, 0, 0);
             RadioBox.RowSpacing = g ? 8 : 0;

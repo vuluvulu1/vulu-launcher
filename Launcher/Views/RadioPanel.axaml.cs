@@ -20,7 +20,15 @@ namespace VuluLauncher.Views
                     if (main != null) DataContext = main.Radio;
                 }
                 if (DataContext is RadioViewModel radio) _ = radio.OpenMenuAsync();
+#if DEBUG
+                Last = this;
+#endif
             };
         }
+
+#if DEBUG
+        /// <summary>Yalnızca geliştirmede: açık paneli VULU_UI_SHOT görüntüsüne çizmek için (açılır kutu ayrı pencere).</summary>
+        public static RadioPanel? Last { get; private set; }
+#endif
     }
 }

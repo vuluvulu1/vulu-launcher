@@ -468,5 +468,12 @@
             <Setter Property="MinHeight" Value="4" />
             <Setter Property="Height" Value="4" />
         </Style>
+        <!-- Radyo paneli kendi yuvarlak kutusunu çizer; açılır kutunun zemini ve çerçevesi görünmez -->
+        <Style Selector="FlyoutPresenter.radio">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MaxHeight" Value="600" />
+        </Style>
     </Application.Styles>
 </Application>
