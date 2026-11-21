@@ -114,7 +114,12 @@ namespace VuluLauncher
         /// mods klasöründeki boş/açılmayan jar'lar, aynı dosyanın kopyaları ("x (1).jar"), aynı modun iki sürümü ve henüz
         /// yerine konmamış elle indirilecekler. Sorun yoksa null.
         /// </summary>
-        public static ModFileProblems? Check(string instanceDir, InstanceMeta? instance, string loader)
+        /// <param name="includeHarmless">
+        /// false (oyun açılırken): aynı modun iki sürümü, yükleyici bunlardan yalnızca yenisini yüklüyorsa (Fabric, Quilt,
+        /// NeoForge, Forge 1.18+) sorun sayılmaz; modpackler bazen bir modun yenisini overrides ile eskisinin yanına koyar ve
+        /// oyun sorunsuz açılır. "Dosyaları doğrula" bunları da bulup eskisini yedeğe taşır.
+        /// </param>
+        public static ModFileProblems? Check(string instanceDir, InstanceMeta? instance, string loader, string mcVersion = "", bool includeHarmless = true)
         {
             var broken = new List<(string, string)>();
             var duplicates = new List<(string, string, string)>();
@@ -137,8 +142,9 @@ namespace VuluLauncher
                         foreach (var copy in same.Where(j => j != keep)) duplicates.Add(($"mods/{copy.Name}", keep.Name, "copy"));
                     }
 
-                // Aynı modun iki farklı dosyası (ör. iki sürüm): launcher'ın kurduğu kalır, yoksa en son değiştirilen
-                if (loader != "vanilla")
+                // Aynı modun iki farklı dosyası (ör. iki sürüm): oyunun yükleyeceği, yani sürümü en yeni olan kalır
+                // (dosya adındaki sayılar sayı olarak karşılaştırılır: 1.120.2 > 1.113.1); eşitse launcher'ın kurduğu
+                if (loader != "vanilla" && (includeHarmless || !LoaderPicksNewest(loader, mcVersion)))
                 {
                     var flagged = duplicates.Select(d => d.Item1).ToHashSet(StringComparer.OrdinalIgnoreCase);
                     var recorded = instance?.Content.Select(c => c.File).ToHashSet(StringComparer.OrdinalIgnoreCase) ?? new HashSet<string>();
@@ -148,8 +154,8 @@ namespace VuluLauncher
                                  .Where(g => g.Select(x => x.Mod.File).Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1))
                     {
                         var files = group.Select(x => x.Mod.File).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-                        string keep = files.OrderByDescending(f => recorded.Contains($"mods/{f}"))
-                            .ThenByDescending(f => File.GetLastWriteTimeUtc(Path.Combine(modsDir, f))).First();
+                        string keep = files.OrderByDescending(f => f, NaturalComparer.Instance)
+                            .ThenByDescending(f => recorded.Contains($"mods/{f}")).First();
                         foreach (var extra in files.Where(f => f != keep && flagged.Add($"mods/{f}")))
                             duplicates.Add(($"mods/{extra}", keep, "version"));
                     }
@@ -185,6 +191,49 @@ namespace VuluLauncher
                 moved.Add(relative);
             }
             return moved;
+        }
+
+        /// <summary>
+        /// Aynı kimlikte iki mod bulunca yükleyici yalnızca sürümü yeni olanı yükler mi (oyun açılır): Fabric, Quilt,
+        /// NeoForge ve Forge 1.18+. Eski Forge'da oyun "duplicate mods" hatasıyla açılmaz.
+        /// </summary>
+        public static bool LoaderPicksNewest(string loader, string mcVersion)
+        {
+            if (loader is "fabric" or "quilt" or "neoforge") return true;
+            if (loader != "forge") return false;
+            var parts = mcVersion.Split('.');
+            return parts.Length >= 2 && int.TryParse(parts[1], out int minor) && minor >= 18;
+        }
+
+        /// <summary>Dosya adlarını sayıları sayı olarak karşılaştırarak sıralar ("mod-1.120.2" > "mod-1.113.1" > "mod-1.9").</summary>
+        private sealed class NaturalComparer : IComparer<string>
+        {
+            public static readonly NaturalComparer Instance = new();
+
+            public int Compare(string? a, string? b)
+            {
+                a ??= ""; b ??= "";
+                int i = 0, j = 0;
+                while (i < a.Length && j < b.Length)
+                {
+                    if (char.IsDigit(a[i]) && char.IsDigit(b[j]))
+                    {
+                        int si = i, sj = j;
+                        while (i < a.Length && char.IsDigit(a[i])) i++;
+                        while (j < b.Length && char.IsDigit(b[j])) j++;
+                        string na = a[si..i].TrimStart('0'), nb = b[sj..j].TrimStart('0');
+                        int c = na.Length != nb.Length ? na.Length.CompareTo(nb.Length) : string.CompareOrdinal(na, nb);
+                        if (c != 0) return c;
+                    }
+                    else
+                    {
+                        int c = char.ToLowerInvariant(a[i]).CompareTo(char.ToLowerInvariant(b[j]));
+                        if (c != 0) return c;
+                        i++; j++;
+                    }
+                }
+                return (a.Length - i).CompareTo(b.Length - j);
+            }
         }
 
         private static readonly System.Text.RegularExpressions.Regex CopySuffix = new(@" \(\d+\)$");

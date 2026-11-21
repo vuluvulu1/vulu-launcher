@@ -89,7 +89,7 @@ namespace VuluLauncher
             // 2. Boş/bozuk jar'lar ve kopyalar yedeğe
             job.Phase = "Mod dosyaları denetleniyor";
             var moved = new List<string>();
-            var problems = await Task.Run(() => ManualFiles.Check(dir, meta, target.Loader));
+            var problems = await Task.Run(() => ManualFiles.Check(dir, meta, target.Loader, target.McVersion));
             if (problems != null)
             {
                 var bad = problems.Broken.Select(b => b.File).Concat(problems.Duplicates.Select(d => d.File)).ToList();

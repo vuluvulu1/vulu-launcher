@@ -90,8 +90,8 @@ namespace VuluLauncher.ViewModels
             _main = main;
             _instance = instance;
             _manual = files.Get("manual").Clone();
-            // Fabric ve Quilt aynı kimlikteki iki dosyadan yalnızca yenisini yükler (oyun açılır); Forge ve NeoForge açılmaz
-            bool picksOne = instance.Loader is "fabric" or "quilt";
+            // Fabric, Quilt, NeoForge ve Forge 1.18+ aynı kimlikteki iki dosyadan yalnızca yenisini yükler (oyun açılır); eski Forge açılmaz
+            bool picksOne = ManualFiles.LoaderPicksNewest(instance.Loader, instance.McVersion);
             bool severe = _manual.Items().Any();
             foreach (var b in files.Items("broken"))
             {

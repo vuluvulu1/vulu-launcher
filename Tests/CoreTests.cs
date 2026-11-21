@@ -466,3 +466,46 @@ namespace VuluLauncher.Tests
         }
     }
 }
+
+namespace VuluLauncher.Tests
+{
+    /// <summary>
+    /// Aynı modun iki sürümü (ATM10'da cc-tweaked 1.113.1 + overrides'tan 1.120.2): yükleyici yenisini yüklediği için
+    /// oyun açılırken uyarılmaz; "Dosyaları doğrula"da eskisi yedeğe gider (yenisi değil).
+    /// </summary>
+    public class DuplicateModVersionTests : IDisposable
+    {
+        private readonly string _dir = Path.Combine(Path.GetTempPath(), "vulu-tests-" + Guid.NewGuid().ToString("N"));
+
+        public DuplicateModVersionTests() => Directory.CreateDirectory(Path.Combine(_dir, "mods"));
+        public void Dispose() { try { Directory.Delete(_dir, true); } catch { } }
+
+        private void Jar(string file, string version)
+        {
+            using var zip = ZipFile.Open(Path.Combine(_dir, "mods", file), ZipArchiveMode.Create);
+            using var w = new StreamWriter(zip.CreateEntry("fabric.mod.json").Open());
+            w.Write($$"""{"schemaVersion":1,"id":"computercraft","version":"{{version}}","name":"CC: Tweaked"}""");
+        }
+
+        [Fact]
+        public void KeepsNewestAndSkipsAtLaunch()
+        {
+            Jar("cc-tweaked-1.21.1-1.120.2.jar", "1.120.2");
+            Jar("cc-tweaked-1.21.1-1.113.1.jar", "1.113.1");
+
+            var all = ManualFiles.Check(_dir, null, "fabric", "1.21.1");
+            var dup = Assert.Single(all!.Duplicates);
+            Assert.Equal("mods/cc-tweaked-1.21.1-1.113.1.jar", dup.File);   // eskisi gider
+            Assert.Equal("cc-tweaked-1.21.1-1.120.2.jar", dup.CopyOf);
+
+            Assert.Null(ManualFiles.Check(_dir, null, "fabric", "1.21.1", includeHarmless: false));
+        }
+
+        [Theory]
+        [InlineData("neoforge", "1.21.1", true)]
+        [InlineData("forge", "1.20.1", true)]
+        [InlineData("forge", "1.16.5", false)]
+        [InlineData("fabric", "1.12.2", true)]
+        public void LoaderPicksNewest(string loader, string mc, bool expected) => Assert.Equal(expected, ManualFiles.LoaderPicksNewest(loader, mc));
+    }
+}
