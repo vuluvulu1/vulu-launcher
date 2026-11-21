@@ -270,10 +270,46 @@ namespace VuluLauncher
         /// bildirim denetimleri çalışsın. Pencere sonra açılınca arayüz bu oturumdan sürer. Kayıtlı şifre yoksa bir şey yapılmaz.
         /// </summary>
         /// <summary>Pencere açıldı ya da bildirim alanına gizlendi: Discord durumu yalnızca pencere açıkken görünür (oyun açıksa "oynuyor" kalır).</summary>
-        public void OnWindowVisibilityChanged(bool visible) => _discord.SetHidden(!visible);
+        public void OnWindowVisibilityChanged(bool visible)
+        {
+            _discord.SetHidden(!visible);
+            if (visible) MaybeCheckUpdateOnOpen();
+        }
+
+        // ── Pencere açılınca güncelleme ──
+        // Normal açılışta Updater sürümü zaten denetler. Bilgisayar açılışında launcher bildirim alanında, Updater'sız
+        // başlar (açılışta güncelleme sormak sinir bozucu olurdu); kullanıcı simgeye tıklayıp pencereyi açınca denetlenir,
+        // yeni sürüm varsa Updater açılıp kurar ve launcher'ı yeniden başlatır. Pencere uzun süre bildirim alanında
+        // kaldıysa (günlerce açık kalabilir) her açılışta en çok yarım saatte bir yeniden denetlenir.
+        private DateTime _lastUpdateCheck = DateTime.UtcNow;
+        private int _checkingOnOpen;
+
+        private void MaybeCheckUpdateOnOpen()
+        {
+            if (!_host.CanSelfUpdate || DateTime.UtcNow - _lastUpdateCheck < TimeSpan.FromMinutes(30)) return;
+            if (Interlocked.Exchange(ref _checkingOnOpen, 1) == 1) return;
+            _lastUpdateCheck = DateTime.UtcNow;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var (status, latest) = await _launcherUpdates.CheckForUpdateAsync();
+                    LogFile.Write($"[güncelleme] pencere açılınca denetlendi: {status}");
+                    if (status != UpdateCheckStatus.UpdateAvailable || latest == null) return;
+                    // Oyun açıkken ya da bir şey inerken launcher kapatılmaz; bir sonraki açılışta yeniden denenir
+                    if (_game.IsRunning || DownloadJob.AnyRunning) { _lastUpdateCheck = DateTime.MinValue; return; }
+                    _latestLauncher = latest;
+                    Log($"Yeni launcher sürümü: v{VuluShared.Releases.Clean(latest.Version)}; güncelleniyor.", "warn");
+                    _host.StartLauncherUpdate();
+                }
+                catch (Exception ex) { LogFile.Write("[güncelleme] pencere açılınca denetlenemedi: " + ex.Message); }
+                finally { Interlocked.Exchange(ref _checkingOnOpen, 0); }
+            });
+        }
 
         public void StartInBackground()
         {
+            _lastUpdateCheck = DateTime.MinValue;   // bildirim alanında başladı: sürüm denetlenmedi
             _discord.SetHidden(true);
             var (username, password) = CredentialManager.Load();
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) return;

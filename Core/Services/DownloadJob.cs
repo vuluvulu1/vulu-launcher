@@ -19,6 +19,9 @@ namespace VuluLauncher
         private static int _nextId;
         private static readonly ConcurrentDictionary<int, DownloadJob> Running = new();
 
+        /// <summary>Süren bir indirme işi var mı (ör. launcher güncellenmeden önce).</summary>
+        public static bool AnyRunning => !Running.IsEmpty;
+
         /// <summary>Arayüzdeki "iptal et": işin bütün indirmeleri durur, iş "İptal edildi" diye biter.</summary>
         public static bool Cancel(int id)
         {
