@@ -83,14 +83,31 @@ namespace VuluLauncher.ViewModels
         public Func<string, Action, Task>? PlayThemeTransition { get; set; }
 
         /// <summary>Temayı geçiş animasyonuyla değiştirir (Ayarlar › Tema).</summary>
+        /// <remarks>
+        /// Geçiş sürerken gelen seçimler birikmez: yalnızca en son seçilen tema, süren geçiş bitince uygulanır.
+        /// (Art arda hızlı değiştirmek üst üste geçişler, yarım uygulanmış temalar ve çökme demekti.)
+        /// </remarks>
         public async Task SwitchThemeAsync(string theme)
         {
-            theme = Themes.Normalize(theme);
-            if (theme == Themes.Current) return;
-            void Apply() { Themes.Apply(theme); ThemeChanged(); }
-            if (PlayThemeTransition != null) await PlayThemeTransition(theme, Apply);
-            else Apply();
+            _queuedTheme = Themes.Normalize(theme);
+            if (_switchingTheme) return;
+            _switchingTheme = true;
+            try
+            {
+                while (_queuedTheme is { } next)
+                {
+                    _queuedTheme = null;
+                    if (next == Themes.Current) continue;
+                    void Apply() { Themes.Apply(next); ThemeChanged(); }
+                    if (PlayThemeTransition != null) await PlayThemeTransition(next, Apply);
+                    else Apply();
+                }
+            }
+            finally { _switchingTheme = false; }
         }
+
+        private string? _queuedTheme;
+        private bool _switchingTheme;
 
         /// <summary>Tema değişti (Ayarlar): zeminler yeniden seçilir.</summary>
         public void ThemeChanged()
@@ -249,6 +266,19 @@ namespace VuluLauncher.ViewModels
                                 add.Search.Hits[0].DetailsCommand.Execute(null);
                         }, TimeSpan.FromSeconds(2));
                     }, TimeSpan.FromSeconds(2));
+                // VULU_UI_THEMESPAM=1: temalar 150 ms arayla 15 sn boyunca değiştirilir (art arda değiştirme çökmesi denemesi)
+                if (Environment.GetEnvironmentVariable("VULU_UI_THEMESPAM") == "1")
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                    {
+                        int n = 0;
+                        var spam = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+                        spam.Tick += (_, _) =>
+                        {
+                            if (++n > 100) { spam.Stop(); LogFile.Write("[tema] art arda değiştirme denemesi bitti"); return; }
+                            _ = SwitchThemeAsync(new[] { Themes.Mesale, Themes.Ufuk, Themes.Derin, Themes.Grafit, Themes.Kutuphane }[n % 5]);
+                        };
+                        spam.Start();
+                    }, TimeSpan.FromSeconds(3));
                 // VULU_UI_INSTALL=1: kütüphanede kurulmakta olan örnek paket (önce bekler, sonra halka dolar)
                 if (Environment.GetEnvironmentVariable("VULU_UI_INSTALL") == "1")
                     Avalonia.Threading.DispatcherTimer.RunOnce(() =>

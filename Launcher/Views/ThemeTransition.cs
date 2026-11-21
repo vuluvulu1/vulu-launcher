@@ -234,7 +234,7 @@ half4 main(float2 coord) {
             var sheet = theme switch { Themes.Mesale => Burn.Value, Themes.Derin => Sculk.Value, Themes.Grafit => Tiles.Value, Themes.Kutuphane => Pages.Value, _ => null };
             if (sheet != null && TakeSnapshot() is { } shot)
             {
-                _snapshot?.Dispose();
+                Retire(_snapshot);
                 _snapshot = shot;
                 _sheetEffect = sheet;
                 _sheetMs = theme switch { Themes.Derin => SculkMs, Themes.Grafit => TilesMs, Themes.Kutuphane => PagesMs, _ => BurnMs };
@@ -249,7 +249,7 @@ half4 main(float2 coord) {
                 IsHitTestVisible = true;
                 IsVisible = true;
                 _clock.Restart();
-                TopLevel.GetTopLevel(this)!.RequestAnimationFrame(Frame);
+                StartLoop();
                 return _done.Task;
             }
             _burning = false;
@@ -272,7 +272,7 @@ half4 main(float2 coord) {
             IsHitTestVisible = true;   // geçiş sürerken tıklamalar arkaya gitmesin
             IsVisible = true;
             _clock.Restart();
-            top.RequestAnimationFrame(Frame);
+            StartLoop();
             return _done.Task;
         }
 
@@ -303,6 +303,38 @@ half4 main(float2 coord) {
             catch { return null; }
         }
 
+        // Tek kare döngüsü: geçiş sürerken yenisi başlarsa ikinci bir döngü açılmaz (her geçiş bir döngü daha ekliyordu)
+        private bool _looping;
+
+        private void StartLoop()
+        {
+            if (_looping || TopLevel.GetTopLevel(this) is not { } top) return;
+            _looping = true;
+            top.RequestAnimationFrame(Frame);
+        }
+
+        private void Continue()
+        {
+            if (TopLevel.GetTopLevel(this) is { } top) top.RequestAnimationFrame(Frame);
+            else _looping = false;
+        }
+
+        // Eski görüntü hemen silinmez: çizim iş parçacığı onu son karede hâlâ çiziyor olabilir (silinmiş belleği okumak
+        // launcher'ı iz bırakmadan düşürüyordu). Bir süre bekletilip öyle silinir.
+        private readonly List<(SKImage Image, long At)> _retired = new();
+
+        private void Retire(SKImage? image)
+        {
+            if (image != null) _retired.Add((image, Environment.TickCount64));
+        }
+
+        private void DisposeRetired(bool all = false)
+        {
+            long now = Environment.TickCount64;
+            for (int i = _retired.Count - 1; i >= 0; i--)
+                if (all || now - _retired[i].At > 1000) { _retired[i].Image.Dispose(); _retired.RemoveAt(i); }
+        }
+
         /// <summary>Görüntü geçişinde temayı uygulamadan önce beklenen kare sayısı (görüntü ekrana gelsin).</summary>
         private int _waitFrames;
 
@@ -318,8 +350,8 @@ half4 main(float2 coord) {
                     _clock.Restart();       // efekt tema uygulandıktan sonra baştan
                 }
                 InvalidateVisual();
-                if (TopLevel.GetTopLevel(this) is { } waitTop) waitTop.RequestAnimationFrame(Frame);
-                else { _waitFrames = 0; _middleDone = true; _atMiddle?.Invoke(); _atMiddle = null; }
+                if (TopLevel.GetTopLevel(this) != null) Continue();
+                else { _looping = false; _waitFrames = 0; _middleDone = true; _atMiddle?.Invoke(); _atMiddle = null; }
                 return;
             }
             _progress = Math.Min(1, _clock.Elapsed.TotalMilliseconds / (_burning ? _sheetMs : DurationMs));
@@ -329,7 +361,11 @@ half4 main(float2 coord) {
                 try { _atMiddle?.Invoke(); } catch { }
             }
             InvalidateVisual();
-            if (_progress < 1 && TopLevel.GetTopLevel(this) is { } top) { top.RequestAnimationFrame(Frame); return; }
+            DisposeRetired();
+            if (_progress < 1 && TopLevel.GetTopLevel(this) != null) { Continue(); return; }
+            _looping = false;
+            // Son görüntüler de geçiş bitince bir süre sonra bırakılır (yeni geçiş gelmezse bellekte kalmasın)
+            Avalonia.Threading.DispatcherTimer.RunOnce(() => { if (!_looping) DisposeRetired(); }, TimeSpan.FromMilliseconds(1500));
             if (!_middleDone) { _middleDone = true; _atMiddle?.Invoke(); }
             IsVisible = false;
             IsHitTestVisible = false;
