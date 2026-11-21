@@ -324,7 +324,7 @@
                                             <MenuItem Header="İçerik" IsVisible="{Binding SelectedIsCustom}" Command="{Binding SelectInfoTabCommand}" CommandParameter="content" />
                                             <MenuItem Header="Klasörü aç" Command="{Binding OpenFolderCommand}" />
                                             <Separator />
-                                            <MenuItem Header="Görünüm" Command="{Binding AppearanceCommand}" />
+                                            <MenuItem Header="Görünüm" IsVisible="{Binding SelectedCanEditLook}" Command="{Binding AppearanceCommand}" />
                                             <MenuItem Header="Düzenle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding EditInstanceCommand}" />
                                             <MenuItem Header="Çoğalt" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DuplicateCommand}" />
                                             <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
@@ -412,7 +412,7 @@
                         <Button.Flyout>
                             <MenuFlyout Placement="TopEdgeAlignedLeft">
                                 <MenuItem Header="Düzenle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding EditInstanceCommand}" />
-                                <MenuItem Header="Görünüm" Command="{Binding AppearanceCommand}" />
+                                <MenuItem Header="Görünüm" IsVisible="{Binding SelectedCanEditLook}" Command="{Binding AppearanceCommand}" />
                                 <MenuItem Header="İçeriği yönet" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ManageContentCommand}" />
                                 <MenuItem Header="Dünyalar ve yedekler" Command="{Binding OpenWorldsCommand}" />
                                 <MenuItem Header="{Binding ManualText}" IsVisible="{Binding HasManual}" Command="{Binding OpenManualCommand}" Foreground="{StaticResource Warn}" />

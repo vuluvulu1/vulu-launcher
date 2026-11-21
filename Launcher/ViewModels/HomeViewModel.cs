@@ -29,8 +29,15 @@ namespace VuluLauncher.ViewModels
         public bool BackgroundAsIcon { get; init; } = true;
         public string? SharedPackId { get; init; }
         public string? PackId { get; init; }
+        /// <summary>CurseForge ya da Modrinth'ten kurulmuş hazır modpack.</summary>
+        public bool IsModpack { get; init; }
 
         public bool IsCustom => Kind == "custom";
+        /// <summary>
+        /// Görünümü (simge, logo, arka plan) yalnızca kendi oluşturduğun pakette değişir; hazır indirilen paketler
+        /// (vulu'nun resmi paketleri, vulu Packs, CurseForge/Modrinth modpackleri) kendi görünümleriyle kalır.
+        /// </summary>
+        public bool CanEditLook => IsCustom && !IsVuluPack && !IsModpack;
         /// <summary>vulu Packs'ten kurulmuş paket (kişisel instance olarak saklanır ama ekibin paketidir).</summary>
         public bool IsVuluPack => !string.IsNullOrEmpty(SharedPackId);
         public string Initial => Name.Length > 0 ? Name[..1].ToUpper(CultureInfo.GetCultureInfo("tr-TR")) : "?";
@@ -65,6 +72,7 @@ namespace VuluLauncher.ViewModels
             BackgroundAsIcon = e.Get("backgroundAsIcon").ValueKind != JsonValueKind.False,
             SharedPackId = e.Text("sharedPackId"),
             PackId = e.Text("packId"),
+            IsModpack = e.Bool("isModpack"),
         };
     }
 
@@ -532,6 +540,7 @@ namespace VuluLauncher.ViewModels
             ModCount = Size = Updated = PlayTime = "–";
             Installed = null;
             OnPropertyChanged(nameof(SelectedIsCustom));
+            OnPropertyChanged(nameof(SelectedCanEditLook));
             OnPropertyChanged(nameof(CanShare));
             OnPropertyChanged(nameof(ShareText));
             if (value == null) { Refresh(); return; }
@@ -553,6 +562,7 @@ namespace VuluLauncher.ViewModels
         }
 
         public bool SelectedIsCustom => Selected?.IsCustom == true;
+        public bool SelectedCanEditLook => Selected?.CanEditLook == true;
         /// <summary>Admin kendi instance'ını vulu Packs'te paylaşabilir (ya da paylaşımını güncelleyebilir).</summary>
         public bool CanShare => SelectedIsCustom && Main?.IsAdmin == true;
         public string ShareText => Selected?.SharedPackId != null ? "Paylaşımı güncelle" : "vulu Packs'te paylaş";
@@ -741,7 +751,7 @@ namespace VuluLauncher.ViewModels
         [RelayCommand]
         private async Task Appearance()
         {
-            if (Selected is { } s) await Main.ShowAsync(new AppearanceModal(this, s));
+            if (Selected is { CanEditLook: true } s) await Main.ShowAsync(new AppearanceModal(this, s));
         }
 
         [RelayCommand]

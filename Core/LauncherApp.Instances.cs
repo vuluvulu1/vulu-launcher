@@ -103,6 +103,7 @@ namespace VuluLauncher
                     : m.ModpackProjectId != null ? $"{(m.ModpackProjectId.StartsWith(CurseForgeService.Source + ":", StringComparison.Ordinal) ? "CurseForge" : "Modrinth")} modpack · {m.ModpackVersion}"
                     : "Kişisel instance",
                 sharedPackId = m.SharedPackId,
+                isModpack = m.ModpackProjectId != null,
                 mcVersion = m.McVersion,
                 loader = m.Loader,
                 loaderVersion = m.LoaderVersion,

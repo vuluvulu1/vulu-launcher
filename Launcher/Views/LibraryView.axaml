@@ -302,7 +302,7 @@
                                         <MenuItem Header="Klasörü aç" Command="{Binding OpenFolderCommand}" />
                                         <MenuItem Header="Dünyalar ve yedekler" Command="{Binding OpenWorldsCommand}" />
                                         <Separator />
-                                        <MenuItem Header="Görünüm" Command="{Binding AppearanceCommand}" />
+                                        <MenuItem Header="Görünüm" IsVisible="{Binding SelectedCanEditLook}" Command="{Binding AppearanceCommand}" />
                                         <MenuItem Header="Düzenle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding EditInstanceCommand}" />
                                         <MenuItem Header="Çoğalt" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DuplicateCommand}" />
                                         <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
@@ -486,7 +486,7 @@
                                 <Button Grid.Column="1" Classes="primary" Height="36" Padding="14,0" CornerRadius="10" VerticalContentAlignment="Center" Content="Güncelle" Command="{Binding UpdatePackCommand}" VerticalAlignment="Center" />
                             </Grid>
                         </Border>
-                        <Border Classes="srow">
+                        <Border Classes="srow" IsVisible="{Binding SelectedCanEditLook}">
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
                                 <StackPanel Spacing="2" VerticalAlignment="Center">
                                     <TextBlock Text="Görünüm" FontSize="14" FontWeight="SemiBold" />
@@ -596,7 +596,7 @@
                                     <MenuItem Header="Paketi güncelle" IsVisible="{Binding HasPackUpdate}" Command="{Binding UpdatePackCommand}" />
                                     <MenuItem Header="Mod ekle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding AddContentCommand}" />
                                     <MenuItem Header="Düzenle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding EditInstanceCommand}" />
-                                    <MenuItem Header="Görünüm" Command="{Binding AppearanceCommand}" />
+                                    <MenuItem Header="Görünüm" IsVisible="{Binding SelectedCanEditLook}" Command="{Binding AppearanceCommand}" />
                                     <MenuItem Header="İçeriği yönet" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ManageContentCommand}" />
                                     <MenuItem Header="Dünyalar ve yedekler" Command="{Binding OpenWorldsCommand}" />
                                     <MenuItem Header="{Binding ManualText}" IsVisible="{Binding HasManual}" Command="{Binding OpenManualCommand}" Foreground="{StaticResource Warn}" />
@@ -684,7 +684,7 @@
                                 <Button Classes="dbtn" Margin="0,0,6,6" HorizontalAlignment="Stretch" Content="Klasörü aç" Command="{Binding OpenFolderCommand}" />
                                 <Button Classes="dbtn" Margin="0,0,0,6" HorizontalAlignment="Stretch" Content="Mod ekle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding PageAddContentCommand}" />
                                 <Button Classes="dbtn" Margin="0,0,6,6" HorizontalAlignment="Stretch" Content="Dünyalar ve yedekler" Command="{Binding OpenWorldsCommand}" />
-                                <Button Classes="dbtn" Margin="0,0,0,6" HorizontalAlignment="Stretch" Content="Görünüm" Command="{Binding AppearanceCommand}" />
+                                <Button Classes="dbtn" Margin="0,0,0,6" HorizontalAlignment="Stretch" Content="Görünüm" IsVisible="{Binding SelectedCanEditLook}" Command="{Binding AppearanceCommand}" />
                                 <Button Classes="dbtn" Margin="0,0,6,6" HorizontalAlignment="Stretch" Content="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
                                 <Button Classes="dbtn" Margin="0,0,0,6" HorizontalAlignment="Stretch" Content="Dosyaları doğrula" Command="{Binding VerifyCommand}" />
                             </UniformGrid>
