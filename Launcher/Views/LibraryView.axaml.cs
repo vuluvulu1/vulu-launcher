@@ -104,6 +104,7 @@ namespace VuluLauncher.Views
             if (_vm != null)
             {
                 _vm.Instances.CollectionChanged -= OnInstancesChanged;
+                _vm.Pending.CollectionChanged -= OnInstancesChanged;
                 _vm.PropertyChanged -= OnVmChanged;
                 _vm.Console.CollectionChanged -= OnConsoleChanged;
             }
@@ -111,6 +112,7 @@ namespace VuluLauncher.Views
             if (vm != null)
             {
                 vm.Instances.CollectionChanged += OnInstancesChanged;
+                vm.Pending.CollectionChanged += OnInstancesChanged;
                 vm.PropertyChanged += OnVmChanged;
                 vm.Console.CollectionChanged += OnConsoleChanged;
             }
@@ -178,6 +180,8 @@ namespace VuluLauncher.Views
                 })
                 .Where(i => q.Length == 0 || tr.CompareInfo.IndexOf(i.Name, q, CompareOptions.IgnoreCase) >= 0)
                 .ToList<object>();
+            // Kurulmakta olan paketler sonda, ilerleme halkasıyla (güncelleme süzgeci ve arama dışında)
+            if (_filter != "update" && q.Length == 0) list.AddRange(_vm.Pending);
             if (_filter is "all" or "mine" && q.Length == 0) list.Add(NewPackCard.Instance);
             // Süzgeç ya da arama değişince kapaklar tek tek belirmesin; yalnızca eklenen yeni paket belirsin
             _bulk = _filter != _lastFilter || q != _lastQuery;
@@ -259,7 +263,7 @@ namespace VuluLauncher.Views
             FilterVulu.IsVisible = vulu > 0 || _filter == "vulu";
             CountText.IsVisible = false;   // sayı "Tümü" hapında
             // Kendi ya da vulu paketin yoksa karşılama alanı (yalnızca "Tümü" ve aramasızken)
-            SetWelcome(!_vm.Instances.Any(i => i.IsCustom) && _filter == "all" && q.Length == 0);
+            SetWelcome(!_vm.Instances.Any(i => i.IsCustom) && _vm.Pending.Count == 0 && _filter == "all" && q.Length == 0);
             SyncSelection();
         }
 
@@ -268,7 +272,12 @@ namespace VuluLauncher.Views
         private bool? _welcomeShown;
         private bool _bulk, _removing, _faded;
         private HashSet<string> _prevKeys = new();
-        private static string KeyOf(object? o) => o is InstanceItem i ? i.Id : o?.GetType().Name ?? "";
+        private static string KeyOf(object? o) => o switch
+        {
+            InstanceItem i => i.Id,
+            PendingInstall p => "pending:" + System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(p),
+            _ => o?.GetType().Name ?? "",
+        };
         private string? _lastFilter, _lastQuery;
         private DispatcherTimer? _welcomeTimer;
 
@@ -337,6 +346,9 @@ namespace VuluLauncher.Views
             {
                 case InstanceItem item:
                     if (_vm.Selected != item) _vm.Selected = item;
+                    break;
+                case PendingInstall:
+                    SyncSelection();   // kurulurken seçilemez; bitince kendiliğinden seçilir
                     break;
                 case NewPackCard:
                     // Kart seçili kalmaz: yeni paket kutusu açılır, seçim eski pakete döner

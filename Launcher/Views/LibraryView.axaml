@@ -279,6 +279,21 @@
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
+                        <!-- Kurulmakta olan paket: kapak koyulaşmış, ortada dolan halka (telefonda uygulama inerken olduğu gibi) -->
+                        <DataTemplate DataType="vm:PendingInstall">
+                            <StackPanel Width="{DynamicResource PosterW}" Spacing="0" Background="Transparent" Cursor="Arrow" ToolTip.Tip="{Binding Phase}">
+                                <Border Height="{DynamicResource PosterH}" CornerRadius="14" ClipToBounds="True" Background="{StaticResource Raised}">
+                                    <Panel>
+                                        <Image Source="{Binding Cover}" Stretch="UniformToFill" />
+                                        <Border Background="#99000000" />
+                                        <v:InstallRing Width="58" Height="58" Value="{Binding Progress}" IsIndeterminate="{Binding Indeterminate}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Panel>
+                                </Border>
+                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" Margin="2,10,2,0" TextTrimming="CharacterEllipsis" Opacity="0.75" />
+                                <TextBlock Text="{Binding Phase}" FontFamily="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource Accent}" Margin="2,2,2,0" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </DataTemplate>
                         <DataTemplate DataType="vm:InstanceItem">
                             <StackPanel Width="{DynamicResource PosterW}" Spacing="0" ToolTip.Tip="{Binding Tip}" Background="Transparent" ContextRequested="OnPosterContextRequested">
                                 <StackPanel.ContextFlyout>

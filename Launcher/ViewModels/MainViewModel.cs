@@ -249,6 +249,23 @@ namespace VuluLauncher.ViewModels
                                 add.Search.Hits[0].DetailsCommand.Execute(null);
                         }, TimeSpan.FromSeconds(2));
                     }, TimeSpan.FromSeconds(2));
+                // VULU_UI_INSTALL=1: kütüphanede kurulmakta olan örnek paket (önce bekler, sonra halka dolar)
+                if (Environment.GetEnvironmentVariable("VULU_UI_INSTALL") == "1")
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                    {
+                        var pending = Home.BeginInstall("Örnek Modpack", null);
+                        int tick = 0;
+                        var timer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+                        timer.Tick += (_, _) =>
+                        {
+                            if (++tick < 5) return;
+                            pending.Indeterminate = false;
+                            pending.Progress = Math.Min(1, (tick - 5) / 40.0);
+                            pending.Phase = $"Modpack indiriliyor · %{Math.Round(pending.Progress * 100)}";
+                            if (pending.Progress >= 1) tick = 4;   // döngü: baştan
+                        };
+                        timer.Start();
+                    }, TimeSpan.FromSeconds(1));
                 // VULU_UI_SAMPLE=1: vulu Packs'e örnek paket kartları (kart görünümünü denemek için)
                 if (Environment.GetEnvironmentVariable("VULU_UI_SAMPLE") == "1")
                     Avalonia.Threading.DispatcherTimer.RunOnce(() =>
@@ -571,6 +588,26 @@ namespace VuluLauncher.ViewModels
             await Home.ReloadInstancesAsync(selectId);
         }
 
+        /// <summary>
+        /// Yeni paket kurulumu: pencere hemen kapanır, Oyna'ya geçilir ve paket kütüphanede ilerleme halkasıyla belirir;
+        /// bitince gerçek pakete dönüşüp seçilir. Hata olursa kapak kalkar, hata çağırana döner.
+        /// </summary>
+        public async Task<JsonElement> InstallInLibraryAsync(string name, Avalonia.Media.Imaging.Bitmap? cover, Func<Task<JsonElement>> install)
+        {
+            foreach (var modal in Modals.OfType<NewPackModal>().ToList()) modal.Close();
+            SelectedTab = Tabs[0];
+            var pending = Home.BeginInstall(name, cover);
+            try
+            {
+                var result = await install();
+                pending.Indeterminate = false;
+                pending.Progress = 1;
+                await Home.ReloadInstancesAsync(result.Text("id"));   // gerçek kapak gelince bekleyen kalkar (boşluk olmaz)
+                return result;
+            }
+            finally { Home.EndInstall(pending); }
+        }
+
         public Task AlertAsync(string title, string message) => ConfirmAsync(title, message, "Tamam", null);
 
         /// <summary>Adminlere açık launcher bildirimlerinin sayısı (geri bildirim düğmesinde rozet).</summary>
@@ -640,6 +677,7 @@ namespace VuluLauncher.ViewModels
                     break;
                 case "download":
                     Downloads.OnDownload(data);
+                    Home.OnInstallDownload(data);
                     break;
                 case "notification":
                     Notifications.OnNotification(data);

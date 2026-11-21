@@ -258,8 +258,12 @@ namespace VuluLauncher.ViewModels
             card.Busy = true;
             try
             {
-                var result = await _core.Call(card.IsOutdated ? "packs.update" : "packs.install", new { id = card.Id });
-                await main.ShowHomeAsync(result.Text("id"));
+                if (card.IsOutdated)
+                {
+                    var result = await _core.Call("packs.update", new { id = card.Id });
+                    await main.ShowHomeAsync(result.Text("id"));
+                }
+                else await main.InstallInLibraryAsync(card.Name, card.Cover, () => _core.Call("packs.install", new { id = card.Id }));
             }
             catch (Exception ex)
             {
@@ -699,10 +703,13 @@ namespace VuluLauncher.ViewModels
                 if (hit.Type == "modpack")
                 {
                     hit.ButtonText = "Kuruluyor…";
-                    var pack = await _core.Call(Command("installModpack"), new { projectId = hit.Id, versionId });
-                    if (!pack.Bool("success")) throw new InvalidOperationException(pack.Text("error") ?? "Kurulamadı.");
+                    var pack = await _main.InstallInLibraryAsync(hit.Title, hit.Icon, async () =>
+                    {
+                        var r = await _core.Call(Command("installModpack"), new { projectId = hit.Id, versionId });
+                        if (!r.Bool("success")) throw new InvalidOperationException(r.Text("error") ?? "Kurulamadı.");
+                        return r;
+                    });
                     hit.ButtonText = original;
-                    await _main.ShowHomeAsync(pack.Text("id"));
                     if (pack.Items("manual").Any()) await ShowManualAsync(pack.Get("manual"), pack.Text("id"));
                     return;
                 }
