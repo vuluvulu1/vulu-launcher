@@ -420,6 +420,13 @@ namespace VuluLauncher.ViewModels
             Selected = Instances[0];
             Installed = true;
             ModCount = "0"; Size = "612 MB"; Updated = "Bugün"; PlayTime = "12 sa";
+            // VULU_UI_MANUAL=1: seçili pakette elle indirilecek iki örnek mod (uyarı ve pencere görünümü)
+            if (Environment.GetEnvironmentVariable("VULU_UI_MANUAL") == "1")
+            {
+                _manual = JsonDocument.Parse("""[{"fileId":1,"title":"Örnek Mod","folder":"mods","fileName":"ornek-1.0.jar","url":"https://www.curseforge.com"},{"fileId":2,"title":"Başka Mod","folder":"mods","fileName":"baska-2.1.jar","url":"https://www.curseforge.com"}]""").RootElement.Clone();
+                _manualFor = Selected.Id;
+                ManualCount = 2;
+            }
             AppendLog("Launcher güncel.");
             AppendLog("Önizleme modu: sunucuya bağlanılmadı.", "warn");
             Refresh();
@@ -600,6 +607,8 @@ namespace VuluLauncher.ViewModels
         private async Task LoadDetailsAsync(InstanceItem item)
         {
             int seq = ++_detailsSeq;
+            if (_manualFor != item.Id) ManualCount = 0;   // başka paketin uyarısı kalmasın
+            _manualFor = item.Id;
             JsonElement d;
             try { d = await _core.Call("instances.details", new { id = item.Id }); }
             catch (Exception ex) { AppendLog(ex.Message, "error"); return; }
@@ -611,7 +620,28 @@ namespace VuluLauncher.ViewModels
             Updated = d.Text("updatedAt") is { } u && DateTime.TryParse(u, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at)
                 ? FormatAgo(at) : "–";
             PlayTime = FormatPlayTime(d.Get("playTime").Num("seconds"));
+            _manual = d.Get("manual").ValueKind == JsonValueKind.Array ? d.Get("manual").Clone() : default;
+            ManualCount = _manual.ValueKind == JsonValueKind.Array ? _manual.GetArrayLength() : 0;
             Refresh();
+        }
+
+        // ── Elle indirilecek modlar ──
+        // İlk kurulumda açılan pencere kapatılsa da paket seçiliyken uyarısı durur; "Göster" pencereyi yeniden açar.
+        private JsonElement _manual;
+        private string? _manualFor;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasManual), nameof(ManualText))]
+        private int _manualCount;
+        public bool HasManual => ManualCount > 0;
+        public string ManualText => ManualCount == 1 ? "1 mod elle indirilmeli" : $"{ManualCount} mod elle indirilmeli";
+
+        [RelayCommand]
+        private async Task OpenManual()
+        {
+            if (Selected is not { } item || _manual.ValueKind != JsonValueKind.Array) return;
+            await Main.ShowAsync(new ManualDownloadsModal(_manual, item.Id));
+            if (Selected == item) await LoadDetailsAsync(item);
         }
 
         public static string FormatSize(double mb) =>

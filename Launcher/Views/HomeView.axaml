@@ -415,6 +415,7 @@
                                 <MenuItem Header="Görünüm" Command="{Binding AppearanceCommand}" />
                                 <MenuItem Header="İçeriği yönet" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ManageContentCommand}" />
                                 <MenuItem Header="Dünyalar ve yedekler" Command="{Binding OpenWorldsCommand}" />
+                                <MenuItem Header="{Binding ManualText}" IsVisible="{Binding HasManual}" Command="{Binding OpenManualCommand}" Foreground="{StaticResource Warn}" />
                                 <MenuItem Header="Dosyaları doğrula" Command="{Binding VerifyCommand}" />
                                 <MenuItem Header="Klasörü aç" Command="{Binding OpenFolderCommand}" />
                                 <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />

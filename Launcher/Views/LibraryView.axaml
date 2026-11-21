@@ -599,6 +599,7 @@
                                     <MenuItem Header="Görünüm" Command="{Binding AppearanceCommand}" />
                                     <MenuItem Header="İçeriği yönet" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ManageContentCommand}" />
                                     <MenuItem Header="Dünyalar ve yedekler" Command="{Binding OpenWorldsCommand}" />
+                                    <MenuItem Header="{Binding ManualText}" IsVisible="{Binding HasManual}" Command="{Binding OpenManualCommand}" Foreground="{StaticResource Warn}" />
                                     <MenuItem Header="Dosyaları doğrula" Command="{Binding VerifyCommand}" />
                                     <MenuItem Header="Klasörü aç" Command="{Binding OpenFolderCommand}" />
                                     <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
@@ -611,6 +612,16 @@
                             </Button.Flyout>
                         </Button>
                     </Grid>
+                    <!-- İlk kurulumda kapatılan "elle indir" penceresi buradan yeniden açılır -->
+                    <Border IsVisible="{Binding HasManual}" Background="#2A1E10" BorderBrush="#5A3E17" BorderThickness="1" CornerRadius="10" Padding="12,8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                <TextBlock Text="{Binding ManualText}" FontWeight="SemiBold" FontSize="13" Foreground="#FFC873" />
+                                <TextBlock Text="Bunlar olmadan oyun açılmayabilir." Classes="dim" FontSize="11.5" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Classes="primary sm" Content="Göster" Command="{Binding OpenManualCommand}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
                     <Button Classes="bigplay primary" IsVisible="{Binding ShowBarJoin}" Content="Sunucuya bağlan" Command="{Binding JoinPackServerCommand}" />
                     <!-- Açılış ya da oyun sürerken OYNA'nın yanında Durdur -->
                     <Grid ColumnDefinitions="*,Auto">
