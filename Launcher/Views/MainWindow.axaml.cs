@@ -98,6 +98,7 @@ namespace VuluLauncher.Views
             }
             PlaceDownloads();
             Themes.Changed += PlaceDownloads;
+            InitDownloadsDrag();
             RailTabs.SizeChanged += (_, _) => QueueRailMark();
             // Simge rayından da pencere sürüklenebilir (düğmelerin üstünde değilse)
             Rail.PointerPressed += (_, e) =>
@@ -340,6 +341,87 @@ namespace VuluLauncher.Views
                 TabIndicator.Width = target.Width;
             }
             TabIndicator.Opacity = 1;
+        }
+
+        // ── İndirme kutusu: tutup pencerenin içinde istenen yere taşınır ──
+        // Yeri, temanın varsayılan köşesinden kayma olarak saklanır (Kütüphane'nin köşesi başka olduğu için ayrı);
+        // pencere küçülünce dışarı taşmaz; çift tıklayınca varsayılan köşeye döner.
+        private readonly Avalonia.Media.TranslateTransform _dlShift = new();
+        private Point? _dlDragFrom;
+        private Point _dlShiftAtDrag;
+        private string DownloadsKey => Themes.IsKutuphane ? "downloadsShiftK" : "downloadsShift";
+
+        private void InitDownloadsDrag()
+        {
+            DownloadsPanel.RenderTransform = _dlShift;
+            DownloadsPanel.Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.SizeAll);
+            LoadDownloadsShift();
+            Themes.Changed += LoadDownloadsShift;
+            DownloadsPanel.PointerPressed += (_, e) =>
+            {
+                if (!e.GetCurrentPoint(DownloadsPanel).Properties.IsLeftButtonPressed || IsOnButton(e.Source as Visual) || IsOnScrollBar(e.Source as Visual)) return;
+                if (e.ClickCount == 2) { SetDownloadsShift(0, 0); SaveDownloadsShift(); e.Handled = true; return; }
+                _dlDragFrom = e.GetPosition(this);
+                _dlShiftAtDrag = new Point(_dlShift.X, _dlShift.Y);
+                e.Pointer.Capture(DownloadsPanel);
+                e.Handled = true;
+            };
+            DownloadsPanel.PointerMoved += (_, e) =>
+            {
+                if (_dlDragFrom is not { } from) return;
+                var d = e.GetPosition(this) - from;
+                SetDownloadsShift(_dlShiftAtDrag.X + d.X, _dlShiftAtDrag.Y + d.Y);
+            };
+            void EndDrag()
+            {
+                if (_dlDragFrom == null) return;
+                _dlDragFrom = null;
+                SaveDownloadsShift();
+            }
+            DownloadsPanel.PointerReleased += (_, e) => { e.Pointer.Capture(null); EndDrag(); };
+            DownloadsPanel.PointerCaptureLost += (_, _) => EndDrag();
+            // Belirince ya da pencere küçülünce kutu pencerenin içine çekilir
+            DownloadsPanel.SizeChanged += (_, _) => SetDownloadsShift(_dlShift.X, _dlShift.Y);
+            SizeChanged += (_, _) => SetDownloadsShift(_dlShift.X, _dlShift.Y);
+        }
+
+        private void LoadDownloadsShift()
+        {
+            var parts = (VuluLauncher.Native.UiState.Get(DownloadsKey) ?? "").Split(';');
+            double x = 0, y = 0;
+            if (parts.Length == 2)
+            {
+                double.TryParse(parts[0], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out x);
+                double.TryParse(parts[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out y);
+            }
+            _dlShift.X = x; _dlShift.Y = y;
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => SetDownloadsShift(_dlShift.X, _dlShift.Y), Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void SaveDownloadsShift() =>
+            VuluLauncher.Native.UiState.Set(DownloadsKey, FormattableString.Invariant($"{Math.Round(_dlShift.X)};{Math.Round(_dlShift.Y)}"));
+
+        /// <summary>Kaymayı uygular; kutu pencerenin içinde (başlık çubuğunun altında) kalacak şekilde sınırlanır.</summary>
+        private void SetDownloadsShift(double x, double y)
+        {
+            if (DownloadsPanel.GetVisualParent() is not Visual parent || !DownloadsPanel.IsVisible || DownloadsPanel.Bounds.Width < 1)
+            {
+                _dlShift.X = x; _dlShift.Y = y;
+                return;
+            }
+            // Kutunun varsayılan (kaydırılmamış) yeri pencereye göre
+            var origin = parent.TranslatePoint(DownloadsPanel.Bounds.Position, this) ?? default;
+            double w = DownloadsPanel.Bounds.Width, h = DownloadsPanel.Bounds.Height, top = TitleBar.Bounds.Height + 6, gap = 8;
+            double minX = gap - origin.X, maxX = ClientSize.Width - gap - w - origin.X;
+            double minY = top - origin.Y, maxY = ClientSize.Height - gap - h - origin.Y;
+            _dlShift.X = maxX < minX ? minX : Math.Clamp(x, minX, maxX);
+            _dlShift.Y = maxY < minY ? minY : Math.Clamp(y, minY, maxY);        }
+
+        private static bool IsOnScrollBar(Visual? visual)
+        {
+            for (var v = visual; v != null; v = v.GetVisualParent())
+                if (v is Avalonia.Controls.Primitives.ScrollBar) return true;
+            return false;
         }
 
         private static bool IsOnButton(Visual? visual)
