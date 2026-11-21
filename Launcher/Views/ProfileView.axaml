@@ -42,11 +42,15 @@
 
                 <!-- Baş: resim, ad, bilgiler, işlemler -->
                 <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,-60,0,0">
-                    <Border Width="112" Height="112" CornerRadius="56" Background="{StaticResource Raised}" BorderBrush="{StaticResource Bg}" BorderThickness="4" ClipToBounds="True">
+                    <!-- Kenarında koyu zemin renginde kalın halka yoktu artık: bulanık arka planlı temalarda siyah çerçeve gibi duruyordu;
+                         yerine ince açık bir çizgi ve yumuşak gölge (resim banner'dan ayrılsın) -->
+                    <Border Width="112" Height="112" CornerRadius="56" BoxShadow="0 0 0 3 #2EFFFFFF, 0 8 24 0 #8C000000">
+                    <Border CornerRadius="56" Background="{StaticResource Raised}" ClipToBounds="True">
                         <Grid>
                             <TextBlock Text="{Binding Initial}" FontSize="40" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <Image Source="{Binding Avatar}" Stretch="UniformToFill" />
                         </Grid>
+                    </Border>
                     </Border>
                     <StackPanel Grid.Column="1" Margin="16,64,12,0" Spacing="4">
                         <StackPanel Orientation="Horizontal" Spacing="8">

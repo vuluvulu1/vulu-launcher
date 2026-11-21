@@ -806,7 +806,7 @@ namespace VuluLauncher.ViewModels
             if (Selected is not { } s) return;
             try
             {
-                await _core.Call("shortcuts.create", new { kind = "play", id = s.Id, name = s.Name, iconDataUrl = "" });
+                await _core.Call("shortcuts.create", new { kind = "play", id = s.Id, name = s.Name, iconDataUrl = ShortcutIcon.ToDataUrl(s.Thumbnail ?? s.Poster) });
                 await Main.AlertAsync("Kısayol eklendi", $"Masaüstündeki \"{s.Name}\" kısayolu launcher'ı açıp {s.Name} paketini doğrudan başlatır.");
             }
             catch (Exception ex) { await Main.AlertAsync("Kısayol oluşturulamadı", ex.Message); }

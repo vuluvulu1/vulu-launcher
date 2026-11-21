@@ -415,7 +415,7 @@ namespace VuluLauncher.ViewModels
         {
             try
             {
-                await _core.Call("shortcuts.create", new { kind = "join", id = s.Id, name = s.Name, iconDataUrl = "" });
+                await _core.Call("shortcuts.create", new { kind = "join", id = s.Id, name = s.Name, iconDataUrl = ShortcutIcon.ToDataUrl(s.Favicon) });
                 await _main.AlertAsync("Kısayol eklendi", $"Masaüstündeki \"{s.Name}\" kısayolu launcher'ı açıp doğrudan {s.Name} sunucusuna bağlanır.");
             }
             catch (Exception ex) { await _main.AlertAsync("Kısayol oluşturulamadı", ex.Message); }
