@@ -760,5 +760,7 @@
                 </DockPanel>
             </DockPanel>
         </Border>
+        <!-- Sürüklenen kapağın görüntüsü: her şeyin üstünde imleci izler (LibraryView.Drag.cs) -->
+        <Canvas x:Name="DragLayer" Grid.RowSpan="2" Grid.ColumnSpan="2" IsHitTestVisible="False" ClipToBounds="False" ZIndex="100" />
     </Grid>
 </UserControl>
