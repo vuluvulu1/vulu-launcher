@@ -25,6 +25,20 @@
     <Style Selector="Window.soft ComboBox">
         <Setter Property="CornerRadius" Value="10" />
     </Style>
+    <!-- Açılır listeler yazı kutularıyla aynı: koyu zemin, ince çizgi (parlak Fluent çerçevesi yerine); oyun çubuğunun ve
+         çekmecenin kendi seçicileri hariç -->
+    <Style Selector="Window.soft ComboBox:not(.bar):not(.dcombo)">
+        <Setter Property="Background" Value="{StaticResource Panel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ControlLine}" />
+    </Style>
+    <Style Selector="Window.soft ComboBox:not(.bar):not(.dcombo):pointerover /template/ Border#Background">
+        <Setter Property="Background" Value="{StaticResource Panel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardLineStrong}" />
+    </Style>
+    <!-- Seçenekleri yüklenemeyen seçenek grubu küçük boş bir kutu olarak kalmasın -->
+    <Style Selector="Window.soft ItemsControl.segmented:empty">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
     <Style Selector="Window.soft ItemsControl.segmented">
         <Setter Property="Background" Value="{StaticResource Panel}" />
         <Setter Property="BorderBrush" Value="{StaticResource CardLine}" />

@@ -22,7 +22,13 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private bool _closing;
 
         /// <summary>En üstteki kutu: yalnızca onun köşesindeki kapat düğmesi görünür (alttakininki karartmanın altında kalsa da seçilmesin).</summary>
-        [ObservableProperty] private bool _isTop = true;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowCloseButton))]
+        private bool _isTop = true;
+
+        /// <summary>Kenardaki "× Esc" düğmesi: kendi kapatma ipucu olan kutular (hızlı arama) gizler.</summary>
+        protected virtual bool HasCloseButton => true;
+        public bool ShowCloseButton => IsTop && HasCloseButton;
 
         /// <summary>Vazgeç, Kapat ya da Esc.</summary>
         [RelayCommand] private void Dismiss() => Close(null);

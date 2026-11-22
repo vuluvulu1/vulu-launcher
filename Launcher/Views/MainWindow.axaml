@@ -214,8 +214,10 @@
                                 </Border>
                             </Panel>
                             <Button.Flyout>
-                                <Flyout Placement="BottomEdgeAlignedRight" Opened="OnNotificationsOpened" Closed="OnNotificationsClosed">
-                                    <Border Width="360" MaxHeight="480" Background="{StaticResource Panel}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
+                                <Flyout Placement="BottomEdgeAlignedRight" Opened="OnNotificationsOpened" Closed="OnNotificationsClosed" FlyoutPresenterClasses="radio">
+                                    <!-- Panelin kendi çerçevesi yok (radyo paneli gibi); kart yuvarlak, ince çizgili -->
+                                    <Border Width="360" MaxHeight="480" Background="{StaticResource Panel}" BorderBrush="{StaticResource CardLineHover}" BorderThickness="1"
+                                            CornerRadius="14" ClipToBounds="True" BoxShadow="0 14 34 0 #99000000"
                                             DataContext="{Binding Notifications}" x:DataType="vm:NotificationsViewModel">
                                         <DockPanel>
                                             <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="14,10">
@@ -601,7 +603,7 @@
                                     <v:ModalHost />
                                 </Border>
                                 <!-- Her kutuda sağ üst köşede büyük, yuvarlak kapat düğmesi: köşeden yarı dışarıda (kutu kırpılsa da kesilmez, içerikle çakışmaz) -->
-                                <Button Classes="modal-close" IsVisible="{Binding IsTop}" Command="{Binding DismissCommand}" ToolTip.Tip="Kapat (Esc)" AutomationProperties.Name="Kapat">
+                                <Button Classes="modal-close" IsVisible="{Binding ShowCloseButton}" Command="{Binding DismissCommand}" ToolTip.Tip="Kapat (Esc)" AutomationProperties.Name="Kapat">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Path Data="M6 6l12 12M18 6L6 18" StrokeThickness="1.8" StrokeLineCap="Round" Width="10" Height="10" Stretch="Uniform" VerticalAlignment="Center" />
                                         <TextBlock Text="Esc" FontFamily="{StaticResource Mono}" FontSize="11" VerticalAlignment="Center" />

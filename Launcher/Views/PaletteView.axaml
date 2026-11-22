@@ -3,9 +3,33 @@
              xmlns:vm="using:VuluLauncher.ViewModels"
              x:Class="VuluLauncher.Views.PaletteView"
              x:DataType="vm:PaletteModal">
+    <UserControl.Styles>
+        <Style Selector="TextBox.palette-search, Window.soft TextBox.palette-search">
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+        </Style>
+        <Style Selector="TextBox.palette-search /template/ Border#PART_BorderElement">
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+        </Style>
+        <Style Selector="TextBox.palette-search:pointerover /template/ Border#PART_BorderElement, TextBox.palette-search:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+        <Style Selector="Button.palette">
+            <Setter Property="CornerRadius" Value="9" />
+        </Style>
+        <Style Selector="Button.palette /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="CornerRadius" Value="9" />
+        </Style>
+    </UserControl.Styles>
     <DockPanel>
-        <TextBox x:Name="Search" DockPanel.Dock="Top" Text="{Binding Query}" Watermark="Paket, sayfa ya da kişi ara…" FontSize="15"
-                 BorderThickness="0,0,0,1" Padding="16,12" />
+        <!-- Arama kutusu kutunun üst kenarına oturur: köşesiz, odaklanınca çerçeve yok, altında ince çizgi -->
+        <TextBox x:Name="Search" Classes="palette-search" DockPanel.Dock="Top" Text="{Binding Query}" Watermark="Paket, sayfa ya da kişi ara…" FontSize="15"
+                 BorderThickness="0,0,0,1" Padding="18,14" />
         <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="16,8">
             <StackPanel Orientation="Horizontal" Spacing="16">
                 <TextBlock Text="↑↓ seç" Classes="dim" FontSize="12" />

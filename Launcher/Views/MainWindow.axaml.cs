@@ -16,6 +16,38 @@ namespace VuluLauncher.Views
             PerfProbe.Mark("  xaml yüklendi");
             // Yalnızca geliştirmede: VULU_UI_SHOT=<klasör> ile pencerenin kendisi birkaç saniyede bir PNG'ye çizilir
             // (arayüz denemesi; ekran değil, yalnızca bu pencerenin görsel ağacı)
+            // VULU_UI_FLYOUT=notifications / radio / more: açılışta o açılır panel açılır; VULU_UI_SHOT varsa panelin kendi
+            // penceresi de flyout.png olarak kaydedilir (pencere görüntüsü açılır panelleri içermez)
+            if (Environment.GetEnvironmentVariable("VULU_UI_FLYOUT") is { Length: > 0 } flyoutName)
+                Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                {
+                    var buttons = this.GetVisualDescendants().OfType<Button>().Where(b => b.IsEffectivelyVisible && b.Flyout != null).ToList();
+                    var target = flyoutName switch
+                    {
+                        "notifications" => BellIcon.FindAncestorOfType<Button>(),
+                        "radio" => buttons.FirstOrDefault(b => b.Classes.Contains("rpill")),
+                        _ => buttons.FirstOrDefault(b => b.Content is "⋯" || b.Classes.Contains("hero") && b.Flyout is MenuFlyout),
+                    };
+                    if (target?.Flyout is not { } flyout) return;
+                    flyout.ShowAt(target);
+                    if (Environment.GetEnvironmentVariable("VULU_UI_SHOT") is not { Length: > 0 } dir) return;
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                    {
+                        try
+                        {
+                            Visual? content = flyout switch { Flyout f => f.Content as Visual, _ => null };
+                            content ??= TopLevel.GetTopLevel(target)?.GetVisualDescendants().OfType<MenuFlyoutPresenter>().FirstOrDefault();
+                            Visual? root = content == null ? null : TopLevel.GetTopLevel(content);
+                            if (root == null && content != null) { root = content; while (root.GetVisualParent() is { } up) root = up; }
+                            if (root == null) return;
+                            var size = new Avalonia.PixelSize(Math.Max(1, (int)root.Bounds.Width), Math.Max(1, (int)root.Bounds.Height));
+                            using var bmp = new Avalonia.Media.Imaging.RenderTargetBitmap(size);
+                            bmp.Render(root);
+                            bmp.Save(System.IO.Path.Combine(dir, "flyout.png"));
+                        }
+                        catch (Exception ex) { LogFile.Write("[ui] açılır panel görüntüsü alınamadı: " + ex.Message); }
+                    }, TimeSpan.FromMilliseconds(900));
+                }, TimeSpan.FromSeconds(3));
             if (Environment.GetEnvironmentVariable("VULU_UI_SHOT") is { Length: > 0 } shotDir)
             {
                 int n = 0;

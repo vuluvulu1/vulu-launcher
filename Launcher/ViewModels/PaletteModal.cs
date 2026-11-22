@@ -54,6 +54,8 @@ namespace VuluLauncher.ViewModels
         }
 
         public override double Width => 560;
+        /// <summary>Altta "Esc kapat" yazıyor; kenardaki düğme arama kutusunun üstüne binerdi.</summary>
+        protected override bool HasCloseButton => false;
         public ObservableCollection<PaletteItem> Shown { get; } = new();
         [ObservableProperty] private string _query = "";
         [ObservableProperty] private bool _noResults;

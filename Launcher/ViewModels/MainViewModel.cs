@@ -250,6 +250,7 @@ namespace VuluLauncher.ViewModels
                     {
                         // tour / tournew: tanıtım rehberi (hepsi / rehberi görmüş olana yalnızca yeni adımlar)
                         if (open is "tour" or "tournew") { _ = ShowTourAsync(open == "tournew" ? 1 : 0); return; }
+                        if (open == "palette") { _ = OpenPaletteCommand.ExecuteAsync(null); return; }
                         // gamesettings: paketin oyun ayarları penceresi örnek verilerle
                         if (open == "gamesettings")
                         {
