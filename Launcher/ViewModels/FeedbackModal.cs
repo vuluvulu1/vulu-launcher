@@ -7,6 +7,63 @@ using VuluLauncher.Native;
 
 namespace VuluLauncher.ViewModels
 {
+    /// <summary>Geri bildirimdeki ek: resim (küçük önizleme) ya da günlük dosyası; tıklayınca açılır.</summary>
+    internal sealed partial class FeedbackAttachment : ObservableObject
+    {
+        public FeedbackAttachment(JsonElement a, Action<FeedbackAttachment>? remove = null)
+        {
+            Id = a.Text("id") ?? "";
+            Name = a.Text("name") ?? "dosya";
+            Mime = a.Text("mime") ?? "";
+            Size = a.Num("size");
+            _remove = remove;
+            if (IsImage && remove == null) _ = LoadThumbAsync();
+        }
+
+        private readonly Action<FeedbackAttachment>? _remove;
+        public string Id { get; }
+        public string Name { get; }
+        public string Mime { get; }
+        public double Size { get; }
+        public bool IsImage => Mime.StartsWith("image/", StringComparison.Ordinal);
+        public bool IsFile => !IsImage;
+        public bool CanRemove => _remove != null;
+        public string Label => $"{Name} · {(Size >= 1024 * 1024 ? (Size / 1024 / 1024).ToString("0.#") + " MB" : Math.Max(1, Size / 1024).ToString("0") + " KB")}";
+        [ObservableProperty] private Bitmap? _thumb;
+
+        private async Task<string?> PathAsync()
+        {
+            try { return (await CoreClient.Instance.Call("feedback.file", new { id = Id, mime = Mime })).Text("path"); }
+            catch { return null; }
+        }
+
+        private async Task LoadThumbAsync()
+        {
+            if (await PathAsync() is not { } path) return;
+            Thumb = await Task.Run(() => { using var s = File.OpenRead(path); return Bitmap.DecodeToWidth(s, 320); });
+        }
+
+        [RelayCommand]
+        private async Task Open()
+        {
+            if (await PathAsync() is { } path)
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true }); } catch { }
+        }
+
+        [RelayCommand] private void Remove() => _remove?.Invoke(this);
+    }
+
+    /// <summary>Konuşmadaki bir yanıt (yazan kişi ya da admin).</summary>
+    internal sealed class FeedbackMessage(string author, bool admin, string text, string when)
+    {
+        public string Author { get; } = author;
+        public bool IsAdmin { get; } = admin;
+        public string Text { get; } = text;
+        public string When { get; } = when;
+        public string Badge => IsAdmin ? "vulu" : "";
+        public bool HasBadge => IsAdmin;
+    }
+
     internal sealed partial class FeedbackEntry : ObservableObject
     {
         private readonly FeedbackModal _owner;
@@ -27,9 +84,20 @@ namespace VuluLauncher.ViewModels
             Reply = item.Text("reply");
             RepliedBy = item.Text("repliedBy") ?? "admin";
             CanDelete = item.Bool("canDelete");
-            _replyDraft = Reply ?? "";
+            CanReply = item.Bool("canReply") || owner.IsAdmin;
+            foreach (var a in item.Items("attachments")) Attachments.Add(new FeedbackAttachment(a));
+            // Eski tek yanıt konuşmanın ilk admin mesajı olarak görünür
+            if (!string.IsNullOrEmpty(Reply)) Messages.Add(new FeedbackMessage(RepliedBy, true, Reply!, ""));
+            foreach (var m in item.Items("messages"))
+                Messages.Add(new FeedbackMessage(m.Text("author") ?? "", m.Bool("admin"), m.Text("text") ?? "", Names.Ago(m.Text("at"))));
             _ = LoadAvatar((long)item.Num("authorAvatarVersion"));
         }
+
+        public ObservableCollection<FeedbackAttachment> Attachments { get; } = new();
+        public bool HasAttachments => Attachments.Count > 0;
+        public ObservableCollection<FeedbackMessage> Messages { get; } = new();
+        public bool HasMessages => Messages.Count > 0;
+        public bool CanReply { get; }
 
         public JsonElement Data { get; }
         public string Id { get; }
@@ -47,17 +115,17 @@ namespace VuluLauncher.ViewModels
         public bool CanDelete { get; }
         public bool IsAdmin => _owner.IsAdmin;
         public string DoneText => IsDone ? "Yeniden aç" : "Yapıldı";
-        public string ReplyText => HasReply ? "Yanıtı düzenle" : "Yanıtla";
+        public string ReplyText => "Yanıtla";
         [ObservableProperty] private Bitmap? _avatar;
         [ObservableProperty] private bool _replying;
-        [ObservableProperty] private string _replyDraft;
+        [ObservableProperty] private string _replyDraft = "";
 
         private async Task LoadAvatar(long version) => Avatar = await Images.LoadAsync(Avatars.Url(Author, version), 64);
 
         [RelayCommand] private Task ToggleDone() => _owner.UpdateAsync(this, new { id = Id, status = IsDone ? "open" : "done" });
         [RelayCommand] private void StartReply() => Replying = true;
         [RelayCommand] private void CancelReply() => Replying = false;
-        [RelayCommand] private Task SaveReply() => _owner.UpdateAsync(this, new { id = Id, reply = ReplyDraft });
+        [RelayCommand] private Task SaveReply() => ReplyDraft.Trim().Length == 0 ? Task.CompletedTask : _owner.ReplyAsync(this, ReplyDraft);
         [RelayCommand] private Task Delete() => _owner.DeleteAsync(this);
     }
 
@@ -95,6 +163,10 @@ namespace VuluLauncher.ViewModels
         public ObservableCollection<Choice> Kinds { get; } = new();
         public ObservableCollection<Choice> Filters { get; } = new();
         public ObservableCollection<FeedbackEntry> Shown { get; } = new();
+        /// <summary>Gönderilecek yazıya eklenen dosyalar (en çok 4).</summary>
+        public ObservableCollection<FeedbackAttachment> Pending { get; } = new();
+        public bool HasPending => Pending.Count > 0;
+        [ObservableProperty] private bool _attaching;
         [ObservableProperty] private string _kind;
         [ObservableProperty] private string _filter = "open";
         [ObservableProperty] private string _draft = "";
@@ -146,13 +218,46 @@ namespace VuluLauncher.ViewModels
             Error = null;
             try
             {
-                var item = await CoreClient.Instance.Call("feedback.post", new { pack = _pack, kind = Kind, text = Draft });
+                var item = await CoreClient.Instance.Call("feedback.post", new { pack = _pack, kind = Kind, text = Draft, attachments = Pending.Select(p => p.Id).ToArray() });
                 _items.Insert(0, new FeedbackEntry(this, item));
                 Draft = "";
+                Pending.Clear();
+                OnPropertyChanged(nameof(HasPending));
                 Filter = "open";
                 Render();
             }
             catch (Exception ex) { Error = ex.Message; }
+        }
+
+        /// <summary>Resim ya da günlük dosyası ekle (seçilir ve hemen yüklenir).</summary>
+        [RelayCommand]
+        private async Task Attach()
+        {
+            if (Pending.Count >= 4) { Error = "En fazla 4 dosya eklenebilir."; return; }
+            Error = null;
+            Attaching = true;
+            try
+            {
+                var file = await CoreClient.Instance.Call("feedback.attach");
+                if (file.ValueKind == JsonValueKind.Object && file.Text("id") != null)
+                {
+                    Pending.Add(new FeedbackAttachment(file, a => { Pending.Remove(a); OnPropertyChanged(nameof(HasPending)); }));
+                    OnPropertyChanged(nameof(HasPending));
+                }
+            }
+            catch (Exception ex) { Error = ex.Message; }
+            finally { Attaching = false; }
+        }
+
+        public async Task ReplyAsync(FeedbackEntry entry, string text)
+        {
+            try
+            {
+                var updated = await CoreClient.Instance.Call("feedback.message", new { id = entry.Id, text });
+                _items[_items.IndexOf(entry)] = new FeedbackEntry(this, updated);
+                Render();
+            }
+            catch (Exception ex) { await _main.AlertAsync("Gönderilemedi", ex.Message); }
         }
 
         public async Task UpdateAsync(FeedbackEntry entry, object change)

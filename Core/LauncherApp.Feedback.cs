@@ -27,6 +27,7 @@ namespace VuluLauncher
                     pack,
                     kind = kind is "request" or "bug" or "idea" ? kind : "feedback",
                     text = args.Str("text").Trim(),
+                    attachments = args.StrList("attachments"),
                     // Launcher hakkındaki bildirimlerde sürüm ve sistem gider (yalnızca adminler görür)
                     meta = pack == "launcher"
                         ? new { version = LauncherUpdateService.LocalVersion, platform = $"{_host.Platform} · {System.Runtime.InteropServices.RuntimeInformation.OSDescription}" }
@@ -41,6 +42,39 @@ namespace VuluLauncher
                 if (args.TryGetProperty("status", out var status)) body["status"] = status.GetString() ?? "open";
                 if (args.TryGetProperty("reply", out var reply)) body["reply"] = reply.GetString() ?? "";
                 return await _api.PatchAsync<JsonElement>($"/feedback/{Uri.EscapeDataString(args.Str("id"))}", body);
+            });
+            // Ek: dosya seçilir ve yüklenir (resim ya da günlük dosyası, en çok 5 MB); kimliği yazıya eklenir. Vazgeçilirse null.
+            _bridge.On("feedback.attach", async _ =>
+            {
+                RequireLogin();
+                string? path = await _host.PickFileAsync("Eklenecek resmi ya da günlük dosyasını seç", "Resim ya da günlük", ["png", "jpg", "jpeg", "webp", "gif", "txt", "log"]);
+                if (path == null) return null;
+                var info = new FileInfo(path);
+                if (info.Length > 5 * 1024 * 1024) throw new InvalidOperationException("Dosya en fazla 5 MB olabilir.");
+                return await _api.PostBytesAsync<JsonElement>($"/feedback/attachments?name={Uri.EscapeDataString(info.Name)}", await File.ReadAllBytesAsync(path));
+            });
+            // Yanıt: yazan kişi ya da admin konuşmaya ekler
+            _bridge.On("feedback.message", async args =>
+            {
+                RequireLogin();
+                return await _api.PostAsync<JsonElement>($"/feedback/{Uri.EscapeDataString(args.Str("id"))}/messages", new { text = args.Str("text").Trim() });
+            });
+            // Ekin kendisi: önbelleğe indirilir, dosya yolu döner (arayüz gösterir ya da açar)
+            _bridge.On("feedback.file", async args =>
+            {
+                RequireLogin();
+                string id = args.Str("id");
+                if (!System.Text.RegularExpressions.Regex.IsMatch(id, "^[0-9a-f]{24}$")) throw new InvalidOperationException("Dosya bulunamadı.");
+                string ext = args.Str("mime") switch { "image/png" => ".png", "image/jpeg" => ".jpg", "image/webp" => ".webp", "image/gif" => ".gif", _ => ".txt" };
+                string dir = Path.Combine(AppPaths.AppData, "cache", "feedback");
+                Directory.CreateDirectory(dir);
+                string path = Path.Combine(dir, id + ext);
+                if (!File.Exists(path))
+                {
+                    byte[] data = await _api.GetBytesAsync($"/feedback/attachments/{id}") ?? throw new InvalidOperationException("Dosya artık yok.");
+                    await File.WriteAllBytesAsync(path, data);
+                }
+                return new { path };
             });
             _bridge.On("feedback.delete", async args =>
             {
