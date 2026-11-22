@@ -200,13 +200,13 @@
     <Style Selector="Button.rail-avatar:pressed Panel.avatar-wrap">
         <Setter Property="RenderTransform" Value="scale(0.97)" />
     </Style>
-    <Style Selector="Button.rail-avatar Border.avatar">
+    <Style Selector="Button.rail-avatar Ellipse.avatar-ring">
         <Setter Property="Transitions">
-            <Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.18" /></Transitions>
+            <Transitions><BrushTransition Property="Stroke" Duration="0:0:0.18" /></Transitions>
         </Setter>
     </Style>
-    <Style Selector="Button.rail-avatar:pointerover Border.avatar, Button.rail-avatar.hover Border.avatar">
-        <Setter Property="BorderBrush" Value="#B3F2A33A" />
+    <Style Selector="Button.rail-avatar:pointerover Ellipse.avatar-ring, Button.rail-avatar.hover Ellipse.avatar-ring">
+        <Setter Property="Stroke" Value="#B3F2A33A" />
     </Style>
 
     <!-- ── Kartlar: yuvarlak köşe, ince sıcak çizgi, gölge yok ── -->
