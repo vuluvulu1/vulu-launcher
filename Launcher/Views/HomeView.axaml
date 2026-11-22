@@ -259,7 +259,7 @@
                 </MultiBinding>
             </v:SynthwaveBackdrop.IsVisible>
         </v:SynthwaveBackdrop>
-        <Image Source="{Binding Background}" Stretch="UniformToFill" />
+        <v:CrossfadeImage Source="{Binding Background}" Stretch="UniformToFill" />
         <!-- Yazılar okunsun: kenarlardan ve alttan karartma (mesale.css .stage-bg::after) -->
         <Border x:Name="ShadeSide" IsHitTestVisible="False">
             <Border.Background>

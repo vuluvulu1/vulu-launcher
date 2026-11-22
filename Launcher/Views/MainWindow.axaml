@@ -313,9 +313,8 @@
             <!-- Kütüphane: bütün sayfaların (Oyna dahil) arkasında seçili paketin resmi; çok bulanık, koyu, üstte sıcak bir renk lekesi
                  olarak başlar ve aşağı doğru zemine söner. Paket değişince renk de değişir. -->
             <Panel Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding ShowAmbient}" IsHitTestVisible="False" ClipToBounds="True">
-                <Image Source="{Binding Home.BackgroundBlurred}" Stretch="UniformToFill" Margin="-120" RenderOptions.BitmapInterpolationMode="MediumQuality">
-                    <Image.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.4" /></Transitions></Image.Transitions>
-                </Image>
+                <!-- Paket değişince yeni resim eskisinin üstüne yavaşça belirir (birden değişmez) -->
+                <v:CrossfadeImage Source="{Binding Home.BackgroundBlurred}" Stretch="UniformToFill" Margin="-120" RenderOptions.BitmapInterpolationMode="MediumQuality" />
                 <Border>
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">

@@ -597,7 +597,7 @@
                 <!-- Resim -->
                 <Panel DockPanel.Dock="Top" Height="150">
                     <Border Background="{StaticResource BannerFallback}" />
-                    <Image Source="{Binding Background}" Stretch="UniformToFill" />
+                    <v:CrossfadeImage Source="{Binding Background}" Stretch="UniformToFill" />
                     <Border IsHitTestVisible="False">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
