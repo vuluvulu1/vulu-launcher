@@ -21,6 +21,53 @@ namespace VuluLauncher
                 return path == null ? null : new { path, name = Path.GetFileNameWithoutExtension(path) };
             });
             _bridge.On("instances.import", async args => await ImportPackAsync(RequireGameDevice(args.Str("path"))));
+            // Modpack sürümleri ve sürüme geçiş (CurseForge/Modrinth'ten kurulan paketler)
+            _bridge.On("instances.modpackVersions", async args => await ModpackVersionsAsync(args.Str("id")));
+            _bridge.On("instances.switchModpack", async args => await SwitchModpackAsync(RequireGameDevice(args.Str("id")), args.Str("versionId")));
+        }
+
+        private static bool IsCurseForgePack(InstanceMeta meta) => meta.ModpackProjectId?.StartsWith(CurseForgeService.Source + ":", StringComparison.Ordinal) == true;
+
+        private async Task<object?> ModpackVersionsAsync(string id)
+        {
+            RequireLogin();
+            var meta = RequireCustomInstance(id);
+            if (meta.ModpackProjectId == null) throw new InvalidOperationException("Bu paket CurseForge ya da Modrinth'ten kurulmadı.");
+            if (IsCurseForgePack(meta))
+            {
+                var files = await _curseforge.PackVersionsAsync(int.Parse(meta.ModpackProjectId[(CurseForgeService.Source.Length + 1)..]));
+                return new
+                {
+                    current = meta.ModpackVersion,
+                    versions = files.Select(f => new
+                    {
+                        id = f.Id.ToString(), name = f.DisplayName, type = f.ReleaseType switch { 2 => "beta", 3 => "alpha", _ => "release" },
+                        date = f.FileDate.ToString("o"), mc = f.GameVersions.Where(v => ReleaseVersion.IsMatch(v)).ToList(),
+                        current = f.DisplayName == meta.ModpackVersion, available = !string.IsNullOrEmpty(f.DownloadUrl),
+                    }),
+                };
+            }
+            var versions = await _modrinth.PackVersionsAsync(meta.ModpackProjectId);
+            return new
+            {
+                current = meta.ModpackVersion,
+                versions = versions.Select(v => new
+                {
+                    id = v.Id, name = v.VersionNumber, type = v.VersionType, date = v.DatePublished,
+                    mc = v.GameVersions.Where(x => ReleaseVersion.IsMatch(x)).ToList(), current = v.VersionNumber == meta.ModpackVersion, available = true,
+                }),
+            };
+        }
+
+        private async Task<object?> SwitchModpackAsync(string id, string versionId)
+        {
+            RequireLogin();
+            if (_game.IsRunning) throw new InvalidOperationException("Oyun açıkken paketin sürümü değiştirilemez.");
+            var meta = RequireCustomInstance(id);
+            List<ManualDownload> manual = new();
+            if (IsCurseForgePack(meta)) manual = await _curseforge.SwitchAsync(meta, RequireCfId(versionId, "sürüm"));
+            else await _modrinth.SwitchAsync(meta, versionId);
+            return new { success = true, id, name = meta.Name, version = meta.ModpackVersion, manual = ManualList(manual) };
         }
 
         private async Task<object?> ImportPackAsync(string path)

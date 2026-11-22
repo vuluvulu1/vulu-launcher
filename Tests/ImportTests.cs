@@ -44,6 +44,26 @@ namespace VuluLauncher.Tests
         }
 
         [Fact]
+        public async Task RecordsPackFilesAndSwitchKeepsOwnMods()
+        {
+            string pack = Zip("Liste.mrpack",
+                ("modrinth.index.json", JsonSerializer.Serialize(new { formatVersion = 1, game = "minecraft", versionId = "2.0", name = "Liste", files = Array.Empty<object>(), dependencies = new Dictionary<string, string> { ["minecraft"] = "1.21.1" } })),
+                ("overrides/mods/paket-modu.jar", "x"),
+                ("overrides/config/a.cfg", "1"));
+            var instance = await new ModrinthService((_, _) => { }).ImportPackAsync(pack);
+            Assert.Equal(new[] { "mods/paket-modu.jar" }, instance.PackFiles);   // ayar dosyaları içerik sayılmaz
+
+            // Sonradan eklenen mod kalır; eski sürümün yenisinde olmayan dosyası gider
+            string dir = InstanceStore.PathOf(instance.Folder);
+            File.WriteAllText(Path.Combine(dir, "mods", "benim-modum.jar"), "y");
+            int removed = ModpackFiles.RemoveOld(dir, instance.PackFiles!, new[] { "mods/yeni.jar" });
+            Assert.Equal(1, removed);
+            Assert.False(File.Exists(Path.Combine(dir, "mods", "paket-modu.jar")));
+            Assert.True(File.Exists(Path.Combine(dir, "mods", "benim-modum.jar")));
+            Assert.NotNull(ModpackFiles.BackupConfigs(dir, "2.0"));
+        }
+
+        [Fact]
         public async Task ImportsPrismExport()
         {
             string pack = Zip("Prism.zip",

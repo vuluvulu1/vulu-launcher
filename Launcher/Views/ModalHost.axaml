@@ -312,6 +312,38 @@
             </DataTemplate>
 
             <!-- ── Sürüm seç ───────────────────────────────────────────── -->
+            <!-- ── Modpack sürümü değiştir ── -->
+            <DataTemplate DataType="vm:ModpackVersionModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,0" />
+                    <TextBlock Text="{Binding Note}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" Margin="22,6,22,12" />
+                    <TextBlock Text="{Binding Message}" IsVisible="{Binding Message, Converter={x:Static ObjectConverters.IsNotNull}}"
+                               Classes="muted" Classes.error="{Binding IsError}" Margin="22,0,22,18" TextWrapping="Wrap" />
+                    <ScrollViewer MaxHeight="460">
+                        <ItemsControl ItemsSource="{Binding Versions}" Margin="22,0,22,16">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ModpackVersionRow">
+                                    <Border Classes="row-card">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Spacing="2">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" TextTrimming="CharacterEllipsis" MaxWidth="380" />
+                                                    <Border Classes="tag" IsVisible="{Binding HasBadge}" Margin="0" Padding="5,0"><TextBlock Text="{Binding Badge}" FontSize="11" /></Border>
+                                                    <Border Classes="tag accent" IsVisible="{Binding IsCurrent}" Margin="0" Padding="5,0"><TextBlock Text="kurulu" FontSize="11" /></Border>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Classes="sm primary" Content="{Binding ActionText}" Command="{Binding PickCommand}" IsEnabled="{Binding CanPick}"
+                                                    VerticalAlignment="Center" Margin="12,0,0,0" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </DataTemplate>
+
             <DataTemplate DataType="vm:VersionPickerModal">
                 <StackPanel>
                     <Grid ColumnDefinitions="*,Auto" Margin="22,18,22,10">

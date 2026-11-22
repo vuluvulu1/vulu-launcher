@@ -110,6 +110,7 @@ namespace VuluLauncher
                     : "Kişisel instance",
                 sharedPackId = m.SharedPackId,
                 isModpack = m.ModpackProjectId != null,
+                modpackVersion = m.ModpackVersion,
                 mcVersion = m.McVersion,
                 loader = m.Loader,
                 loaderVersion = m.LoaderVersion,

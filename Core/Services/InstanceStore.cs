@@ -34,6 +34,11 @@ namespace VuluLauncher
         /// <summary>Modpack'ten kurulduysa projenin kimliği: Modrinth'te proje kimliği, CurseForge'da "curseforge:&lt;id&gt;".</summary>
         public string? ModpackProjectId { get; set; }
         public string? ModpackVersion { get; set; }
+        /// <summary>
+        /// Modpack'in getirdiği içerik dosyaları (mods/, resourcepacks/, shaderpacks/); sürüm değişince bunlar yenisiyle
+        /// eşitlenir, sonradan eklenenlere dokunulmaz. Eski kurulumlarda yok: değişimde eski sürümün listesinden çıkarılır.
+        /// </summary>
+        public List<string>? PackFiles { get; set; }
         /// <summary>vulu Packs'ten kurulduysa (ya da oradan yayınlandıysa) paketin kimliği ve revizyonu.</summary>
         public string? SharedPackId { get; set; }
         public int SharedPackRevision { get; set; }

@@ -66,6 +66,8 @@ namespace VuluLauncher
                             File.Copy(source.FullName, part, overwrite: true);
                             File.Move(part, target, overwrite: true);
                             placed = true;
+                            // Kes-yapıştır gibi: yerine konunca İndirilenler'deki kopyası silinir (orada birikmesin)
+                            try { Downloader.MakeWritable(source.FullName); File.Delete(source.FullName); } catch (Exception del) when (del is IOException or UnauthorizedAccessException) { }
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                         {

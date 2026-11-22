@@ -46,6 +46,7 @@ namespace VuluLauncher.Tests
             Assert.Empty(meta.PendingManual);
             Assert.True(File.Exists(Path.Combine(InstanceStore.PathOf(meta.Folder), "mods", "ornek-mod-1.0.jar")));
             Assert.False(File.Exists(Path.Combine(InstanceStore.PathOf(meta.Folder), "mods", "ornek-mod-1.0.jar.vulu-part")));
+            Assert.False(File.Exists(Path.Combine(downloads, "ornek-mod-1.0.jar")));   // taşındı (İndirilenler'de kalmaz)
         }
 
         [Fact]

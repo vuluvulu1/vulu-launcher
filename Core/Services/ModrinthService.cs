@@ -463,6 +463,8 @@ namespace VuluLauncher
                 job.Phase = "Ayarlar yerleştiriliyor";
                 ExtractOverrides(zip, "overrides/", instanceDir);
                 ExtractOverrides(zip, "client-overrides/", instanceDir);
+                instance.PackFiles = PackContent(index, zip);   // sürüm değişince eşitlenecek dosyalar
+                InstanceStore.Save(instance);
 
                 _log($"{name} kuruldu.", "ok");
                 job.Complete($"{name} kuruldu");
@@ -490,6 +492,96 @@ namespace VuluLauncher
                     return (loader, version);
             }
             return ("vanilla", null);
+        }
+
+        /// <summary>Paketin istemcide kurulan dosyaları (sunucuya özel olanlar hariç), instance klasörüne göre yollarıyla.</summary>
+        private static List<string> ClientFiles(MrPackIndex index) =>
+            index.Files.Where(f => f.Env?.Client != "unsupported").Select(f => ModpackFiles.Normalize(f.Path)).ToList();
+
+        private static List<string> PackContent(MrPackIndex index, ZipArchive zip) =>
+            ClientFiles(index).Where(ModpackFiles.IsContent)
+                .Concat(ModpackFiles.OverrideContent(zip, "overrides/")).Concat(ModpackFiles.OverrideContent(zip, "client-overrides/"))
+                .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        private static async Task<MrPackIndex> ReadIndexAsync(ZipArchive zip)
+        {
+            var indexEntry = zip.GetEntry("modrinth.index.json") ?? throw new InvalidDataException("Modpack bozuk: modrinth.index.json yok.");
+            using var stream = indexEntry.Open();
+            return await JsonSerializer.DeserializeAsync<MrPackIndex>(stream, PackJson) ?? throw new InvalidDataException("Modpack bozuk: dizin okunamadı.");
+        }
+
+        private async Task<string> DownloadVersionPackAsync(MrVersion version, DownloadJob job)
+        {
+            var packFile = version.Files.FirstOrDefault(f => f.Primary && f.Filename.EndsWith(".mrpack", StringComparison.OrdinalIgnoreCase))
+                ?? version.Files.FirstOrDefault(f => f.Filename.EndsWith(".mrpack", StringComparison.OrdinalIgnoreCase))
+                ?? throw new InvalidOperationException($"{version.VersionNumber}: .mrpack dosyası bulunamadı.");
+            string packPath = Path.Combine(Path.GetTempPath(), $"vulu-{Guid.NewGuid():N}.mrpack");
+            await job.Add(packFile.Filename, packFile.Size).DownloadAsync(packFile.Url, packPath, packFile.Hashes?.Sha1, packFile.Hashes?.Sha512);
+            return packPath;
+        }
+
+        // ── Sürüm değiştirme ──
+        /// <summary>Modpack'in sürümleri (yeniden eskiye).</summary>
+        public Task<List<MrVersion>> PackVersionsAsync(string projectId) => VersionsAsync(projectId);
+
+        /// <summary>
+        /// Kurulu modpack'i başka bir sürüme geçirir: eski paket dosyalarından yenisinde olmayanlar kaldırılır, yeni dosyalar
+        /// indirilir, ayarlar (overrides) yeniden açılır; önce ayar klasörleri yedeklenir. Sonradan eklenen içerik ve dünyalar kalır.
+        /// </summary>
+        public async Task SwitchAsync(InstanceMeta instance, string versionId)
+        {
+            string projectId = instance.ModpackProjectId ?? throw new InvalidOperationException("Bu paket bir Modrinth modpack'i değil.");
+            var versions = await VersionsAsync(projectId);
+            var target = versions.FirstOrDefault(v => v.Id == versionId) ?? throw new InvalidOperationException("Sürüm bulunamadı.");
+            using var job = new DownloadJob($"{instance.Name} → {target.VersionNumber}") { Phase = "Modpack indiriliyor" };
+            var temp = new List<string>();
+            try
+            {
+                // Eski sürümün dosyaları: kayıtlıysa oradan, değilse eski sürümün kendi paketinden
+                List<string> oldFiles = instance.PackFiles ?? new List<string>();
+                if (instance.PackFiles == null)
+                {
+                    var old = versions.FirstOrDefault(v => v.VersionNumber == instance.ModpackVersion)
+                        ?? throw new InvalidOperationException("Kurulu sürüm Modrinth'te bulunamadı; eski dosyalar güvenle ayrılamıyor. Paketi yeniden kurmak daha güvenli.");
+                    job.Phase = "Kurulu sürüm okunuyor";
+                    string oldPath = await DownloadVersionPackAsync(old, job);
+                    temp.Add(oldPath);
+                    using var oldZip = ZipFile.OpenRead(oldPath);
+                    oldFiles = PackContent(await ReadIndexAsync(oldZip), oldZip);
+                }
+
+                job.Phase = "Modpack indiriliyor";
+                string packPath = await DownloadVersionPackAsync(target, job);
+                temp.Add(packPath);
+                using var zip = ZipFile.OpenRead(packPath);
+                var index = await ReadIndexAsync(zip);
+                var (loader, loaderVersion) = ReadLoader(index);
+                if (!index.Dependencies.TryGetValue("minecraft", out var mcVersion) || string.IsNullOrEmpty(mcVersion))
+                    throw new InvalidDataException("Modpack hangi Minecraft sürümünü istediğini belirtmiyor.");
+
+                string dir = InstanceStore.PathOf(instance.Folder);
+                job.Phase = "Ayarlar yedekleniyor";
+                ModpackFiles.BackupConfigs(dir, instance.ModpackVersion);
+                var newFiles = PackContent(index, zip);
+                int removed = ModpackFiles.RemoveOld(dir, oldFiles, newFiles);
+                _log($"{instance.Name}: eski sürümden {removed} dosya kaldırıldı.", "muted");
+
+                await DownloadPackFilesAsync(index, dir, job);
+                job.Phase = "Ayarlar yerleştiriliyor";
+                ExtractOverrides(zip, "overrides/", dir);
+                ExtractOverrides(zip, "client-overrides/", dir);
+
+                instance.McVersion = mcVersion;
+                instance.Loader = loader;
+                instance.LoaderVersion = loaderVersion;
+                instance.ModpackVersion = target.VersionNumber;
+                instance.PackFiles = newFiles;
+                InstanceStore.Save(instance);
+                _log($"{instance.Name} artık {target.VersionNumber}.", "ok");
+                job.Complete($"{instance.Name} {target.VersionNumber} sürümünde");
+            }
+            catch (Exception ex) { job.Fail(ex.Message); throw; }
+            finally { foreach (var t in temp) try { File.Delete(t); } catch { } }
         }
 
         private async Task DownloadPackFilesAsync(MrPackIndex index, string instanceDir, DownloadJob job)

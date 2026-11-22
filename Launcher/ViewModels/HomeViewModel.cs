@@ -31,6 +31,7 @@ namespace VuluLauncher.ViewModels
         public string? PackId { get; init; }
         /// <summary>CurseForge ya da Modrinth'ten kurulmuş hazır modpack.</summary>
         public bool IsModpack { get; init; }
+        public string? ModpackVersion { get; init; }
         /// <summary>Kütüphanede sıralama: toplam oynama süresi, son oynanma, eklenme.</summary>
         public double PlaySeconds { get; init; }
         public DateTime? LastPlayed { get; init; }
@@ -77,6 +78,7 @@ namespace VuluLauncher.ViewModels
             SharedPackId = e.Text("sharedPackId"),
             PackId = e.Text("packId"),
             IsModpack = e.Bool("isModpack"),
+            ModpackVersion = e.Text("modpackVersion"),
             PlaySeconds = e.Num("playSeconds"),
             LastPlayed = DateTime.TryParse(e.Text("lastPlayed"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var lp) ? lp : null,
             CreatedAt = DateTime.TryParse(e.Text("createdAt"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var ca) ? ca : null,
@@ -631,6 +633,8 @@ namespace VuluLauncher.ViewModels
             Installed = null;
             OnPropertyChanged(nameof(SelectedIsCustom));
             OnPropertyChanged(nameof(SelectedCanEditLook));
+            OnPropertyChanged(nameof(SelectedIsModpack));
+            OnPropertyChanged(nameof(SelectedModpackVersion));
             OnPropertyChanged(nameof(CanShare));
             OnPropertyChanged(nameof(ShareText));
             if (value == null) { Refresh(); return; }
@@ -655,6 +659,35 @@ namespace VuluLauncher.ViewModels
 
         public bool SelectedIsCustom => Selected?.IsCustom == true;
         public bool SelectedCanEditLook => Selected?.CanEditLook == true;
+        public bool SelectedIsModpack => Selected?.IsModpack == true;
+        public string SelectedModpackVersion => Selected?.ModpackVersion ?? "";
+
+        /// <summary>
+        /// Modpack sürümünü değiştir: sürümler listelenir, seçilen sürüme geçilir (modlar o sürümünkilerle değişir; sonradan
+        /// eklenenler ve dünyalar kalır, ayarlar önce yedeklenir). İlerleme indirme kutusunda görünür.
+        /// </summary>
+        [RelayCommand]
+        private async Task SwitchModpack()
+        {
+            if (Selected is not { IsModpack: true } item || GameRunning || Launching || _switchingPack) return;
+            var modal = new ModpackVersionModal(item.Name);
+            _ = modal.LoadAsync(item.Id);
+            if (await Main.ShowAsync(modal) is not string versionId) return;
+            if (!await Main.ConfirmAsync("Sürümü değiştir", $"{item.Name} seçtiğin sürüme geçirilsin mi? Paketin modları değişir; dünyaların ve sonradan eklediğin modlar kalır, ayar klasörleri önce yedeklenir.", "Geçir")) return;
+            _switchingPack = true;   // bu sırada oyun açılmaz
+            AppendLog($"{item.Name} sürümü değiştiriliyor…", "accent");
+            try
+            {
+                var r = await _core.Call("instances.switchModpack", new { id = item.Id, versionId });
+                await ReloadInstancesAsync(item.Id);
+                Main.ShowToast("Sürüm değişti", $"{item.Name} artık {r.Text("version")}.");
+                if (r.Items("manual").Any()) await Main.ShowAsync(new ManualDownloadsModal(r.Get("manual"), item.Id));
+            }
+            catch (Exception ex) { await Main.AlertAsync("Sürüm değiştirilemedi", ex.Message); }
+            finally { _switchingPack = false; }
+        }
+
+        private bool _switchingPack;
         /// <summary>Admin kendi instance'ını vulu Packs'te paylaşabilir (ya da paylaşımını güncelleyebilir).</summary>
         public bool CanShare => SelectedIsCustom && Main?.IsAdmin == true;
         public string ShareText => Selected?.SharedPackId != null ? "Paylaşımı güncelle" : "vulu Packs'te paylaş";
@@ -1029,6 +1062,7 @@ namespace VuluLauncher.ViewModels
         public async Task PlayAsync(bool ignoreMissing, bool ignoreFiles, string join)
         {
             if (Selected is not { } instance || GameRunning || Launching) return;
+            if (_switchingPack) { AppendLog("Paketin sürümü değişiyor; bitince oynayabilirsin.", "warn"); return; }
             _lastJoin = join;
             if (!ignoreMissing && !ignoreFiles) { Console.Clear(); _lastLineWasProgress = false; }
             _activityText = "";

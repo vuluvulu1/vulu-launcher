@@ -401,49 +401,19 @@ namespace VuluLauncher
                 InstanceStore.Save(instance);
                 string instanceDir = InstanceStore.PathOf(instance.Folder);
 
-                // Dosyaların indirme adresleri ve hangi klasöre gittikleri (projelerin türünden)
                 job.Phase = "Mod listesi alınıyor";
-                var wantedFiles = manifest.Files.Where(f => f.Required).ToList();
-                var cfFiles = (await FilesByIdsAsync(wantedFiles.Select(f => f.FileID))).ToDictionary(f => f.Id);
-                var projects = (await ModsAsync(wantedFiles.Select(f => f.ProjectID))).ToDictionary(m => m.Id);
-
-                var downloads = new List<(CfFile File, CfMod? Mod, string Relative)>();
-                foreach (var entry in wantedFiles)
-                {
-                    if (!cfFiles.TryGetValue(entry.FileID, out var file)) continue;
-                    projects.TryGetValue(entry.ProjectID, out var project);
-                    string folder = ModrinthService.FolderFor(TypeOf(project?.ClassId ?? 6) ?? "mod") ?? "mods";
-                    string relative = $"{folder}/{Path.GetFileName(file.FileName)}";
-                    if (string.IsNullOrEmpty(file.DownloadUrl))
-                        manual.Add(ManualDownload.Of(project, file, folder));
-                    else downloads.Add((file, project, relative));
-                }
-
-                job.Phase = "Modlar indiriliyor";
-                var items = downloads.ToDictionary(d => d.File.Id, d => job.Add(d.Mod?.Name ?? d.File.DisplayName, d.File.FileLength));
-                int done = 0;
-                await Parallel.ForEachAsync(downloads, new ParallelOptions { MaxDegreeOfParallelism = 6, CancellationToken = job.Token }, async (d, cancellation) =>
-                {
-                    string path = Downloader.ResolveInside(instanceDir, d.Relative)
-                        ?? throw new InvalidDataException($"Modpack geçersiz bir dosya yolu içeriyor: {d.Relative}");
-                    if (!IsCurseForgeCdn(d.File.DownloadUrl!)) throw new InvalidDataException($"Modpack izin verilmeyen bir adresten indirme istiyor: {d.Relative}");
-                    await items[d.File.Id].DownloadAsync(d.File.DownloadUrl!, path, d.File.Hashes.FirstOrDefault(h => h.Algo == 1)?.Value, null, cancellation);
-                    _log($"Modpack dosyaları indiriliyor... {Interlocked.Increment(ref done)}/{downloads.Count}", "replace");
-                });
-
-                foreach (var d in downloads)
-                    instance.Content.Add(new InstalledContent
-                    {
-                        Source = Source, ProjectId = d.File.ModId.ToString(), VersionId = d.File.Id.ToString(),
-                        Title = d.Mod?.Name ?? d.File.DisplayName, VersionNumber = d.File.DisplayName,
-                        Type = TypeOf(d.Mod?.ClassId ?? 6) ?? "mod", File = d.Relative, IconUrl = d.Mod?.Logo?.ThumbnailUrl,
-                    });
+                var (downloads, found) = await ResolveManifestAsync(manifest);
+                manual.AddRange(found);
+                await DownloadManifestFilesAsync(downloads, instanceDir, job);
+                foreach (var d in downloads) instance.Content.Add(ContentOf(d));
                 instance.PendingManual = manual;
                 InstanceStore.Save(instance);
 
                 _log("Modpack ayarları açılıyor...", "replace");
                 job.Phase = "Ayarlar yerleştiriliyor";
-                ModrinthService.ExtractOverrides(zip, (manifest.Overrides is { Length: > 0 } o ? o.TrimEnd('/') : "overrides") + "/", instanceDir);
+                ModrinthService.ExtractOverrides(zip, OverridesPrefix(manifest), instanceDir);
+                instance.PackFiles = PackContent(downloads, manual, zip, manifest);   // sürüm değişince eşitlenecek dosyalar
+                InstanceStore.Save(instance);
 
                 _log(manual.Count == 0 ? $"{name} kuruldu." : $"{name} kuruldu; {manual.Count} dosyanın CurseForge'dan elle indirilmesi gerekiyor.", manual.Count == 0 ? "ok" : "warn");
                 job.Complete($"{name} kuruldu");
@@ -454,6 +424,145 @@ namespace VuluLauncher
                 if (instance != null) { try { InstanceStore.Delete(instance.Folder); } catch { } }
                 throw;
             }
+        }
+
+        private static string OverridesPrefix(CfManifest manifest) => (manifest.Overrides is { Length: > 0 } o ? o.TrimEnd('/') : "overrides") + "/";
+
+        private static async Task<CfManifest> ReadManifestAsync(ZipArchive zip)
+        {
+            var entry = zip.GetEntry("manifest.json") ?? throw new InvalidDataException("Modpack bozuk: manifest.json yok.");
+            using var stream = entry.Open();
+            return await JsonSerializer.DeserializeAsync<CfManifest>(stream, ManifestJson) ?? throw new InvalidDataException("Modpack bozuk: manifest okunamadı.");
+        }
+
+        /// <summary>Manifestteki dosyaların indirme adresleri ve gittikleri klasör (projelerin türünden); indirilemeyenler elle listesine.</summary>
+        private async Task<(List<(CfFile File, CfMod? Mod, string Relative)> Downloads, List<ManualDownload> Manual)> ResolveManifestAsync(CfManifest manifest)
+        {
+            var wantedFiles = manifest.Files.Where(f => f.Required).ToList();
+            var cfFiles = (await FilesByIdsAsync(wantedFiles.Select(f => f.FileID))).ToDictionary(f => f.Id);
+            var projects = (await ModsAsync(wantedFiles.Select(f => f.ProjectID))).ToDictionary(m => m.Id);
+            var downloads = new List<(CfFile File, CfMod? Mod, string Relative)>();
+            var manual = new List<ManualDownload>();
+            foreach (var entry in wantedFiles)
+            {
+                if (!cfFiles.TryGetValue(entry.FileID, out var file)) continue;
+                projects.TryGetValue(entry.ProjectID, out var project);
+                string folder = ModrinthService.FolderFor(TypeOf(project?.ClassId ?? 6) ?? "mod") ?? "mods";
+                string relative = $"{folder}/{Path.GetFileName(file.FileName)}";
+                if (string.IsNullOrEmpty(file.DownloadUrl)) manual.Add(ManualDownload.Of(project, file, folder));
+                else downloads.Add((file, project, relative));
+            }
+            return (downloads, manual);
+        }
+
+        private async Task DownloadManifestFilesAsync(List<(CfFile File, CfMod? Mod, string Relative)> downloads, string instanceDir, DownloadJob job)
+        {
+            job.Phase = "Modlar indiriliyor";
+            var items = downloads.ToDictionary(d => d.File.Id, d => job.Add(d.Mod?.Name ?? d.File.DisplayName, d.File.FileLength));
+            int done = 0;
+            await Parallel.ForEachAsync(downloads, new ParallelOptions { MaxDegreeOfParallelism = 6, CancellationToken = job.Token }, async (d, cancellation) =>
+            {
+                string path = Downloader.ResolveInside(instanceDir, d.Relative)
+                    ?? throw new InvalidDataException($"Modpack geçersiz bir dosya yolu içeriyor: {d.Relative}");
+                if (!IsCurseForgeCdn(d.File.DownloadUrl!)) throw new InvalidDataException($"Modpack izin verilmeyen bir adresten indirme istiyor: {d.Relative}");
+                await items[d.File.Id].DownloadAsync(d.File.DownloadUrl!, path, d.File.Hashes.FirstOrDefault(h => h.Algo == 1)?.Value, null, cancellation);
+                _log($"Modpack dosyaları indiriliyor... {Interlocked.Increment(ref done)}/{downloads.Count}", "replace");
+            });
+        }
+
+        private static InstalledContent ContentOf((CfFile File, CfMod? Mod, string Relative) d) => new()
+        {
+            Source = Source, ProjectId = d.File.ModId.ToString(), VersionId = d.File.Id.ToString(),
+            Title = d.Mod?.Name ?? d.File.DisplayName, VersionNumber = d.File.DisplayName,
+            Type = TypeOf(d.Mod?.ClassId ?? 6) ?? "mod", File = d.Relative, IconUrl = d.Mod?.Logo?.ThumbnailUrl,
+        };
+
+        private static List<string> PackContent(List<(CfFile File, CfMod? Mod, string Relative)> downloads, List<ManualDownload> manual, ZipArchive zip, CfManifest manifest) =>
+            downloads.Select(d => d.Relative).Concat(manual.Select(m => $"{m.Folder}/{m.FileName}"))
+                .Concat(ModpackFiles.OverrideContent(zip, OverridesPrefix(manifest)))
+                .Select(ModpackFiles.Normalize).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        private async Task<string> DownloadPackFileAsync(CfFile packFile, DownloadJob job)
+        {
+            if (string.IsNullOrEmpty(packFile.DownloadUrl))
+                throw new InvalidOperationException("Yapımcısı bu sürümün başka uygulamalardan indirilmesine izin vermiyor.");
+            string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-{Guid.NewGuid():N}.zip");
+            await job.Add(packFile.FileName, packFile.FileLength).DownloadAsync(packFile.DownloadUrl, zipPath, packFile.Hashes.FirstOrDefault(h => h.Algo == 1)?.Value, null);
+            return zipPath;
+        }
+
+        // ── Sürüm değiştirme ──
+        /// <summary>Modpack'in sürümleri (yeniden eskiye).</summary>
+        public Task<List<CfFile>> PackVersionsAsync(int modId) => FilesAsync(modId);
+
+        /// <summary>
+        /// Kurulu modpack'i başka bir sürüme geçirir: eski paket dosyalarından yenisinde olmayanlar kaldırılır, yeni dosyalar
+        /// indirilir, ayarlar (overrides) yeniden açılır; önce ayar klasörleri yedeklenir. Sonradan eklenen içerik ve dünyalar kalır.
+        /// Elle indirilmesi gereken dosyalar döner.
+        /// </summary>
+        public async Task<List<ManualDownload>> SwitchAsync(InstanceMeta instance, int fileId)
+        {
+            if (instance.ModpackProjectId is not { } projectRef || !projectRef.StartsWith(Source + ":", StringComparison.Ordinal)
+                || !int.TryParse(projectRef[(Source.Length + 1)..], out int modId))
+                throw new InvalidOperationException("Bu paket bir CurseForge modpack'i değil.");
+            var files = await FilesAsync(modId);
+            var target = files.FirstOrDefault(f => f.Id == fileId) ?? throw new InvalidOperationException("Sürüm bulunamadı.");
+            using var job = new DownloadJob($"{instance.Name} → {target.DisplayName}") { Phase = "Modpack indiriliyor" };
+            var temp = new List<string>();
+            try
+            {
+                List<string> oldFiles = instance.PackFiles ?? new List<string>();
+                if (instance.PackFiles == null)
+                {
+                    var old = files.FirstOrDefault(f => f.DisplayName == instance.ModpackVersion)
+                        ?? throw new InvalidOperationException("Kurulu sürüm CurseForge'da bulunamadı; eski dosyalar güvenle ayrılamıyor. Paketi yeniden kurmak daha güvenli.");
+                    job.Phase = "Kurulu sürüm okunuyor";
+                    string oldPath = await DownloadPackFileAsync(old, job);
+                    temp.Add(oldPath);
+                    using var oldZip = ZipFile.OpenRead(oldPath);
+                    var oldManifest = await ReadManifestAsync(oldZip);
+                    var (oldDownloads, oldManual) = await ResolveManifestAsync(oldManifest);
+                    oldFiles = PackContent(oldDownloads, oldManual, oldZip, oldManifest);
+                }
+
+                job.Phase = "Modpack indiriliyor";
+                string zipPath = await DownloadPackFileAsync(target, job);
+                temp.Add(zipPath);
+                using var zip = ZipFile.OpenRead(zipPath);
+                var manifest = await ReadManifestAsync(zip);
+                string mcVersion = manifest.Minecraft?.Version ?? throw new InvalidDataException("Modpack hangi Minecraft sürümünü istediğini belirtmiyor.");
+                var (loader, loaderVersion) = ReadLoader(manifest);
+                job.Phase = "Mod listesi alınıyor";
+                var (downloads, manual) = await ResolveManifestAsync(manifest);
+                var newFiles = PackContent(downloads, manual, zip, manifest);
+
+                string dir = InstanceStore.PathOf(instance.Folder);
+                job.Phase = "Ayarlar yedekleniyor";
+                ModpackFiles.BackupConfigs(dir, instance.ModpackVersion);
+                int removed = ModpackFiles.RemoveOld(dir, oldFiles, newFiles);
+                _log($"{instance.Name}: eski sürümden {removed} dosya kaldırıldı.", "muted");
+
+                await DownloadManifestFilesAsync(downloads, dir, job);
+                job.Phase = "Ayarlar yerleştiriliyor";
+                ModrinthService.ExtractOverrides(zip, OverridesPrefix(manifest), dir);
+
+                // Kayıtlar: eski paketin içerik kayıtları yenileriyle değişir, sonradan eklenenler kalır
+                var oldSet = oldFiles.ToHashSet(StringComparer.OrdinalIgnoreCase);
+                instance.Content.RemoveAll(c => oldSet.Contains(ModpackFiles.Normalize(c.File)));
+                foreach (var d in downloads) instance.Content.Add(ContentOf(d));
+                instance.PendingManual = manual;
+                instance.McVersion = mcVersion;
+                instance.Loader = loader;
+                instance.LoaderVersion = loaderVersion;
+                instance.ModpackVersion = target.DisplayName;
+                instance.PackFiles = newFiles;
+                InstanceStore.Save(instance);
+                _log($"{instance.Name} artık {target.DisplayName}.", "ok");
+                job.Complete($"{instance.Name} {target.DisplayName} sürümünde");
+                return manual;
+            }
+            catch (Exception ex) { job.Fail(ex.Message); throw; }
+            finally { foreach (var t in temp) try { File.Delete(t); } catch { } }
         }
 
         /// <summary>"forge-47.2.0", "neoforge-20.4.190", "fabric-0.15.7", "quilt-0.20.0" biçiminden.</summary>

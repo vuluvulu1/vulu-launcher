@@ -46,6 +46,50 @@ namespace VuluLauncher.ViewModels
     }
 
     /// <summary>Kurulacak sürümün seçimi. Sonuç seçilen sürümün kimliği.</summary>
+    /// <summary>Kurulu modpack'in sürümleri: kurulu olan işaretli; seçilen sürümün kimliği döner.</summary>
+    internal sealed partial class ModpackVersionModal(string packName) : ModalViewModel
+    {
+        public override double Width => 640;
+        public string Title => $"{packName} — sürüm değiştir";
+        public string Note => "Paketin modları seçtiğin sürümünkilerle değişir; sonradan eklediğin modlar ve dünyalar kalır. Ayarlar (config) önce yedeklenir.";
+        public ObservableCollection<ModpackVersionRow> Versions { get; } = new();
+        [ObservableProperty] private string? _message = "Sürümler yükleniyor...";
+        [ObservableProperty] private bool _isError;
+
+        public async Task LoadAsync(string instanceId)
+        {
+            try
+            {
+                var r = await CoreClient.Instance.Call("instances.modpackVersions", new { id = instanceId });
+                foreach (var v in r.Items("versions"))
+                {
+                    string type = v.Text("type") ?? "release";
+                    string meta = string.Join(" · ", new[]
+                    {
+                        string.Join(", ", v.Items("mc").Select(g => g.GetString()).TakeLast(2)),
+                        Names.Ago(v.Text("date")),
+                    }.Where(s => !string.IsNullOrEmpty(s)));
+                    Versions.Add(new ModpackVersionRow(this, v.Text("id") ?? "", v.Text("name") ?? "", type switch { "beta" => "Beta", "alpha" => "Alfa", _ => null },
+                        v.Bool("current"), v.Get("available").ValueKind != System.Text.Json.JsonValueKind.False, meta));
+                }
+                Message = Versions.Count == 0 ? "Sürüm bulunamadı." : null;
+            }
+            catch (Exception ex) { Message = ex.Message; IsError = true; }
+        }
+    }
+
+    internal sealed partial class ModpackVersionRow(ModpackVersionModal owner, string id, string name, string? badge, bool current, bool available, string meta) : ObservableObject
+    {
+        public string Name { get; } = name;
+        public string? Badge { get; } = badge;
+        public bool HasBadge => Badge != null;
+        public bool IsCurrent { get; } = current;
+        public bool CanPick => !current && available;
+        public string ActionText => current ? "Kurulu" : available ? "Bu sürüme geç" : "İndirilemez";
+        public string Meta { get; } = meta;
+        [RelayCommand] private void Pick() { if (CanPick) owner.Close(id); }
+    }
+
     internal sealed partial class VersionPickerModal(ContentHit hit) : ModalViewModel
     {
         private static readonly Dictionary<string, string> TypeNames = new() { ["release"] = "Kararlı", ["beta"] = "Beta", ["alpha"] = "Alfa" };
@@ -167,7 +211,7 @@ namespace VuluLauncher.ViewModels
         public ObservableCollection<ManualRow> Rows { get; } = new();
         public bool HasInstance => _instanceId != null;
         public string Help => HasInstance
-            ? "Dosyaları indirmen yeterli: launcher İndirilenler klasörünü izliyor, inen her dosyanın doğru dosya olduğunu kontrol edip kendiliğinden yerine koyuyor."
+            ? "Dosyaları indirmen yeterli: launcher İndirilenler klasörünü izliyor, inen her dosyanın doğru dosya olduğunu kontrol edip kendiliğinden yerine taşıyor (İndirilenler'de kopyası kalmaz)."
             : "Dosyaları instance klasöründe yazan klasöre koy.";
         public bool HasMany => Rows.Count > 1;
 
