@@ -37,6 +37,9 @@ namespace VuluLauncher.Tests
         [InlineData("https://www.curseforge.com/minecraft/mc-mods/jei", "curseforge", "mod", "jei")]
         [InlineData("https://www.curseforge.com/minecraft/modpacks/all-the-mods-10", "curseforge", "modpack", "all-the-mods-10")]
         [InlineData("https://www.curseforge.com/minecraft/texture-packs/faithful-32x", "curseforge", "resourcepack", "faithful-32x")]
+        [InlineData("www.curseforge.com/minecraft/modpacks/all-the-mods-10", "curseforge", "modpack", "all-the-mods-10")]
+        [InlineData("curseforge.com/minecraft/mc-mods/jei", "curseforge", "mod", "jei")]
+        [InlineData("modrinth.com/mod/sodium", "modrinth", "mod", "sodium")]
         public void ParsesProjectLinks(string link, string source, string type, string slug)
         {
             Assert.True(ViewModels.ContentSearchViewModel.TryParseLink(link, out var s, out var t, out var g));

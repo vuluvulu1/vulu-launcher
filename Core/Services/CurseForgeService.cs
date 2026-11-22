@@ -70,13 +70,15 @@ namespace VuluLauncher
         private static int? SortField(string? sort, bool hasQuery) => sort switch
         {
             "downloads" => 6, "follows" => 2, "newest" => 11, "updated" => 3, "relevance" => null,
-            _ => hasQuery ? null : 2,
+            // "Otomatik": popülerlik. CurseForge sıralama verilmeden aranınca kelimelerden birini tutan yüzlerce projeyi
+            // anlamsız bir sırayla döndürüyor (ör. "all the mods 10" ilk sayfada çıkmıyordu)
+            _ => 2,
         };
 
         public async Task<(List<CfMod> Hits, int Total)> SearchAsync(string query, string type, string? mcVersion, string? loader,
-            int offset, string? sort, IEnumerable<int>? categoryIds)
+            int offset, string? sort, IEnumerable<int>? categoryIds, int pageSize = PageSize)
         {
-            var q = new List<string> { $"classId={ClassIdOf(type)}", $"index={Math.Max(0, offset)}", $"pageSize={PageSize}" };
+            var q = new List<string> { $"classId={ClassIdOf(type)}", $"index={Math.Max(0, offset)}", $"pageSize={pageSize}" };
             if (!string.IsNullOrWhiteSpace(query)) q.Add("searchFilter=" + Uri.EscapeDataString(query.Trim()));
             if (!string.IsNullOrEmpty(mcVersion)) q.Add("gameVersion=" + Uri.EscapeDataString(mcVersion));
             if (type is "mod" or "modpack" && LoaderTypeOf(loader) is { } lt) q.Add($"modLoaderType={lt}");
@@ -110,7 +112,8 @@ namespace VuluLauncher
                 if (exact.Data?.FirstOrDefault(m => string.Equals(m.Slug, slug, StringComparison.OrdinalIgnoreCase)) is { } hit) return hit;
             }
             catch { /* eski API kısa adı iletmeyebilir; metinle aranır */ }
-            var (hits, _) = await SearchAsync(slug.Replace('-', ' '), type, null, null, 0, null, null);
+            // Kısa addan türeyen metinle, en popülerler önce, 50 sonuç taranır
+            var (hits, _) = await SearchAsync(slug.Replace('-', ' '), type, null, null, 0, "follows", null, pageSize: 50);
             return hits.FirstOrDefault(m => string.Equals(m.Slug, slug, StringComparison.OrdinalIgnoreCase));
         }
 

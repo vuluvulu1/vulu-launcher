@@ -401,7 +401,7 @@ namespace VuluLauncher.ViewModels
             {
                 List.Add(new SocialFeedLink(this, IsFeed));
                 List.Add(new SocialFeedLink(this, View == "board", "board"));
-                List.Add(new SocialFeedLink(this, View == "map", "map"));
+                // Harita artık Sunucular'da (sunucu çekmecesindeki "Harita" düğmesi)
             }
 
             var incoming = _incoming.Where(Match).ToList();

@@ -39,7 +39,7 @@ namespace VuluLauncher.ViewModels
                 _all.Add(new PaletteItem("Eylem", $"{target.Name}: mod ekle", null, () => main.OpenAddContentAsync(target)));
             Page("servers", "Sunucular");
             _all.Add(new PaletteItem("Sayfa", "Liderlik tablosu", null, () => { main.SelectedTab = main.Tabs.First(t => t.Key == "social"); main.Social.ShowWorld("board"); return Task.CompletedTask; }));
-            _all.Add(new PaletteItem("Sayfa", "Dünya haritası", null, () => { main.SelectedTab = main.Tabs.First(t => t.Key == "social"); main.Social.ShowWorld("map"); return Task.CompletedTask; }));
+            _all.Add(new PaletteItem("Sayfa", "Dünya haritası", null, () => main.Servers.OpenMapAsync()));
             Page("social", "Sosyal");
             Page("settings", "Ayarlar");
             if (main.IsAdmin) Page("admin", "Admin paneli");

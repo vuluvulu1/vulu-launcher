@@ -463,9 +463,9 @@ namespace VuluLauncher.ViewModels
         private string? _pendingSlug;
 
         private static readonly System.Text.RegularExpressions.Regex ModrinthLink =
-            new(@"^https?://(www\.)?modrinth\.com/(?<type>mod|modpack|resourcepack|shader|datapack|plugin)/(?<slug>[A-Za-z0-9_.-]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            new(@"^(https?://)?(www\.)?modrinth\.com/(?<type>mod|modpack|resourcepack|shader|datapack|plugin)/(?<slug>[A-Za-z0-9_.-]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         private static readonly System.Text.RegularExpressions.Regex CurseForgeLink =
-            new(@"^https?://(www\.)?curseforge\.com/minecraft/(?<type>mc-mods|modpacks|texture-packs|shaders)/(?<slug>[A-Za-z0-9_.-]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            new(@"^(https?://)?(www\.)?curseforge\.com/minecraft/(?<type>mc-mods|modpacks|texture-packs|shaders)/(?<slug>[A-Za-z0-9_.-]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
         /// <summary>Proje adresi mi: kaynak (curseforge/modrinth), tür (mod, modpack, resourcepack, shader) ve kısa ad.</summary>
         internal static bool TryParseLink(string text, out string source, out string type, out string slug)
