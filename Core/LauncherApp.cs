@@ -79,6 +79,14 @@ namespace VuluLauncher
             _bridge.On("auth.login", async args => await LoginAsync(args));
 
             _bridge.On("launcher.check", async _ => await CheckLauncherVersionAsync());
+            // Yenilikler: kurulu sürümün notları (yayın bilgisinden; yayındaki son sürüm bu değilse notlar boş döner)
+            _bridge.On("launcher.notes", async _ =>
+            {
+                var (_, latest) = await _launcherUpdates.CheckForUpdateAsync();
+                string current = VuluShared.Releases.Clean(LauncherUpdateService.LocalVersion);
+                bool same = latest != null && VuluShared.Releases.Clean(latest.Version) == current;
+                return new { version = current, notes = same ? latest!.Notes : null };
+            });
             _bridge.On("launcher.update", async _ => _host.CanSelfUpdate ? StartLauncherUpdate() : await InstallAndroidUpdateAsync());
             _bridge.On("launcher.allowInstalls", _ => { _host.OpenInstallPermissionSettings(); return Task.FromResult<object?>(null); });
 
@@ -243,6 +251,7 @@ namespace VuluLauncher
                 // Kayıtlı şifre arayüze gönderilmez; arayüz sadece var olduğunu bilir
                 hasSavedPassword = !string.IsNullOrEmpty(password),
                 ramOptionsGb = PackCatalog.RamOptionsGb,
+                totalRamGb = MemoryCheck.Read()?.TotalGb ?? 0,
                 settings = AppSettings.Current,
                 // Pencere bildirim alanından geri açıldıysa oturum hâlâ açıktır: arayüz giriş ekranını atlayıp devam eder
                 session = string.IsNullOrEmpty(_login.Token) ? null : new { username = _login.Username, isAdmin = _login.IsAdmin },

@@ -401,6 +401,7 @@ namespace VuluLauncher.ViewModels
                 if (IsAdmin) _ = Admin.RefreshRegistrationsAsync();
                 _ = Notifications.LoadAsync();
                 _ = RefreshFeedbackCountAsync();
+                _ = ShowWhatsNewAsync(auto: true);
             }
             if (!useSplash) StartBackground();
             await Home.LoadAsync();
@@ -639,6 +640,35 @@ namespace VuluLauncher.ViewModels
         }
 
         public Task AlertAsync(string title, string message) => ConfirmAsync(title, message, "Tamam", null);
+
+        /// <summary>
+        /// Yenilikler: güncellemeden sonraki ilk açılışta o sürümün notları bir kez gösterilir (ilk kurulumda değil);
+        /// Ayarlar › Launcher'dan her zaman yeniden açılır.
+        /// </summary>
+        public async Task ShowWhatsNewAsync(bool auto)
+        {
+            if (!LoggedIn) return;
+            string? seen = UiState.Get("whatsNewSeen");
+            if (auto)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3));   // açılış bitsin, başka kutular önce açılsın
+                if (seen == null) { UiState.Set("whatsNewSeen", Version); return; }   // ilk kurulum: gösterilmez
+                if (seen == Version) return;
+            }
+            JsonElement r;
+            try { r = await _core.Call("launcher.notes"); }
+            catch (Exception ex) { if (!auto) await AlertAsync("Yenilikler alınamadı", ex.Message); return; }
+            string version = r.Text("version") ?? Version;
+            string? notes = r.Text("notes");
+            if (string.IsNullOrWhiteSpace(notes))
+            {
+                if (!auto) await AlertAsync(Version, "Bu sürümün notları bulunamadı.");
+                return;   // notlar henüz yoksa otomatik açılış bir sonraki sefer yeniden dener
+            }
+            if (auto && Modals.Count > 0) return;   // başka bir kutu açıksa üstüne binmesin; sonraki açılışta gösterilir
+            UiState.Set("whatsNewSeen", Version);
+            await AlertAsync($"v{version} ile gelenler", notes.Trim());
+        }
 
         /// <summary>Adminlere açık launcher bildirimlerinin sayısı (geri bildirim düğmesinde rozet).</summary>
         [ObservableProperty] private int _feedbackCount;

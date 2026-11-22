@@ -31,6 +31,10 @@ namespace VuluLauncher.ViewModels
         public string? PackId { get; init; }
         /// <summary>CurseForge ya da Modrinth'ten kurulmuş hazır modpack.</summary>
         public bool IsModpack { get; init; }
+        /// <summary>Kütüphanede sıralama: toplam oynama süresi, son oynanma, eklenme.</summary>
+        public double PlaySeconds { get; init; }
+        public DateTime? LastPlayed { get; init; }
+        public DateTime? CreatedAt { get; init; }
 
         public bool IsCustom => Kind == "custom";
         /// <summary>
@@ -73,6 +77,9 @@ namespace VuluLauncher.ViewModels
             SharedPackId = e.Text("sharedPackId"),
             PackId = e.Text("packId"),
             IsModpack = e.Bool("isModpack"),
+            PlaySeconds = e.Num("playSeconds"),
+            LastPlayed = DateTime.TryParse(e.Text("lastPlayed"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var lp) ? lp : null,
+            CreatedAt = DateTime.TryParse(e.Text("createdAt"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var ca) ? ca : null,
         };
     }
 
@@ -113,15 +120,18 @@ namespace VuluLauncher.ViewModels
     /// <summary>Alt bilgi alanındaki dünya kartı.</summary>
     internal sealed partial class WorldTile : ObservableObject
     {
-        public WorldTile(string name, string meta, string? icon)
+        public WorldTile(string name, string meta, string? icon, bool canQuickPlay = false)
         {
             Name = name;
+            CanQuickPlay = canQuickPlay;
             Meta = meta;
             _ = Load(icon);
         }
 
         public string Name { get; }
         public string Meta { get; }
+        /// <summary>Oyun doğrudan bu dünyada açılabilir (Minecraft 1.20+).</summary>
+        public bool CanQuickPlay { get; }
         [ObservableProperty] private Bitmap? _icon;
         private async Task Load(string? url) => Icon = await Images.LoadAsync(url, 64);
     }
@@ -314,6 +324,54 @@ namespace VuluLauncher.ViewModels
             try { await _core.Call("files.open", new { target = "logs", id = s.Id }); } catch (Exception ex) { AppendLog(ex.Message, "error"); }
         }
 
+        /// <summary>
+        /// Oyunun günlüğünü paylaşılabilir bağlantıya çevirir (mclo.gs): önce sorulur, bağlantı panoya kopyalanır.
+        /// Kullanıcı adı ve oturum anahtarları yüklemeden önce gizlenir.
+        /// </summary>
+        [RelayCommand]
+        private async Task ShareLog()
+        {
+            if (Selected is not { } s) return;
+            if (!await Main.ConfirmAsync("Günlüğü paylaş",
+                    "Oyunun son günlüğü mclo.gs'ye yüklenir ve bağlantıyı bilen herkes görebilir. Windows kullanıcı adın ve oturum anahtarların yüklemeden önce gizlenir.\n\nBağlantı panoya kopyalanır; yardım isterken onu yapıştır.",
+                    "Yükle ve kopyala")) return;
+            try
+            {
+                var r = await _core.Call("logs.share", new { id = s.Id });
+                string url = r.Text("url") ?? "";
+                if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime { MainWindow: { } w }
+                    && Avalonia.Controls.TopLevel.GetTopLevel(w)?.Clipboard is { } clipboard)
+                    await Avalonia.Input.Platform.ClipboardExtensions.SetTextAsync(clipboard, url);
+                AppendLog("Günlük paylaşıldı: " + url, "ok");
+                Main.ShowToast("Bağlantı kopyalandı", url);
+            }
+            catch (Exception ex) { await Main.AlertAsync("Günlük paylaşılamadı", ex.Message); }
+        }
+
+        // ── Konsolda arama ──
+        // Arama yazılınca yalnızca eşleşen satırlar görünür; yeni gelen satırlar da süzülür.
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ConsoleView))]
+        private string _consoleQuery = "";
+        private readonly System.Collections.ObjectModel.ObservableCollection<LogLine> _consoleMatches = new();
+        private bool _consoleWatch;
+        public System.Collections.IEnumerable ConsoleView => string.IsNullOrWhiteSpace(ConsoleQuery) ? Console : _consoleMatches;
+
+        partial void OnConsoleQueryChanged(string value)
+        {
+            if (!_consoleWatch) { Console.CollectionChanged += (_, _) => { if (!string.IsNullOrWhiteSpace(ConsoleQuery)) RefilterConsole(); }; _consoleWatch = true; }
+            RefilterConsole();
+        }
+
+        private void RefilterConsole()
+        {
+            string q = ConsoleQuery.Trim();
+            _consoleMatches.Clear();
+            if (q.Length == 0) return;
+            foreach (var line in Console)
+                if (line.Text.Contains(q, StringComparison.OrdinalIgnoreCase)) _consoleMatches.Add(line);
+        }
+
         /// <summary>Konsoldaki bütün satırlar düz yazı olarak (panoya kopyalamak için).</summary>
         public string ConsoleText() { FlushLog(); return string.Join(Environment.NewLine, Console.Select(l => $"{l.Time}  {l.Text}")); }
 
@@ -397,7 +455,30 @@ namespace VuluLauncher.ViewModels
             CanLaunchGame = init.Get("canLaunchGame").ValueKind != JsonValueKind.False;
             RamOptions.Clear();
             foreach (var gb in init.Items("ramOptionsGb")) RamOptions.Add(gb.GetInt32());
+            _totalRamGb = init.Num("totalRamGb");
         }
+
+        // ── Bellek önerisi ──
+        // "Önerilen" yerine sayı: paketin önerdiği (bilgisayara sığacak kadar) ve bilgisayardaki toplam RAM; fazla seçilince uyarı.
+        private double _totalRamGb;
+        /// <summary>Windows'a da yer bırakarak oyuna verilebilecek en çok bellek (MemoryCheck ile aynı pay).</summary>
+        private int SafeMaxRamGb => _totalRamGb > 0 ? Math.Max(2, (int)Math.Floor(_totalRamGb - 2.5)) : int.MaxValue;
+        public int RecommendedRamFor(InstanceItem item) =>
+            Math.Min(SafeMaxRamGb, Math.Max(RamOptions.FirstOrDefault(4), RamOptions.LastOrDefault(gb => gb <= item.RecommendedRamGb)));
+
+        public string RamHint
+        {
+            get
+            {
+                if (Selected is not { } item) return "";
+                int rec = RecommendedRamFor(item);
+                string machine = _totalRamGb > 0 ? $"bilgisayarda {Math.Round(_totalRamGb):0} GB RAM var" : "";
+                if (RamGb > SafeMaxRamGb) return $"{RamGb} GB bu bilgisayar için fazla ({machine}); oyun en çok {SafeMaxRamGb} GB ile açılır.";
+                if (RamGb < rec) return $"Bu paket için önerilen {rec} GB; daha azıyla takılabilir" + (machine.Length > 0 ? $" · {machine}" : "");
+                return $"Önerilen {rec} GB" + (machine.Length > 0 ? $" · {machine}" : "");
+            }
+        }
+        public bool RamWarn => Selected is { } item && (RamGb > SafeMaxRamGb || RamGb < RecommendedRamFor(item));
 
         /// <summary>Girişten sonra: paketler listelenir, son seçilen paket seçilir; bekleyen çökme özeti gösterilir.</summary>
         public async Task LoadAsync()
@@ -551,8 +632,10 @@ namespace VuluLauncher.ViewModels
             UpdatePlayingHere();
             // Pakete ayrıca seçilen RAM; yoksa Ayarlar'daki varsayılan; o da "Önerilen"se paketin önerdiği
             int fallback = RamOptions.Contains(AppSettings.Current.DefaultRamGb) ? AppSettings.Current.DefaultRamGb
-                : Math.Max(RamOptions.FirstOrDefault(4), RamOptions.LastOrDefault(gb => gb <= value.RecommendedRamGb));
+                : RecommendedRamFor(value);
             RamGb = int.TryParse(UiState.Get("ram_" + value.Id), out int saved) && RamOptions.Contains(saved) ? saved : fallback;
+            OnPropertyChanged(nameof(RamHint));
+            OnPropertyChanged(nameof(RamWarn));
             PackUpdateText = _packUpdates.TryGetValue(value.Id, out var u) ? $"rev {u.Int("from")} → rev {u.Int("to")}" : null;
             _ = LoadVisualsAsync(value);
             _ = LoadVersionsAsync(value);
@@ -582,6 +665,8 @@ namespace VuluLauncher.ViewModels
         partial void OnRamGbChanged(int value)
         {
             if (Selected != null) UiState.Set("ram_" + Selected.Id, value.ToString(CultureInfo.InvariantCulture));
+            OnPropertyChanged(nameof(RamHint));
+            OnPropertyChanged(nameof(RamWarn));
         }
 
         partial void OnGameRunningChanged(bool value)
@@ -714,7 +799,8 @@ namespace VuluLauncher.ViewModels
                 case "worlds":
                     Worlds.Clear();
                     foreach (var w in data.Items("worlds").OrderByDescending(w => w.Text("lastPlayed")).Take(8))
-                        Worlds.Add(new WorldTile(w.Text("name") ?? "", Names.Ago(w.Text("lastPlayed")) + (w.Items("backups").Count() is > 0 and var n ? $" · {n} yedek" : ""), w.Text("icon")));
+                        Worlds.Add(new WorldTile(w.Text("name") ?? "", Names.Ago(w.Text("lastPlayed")) + (w.Items("backups").Count() is > 0 and var n ? $" · {n} yedek" : ""), w.Text("icon"),
+                            GameLauncher.SupportsQuickPlay(CanPickVersion ? McVersion ?? instance.McVersion : instance.McVersion)));
                     if (Worlds.Count == 0) InfoMessage = "Henüz dünya yok. Oyunu açıp bir dünya oluşturunca burada görünür.";
                     break;
                 case "shots":
@@ -920,6 +1006,10 @@ namespace VuluLauncher.ViewModels
 
         [RelayCommand(CanExecute = nameof(CanPlay))]
         private Task Play() => PlayAsync(false, false, "");
+
+        /// <summary>Dünya listesindeki "Oyna": oyun açılınca menüye uğramadan doğrudan o dünyaya girer.</summary>
+        [RelayCommand]
+        private Task PlayWorld(WorldTile world) => CanPlay ? PlayAsync(false, false, GameLauncher.WorldPrefix + world.Name) : Task.CompletedTask;
 
         /// <summary>Seçili paketi açar; join verilirse oyun doğrudan o sunucuya bağlanır.</summary>
         public async Task PlayAsync(bool ignoreMissing, bool ignoreFiles, string join)

@@ -68,6 +68,14 @@ namespace VuluLauncher
             {
                 _hwnd = _window.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
                 RoundCorners(_hwnd);
+                UpdateTaskbarProgress();
+            };
+            // Görev çubuğu simgesinde indirme ilerlemesi (launcher arkadayken de görünsün)
+            _viewModel.Downloads.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName is nameof(DownloadsViewModel.Percent) or nameof(DownloadsViewModel.Running) or nameof(DownloadsViewModel.Paused)
+                    or nameof(DownloadsViewModel.Indeterminate) or nameof(DownloadsViewModel.FailedState) or nameof(DownloadsViewModel.Visible))
+                    UpdateTaskbarProgress();
             };
             // Simge durumuna küçültülünce (oyun açılınca küçült ayarı dahil) bildirim alanındaki gibi verimlilik modu ve
             // bellek geri verme; pencere geri gelince normale döner
@@ -117,6 +125,17 @@ namespace VuluLauncher
                 _visible = true;
                 WindowVisibilityChanged?.Invoke(true);
             }
+        }
+
+        private void UpdateTaskbarProgress()
+        {
+            if (_viewModel?.Downloads is not { } d) return;
+            var state = !d.Visible || d.Done ? TaskbarProgress.State.None
+                : d.FailedState ? TaskbarProgress.State.Error
+                : d.Paused ? TaskbarProgress.State.Paused
+                : d.Indeterminate ? TaskbarProgress.State.Indeterminate
+                : TaskbarProgress.State.Normal;
+            TaskbarProgress.Set(_hwnd, state, d.Percent);
         }
 
         private void EnterTray()

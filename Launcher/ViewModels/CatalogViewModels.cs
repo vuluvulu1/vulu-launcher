@@ -455,8 +455,52 @@ namespace VuluLauncher.ViewModels
         private string Command(string name) => (IsCurseForge ? "cf." : "modrinth.") + name;
         private IEnumerable<InstanceItem> Customs => _main.Home.Instances.Where(i => i.Kind == "custom");
 
+        // ── Bağlantı yapıştırma ──
+        // Arama kutusuna CurseForge ya da Modrinth proje adresi yapıştırılınca kaynak ve tür ona göre seçilir, adres
+        // projenin kısa adıyla aranır ve o proje sonuçlarda çıkınca ayrıntıları açılır (arkadaşın attığı bağlantıdan kurmak).
+        /// <summary>Kaynak değişmeli (pencere kendi kaynak seçicisinden geçirir).</summary>
+        public Action<string>? SourceRequested { get; set; }
+        private string? _pendingSlug;
+
+        private static readonly System.Text.RegularExpressions.Regex ModrinthLink =
+            new(@"^https?://(www\.)?modrinth\.com/(?<type>mod|modpack|resourcepack|shader|datapack|plugin)/(?<slug>[A-Za-z0-9_.-]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        private static readonly System.Text.RegularExpressions.Regex CurseForgeLink =
+            new(@"^https?://(www\.)?curseforge\.com/minecraft/(?<type>mc-mods|modpacks|texture-packs|shaders)/(?<slug>[A-Za-z0-9_.-]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        /// <summary>Proje adresi mi: kaynak (curseforge/modrinth), tür (mod, modpack, resourcepack, shader) ve kısa ad.</summary>
+        internal static bool TryParseLink(string text, out string source, out string type, out string slug)
+        {
+            text = text.Trim();
+            var m = ModrinthLink.Match(text);
+            if (m.Success)
+            {
+                source = "modrinth";
+                type = m.Groups["type"].Value.ToLowerInvariant() switch { "datapack" or "plugin" => "mod", var t => t };
+                slug = m.Groups["slug"].Value;
+                return true;
+            }
+            m = CurseForgeLink.Match(text);
+            if (m.Success)
+            {
+                source = "curseforge";
+                type = m.Groups["type"].Value.ToLowerInvariant() switch { "modpacks" => "modpack", "texture-packs" => "resourcepack", "shaders" => "shader", _ => "mod" };
+                slug = m.Groups["slug"].Value;
+                return true;
+            }
+            source = type = slug = "";
+            return false;
+        }
+
         partial void OnQueryChanged(string value)
         {
+            if (TryParseLink(value, out var source, out var type, out var slug))
+            {
+                _pendingSlug = slug;
+                Query = slug;   // kısa adla aranır (bu değişiklik aramayı başlatır)
+                if (Types.FirstOrDefault(t => t.Key == type) is { } choice && choice.Key != Type) _ = SelectType(choice);
+                if (source != Source) SourceRequested?.Invoke(source);
+                return;
+            }
             _debounce?.Stop();
             _debounce = new DispatcherTimer(TimeSpan.FromMilliseconds(350), DispatcherPriority.Normal, (_, _) => { _debounce?.Stop(); _ = SearchAsync(false); });
             _debounce.Start();
@@ -667,6 +711,12 @@ namespace VuluLauncher.ViewModels
             int added = 0;
             foreach (var h in result.Items("hits")) { Hits.Add(new ContentHit(this, h, IsCurseForge)); added++; }
             _offset += added;
+            // Yapıştırılan bağlantının projesi geldiyse ayrıntıları açılır
+            if (!append && _pendingSlug is { } wanted && Query.Trim().Equals(wanted, StringComparison.OrdinalIgnoreCase))
+            {
+                _pendingSlug = null;
+                if (Hits.FirstOrDefault(h => h.Slug.Equals(wanted, StringComparison.OrdinalIgnoreCase)) is { } hit) _ = ShowDetailsAsync(hit);
+            }
             HasMore = _offset < _total && added > 0;
 
             // Paketin getirdiği ya da elle konan modlar da "kurulu" görünsün (dosya hash'leriyle bulunur)

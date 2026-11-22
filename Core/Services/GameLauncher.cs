@@ -180,7 +180,18 @@ namespace VuluLauncher
         /// Başlatılamazsa nedenini açıklayan bir hata fırlatır.
         /// </summary>
         /// <param name="skins">Verilirse oyun vulu skin sistemiyle (authlib-injector) açılır; null ise eskisi gibi çevrimdışı.</param>
-        /// <param name="serverAddress">Verilirse oyun açılınca doğrudan bu sunucuya bağlanır (host ya da host:port).</param>
+        /// <summary>serverAddress bununla başlarsa sunucu değil, instance'taki tek oyunculu dünyanın klasör adıdır.</summary>
+        public const string WorldPrefix = "world:";
+
+        /// <summary>Oyunun doğrudan bir dünyada açılması (--quickPlaySingleplayer) Minecraft 1.20 ile geldi; snapshot adları da kabul edilir.</summary>
+        public static bool SupportsQuickPlay(string mcVersion)
+        {
+            var parts = mcVersion.Split('.');
+            if (parts.Length >= 2 && parts[0] == "1" && int.TryParse(parts[1], out int minor)) return minor >= 20;
+            return System.Text.RegularExpressions.Regex.IsMatch(mcVersion, @"^\d{2}w\d{2}[a-z]$") && int.Parse(mcVersion[..2]) >= 23;
+        }
+
+        /// <param name="serverAddress">Verilirse oyun açılınca doğrudan bu sunucuya bağlanır (host ya da host:port); "world:&lt;klasör&gt;" ise o dünyaya.</param>
         /// <param name="microsoft">Verilirse oyun gerçek Microsoft oturumuyla açılır (resmi skin, online-mode sunucular); skins yok sayılır.</param>
         public async Task LaunchAsync(LaunchTarget target, string username, int ramGb, SkinSession? skins = null, string? serverAddress = null,
             PhaseTimer? timer = null, MicrosoftSession? microsoft = null)
@@ -246,6 +257,14 @@ namespace VuluLauncher
                     JavaPath = javaPath,
                     FullScreen = settings.Fullscreen
                 };
+                // "world:<klasör>": oyun doğrudan o tek oyunculu dünyada açılır (Quick Play, Minecraft 1.20+)
+                string? world = null;
+                if (serverAddress?.StartsWith(WorldPrefix, StringComparison.Ordinal) == true)
+                {
+                    world = serverAddress[WorldPrefix.Length..];
+                    serverAddress = null;
+                    if (!SupportsQuickPlay(target.McVersion) || world.Length == 0 || world.IndexOfAny(['"', '\\', '/']) >= 0) world = null;
+                }
                 if (!string.IsNullOrEmpty(serverAddress))
                 {
                     var (host, port) = ServerPing.Split(serverAddress);
@@ -273,6 +292,11 @@ namespace VuluLauncher
                 timer?.Mark("oyun dosyaları");
 
                 if (skins != null) AddSkinAgent(process.StartInfo, skins);
+                if (world != null)
+                {
+                    if (process.StartInfo.ArgumentList.Count > 0) { process.StartInfo.ArgumentList.Add("--quickPlaySingleplayer"); process.StartInfo.ArgumentList.Add(world); }
+                    else process.StartInfo.Arguments += $" --quickPlaySingleplayer \"{world}\"";
+                }
 
                 // Launcher oyun açılınca kapanacaksa çıktı yönlendirilmez; okuyan kalmayacağı için
                 bool closeAfterStart = settings.OnGameStart == "close";

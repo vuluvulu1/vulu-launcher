@@ -73,7 +73,7 @@ namespace VuluLauncher
                     {
                         // Ayrıntısıyla günlüğe: kullanıcı "hata verdi" dediğinde nedeni buradan bulunur
                         if (ex is not InvalidOperationException) LogFile.Write($"[{command}] {ex}");
-                        Respond(requestId, false, null, ex.Message);
+                        Respond(requestId, false, null, FriendlyErrors.Message(ex));
                     }
                 });
             }
@@ -105,7 +105,11 @@ namespace VuluLauncher
             catch (Exception ex)
             {
                 if (ex is not InvalidOperationException) LogFile.Write($"[{command}] {ex}");
-                throw;
+                // Arayüz iletiyi olduğu gibi gösterir: ham .NET iletisi yerine sade Türkçe açıklama (türü de korunsun diye
+                // yalnızca iletisi değişenler sarılır; launcher'ın kendi iletileri olduğu gibi geçer)
+                string friendly = FriendlyErrors.Message(ex);
+                if (friendly == ex.Message) throw;
+                throw new InvalidOperationException(friendly, ex);
             }
         }
 

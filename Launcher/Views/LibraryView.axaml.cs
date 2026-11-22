@@ -24,6 +24,7 @@ namespace VuluLauncher.Views
         private readonly ObservableCollection<object> _items = new();
         private HomeViewModel? _vm;
         private string _filter = "all";
+        private string _sort = "recent";
         private bool _syncing;
 
         public LibraryView()
@@ -49,6 +50,15 @@ namespace VuluLauncher.Views
             };
             Posters.SelectionChanged += OnPosterSelected;
             SearchBox.TextChanged += (_, _) => Rebuild();
+            _sort = VuluLauncher.Native.UiState.Get("librarySort") is { } saved && saved is "recent" or "name" or "playtime" or "added" ? saved : "recent";
+            SortBox.SelectedItem = SortBox.Items.OfType<ComboBoxItem>().First(i => (string?)i.Tag == _sort);
+            SortBox.SelectionChanged += (_, _) =>
+            {
+                if (SortBox.SelectedItem is not ComboBoxItem { Tag: string tag } || tag == _sort) return;
+                _sort = tag;
+                VuluLauncher.Native.UiState.Set("librarySort", tag);
+                Rebuild();
+            };
             DataContextChanged += (_, _) => Bind(DataContext as HomeViewModel);
             KutPolish.AttachSearch(this, SearchBox);
             PosterScroll.SizeChanged += (_, e) => FitPosters(e.NewSize.Width);
@@ -178,16 +188,24 @@ namespace VuluLauncher.Views
                     "update" => i.HasUpdate,
                     _ => true,
                 })
-                .Where(i => q.Length == 0 || tr.CompareInfo.IndexOf(i.Name, q, CompareOptions.IgnoreCase) >= 0)
-                .ToList<object>();
+                .Where(i => q.Length == 0 || tr.CompareInfo.IndexOf(i.Name, q, CompareOptions.IgnoreCase) >= 0);
+            list = _sort switch
+            {
+                "name" => list.OrderBy(i => i.Name, StringComparer.Create(tr, ignoreCase: true)),
+                "playtime" => list.OrderByDescending(i => i.PlaySeconds).ThenBy(i => i.Name, StringComparer.Create(tr, ignoreCase: true)),
+                "added" => list.OrderByDescending(i => i.CreatedAt ?? DateTime.MinValue),
+                // Son oynanan; hiç oynanmamışlar en yeni eklenen önce
+                _ => list.OrderByDescending(i => i.LastPlayed ?? DateTime.MinValue).ThenByDescending(i => i.CreatedAt ?? DateTime.MinValue),
+            };
+            var items = list.ToList<object>();
             // Kurulmakta olan paketler sonda, ilerleme halkasıyla (güncelleme süzgeci ve arama dışında)
-            if (_filter != "update" && q.Length == 0) list.AddRange(_vm.Pending);
-            if (_filter is "all" or "mine" && q.Length == 0) list.Add(NewPackCard.Instance);
+            if (_filter != "update" && q.Length == 0) items.AddRange(_vm.Pending);
+            if (_filter is "all" or "mine" && q.Length == 0) items.Add(NewPackCard.Instance);
             // Süzgeç ya da arama değişince kapaklar tek tek belirmesin; yalnızca eklenen yeni paket belirsin
             _bulk = _filter != _lastFilter || q != _lastQuery;
             _lastFilter = _filter; _lastQuery = q;
             if (_removing) return;   // solma bitince yeniden kurulur
-            var newKeys = list.Select(KeyOf).ToHashSet();
+            var newKeys = items.Select(KeyOf).ToHashSet();
             bool animate = !_bulk && _welcomeShown != null && Posters.IsEffectivelyVisible;
             if (animate && !_faded)
             {
@@ -223,7 +241,7 @@ namespace VuluLauncher.Views
                 foreach (var o in _items)
                     if (Posters.ContainerFromItem(o) is { } c && c.Opacity > 0.01) before[KeyOf(o)] = c.Bounds.Position;
             _syncing = true;
-            _items.SyncTo(list);
+            _items.SyncTo(items);
             _bulk = false;
             _prevKeys = newKeys;
             if (before.Count > 0)

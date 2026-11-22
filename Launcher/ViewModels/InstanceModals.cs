@@ -265,8 +265,104 @@ namespace VuluLauncher.ViewModels
 
         public override double Width => 720;
         public string Title => $"{_item.Name} — içerik";
+        /// <summary>Görünen satırlar (süzgeç ve aramaya göre); bütün liste <see cref="_all"/>.</summary>
         public ObservableCollection<ContentRow> Rows { get; } = new();
+        private readonly List<ContentRow> _all = new();
         [ObservableProperty] private string _summary = "Yükleniyor...";
+
+        // ── Süzgeç, arama ve toplu işlem ──
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsFilterAll), nameof(IsFilterOn), nameof(IsFilterOff), nameof(IsFilterUpdates))]
+        private string _filter = "all";
+        public bool IsFilterAll => Filter == "all";
+        public bool IsFilterOn => Filter == "on";
+        public bool IsFilterOff => Filter == "off";
+        public bool IsFilterUpdates => Filter == "updates";
+        [ObservableProperty] private string _query = "";
+        [ObservableProperty] private string _allText = "Tümü";
+        [ObservableProperty] private string _onText = "Açık";
+        [ObservableProperty] private string _offText = "Kapalı";
+        [ObservableProperty] private string _updatesText = "Güncellemesi olan";
+        [ObservableProperty] private bool _hasAnyUpdates;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasSelection), nameof(SelectionText))]
+        private int _selectedCount;
+        public bool HasSelection => SelectedCount > 0;
+        public string SelectionText => $"{SelectedCount} seçili";
+        [ObservableProperty] private bool _noMatch;
+
+        partial void OnFilterChanged(string value) => ApplyFilter();
+        partial void OnQueryChanged(string value) => ApplyFilter();
+        [RelayCommand] private void SetFilter(string filter) => Filter = filter;
+
+        internal void SelectionChanged() => SelectedCount = _all.Count(r => r.IsSelected);
+
+        private void ApplyFilter()
+        {
+            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            string q = Query.Trim();
+            var show = _all.Where(r => Filter switch { "on" => r.Enabled, "off" => !r.Enabled, "updates" => r.HasUpdate, _ => true })
+                .Where(r => q.Length == 0 || tr.CompareInfo.IndexOf(r.Title, q, CompareOptions.IgnoreCase) >= 0
+                            || tr.CompareInfo.IndexOf(r.File, q, CompareOptions.IgnoreCase) >= 0)
+                .ToList();
+            Rows.Clear();
+            foreach (var r in show) Rows.Add(r);
+            NoMatch = show.Count == 0 && _all.Count > 0;
+            int on = _all.Count(r => r.Enabled), upd = _all.Count(r => r.HasUpdate);
+            AllText = $"Tümü {_all.Count}";
+            OnText = $"Açık {on}";
+            OffText = $"Kapalı {_all.Count - on}";
+            UpdatesText = $"Güncellemesi olan {upd}";
+            HasAnyUpdates = upd > 0;
+        }
+
+        /// <summary>Görünen satırların hepsini seçer; hepsi seçiliyse seçimi bırakır.</summary>
+        [RelayCommand]
+        private void SelectAll()
+        {
+            bool all = Rows.Count > 0 && Rows.All(r => r.IsSelected);
+            foreach (var r in Rows) r.SetSelected(!all);
+            SelectionChanged();
+        }
+
+        [RelayCommand]
+        private void ClearSelection()
+        {
+            foreach (var r in _all) r.SetSelected(false);
+            SelectionChanged();
+        }
+
+        [RelayCommand] private Task EnableSelected() => SetSelectedEnabledAsync(true);
+        [RelayCommand] private Task DisableSelected() => SetSelectedEnabledAsync(false);
+
+        private async Task SetSelectedEnabledAsync(bool enabled)
+        {
+            var rows = _all.Where(r => r.IsSelected && r.Enabled != enabled).ToList();
+            foreach (var r in rows)
+            {
+                try { await _core.Call("instances.setContentEnabled", new { id = _item.Id, file = r.File, enabled }); }
+                catch (Exception ex) { _main.Home.AppendLog($"{r.Title}: {ex.Message}", "error"); }
+            }
+            _updates = null;
+            await LoadAsync();
+            _main.Home.RefreshDetails();
+        }
+
+        [RelayCommand]
+        private async Task RemoveSelected()
+        {
+            var rows = _all.Where(r => r.IsSelected).ToList();
+            if (rows.Count == 0) return;
+            string what = rows.Count == 1 ? $"'{rows[0].Title}'" : $"{rows.Count} dosya";
+            if (!await _main.ConfirmAsync("Dosyaları kaldır", $"{what} bu instance'tan kaldırılsın mı?", "Kaldır", danger: true)) return;
+            foreach (var r in rows)
+            {
+                try { await _core.Call("instances.removeContent", new { id = _item.Id, file = r.File }); }
+                catch (Exception ex) { _main.Home.AppendLog($"{r.Title}: {ex.Message}", "error"); }
+            }
+            await LoadAsync();
+            _main.Home.RefreshDetails();
+        }
         [ObservableProperty] private string _checkText = "Güncellemeleri denetle";
         [ObservableProperty] private bool _canCheck = true;
         [ObservableProperty] private int _stableUpdates;
@@ -292,17 +388,23 @@ namespace VuluLauncher.ViewModels
             try { content = await _core.Call("instances.content", new { id = _item.Id }); }
             catch (Exception ex) { Summary = ""; LoadError = Errors.Friendly(ex); return; }
             LoadError = null;
-            Rows.Clear();
+            // Seçim yenilemeden sonra da kalsın (dosya adına göre)
+            var selected = _all.Where(r => r.IsSelected).Select(r => r.File).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            _all.Clear();
             foreach (var i in content.Items("items"))
             {
                 string file = i.Text("file") ?? "";
                 var update = _updates != null && _updates.TryGetValue(file, out var u) ? u : (JsonElement?)null;
-                Rows.Add(new ContentRow(this, file, i.Text("title") ?? file,
+                var row = new ContentRow(this, file, i.Text("title") ?? file,
                     string.Join(" · ", new[] { TypeNames.GetValueOrDefault(i.Text("type") ?? ""), i.Text("version"), i.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR")) + " MB" }.Where(s => !string.IsNullOrEmpty(s))),
-                    i.Get("enabled").ValueKind != JsonValueKind.False, i.Text("iconUrl"), update));
+                    i.Get("enabled").ValueKind != JsonValueKind.False, i.Text("iconUrl"), update);
+                if (selected.Contains(file)) row.SetSelected(true);
+                _all.Add(row);
             }
-            IsEmpty = Rows.Count == 0;
-            Summary = $"{Rows.Count} dosya · Minecraft {content.Text("mcVersion")} · {Names.Loader(content.Text("loader"))}";
+            ApplyFilter();
+            SelectionChanged();
+            IsEmpty = _all.Count == 0;
+            Summary = $"{_all.Count} dosya · Minecraft {content.Text("mcVersion")} · {Names.Loader(content.Text("loader"))}";
             StableUpdates = _updates?.Values.Count(u => u.Bool("stable")) ?? 0;
         }
 
@@ -391,6 +493,12 @@ namespace VuluLauncher.ViewModels
         public string? UpdateText { get; }
         public bool HasUpdate => UpdateText != null;
         [ObservableProperty] private bool _enabled;
+        /// <summary>Toplu işlem için seçili (satırın solundaki kutu).</summary>
+        [ObservableProperty] private bool _isSelected;
+        private bool _quietSelect;
+
+        internal void SetSelected(bool value) { _quietSelect = true; IsSelected = value; _quietSelect = false; }
+        partial void OnIsSelectedChanged(bool value) { if (!_quietSelect) _owner.SelectionChanged(); }
         [ObservableProperty] private Bitmap? _icon;
 
         private async Task LoadIcon(string? url) => Icon = await Images.LoadAsync(url, 64);

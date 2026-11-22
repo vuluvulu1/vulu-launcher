@@ -666,7 +666,7 @@
                           IsEnabled="{Binding CanPlay}" VerticalAlignment="Center" Margin="0,0,10,0" MinWidth="100" MaxDropDownHeight="360"
                           ToolTip.Tip="Minecraft sürümü" />
                 <ComboBox Classes="bar" ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}"
-                          VerticalAlignment="Center" Margin="0,0,10,0" MinWidth="96" ToolTip.Tip="Oyuna ayrılacak bellek">
+                          VerticalAlignment="Center" Margin="0,0,10,0" MinWidth="96" ToolTip.Tip="{Binding RamHint}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="x:Int32">
                             <TextBlock Text="{Binding StringFormat='{}{0} GB'}" />

@@ -30,6 +30,8 @@ namespace VuluLauncher.ViewModels
             Main = main;
             Packs = main.Packs;
             Search = new ContentSearchViewModel(main, null);
+            // Arama kutusuna yapıştırılan bağlantı başka kaynağınsa (CurseForge/Modrinth) o kaynağa geçilir
+            Search.SourceRequested = key => { if (Sources.FirstOrDefault(s => s.Key == key) is { } item) Select(item); };
             Blank = new InstanceEditorModal(null);
             _ = ForwardBlankAsync();
             Sources.Add(new SourceItem("packs", "vulu Packs", "Ekibin hazırladığı paketler", "M4 7.5L12 3l8 4.5v9L12 21l-8-4.5zM4 7.5l8 4.5l8-4.5M12 12v9"));
@@ -80,6 +82,7 @@ namespace VuluLauncher.ViewModels
         {
             Target = target;
             Search = new ContentSearchViewModel(main, target);
+            Search.SourceRequested = key => { if (Sources.FirstOrDefault(s => s.Key == key) is { } choice) Select(choice); };
             Sources.Add(new Choice("curseforge", "CurseForge"));
             Sources.Add(new Choice("modrinth", "Modrinth"));
             string start = UiState.Get("addContentSource") == "modrinth" ? "modrinth" : "curseforge";

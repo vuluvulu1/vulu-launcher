@@ -48,6 +48,9 @@ namespace VuluLauncher
             _bridge.On("storage.usage", async _ => await Task.Run(Storage.Usage));
             _bridge.On("storage.clear", async _ => await Task.Run(Storage.Clear));
             _bridge.On("files.open", args => Task.FromResult<object?>(OpenFolder(args.Str("target"), args.Str("id"))));
+            // Oyun günlüğünü paylaşılabilir bağlantıya çevirir (arayüz önce kullanıcıya sorar)
+            _bridge.On("logs.share", async args =>
+                new { url = await LogShare.UploadAsync(Path.Combine(AppPaths.Instances, ResolveTarget(args.Str("id")).Target.Folder, "logs", "latest.log")) });
 
             _bridge.On("auth.logout", _ => Task.FromResult<object?>(Logout()));
             _bridge.On("auth.forgetPassword", _ =>
@@ -64,6 +67,7 @@ namespace VuluLauncher
         {
             RequireLogin();
 
+            var played = PlayTimeStore.All();   // kütüphanede son oynanana ve süreye göre sıralamak için
             var packs = PackCatalog.All.Select(p =>
             {
                 string? custom = BackgroundUrl(PackPrefix + p.Id);
@@ -85,7 +89,9 @@ namespace VuluLauncher
                 backgroundStyle = custom != null ? "cover" : p.BackgroundStyle,
                 hasCustomBackground = custom != null,
                 thumbnail = p.Thumbnail,
-                iconUrl = (string?)null
+                iconUrl = (string?)null,
+                playSeconds = played.GetValueOrDefault(PackPrefix + p.Id)?.Seconds ?? 0,
+                lastPlayed = played.GetValueOrDefault(PackPrefix + p.Id)?.LastPlayed?.ToString("o"),
             };
             });
 
@@ -116,7 +122,10 @@ namespace VuluLauncher
                 customIcon = icon,
                 backgroundAsIcon = m.BackgroundAsIcon != false,
                 thumbnail = icon ?? (m.BackgroundAsIcon != false ? background : null),
-                iconUrl = m.IconUrl
+                iconUrl = m.IconUrl,
+                playSeconds = played.GetValueOrDefault(InstancePrefix + m.Folder)?.Seconds ?? 0,
+                lastPlayed = played.GetValueOrDefault(InstancePrefix + m.Folder)?.LastPlayed?.ToString("o"),
+                createdAt = m.CreatedAt.ToString("o"),
             };
             });
 
@@ -591,6 +600,7 @@ namespace VuluLauncher
             {
                 settings = AppSettings.Current,
                 ramOptionsGb = PackCatalog.RamOptionsGb,
+                totalRamGb = MemoryCheck.Read()?.TotalGb ?? 0,
                 installedJava = JavaManager.InstalledVersions().OrderBy(v => v),
                 screen = _host.ScreenWorkArea is { } area ? new { width = area.Width, height = area.Height } : null,
                 canHideToTray = _host.CanHideToTray,

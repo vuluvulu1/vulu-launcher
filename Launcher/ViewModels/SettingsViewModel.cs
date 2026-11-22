@@ -107,7 +107,9 @@ namespace VuluLauncher.ViewModels
         /// </summary>
         private (SettingSection Game, SettingSection Advanced) GameSections(JsonElement info)
         {
-            var ram = new List<(string, string)> { ("0", "Önerilen") };
+            // "Önerilen": her paketin önerdiği bellek, bilgisayara sığacak kadar; bilgisayardaki RAM yanında yazar
+            double totalRam = info.Num("totalRamGb");
+            var ram = new List<(string, string)> { ("0", totalRam > 0 ? $"Önerilen (bilgisayarda {Math.Round(totalRam):0} GB)" : "Önerilen") };
             ram.AddRange(info.Items("ramOptionsGb").Select(gb => (gb.GetInt32().ToString(CultureInfo.InvariantCulture), gb.GetInt32() + " GB")));
 
             var javaPath = new TextRow("Java dosyası", "Elle seçilen java.exe.", S("customJavaPath"), @"C:\...\bin\java.exe",
@@ -185,6 +187,8 @@ namespace VuluLauncher.ViewModels
             Func<bool, Task<bool>> toggle(string key) => value => Change((key, value));
 
             return new SettingSection("Launcher")
+                .Add(new ActionRow("Yenilikler", "Kurulu sürümle gelen değişiklikler.") { Value = main.Version }
+                    .With(new RowAction("Göster", () => main.ShowWhatsNewAsync(auto: false))))
                 .Add(new ChoiceRow("Oyun açılınca", "\"Kapat\" seçilirse oyun çıktısı konsolda görünmez ve oynama süresi sayılmaz.",
                     new[] { ("keep", "Açık kalsın"), ("minimize", "Küçült"), ("close", "Kapat") }, S("onGameStart", "keep"), value => Change(("onGameStart", value))))
                 .Add(new ToggleRow("Açılış animasyonunu atla", null, B("skipSplash"), toggle("skipSplash")))

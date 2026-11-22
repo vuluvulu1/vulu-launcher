@@ -15,6 +15,7 @@
         <x:Double x:Key="PosterH">230</x:Double>
     </UserControl.Resources>
     <UserControl.Styles>
+        <Style Selector="TextBlock.ramwarn"><Setter Property="Foreground" Value="{StaticResource Warn}" /></Style>
         <!-- Instance sayfası: dünya satırı, içerik satırı, ayar satırı -->
         <Style Selector="Button.prow">
             <Setter Property="Background" Value="{StaticResource Panel}" /><Setter Property="BorderBrush" Value="{StaticResource CardLine}" /><Setter Property="BorderThickness" Value="1" />
@@ -223,6 +224,13 @@
                 <!-- Arama süzgeçlerin hemen yanında (sağ üstte tek başına kalmasın) -->
                 <TextBox x:Name="SearchBox" Width="220" Height="34" Watermark="Paket ara (Ctrl+F)" VerticalContentAlignment="Center" CornerRadius="17" Margin="8,0,0,0" />
             </StackPanel>
+            <!-- Sıralama: son oynanan, ad, oynama süresi, eklenme -->
+            <ComboBox x:Name="SortBox" Grid.Column="3" Height="34" MinWidth="170" VerticalAlignment="Center" CornerRadius="17" ToolTip.Tip="Sırala">
+                <ComboBoxItem Tag="recent" Content="Son oynanan" />
+                <ComboBoxItem Tag="name" Content="Ada göre" />
+                <ComboBoxItem Tag="playtime" Content="En çok oynanan" />
+                <ComboBoxItem Tag="added" Content="Son eklenen" />
+            </ComboBox>
         </Grid>
 
         <!-- ── Kapak ızgarası ── -->
@@ -363,15 +371,17 @@
                         <Button Classes="dbtn" Padding="12,0" Content="Yedekler ve geri yükleme" IsVisible="{Binding IsPageWorlds}" Command="{Binding OpenWorldsCommand}" />
                         <Button Classes="dbtn" Padding="12,0" Content="{Binding ShotsMore}" IsVisible="{Binding IsPageShots}" Command="{Binding OpenShotsCommand}" />
                         <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsPageLog}">
+                            <TextBox Width="130" Height="34" Watermark="Ara" Text="{Binding ConsoleQuery}" ToolTip.Tip="Konsolda ara" VerticalContentAlignment="Center" CornerRadius="17" />
+                            <Button Classes="dbtn" Padding="12,0" Content="Paylaş" Command="{Binding ShareLogCommand}" ToolTip.Tip="Oyunun günlüğünü mclo.gs'ye yükler, bağlantıyı panoya kopyalar (yardım isterken at)" />
                             <Button Classes="dbtn" Padding="12,0" Content="Kopyala" Click="OnCopyLog" ToolTip.Tip="Konsoldaki bütün satırları panoya kopyalar (hata bildirirken yapıştırılabilir)" />
-                            <Button Classes="dbtn" Padding="12,0" Content="Günlük klasörü" Command="{Binding OpenLogsCommand}" ToolTip.Tip="Oyunun günlük dosyaları (latest.log)" />
+                            <Button Classes="dbtn" Padding="12,0" Content="Klasör" Command="{Binding OpenLogsCommand}" ToolTip.Tip="Oyunun günlük dosyaları (latest.log)" />
                             <Button Classes="dbtn" Padding="12,0" Content="Temizle" Command="{Binding ClearConsoleCommand}" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>
             </Border>
             <Panel>
-                        <ItemsControl x:Name="LogList" IsVisible="{Binding IsPageLog}" ItemsSource="{Binding Console}">
+                        <ItemsControl x:Name="LogList" IsVisible="{Binding IsPageLog}" ItemsSource="{Binding ConsoleView}">
                             <ItemsControl.Template>
                                 <ControlTemplate>
                                     <ScrollViewer Name="PART_ScrollViewer" HorizontalScrollBarVisibility="Disabled">
@@ -407,7 +417,18 @@
                                                 <Image Source="{Binding Icon}" Stretch="UniformToFill" />
                                             </Border>
                                             <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" Margin="12,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Grid.Column="2" Text="{Binding Meta}" Classes="dim" FontSize="12" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" VerticalAlignment="Center" />
+                                                <!-- Oyunu doğrudan bu dünyada açar (Minecraft 1.20+) -->
+                                                <Button Classes="primary" Height="30" Padding="12,0" FontSize="12.5" FontWeight="SemiBold" VerticalContentAlignment="Center"
+                                                        IsVisible="{Binding CanQuickPlay}" ToolTip.Tip="Oyunu açıp doğrudan bu dünyaya gir"
+                                                        Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PlayWorldCommand}" CommandParameter="{Binding}">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="9" Height="9" Stretch="Uniform" VerticalAlignment="Center" />
+                                                        <TextBlock Text="Oyna" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </StackPanel>
                                         </Grid>
                                     </Button>
                                 </DataTemplate>
@@ -431,9 +452,31 @@
                 <!-- İçerik: modlar, kaynak paketleri, shaderlar (aç/kapa, güncelle, kaldır) -->
                 <DockPanel IsVisible="{Binding IsPageContent}">
                     <TextBlock DockPanel.Dock="Top" Text="{Binding PageContent.Summary}" Classes="dim" FontSize="12.5" Margin="2,0,0,10" />
+                    <!-- Süzgeç ve arama; seçim varken toplu işlem çubuğu -->
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,10" IsVisible="{Binding !PageContent.IsEmpty, FallbackValue=False}">
+                        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding !PageContent.HasSelection}">
+                            <Button Classes="chip-filter" Classes.on="{Binding PageContent.IsFilterAll}" Content="{Binding PageContent.AllText}" Command="{Binding PageContent.SetFilterCommand}" CommandParameter="all" />
+                            <Button Classes="chip-filter" Classes.on="{Binding PageContent.IsFilterOn}" Content="{Binding PageContent.OnText}" Command="{Binding PageContent.SetFilterCommand}" CommandParameter="on" />
+                            <Button Classes="chip-filter" Classes.on="{Binding PageContent.IsFilterOff}" Content="{Binding PageContent.OffText}" Command="{Binding PageContent.SetFilterCommand}" CommandParameter="off" />
+                            <Button Classes="chip-filter" Classes.on="{Binding PageContent.IsFilterUpdates}" Content="{Binding PageContent.UpdatesText}" IsVisible="{Binding PageContent.HasAnyUpdates}"
+                                    Command="{Binding PageContent.SetFilterCommand}" CommandParameter="updates" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding PageContent.HasSelection, FallbackValue=False}">
+                            <TextBlock Text="{Binding PageContent.SelectionText}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="2,0,8,0" />
+                            <Button Classes="dbtn" Height="32" Padding="12,0" Content="Aç" Command="{Binding PageContent.EnableSelectedCommand}" />
+                            <Button Classes="dbtn" Height="32" Padding="12,0" Content="Kapat" Command="{Binding PageContent.DisableSelectedCommand}" />
+                            <Button Classes="dbtn" Height="32" Padding="12,0" Content="Kaldır" Foreground="{StaticResource Error}" Command="{Binding PageContent.RemoveSelectedCommand}" />
+                            <Button Classes="dbtn" Height="32" Padding="12,0" Content="Seçimi bırak" Command="{Binding PageContent.ClearSelectionCommand}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                            <Button Classes="dbtn" Height="32" Padding="12,0" Content="Tümünü seç" Command="{Binding PageContent.SelectAllCommand}" ToolTip.Tip="Görünenlerin hepsini seç ya da bırak" />
+                            <TextBox Width="200" Height="32" Watermark="İçerikte ara" Text="{Binding PageContent.Query}" VerticalContentAlignment="Center" CornerRadius="16" />
+                        </StackPanel>
+                    </Grid>
                     <Panel>
                         <v:EmptyState IsVisible="{Binding PageContent.HasLoadError, FallbackValue=False}" Margin="0,30,0,0" VerticalAlignment="Top" Icon="!" Title="İçerik alınamadı"
                                       Text="{Binding PageContent.LoadError}" ActionText="Tekrar dene" Command="{Binding PageContent.RetryCommand}" />
+                        <v:EmptyState IsVisible="{Binding PageContent.NoMatch, FallbackValue=False}" Margin="0,30,0,0" VerticalAlignment="Top" Icon="🔍" Title="Bu süzgeçte içerik yok" Text="Başka bir süzgeç seç ya da aramayı temizle." />
                         <v:EmptyState IsVisible="{Binding PageContent.IsEmpty}" Margin="0,30,0,0" VerticalAlignment="Top" Icon="🧩" Title="Henüz içerik yok"
                                       Text="CurseForge ya da Modrinth'ten mod, kaynak paketi ya da shader ekle." ActionText="+ İçerik ekle" Command="{Binding PageAddContentCommand}" />
                         <!-- Liste boşken kaydırma alanı gizli: yoksa boş durum kutusunun üstünü örtüp düğmeyi tıklanmaz yapıyordu -->
@@ -442,18 +485,19 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:ContentRow">
                                         <Border Classes="crow" Classes.off="{Binding !Enabled}">
-                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="12">
-                                                <Border Width="40" Height="40" CornerRadius="9" Background="{StaticResource Raised}" ClipToBounds="True">
+                                            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="12">
+                                                <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center" MinWidth="0" Padding="0" ToolTip.Tip="Toplu işlem için seç" />
+                                                <Border Grid.Column="1" Width="40" Height="40" CornerRadius="9" Background="{StaticResource Raised}" ClipToBounds="True">
                                                     <Image Source="{Binding Icon}" Stretch="UniformToFill" />
                                                 </Border>
-                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2">
                                                     <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                                     <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis" />
                                                 </StackPanel>
-                                                <Button Grid.Column="2" Classes="dbtn" Height="30" Padding="10,0" FontSize="12" Foreground="{StaticResource AccentHi}"
+                                                <Button Grid.Column="3" Classes="dbtn" Height="30" Padding="10,0" FontSize="12" Foreground="{StaticResource AccentHi}"
                                                         Content="{Binding UpdateText}" IsVisible="{Binding HasUpdate}" Command="{Binding UpdateCommand}" VerticalAlignment="Center" />
-                                                <ToggleSwitch Grid.Column="3" IsChecked="{Binding Enabled}" OnContent="" OffContent="" VerticalAlignment="Center" ToolTip.Tip="Aç / kapat" />
-                                                <Button Grid.Column="4" Classes="dbtn" Width="34" Height="30" Padding="0" Command="{Binding RemoveCommand}" VerticalAlignment="Center" ToolTip.Tip="Kaldır">
+                                                <ToggleSwitch Grid.Column="4" IsChecked="{Binding Enabled}" OnContent="" OffContent="" VerticalAlignment="Center" ToolTip.Tip="Aç / kapat" />
+                                                <Button Grid.Column="5" Classes="dbtn" Width="34" Height="30" Padding="0" Command="{Binding RemoveCommand}" VerticalAlignment="Center" ToolTip.Tip="Kaldır">
                                                     <Path Data="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10 11v5M14 11v5" Stroke="{StaticResource Dim}" StrokeThickness="1.6" Width="14" Height="14" Stretch="Uniform" />
                                                 </Button>
                                             </Grid>
@@ -579,9 +623,11 @@
                         </Grid>
                         <ProgressBar Value="{Binding Progress}" Maximum="100" IsIndeterminate="{Binding Indeterminate}" />
                     </StackPanel>
+                    <!-- Bellek: önerilen GB ve bilgisayardaki RAM; az ya da fazla seçilince uyarı renginde -->
+                    <TextBlock Text="{Binding RamHint}" FontSize="11.5" TextWrapping="Wrap" Classes="dim" Classes.ramwarn="{Binding RamWarn}" />
                     <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
                         <!-- Sürüm seçilemeyen pakette bellek iki sütunu birden kaplar (araya dolgu düğmesi konmaz) -->
-                        <ComboBox Classes="dcombo" ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}" ToolTip.Tip="Oyuna ayrılacak bellek"
+                        <ComboBox Classes="dcombo" ItemsSource="{Binding RamOptions}" SelectedItem="{Binding RamGb}" ToolTip.Tip="{Binding RamHint}"
                                   Grid.ColumnSpan="{Binding CanPickVersion, Converter={x:Static v:KutBrushes.SpanUnless}}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="x:Int32"><TextBlock Text="{Binding StringFormat='Bellek {0} GB'}" /></DataTemplate>
