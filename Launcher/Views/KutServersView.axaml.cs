@@ -42,6 +42,9 @@ namespace VuluLauncher.Views
         {
             if (Drawer.DataContext == card) return;
             bool had = Drawer.DataContext != null;
+            // Çekmecedeki sunucunun sohbeti hep açık (yoklanır); önceki sunucununki durur
+            if (Drawer.DataContext is ServerCard old && old != card) old.ChatOpen = false;
+            if (card is { HasChat: true }) card.ChatOpen = true;
             Drawer.DataContext = card;
             if (had && card != null) KutPolish.Swap(Drawer);
         }

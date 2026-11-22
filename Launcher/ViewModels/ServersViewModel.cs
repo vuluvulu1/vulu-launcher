@@ -177,6 +177,9 @@ namespace VuluLauncher.ViewModels
         private bool _chatSending;
         [ObservableProperty] private string? _chatStatus;
         [ObservableProperty] private bool _chatEmpty;
+        /// <summary>Kayıtlı geçmişte daha eski satırlar var ("Daha eski mesajlar").</summary>
+        [ObservableProperty] private bool _chatHasOlder;
+        [ObservableProperty] private bool _chatLoadingOlder;
         public string ChatButton => ChatOpen ? "Sohbeti gizle" : "Oyun sohbeti";
         private int _chatSeq;
         private DispatcherTimer? _chatTimer;
@@ -191,8 +194,8 @@ namespace VuluLauncher.ViewModels
             {
                 _chatTimer ??= new DispatcherTimer(TimeSpan.FromSeconds(3), DispatcherPriority.Background, async (_, _) =>
                 {
-                    // Sayfadan çıkılınca yoklama durur; dönülünce kart yeniden açılınca başlar
-                    if (!_owner.IsVisible) { ChatOpen = false; return; }
+                    // Sayfa görünmezken yoklanmaz (sohbet açık kalır, dönülünce kaldığı yerden sürer)
+                    if (!_owner.IsVisible) return;
                     await PollChatAsync();
                 });
                 _chatTimer.Start();
@@ -209,7 +212,9 @@ namespace VuluLauncher.ViewModels
             _chatPolling = true;
             try
             {
+                bool first = _chatSeq == 0;
                 var r = await CoreClient.Instance.Call("servers.chat", new { id = Id, after = _chatSeq });
+                if (first) ChatHasOlder = r.Bool("more");
                 bool added = false;
                 foreach (var m in r.Items("messages"))
                 {
@@ -222,13 +227,30 @@ namespace VuluLauncher.ViewModels
                 // Sunucu (API) yeniden başladıysa sayaç küçülür: baştan alınır
                 if (seq < _chatSeq) { Chat.Clear(); _chatSeq = 0; }
                 else _chatSeq = seq;
-                while (Chat.Count > 200) Chat.RemoveAt(0);
+                while (Chat.Count > 400) { Chat.RemoveAt(0); ChatHasOlder = true; }
                 ChatEmpty = Chat.Count == 0;
                 ChatStatus = null;
                 if (added) ChatAdded?.Invoke();
             }
             catch (Exception ex) { ChatStatus = ex.Message; }
             finally { _chatPolling = false; }
+        }
+
+        /// <summary>Listenin başına daha eski 50 satır (kayıtlı geçmişten).</summary>
+        [RelayCommand]
+        private async Task LoadOlderChat()
+        {
+            if (ChatLoadingOlder || Chat.Count == 0) return;
+            ChatLoadingOlder = true;
+            try
+            {
+                var r = await CoreClient.Instance.Call("servers.chat", new { id = Id, before = Chat[0].Seq });
+                var older = r.Items("messages").Select(m => new ChatLine(m)).Where(l => l.Seq < Chat[0].Seq).ToList();
+                for (int i = older.Count - 1; i >= 0; i--) Chat.Insert(0, older[i]);
+                ChatHasOlder = r.Bool("more");
+            }
+            catch (Exception ex) { ChatStatus = ex.Message; }
+            finally { ChatLoadingOlder = false; }
         }
 
         private bool CanSendChat => !ChatSending && ChatDraft.Trim().Length > 0;

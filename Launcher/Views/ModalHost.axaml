@@ -172,6 +172,29 @@
     <ContentControl Content="{Binding}">
         <ContentControl.DataTemplates>
             <!-- ── Soru / bilgi ─────────────────────────────────────────── -->
+            <!-- ── Günlüğü paylaş: vulu'da ya da mclo.gs bağlantısı ── -->
+            <DataTemplate DataType="vm:LogShareModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="Günlüğü paylaş" Margin="22,18,22,0" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap" Margin="22,8,22,14" LineHeight="20"
+                               Text="Oyunun son günlüğü yüklenir; bağlantıyı bilen herkes görebilir. Windows kullanıcı adın ve oturum anahtarların yüklemeden önce gizlenir." />
+                    <StackPanel Spacing="10" Margin="22,0,22,20">
+                        <Button Classes="flat" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="14,12" Command="{Binding VuluCommand}">
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="vulu'da paylaş" FontSize="15" FontWeight="SemiBold" />
+                                <TextBlock Text="Bir üyeye ya da arkadaşına mesajla gönder; açıp sorunu bulmana yardım edebilsin." Classes="dim" FontSize="12.5" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="flat" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="14,12" Command="{Binding MclogsCommand}">
+                            <StackPanel Spacing="3">
+                                <TextBlock Text="mclo.gs bağlantısı" FontSize="15" FontWeight="SemiBold" />
+                                <TextBlock Text="Bağlantı panoya kopyalanır; Discord'a ya da bir foruma yapıştır." Classes="dim" FontSize="12.5" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </DataTemplate>
+
             <DataTemplate DataType="vm:DialogViewModel">
                 <StackPanel>
                     <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,0" />

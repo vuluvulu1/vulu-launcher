@@ -332,17 +332,24 @@ namespace VuluLauncher.ViewModels
         private async Task ShareLog()
         {
             if (Selected is not { } s) return;
-            if (!await Main.ConfirmAsync("Günlüğü paylaş",
-                    "Oyunun son günlüğü mclo.gs'ye yüklenir ve bağlantıyı bilen herkes görebilir. Windows kullanıcı adın ve oturum anahtarların yüklemeden önce gizlenir.\n\nBağlantı panoya kopyalanır; yardım isterken onu yapıştır.",
-                    "Yükle ve kopyala")) return;
+            if (await Main.ShowAsync(new LogShareModal()) is not string how) return;
+            string? to = null;
+            // vulu'da: önce kime gönderileceği seçilir (vazgeçilirse hiçbir şey yüklenmez)
+            if (how == "vulu" && (to = await Main.Social.PickUserAsync("Günlüğü kime gönderelim?")) == null) return;
             try
             {
                 var r = await _core.Call("logs.share", new { id = s.Id });
                 string url = r.Text("url") ?? "";
+                AppendLog("Günlük paylaşıldı: " + url, "ok");
+                if (to != null)
+                {
+                    string text = $"{s.Name} ({s.LoaderLabel} {s.McVersion}) günlüğüm, bakabilir misin? {url}";
+                    if (await Main.Social.SendToAsync(to, text, null)) Main.ShowToast("Gönderildi", $"Günlük {to} adlı kişiye gönderildi.");
+                    return;
+                }
                 if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime { MainWindow: { } w }
                     && Avalonia.Controls.TopLevel.GetTopLevel(w)?.Clipboard is { } clipboard)
                     await Avalonia.Input.Platform.ClipboardExtensions.SetTextAsync(clipboard, url);
-                AppendLog("Günlük paylaşıldı: " + url, "ok");
                 Main.ShowToast("Bağlantı kopyalandı", url);
             }
             catch (Exception ex) { await Main.AlertAsync("Günlük paylaşılamadı", ex.Message); }

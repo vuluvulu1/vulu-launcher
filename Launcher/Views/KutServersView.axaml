@@ -148,8 +148,7 @@
                     <StackPanel DockPanel.Dock="Bottom" Margin="18,10,18,18" Spacing="8">
                         <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
                             <Button Classes="dbtn" Content="Davet et" HorizontalAlignment="Stretch" Command="{Binding InviteCommand}" ToolTip.Tip="Bir arkadaşını mesajla davet et" />
-                            <Button Grid.Column="1" Classes="dbtn" Content="{Binding ChatButton}" IsVisible="{Binding HasChat}" HorizontalAlignment="Stretch" Command="{Binding ToggleChatCommand}" />
-                            <Button Grid.Column="1" Classes="dbtn" Content="Kısayol" IsVisible="{Binding !HasChat}" HorizontalAlignment="Stretch" Command="{Binding ShortcutCommand}" />
+                            <Button Grid.Column="1" Classes="dbtn" Content="Kısayol" HorizontalAlignment="Stretch" Command="{Binding ShortcutCommand}" ToolTip.Tip="Masaüstüne bu sunucuya bağlanan kısayol" />
                             <Button Grid.Column="2" Classes="dbtn" Width="42" Content="⋯" ToolTip.Tip="Diğer işlemler">
                                 <Button.Flyout>
                                     <MenuFlyout Placement="TopEdgeAlignedRight">
@@ -183,7 +182,7 @@
                             <TextBlock FontSize="12.5" Classes="dim"><Run Text="Paket: " /><Run Text="{Binding PackLabel}" /></TextBlock>
                         </StackPanel>
                         <!-- Oyun içi sohbet -->
-                        <Border IsVisible="{Binding ChatOpen}" Background="{StaticResource Surface}" CornerRadius="12" Padding="10" Margin="0,12,0,0">
+                        <Border IsVisible="{Binding HasChat}" Background="{StaticResource Surface}" CornerRadius="12" Padding="10" Margin="0,12,0,0">
                             <DockPanel>
                                 <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,8,0,0">
                                     <TextBox Text="{Binding ChatDraft}" Watermark="Oyundakilere yaz" MaxLength="200">
@@ -192,8 +191,11 @@
                                     <Button Grid.Column="1" Classes="primary dbtn" Content="Gönder" Command="{Binding SendChatCommand}" Margin="8,0,0,0" />
                                 </Grid>
                                 <TextBlock DockPanel.Dock="Bottom" Text="{Binding ChatStatus}" IsVisible="{Binding ChatStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Foreground="{StaticResource Error}" FontSize="12" TextWrapping="Wrap" />
+                                <TextBlock DockPanel.Dock="Top" Text="OYUN SOHBETİ" FontSize="11" FontWeight="SemiBold" LetterSpacing="0.8" Classes="dim" Margin="2,0,0,6" />
                                 <ScrollViewer native:AutoScroll.ToEnd="True">
                                     <StackPanel>
+                                        <Button Classes="flat" Foreground="{StaticResource Accent}" HorizontalAlignment="Center" Margin="0,0,0,6" FontSize="12" IsVisible="{Binding ChatHasOlder}" IsEnabled="{Binding !ChatLoadingOlder}"
+                                                Content="Daha eski mesajlar" Command="{Binding LoadOlderChatCommand}" />
                                         <TextBlock Text="Henüz sohbet yok. Yazdığın mesaj oyunda herkese görünür." IsVisible="{Binding ChatEmpty}" Classes="dim" FontSize="12.5" TextWrapping="Wrap" />
                                         <ItemsControl ItemsSource="{Binding Chat}">
                                             <ItemsControl.ItemTemplate>

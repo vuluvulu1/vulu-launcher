@@ -496,9 +496,21 @@ namespace VuluLauncher.ViewModels
             if (TryParseLink(value, out var source, out var type, out var slug))
             {
                 _pendingSlug = slug;
-                Query = slug;   // kısa adla aranır (bu değişiklik aramayı başlatır)
-                if (Types.FirstOrDefault(t => t.Key == type) is { } choice && choice.Key != Type) _ = SelectType(choice);
-                if (source != Source) SourceRequested?.Invoke(source);
+                // Kutu yazılırken içeriği değiştirmek yazılan hâliyle çakışıyordu (adres kutuda kalıyordu): bir sonraki
+                // turda kısa ada çevrilir; o değişiklik aramayı başlatır
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (Types.FirstOrDefault(t => t.Key == type) is { } choice && choice.Key != Type)
+                    {
+                        foreach (var t in Types) t.IsSelected = t == choice;
+                        Type = choice.Key;
+                        NotifyLayout();
+                        RenderFilters();
+                        _ = LoadFiltersAsync();
+                    }
+                    Query = slug;
+                    if (source != Source) SourceRequested?.Invoke(source);
+                }, DispatcherPriority.Background);
                 return;
             }
             _debounce?.Stop();
@@ -687,7 +699,7 @@ namespace VuluLauncher.ViewModels
             {
                 result = await _core.Call(Command("search"), new
                 {
-                    query = Query.Trim(),
+                    query = _pendingSlug != null && Query.Trim().Equals(_pendingSlug, StringComparison.OrdinalIgnoreCase) ? _pendingSlug.Replace('-', ' ') : Query.Trim(),
                     type = Type,
                     instanceId = targetId,
                     mcVersion = FreeBrowse ? Version?.Key ?? "" : "",

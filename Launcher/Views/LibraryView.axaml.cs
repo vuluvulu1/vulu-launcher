@@ -50,7 +50,8 @@ namespace VuluLauncher.Views
             };
             Posters.SelectionChanged += OnPosterSelected;
             SearchBox.TextChanged += (_, _) => Rebuild();
-            _sort = VuluLauncher.Native.UiState.Get("librarySort") is { } saved && saved is "recent" or "name" or "playtime" or "added" ? saved : "recent";
+            _sort = VuluLauncher.Native.UiState.Get("librarySort") is { } saved && saved is "recent" or "name" or "playtime" or "added" or "custom" ? saved : "recent";
+            InitDrag();
             SortBox.SelectedItem = SortBox.Items.OfType<ComboBoxItem>().First(i => (string?)i.Tag == _sort);
             SortBox.SelectionChanged += (_, _) =>
             {
@@ -65,6 +66,7 @@ namespace VuluLauncher.Views
             // Kapağa tıklayınca ya da seçiliyken Enter: paketin sayfası açılır (kapağın üstündeki ▶ doğrudan başlatır)
             Posters.Tapped += (_, e) =>
             {
+                if (_suppressTap) { _suppressTap = false; return; }   // sürükleyip bırakmak tıklama değil
                 if (e.Source is not Avalonia.Visual v || v.FindAncestorOfType<Button>(true) != null) return;
                 if (v.FindAncestorOfType<ListBoxItem>(true) is { DataContext: InstanceItem item }) _vm?.OpenPageCommand.Execute(item);
             };
@@ -176,6 +178,7 @@ namespace VuluLauncher.Views
         private void Rebuild()
         {
             if (_vm == null) { _items.Clear(); NoMatch.IsVisible = false; return; }
+            if (_dragging) return;   // sürüklerken sıra elle değişiyor
             WatchItems();
             string q = SearchBox.Text?.Trim() ?? "";
             var tr = CultureInfo.GetCultureInfo("tr-TR");
@@ -194,6 +197,7 @@ namespace VuluLauncher.Views
                 "name" => list.OrderBy(i => i.Name, StringComparer.Create(tr, ignoreCase: true)),
                 "playtime" => list.OrderByDescending(i => i.PlaySeconds).ThenBy(i => i.Name, StringComparer.Create(tr, ignoreCase: true)),
                 "added" => list.OrderByDescending(i => i.CreatedAt ?? DateTime.MinValue),
+                "custom" => OrderCustom(list),
                 // Son oynanan; hiç oynanmamışlar en yeni eklenen önce
                 _ => list.OrderByDescending(i => i.LastPlayed ?? DateTime.MinValue).ThenByDescending(i => i.CreatedAt ?? DateTime.MinValue),
             };

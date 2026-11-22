@@ -31,6 +31,17 @@ namespace VuluLauncher.ViewModels
         [RelayCommand] private void PickRow(PickRow row) => Close(row.Value);
     }
 
+    /// <summary>
+    /// Günlüğü paylaş: "vulu'da" (bir üyeye mesajla, yardım istemek için) ya da "mclo.gs" (bağlantı panoya). Sonuç
+    /// "vulu" / "mclogs"; ikisinde de günlük önce mclo.gs'ye yüklenir (kullanıcı adı ve oturum anahtarları gizlenir).
+    /// </summary>
+    internal sealed partial class LogShareModal : ModalViewModel
+    {
+        public override double Width => 520;
+        [RelayCommand] private void Vulu() => Close("vulu");
+        [RelayCommand] private void Mclogs() => Close("mclogs");
+    }
+
     /// <summary>Soru ya da bilgi kutusu: tamam ise true, vazgeç ise null.</summary>
     internal sealed partial class DialogViewModel(string title, string message, string okText, string? cancelText, bool danger) : ModalViewModel
     {

@@ -27,7 +27,9 @@ namespace VuluLauncher
                 RequireLogin();
                 string id = Uri.EscapeDataString(args.Str("id"));
                 long after = args.ValueKind == JsonValueKind.Object && args.TryGetProperty("after", out var a) && a.TryGetInt64(out var n) ? n : 0;
-                return await _api.GetAsync<JsonElement>($"/servers/{id}/chat" + (after > 0 ? $"?after={after}" : ""));
+                // before: daha eski satırlar (kayıtlı geçmişten)
+                long before = args.ValueKind == JsonValueKind.Object && args.TryGetProperty("before", out var b) && b.TryGetInt64(out var m) ? m : 0;
+                return await _api.GetAsync<JsonElement>($"/servers/{id}/chat" + (before > 0 ? $"?before={before}" : after > 0 ? $"?after={after}" : ""));
             });
             _bridge.On("servers.chatSend", async args =>
             {

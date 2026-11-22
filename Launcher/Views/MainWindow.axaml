@@ -552,15 +552,15 @@
                                  Kapanış: ikisi birlikte 0,15 sn'de söner, kutu biraz küçülür (MainViewModel.ShowAsync bekler) -->
                             <Border.Styles>
                                 <Style Selector="Button.modal-close">
-                                    <Setter Property="Width" Value="36" /><Setter Property="Height" Value="36" /><Setter Property="Padding" Value="0" />
-                                    <Setter Property="CornerRadius" Value="18" /><Setter Property="Margin" Value="0,-18,-18,0" />
+                                    <Setter Property="Width" Value="34" /><Setter Property="Height" Value="34" /><Setter Property="Padding" Value="0" />
+                                    <Setter Property="CornerRadius" Value="17" /><Setter Property="Margin" Value="0,-14,-14,0" />
                                     <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Top" />
                                     <Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="VerticalContentAlignment" Value="Center" />
                                     <Setter Property="Background" Value="{StaticResource Raised}" /><Setter Property="BorderBrush" Value="{StaticResource LineStrong}" /><Setter Property="BorderThickness" Value="1" />
                                     <Setter Property="Cursor" Value="Hand" />
                                 </Style>
                                 <Style Selector="Button.modal-close /template/ ContentPresenter#PART_ContentPresenter">
-                                    <Setter Property="CornerRadius" Value="18" />
+                                    <Setter Property="CornerRadius" Value="17" />
                                 </Style>
                                 <Style Selector="Button.modal-close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
                                     <Setter Property="Background" Value="{StaticResource Error}" /><Setter Property="BorderBrush" Value="{StaticResource Error}" />
@@ -573,7 +573,9 @@
                                 </Style>
                                 <Style Selector="Border.backdrop.closing"><Setter Property="IsHitTestVisible" Value="False" /></Style>
                             </Border.Styles>
-                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <!-- Kutu başlık çubuğunun altında kalır (üstte pay) ve kenarlara yapışmaz; büyük kutular bu alana sığacak
+                                 kadar kısalır, köşedeki × de bu payın içinde durur (başlık çubuğuyla ve pencere düğmeleriyle çakışmaz) -->
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="32,76,32,28">
                                 <Border Classes="modal-box" Width="{Binding Width}" MaxHeight="760" Background="{StaticResource Panel}" BorderThickness="1">
                                     <v:ModalHost />
                                 </Border>

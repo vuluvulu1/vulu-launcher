@@ -230,6 +230,7 @@
                 <ComboBoxItem Tag="name" Content="Ada göre" />
                 <ComboBoxItem Tag="playtime" Content="En çok oynanan" />
                 <ComboBoxItem Tag="added" Content="Son eklenen" />
+                <ComboBoxItem Tag="custom" Content="Özel (sürükle bırak)" />
             </ComboBox>
         </Grid>
 
