@@ -117,6 +117,15 @@
     <Style Selector="Window.soft Button.nav:pressed">
         <Setter Property="RenderTransform" Value="none" />
     </Style>
+    <!-- Bulunulan bölüm zeminle parlamaz (yalnızca üstüne gelinen); yazısı amber kalır -->
+    <Style Selector="Window.soft Button.nav.current">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+    </Style>
+    <Style Selector="Window.soft Button.nav.current:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Hover}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+    </Style>
     <Style Selector="Window.soft Button.address">
         <Setter Property="CornerRadius" Value="8" />
     </Style>
