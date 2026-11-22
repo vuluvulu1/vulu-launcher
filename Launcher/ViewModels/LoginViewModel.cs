@@ -265,7 +265,8 @@ namespace VuluLauncher.ViewModels
 
         private bool CanLogin() => !Busy;
 
-        private static bool IsVerifyError(string message) => message.Contains("e-posta adresini doğrula", StringComparison.OrdinalIgnoreCase);
+        private static bool IsVerifyError(string message) => message.Contains("e-posta adresini doğrula", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("verify your email", StringComparison.OrdinalIgnoreCase);
 
         [RelayCommand(CanExecute = nameof(CanLogin))]
         private async Task LoginAsync()

@@ -148,7 +148,7 @@ namespace VuluLauncher
             try
             {
                 var error = await response.Content.ReadFromJsonAsync<ErrorResponse>(Json);
-                if (!string.IsNullOrWhiteSpace(error?.Error)) message = error.Error;
+                if (!string.IsNullOrWhiteSpace(error?.Error)) message = L.T(error.Error);   // sunucunun Türkçe mesajı seçili dile
             }
             catch { /* JSON olmayan hata gövdesi */ }
 
