@@ -104,6 +104,19 @@
         <Setter Property="Background" Value="{StaticResource AccentTintHover}" />
         <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
     </Style>
+    <!-- Ayarlar'ın bölüm menüsü: düğme yazısı kadar (sütunun boş yerinde hover açılmasın), hover yalnızca hafif bir
+         yarı saydam zemin, basınca küçülmez -->
+    <Style Selector="Window.soft Button.nav">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Padding" Value="12,7" />
+    </Style>
+    <Style Selector="Window.soft Button.nav:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Hover}" />
+        <Setter Property="Foreground" Value="{StaticResource Text}" />
+    </Style>
+    <Style Selector="Window.soft Button.nav:pressed">
+        <Setter Property="RenderTransform" Value="none" />
+    </Style>
     <Style Selector="Window.soft Button.address">
         <Setter Property="CornerRadius" Value="8" />
     </Style>
