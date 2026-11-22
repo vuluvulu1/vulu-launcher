@@ -19,7 +19,7 @@ namespace VuluLauncher.Views
         public IImage? Source { get => GetValue(SourceProperty); set => SetValue(SourceProperty, value); }
         public Stretch Stretch { get => GetValue(StretchProperty); set => SetValue(StretchProperty, value); }
 
-        private static readonly TimeSpan Fade = TimeSpan.FromMilliseconds(550);
+        private static readonly TimeSpan Fade = TimeSpan.FromMilliseconds(280);
         private readonly Image _back = NewLayer(), _front = NewLayer();
         private IDisposable? _clear;
 
@@ -50,7 +50,7 @@ namespace VuluLauncher.Views
             if (image == null)
             {
                 // Yeni resim genelde hemen gelir: o arada eski resim kalır; gelmezse söner
-                _clear = DispatcherTimer.RunOnce(() => { _front.Opacity = 0; _back.Opacity = 0; }, TimeSpan.FromMilliseconds(700));
+                _clear = DispatcherTimer.RunOnce(() => { _front.Opacity = 0; _back.Opacity = 0; }, TimeSpan.FromMilliseconds(600));
                 return;
             }
             if (ReferenceEquals(_front.Source, image) && _front.Opacity > 0) return;
@@ -63,12 +63,10 @@ namespace VuluLauncher.Views
             _front.Opacity = 0;
             _front.Source = image;
             _front.Transitions = new Transitions { new DoubleTransition { Property = OpacityProperty, Duration = Fade, Easing = new CubicEaseInOut() } };
-            Dispatcher.UIThread.Post(() =>
-            {
-                _front.Opacity = 1;
-                // Eski resim yenisi belirdikten sonra söner (arada koyu bir boşluk görünmesin)
-                DispatcherTimer.RunOnce(() => { if (!ReferenceEquals(_back.Source, _front.Source)) _back.Opacity = 0; }, Fade);
-            }, DispatcherPriority.Background);
+            _front.Opacity = 1;   // geçiş hemen başlar (bir sonraki kareyi beklemeden)
+            // Eski resim yenisi belirdikten sonra söner (arada koyu bir boşluk görünmesin)
+            var shown = image;
+            DispatcherTimer.RunOnce(() => { if (ReferenceEquals(_front.Source, shown)) _back.Opacity = 0; }, Fade);
         }
     }
 }

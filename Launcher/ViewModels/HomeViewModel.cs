@@ -560,6 +560,8 @@ namespace VuluLauncher.ViewModels
         {
             item.Thumbnail = await Images.LoadAsync(item.ThumbnailUrl ?? item.BackgroundUrl, 96);
             item.Poster = await Images.LoadAsync(item.BackgroundUrl ?? item.ThumbnailUrl, 420);
+            // Bulanık ortam zemini önceden hazırlanır: pakete ilk tıklayınca da arka plan beklemeden değişsin
+            _ = Images.LoadBlurredAsync(item.BackgroundUrl);
         }
 
         // ── Kütüphane: instance sayfası (kapağa tıklayınca kütüphanenin yerine açılır) ──
@@ -685,16 +687,21 @@ namespace VuluLauncher.ViewModels
 
         private async Task LoadVisualsAsync(InstanceItem item)
         {
+            // Üçü birlikte yüklenir; bulanık zemin büyük resmi ve logoyu beklemeden gelir (sırayla yüklenince geç değişiyordu)
             var background = Images.LoadAsync(item.BackgroundUrl, 1920);
             var logo = Images.LoadAsync(item.LogoUrl, 720);
+            var blurredTask = Images.LoadBlurredAsync(item.BackgroundUrl);
+            _ = blurredTask.ContinueWith(t =>
+            {
+                if (t.IsCompletedSuccessfully && Selected == item) BackgroundBlurred = t.Result;
+            }, TaskScheduler.FromCurrentSynchronizationContext());
             var bg = await background;
-            var lg = await logo;
             if (Selected != item) return;
             Background = bg;
+            var lg = await logo;
+            if (Selected != item) return;
             Logo = lg;
             HasLogo = lg != null;
-            var blurred = await Images.LoadBlurredAsync(item.BackgroundUrl);
-            if (Selected == item) BackgroundBlurred = blurred;
         }
 
         /// <summary>İçerik değişince (mod kuruldu, kapatıldı): istatistikler ve alt bilgi yenilenir.</summary>
