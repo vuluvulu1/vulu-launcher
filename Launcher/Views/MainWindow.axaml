@@ -83,7 +83,7 @@
 
                     <!-- Kütüphane: sekmeler yerine geniş arama kutusu (sekmeler soldaki rayda) -->
                     <Border x:Name="SearchPillHost">
-                    <Button x:Name="SearchPill" Classes="search-pill" IsVisible="{Binding ShowShell}" Command="{Binding OpenPaletteCommand}"
+                    <Button x:Name="SearchPill" Classes="search-pill" v:Tour.Target="search" IsVisible="{Binding ShowShell}" Command="{Binding OpenPaletteCommand}"
                             VerticalAlignment="Center" AutomationProperties.Name="Hızlı arama">
                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                             <Path Classes="icon" Data="M11 4.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 0 0 0-13zM16 16l4.5 4.5" Width="15" Height="15" />
@@ -204,7 +204,7 @@
                             </Panel>
                         </Button>
                         <!-- Bildirim merkezi -->
-                        <Button Classes="flat tb big" IsVisible="{Binding ShowShell}" ToolTip.Tip="Bildirimler" AutomationProperties.Name="Bildirimler">
+                        <Button Classes="flat tb big" IsVisible="{Binding ShowShell}" ToolTip.Tip="Bildirimler" v:Tour.Target="notifications" AutomationProperties.Name="Bildirimler">
                             <Panel>
                                 <Path x:Name="BellIcon" Classes="icon" Data="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" RenderTransformOrigin="50%,15%" />
                                 <Border x:Name="NotifBadge" IsVisible="{Binding Notifications.HasUnread}" Background="{StaticResource Accent}" MinWidth="15" Height="15" CornerRadius="8"
@@ -262,18 +262,18 @@
                             </Button.Flyout>
                         </Button>
                         <!-- Radyo: mini çalar (logo, istasyon, ses çubukları, çal/durdur); basınca panel (Views/RadioPill) -->
-                        <Border x:Name="RadioHost" IsVisible="{Binding ShowShell}">
+                        <Border x:Name="RadioHost" IsVisible="{Binding ShowShell}" v:Tour.Target="radio">
                             <v:RadioPill DataContext="{Binding Radio}" />
                         </Border>
                         <!-- Ayarlar (Kütüphane'de rayın en altında) -->
                         <Border x:Name="SettingsIconHost">
                         <Button Classes="flat tb big" Classes.active="{Binding SettingsTab.IsActive}" IsVisible="{Binding ShowShell}" Command="{Binding SelectTabCommand}"
-                                CommandParameter="{Binding SettingsTab}" ToolTip.Tip="Ayarlar" AutomationProperties.Name="Ayarlar">
+                                CommandParameter="{Binding SettingsTab}" ToolTip.Tip="Ayarlar" AutomationProperties.Name="Ayarlar" v:Tour.Target="settings">
                             <Path Classes="icon" Data="{Binding SettingsTab.Icon}" />
                         </Button>
                         </Border>
                         <Border x:Name="ProfileHost">
-                        <Button Classes="flat chip" IsVisible="{Binding ShowShell}" Command="{Binding OpenMyProfileCommand}"
+                        <Button Classes="flat chip" IsVisible="{Binding ShowShell}" Command="{Binding OpenMyProfileCommand}" v:Tour.Target="profile"
                                 ToolTip.Tip="Profilim" Padding="8,4" Margin="6,0,8,0">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <!-- Resim çerçevesiz daireyle kırpılır, ince çerçeve üstte ayrı halka (kenarda koyu zemin kalmasın) -->
@@ -394,7 +394,7 @@
                     <DockPanel Margin="0,12,0,12">
                         <StackPanel DockPanel.Dock="Bottom" Spacing="8">
                             <!-- Profil: yeşil halka çevrimiçi demek -->
-                            <Button Classes="rail-avatar" HorizontalAlignment="Center" Command="{Binding OpenMyProfileCommand}" ToolTip.Tip="Profilim"
+                            <Button Classes="rail-avatar" v:Tour.Target="profile" HorizontalAlignment="Center" Command="{Binding OpenMyProfileCommand}" ToolTip.Tip="Profilim"
                                     ToolTip.Placement="Right" ToolTip.ShowDelay="150" AutomationProperties.Name="Profilim">
                                 <!-- Yuvarlak resim, ince çerçeve; sağ altta yeşil çevrimiçi noktası (kalın halka yerine) -->
                                 <Panel Classes="avatar-wrap" Width="34" Height="34">
@@ -414,7 +414,7 @@
                             </Button>
                             <Button Classes="rail-tab" Classes.active="{Binding SettingsTab.IsActive}" Classes.glow="{Binding SettingsTab.IsGlowing}"
                                     Command="{Binding SelectTabCommand}" CommandParameter="{Binding SettingsTab}" ToolTip.Tip="Ayarlar" ToolTip.Placement="Right" ToolTip.ShowDelay="150"
-                                    AutomationProperties.Name="Ayarlar">
+                                    AutomationProperties.Name="Ayarlar" v:Tour.Target="settings">
                                 <Path Classes="tab-icon" Data="{Binding SettingsTab.Icon}" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" />
                             </Button>
                         </StackPanel>
@@ -561,6 +561,9 @@
                     </StackPanel>
                 </Border>
             </Border>
+
+            <!-- ── Tanıtım turu: başlık çubuğu ve ray dahil her şeyin üstünde (açılış perdesi ve tema geçişinin altında) ── -->
+            <v:TourOverlay x:Name="TourLayer" Grid.Row="0" Grid.RowSpan="2" ZIndex="18" DataContext="{Binding Tour}" />
 
             <!-- ── Kutular: pencerenin üstünde, arkası karartılır; üst üste açılabilir ── -->
             <ItemsControl Grid.Row="0" Grid.RowSpan="2" ItemsSource="{Binding Modals}">

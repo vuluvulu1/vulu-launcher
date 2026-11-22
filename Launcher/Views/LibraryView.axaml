@@ -282,7 +282,7 @@
                     <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
                     <ListBox.DataTemplates>
                         <DataTemplate DataType="v:NewPackCard">
-                            <Border Classes="newpack" VerticalAlignment="Top" Width="{DynamicResource PosterW}" Height="{DynamicResource PosterH}" CornerRadius="14" BorderBrush="{StaticResource CardLineHover}" BorderThickness="1.5" Background="Transparent">
+                            <Border Classes="newpack" v:Tour.Target="new-pack" VerticalAlignment="Top" Width="{DynamicResource PosterW}" Height="{DynamicResource PosterH}" CornerRadius="14" BorderBrush="{StaticResource CardLineHover}" BorderThickness="1.5" Background="Transparent">
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
                                     <TextBlock Text="+" FontSize="30" FontWeight="Light" HorizontalAlignment="Center" Classes="dim" />
                                     <TextBlock Text="Yeni paket" FontSize="13.5" HorizontalAlignment="Center" Classes="dim" />
@@ -305,7 +305,7 @@
                             </StackPanel>
                         </DataTemplate>
                         <DataTemplate DataType="vm:InstanceItem">
-                            <StackPanel Width="{DynamicResource PosterW}" Spacing="0" ToolTip.Tip="{Binding Tip}" Background="Transparent" ContextRequested="OnPosterContextRequested">
+                            <StackPanel Width="{DynamicResource PosterW}" Spacing="0" ToolTip.Tip="{Binding Tip}" Background="Transparent" ContextRequested="OnPosterContextRequested" v:Tour.Target="poster">
                                 <StackPanel.ContextFlyout>
                                     <MenuFlyout x:DataType="vm:HomeViewModel">
                                         <MenuItem Header="▶ Oyna" Command="{Binding PlayCommand}" />
@@ -709,7 +709,7 @@
                     <Button Classes="bigplay primary" IsVisible="{Binding ShowBarJoin}" Content="Sunucuya bağlan" Command="{Binding JoinPackServerCommand}" />
                     <!-- Açılış ya da oyun sürerken OYNA'nın yanında Durdur -->
                     <Grid ColumnDefinitions="*,Auto">
-                    <Button Classes="bigplay" Classes.small="{Binding ShowBarJoin}" Command="{Binding PlayCommand}">
+                    <Button Classes="bigplay" Classes.small="{Binding ShowBarJoin}" Command="{Binding PlayCommand}" v:Tour.Target="play">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding PlayLabel}" VerticalAlignment="Center" />

@@ -100,11 +100,11 @@ namespace VuluLauncher.ViewModels
             _saveVolume = DispatcherTimer.RunOnce(() => _ = SaveAsync(("musicVolume", (int)Math.Round(value))), TimeSpan.FromMilliseconds(400));
         }
 
-        /// <summary>Girişten sonra: ayarlarda radyo açıksa çalmaya başlar.</summary>
+        /// <summary>Girişten sonra: yalnızca kullanıcı Ayarlar'da "Açılışta çal"ı seçtiyse çalmaya başlar.</summary>
         public void StartIfEnabled()
         {
             Volume = AppSettings.Current.MusicVolume;
-            if (AppSettings.Current.MusicEnabled) _ = StartAsync();
+            if (AppSettings.Current.RadioAutoplay) _ = StartAsync();
         }
 
         public void Stop()
@@ -172,7 +172,6 @@ namespace VuluLauncher.ViewModels
             var station = _stations[_index];
             int token = ++_playToken;
             UiState.Set("radioStation", station.Id);
-            if (fromMenu) _ = SaveAsync(("musicEnabled", true));
             Refresh();
             string url;
             try
@@ -260,7 +259,6 @@ namespace VuluLauncher.ViewModels
         {
             bool enable = !Playing;
             if (enable) await StartAsync(); else Stop();
-            _ = SaveAsync(("musicEnabled", enable));
         }
 
         [RelayCommand] private async Task Next() { await EnsureAsync(); await PlayAtAsync(_index + 1); }

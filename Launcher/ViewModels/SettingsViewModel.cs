@@ -248,12 +248,8 @@ namespace VuluLauncher.ViewModels
                 .Add(new ChoiceRow("Yazı ve arayüz boyutu", "Pencere aynı kalır, içindeki bütün yazılar ve düğmeler büyür ya da küçülür. Büyük ekranlarda \"Büyük\" daha rahat okunur.",
                     UiScales, I("uiScale") is var scale && scale > 0 ? scale.ToString(CultureInfo.InvariantCulture) : "100",
                     value => Change(("uiScale", int.Parse(value, CultureInfo.InvariantCulture)))))
-                .Add(new ToggleRow("Radyo", "Soldaki çalar internet radyosu çalar; istasyonu ve türü adına tıklayarak seçebilirsin.", B("musicEnabled", true), async value =>
-                {
-                    if (!await Change(("musicEnabled", value))) return false;
-                    if (value) main.Radio.StartIfEnabled(); else main.Radio.Stop();
-                    return true;
-                }))
+                .Add(new ToggleRow("Radyoyu açılışta çal", "Kapalıyken radyo kendiliğinden çalmaz; başlık çubuğundaki çalardan istediğin zaman açarsın.",
+                    B("radioAutoplay"), value => Change(("radioAutoplay", value))))
                 .Add(new SliderRow("Ses düzeyi", null, I("musicVolume"), async value =>
                 {
                     if (!await Change(("musicVolume", value))) return false;

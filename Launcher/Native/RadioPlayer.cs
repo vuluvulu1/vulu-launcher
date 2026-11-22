@@ -29,11 +29,11 @@ namespace VuluLauncher.Native
 
         public bool IsPlaying => _player.Source != null && _player.PlaybackSession.PlaybackState is MediaPlaybackState.Playing or MediaPlaybackState.Opening or MediaPlaybackState.Buffering;
 
-        /// <summary>0–100.</summary>
+        /// <summary>0–100. Kulak sesi doğrusal duymaz: kaydırıcı karesiyle uygulanır (40 → %16), düşük düzeyler gerçekten kısık olur.</summary>
         public double Volume
         {
-            get => _player.Volume * 100;
-            set => _player.Volume = Math.Clamp(value, 0, 100) / 100;
+            get => Math.Sqrt(_player.Volume) * 100;
+            set => _player.Volume = Math.Pow(Math.Clamp(value, 0, 100) / 100, 2);
         }
 
         public bool Muted

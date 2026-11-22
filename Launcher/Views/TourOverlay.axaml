@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="using:VuluLauncher.Views"
+             xmlns:vm="using:VuluLauncher.ViewModels"
+             x:Class="VuluLauncher.Views.TourOverlay"
+             x:DataType="vm:TourGuide"
+             IsVisible="False" Focusable="True">
+    <!-- Tanıtım turu: ekran kararır, gösterilen düğmenin çevresi aydınlık kalır ve amber halkayla çevrilir; yanında açıklama kartı -->
+    <UserControl.Styles>
+        <Style Selector="v|TourOverlay">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.25" /></Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="v|TourOverlay.shown"><Setter Property="Opacity" Value="1" /></Style>
+    </UserControl.Styles>
+    <Panel>
+        <v:TourSpot x:Name="Spot" />
+        <Canvas x:Name="Layer">
+            <Border x:Name="Card" Width="340" CornerRadius="16" Padding="20,16,20,16" Background="{StaticResource Panel}"
+                    BorderBrush="{StaticResource CardLineHover}" BorderThickness="1" BoxShadow="0 18 50 0 #99000000">
+                <StackPanel Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding Counter}" FontFamily="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource AccentHi}" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Classes="link" Content="Turu geç" Command="{Binding FinishCommand}" VerticalAlignment="Center" FontSize="12.5" />
+                    </Grid>
+                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" LineHeight="20" FontSize="13" Foreground="{StaticResource Muted}" />
+                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,8,0,0">
+                        <ItemsControl ItemsSource="{Binding Dots}" VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="5" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:Choice">
+                                    <Border Height="6" CornerRadius="3" Classes.on="{Binding IsSelected}">
+                                        <Border.Styles>
+                                            <Style Selector="Border">
+                                                <Setter Property="Background" Value="{StaticResource LineStrong}" />
+                                                <Setter Property="Width" Value="6" />
+                                                <Setter Property="Transitions">
+                                                    <Transitions>
+                                                        <DoubleTransition Property="Width" Duration="0:0:0.2" />
+                                                        <BrushTransition Property="Background" Duration="0:0:0.2" />
+                                                    </Transitions>
+                                                </Setter>
+                                            </Style>
+                                            <Style Selector="Border.on"><Setter Property="Background" Value="{StaticResource Accent}" /><Setter Property="Width" Value="16" /></Style>
+                                        </Border.Styles>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Grid.Column="1" Content="Geri" Command="{Binding BackCommand}" IsVisible="{Binding HasBack}" Margin="0,0,8,0" />
+                        <Button Grid.Column="2" Classes="primary" Content="{Binding NextText}" Command="{Binding NextCommand}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Canvas>
+    </Panel>
+</UserControl>

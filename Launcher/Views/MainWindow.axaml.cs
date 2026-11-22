@@ -185,6 +185,15 @@ namespace VuluLauncher.Views
                     e.Handled = true;
                     return;
                 }
+                // Tanıtım turu: Esc çıkar, sağ ok / Enter ileri, sol ok geri
+                if (DataContext is MainViewModel { Tour: { } tour })
+                {
+                    if (e.Key == Key.Escape) tour.Finish();
+                    else if (e.Key is Key.Right or Key.Enter or Key.Space) tour.NextCommand.Execute(null);
+                    else if (e.Key == Key.Left) tour.BackCommand.Execute(null);
+                    e.Handled = true;
+                    return;
+                }
                 if (e.Key == Key.Escape && DataContext is MainViewModel { Modals.Count: > 0 } vm)
                 {
                     // Galerideki büyük görünüm açıksa önce o kapanır

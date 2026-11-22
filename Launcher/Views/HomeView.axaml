@@ -385,7 +385,7 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                    <Button x:Name="NewButton" Classes="flat" Content="+ Yeni" FontSize="12" HorizontalAlignment="Left" Margin="18,0,0,0" Width="58" Height="58" Padding="0" VerticalContentAlignment="Center"
+                    <Button x:Name="NewButton" Classes="flat" v:Tour.Target="new-pack" Content="+ Yeni" FontSize="12" HorizontalAlignment="Left" Margin="18,0,0,0" Width="58" Height="58" Padding="0" VerticalContentAlignment="Center"
                             HorizontalContentAlignment="Center" BorderThickness="1" BorderBrush="{StaticResource TileLine}" Background="{StaticResource TileBg}" Foreground="{StaticResource Text}"
                             Command="{Binding NewInstanceCommand}" ToolTip.Tip="Yeni paket" />
                   </StackPanel>
@@ -718,7 +718,7 @@
                         <TextBlock Text="{Binding StopText}" FontWeight="SemiBold" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
-                <Button Classes="play" Classes.small="{Binding ShowBarJoin}" Command="{Binding PlayCommand}" BorderThickness="0" VerticalAlignment="Center">
+                <Button Classes="play" Classes.small="{Binding ShowBarJoin}" Command="{Binding PlayCommand}" BorderThickness="0" VerticalAlignment="Center" v:Tour.Target="play">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Path Data="M7 4l13 8-13 8z" Fill="{StaticResource AccentInk}" Width="13" Height="13" Stretch="Uniform" />
                         <TextBlock Text="{Binding PlayLabel}" />

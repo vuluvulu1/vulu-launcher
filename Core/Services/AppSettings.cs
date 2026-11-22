@@ -65,6 +65,8 @@ namespace VuluLauncher
         // ── Ses ve görünüm ────────────────────────────────────────────────
         public bool MusicEnabled { get; set; } = true;
         public int MusicVolume { get; set; } = 40;
+        /// <summary>Radyo açılışta kendiliğinden çalsın mı (varsayılan hayır; çal düğmesi bunu değiştirmez).</summary>
+        public bool RadioAutoplay { get; set; }
         public string AccentColor { get; set; } = "#c27e3e";
         /// <summary>Launcher teması: "kutuphane" (varsayılan, 0.28.0'dan beri; simge rayı, kapak ızgarası) ya da "mesale" (üstte sekmeler, tam ekran paket dünyası).</summary>
         public string Theme { get; set; } = "kutuphane";

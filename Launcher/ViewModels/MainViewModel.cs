@@ -254,7 +254,14 @@ namespace VuluLauncher.ViewModels
                     Avalonia.Threading.DispatcherTimer.RunOnce(() =>
                     {
                         // tour / tournew: tanıtım rehberi (hepsi / rehberi görmüş olana yalnızca yeni adımlar)
-                        if (open is "tour" or "tournew") { _ = ShowTourAsync(open == "tournew" ? 1 : 0); return; }
+                        // VULU_UI_TOURSTEP=n: tur n. adımdan açılır
+                        if (open is "tour" or "tournew")
+                        {
+                            _ = ShowTourAsync(open == "tournew" ? 1 : 0);
+                            if (int.TryParse(Environment.GetEnvironmentVariable("VULU_UI_TOURSTEP"), out int n))
+                                for (int i = 0; i < n; i++) Tour?.NextCommand.Execute(null);
+                            return;
+                        }
                         if (open == "palette") { _ = OpenPaletteCommand.ExecuteAsync(null); return; }
                         // gamesettings: paketin oyun ayarları penceresi örnek verilerle
                         if (open == "gamesettings")
@@ -439,7 +446,7 @@ namespace VuluLauncher.ViewModels
         private async Task MaybeShowTourAsync()
         {
             int seen = int.TryParse(UiState.Get("tourEdition"), out int e) ? e : UiState.Get("tourDone") == "true" ? 1 : 0;
-            if (seen >= TourModal.CurrentEdition) return;
+            if (seen >= TourGuide.CurrentEdition) return;
             if (seen > 0 && Modals.Count > 0) return;
             await ShowTourAsync(seen);
         }
@@ -447,14 +454,21 @@ namespace VuluLauncher.ViewModels
         /// <summary>Tanıtım rehberi (Ayarlar → Launcher'dan hepsi yeniden açılır).</summary>
         public Task ShowTourAsync() => ShowTourAsync(0);
 
+        /// <summary>Açık tanıtım turu (Views.TourOverlay); yoksa null.</summary>
+        [ObservableProperty] private TourGuide? _tour;
+
         private async Task ShowTourAsync(int sinceEdition)
         {
-            var tour = new TourModal(Tabs, sinceEdition);
-            var result = await ShowAsync(tour);
+            if (Tour != null) return;
+            var tour = new TourGuide(key =>
+            {
+                if (Tabs.FirstOrDefault(t => t.Key == key && t.IsVisible) is { } tab && SelectedTab != tab) SelectedTab = tab;
+            }, sinceEdition);
+            Tour = tour;
+            await tour.Completion;
+            Tour = null;
             UiState.Set("tourDone", "true");
-            UiState.Set("tourEdition", TourModal.CurrentEdition.ToString());
-            tour.Glow(null);
-            if (result is string key && Tabs.FirstOrDefault(t => t.Key == key && t.IsVisible) is { } tab) SelectedTab = tab;
+            UiState.Set("tourEdition", TourGuide.CurrentEdition.ToString());
         }
 
         /// <summary>Sorup çıkış yapar; oyun çalışıyorsa Core izin vermez, nedeni gösterilir.</summary>
