@@ -27,6 +27,7 @@
   <ItemGroup>
     <!-- Updater ile ortak: release bilgisi ve sürüm karşılaştırma -->
     <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
+    <Compile Include="..\Shared\RangeZip.cs" Link="Shared\RangeZip.cs" />
     <Compile Include="..\Shared\ServerConnection.cs" Link="Shared\ServerConnection.cs" />
   </ItemGroup>
 

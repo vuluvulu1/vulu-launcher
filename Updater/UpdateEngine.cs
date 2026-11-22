@@ -77,11 +77,14 @@ namespace Updater
             string version = Releases.Clean(manifest.Version);
             string notes = manifest.Notes;
 
-            string zipPath = await DownloadAsync(latest, version, notes, token);
-
-            _report(new UpdateStatus("verifying", "Doğrulanıyor…", "", null, version, notes));
+            // Önce yalnızca değişen dosyalar indirilir (zip'in içinden, HTTP Range); olmazsa tüm zip
             string staging = Path.Combine(_workDir, "staging");
-            await Task.Run(() => Extract(zipPath, staging, manifest), token);
+            if (!await TryDeltaAsync(latest, staging, version, notes, token))
+            {
+                string zipPath = await DownloadAsync(latest, version, notes, token);
+                _report(new UpdateStatus("verifying", "Doğrulanıyor…", "", null, version, notes));
+                await Task.Run(() => Extract(zipPath, staging, manifest), token);
+            }
 
             _report(new UpdateStatus("installing", "Launcher'ın kapanması bekleniyor…", "", null, version, notes));
             await WaitForLauncherExitAsync(token);
@@ -210,6 +213,71 @@ namespace Updater
         }
 
         private static string Mb(long bytes) => (bytes / 1024.0 / 1024.0).ToString("F1");
+
+        // ── Yalnızca değişen dosyalar ─────────────────────────────────────
+        /// <summary>Değişen dosyaların sıkıştırılmış boyutu zip'in bu oranını aşarsa tüm zip indirilir (daha hızlı).</summary>
+        private const double DeltaLimit = 0.6;
+
+        /// <summary>
+        /// Kurulu dosyalardan SHA-256'sı yeni sürümünkinden farklı ya da eksik olanlar zip'in içinden tek tek indirilir
+        /// (sunucu HTTP Range destekliyorsa). Her dosya imzalı manifest'teki hash'le doğrulanır. Staging'e yalnızca bu
+        /// dosyalar konur; Apply zaten aynı olanlara dokunmaz. Bir şey ters giderse false döner ve tüm zip indirilir.
+        /// </summary>
+        private async Task<bool> TryDeltaAsync(LatestRelease latest, string staging, string version, string notes, CancellationToken token)
+        {
+            var manifest = latest.Manifest;
+            if (manifest.Files.Count == 0 || manifest.Size <= 0) return false;
+            try
+            {
+                var changed = await Task.Run(() => manifest.Files.Where(f => !IsProtected(f.Path)).Where(f =>
+                {
+                    string? target = Releases.ResolveInside(_installDir, f.Path) ?? throw new InvalidDataException($"Geçersiz dosya yolu: {f.Path}");
+                    return !File.Exists(target) || !string.Equals(Releases.Sha256Of(target), f.Sha256, StringComparison.OrdinalIgnoreCase);
+                }).ToList(), token);
+
+                TryDelete(staging);
+                Directory.CreateDirectory(staging);
+                if (changed.Count == 0) return true;
+
+                using var http = Releases.CreateHttpClient(TimeSpan.FromMinutes(5));
+                foreach (string url in latest.ZipUrls)
+                {
+                    RangeZip zip;
+                    try { zip = await RangeZip.OpenAsync((offset, count, t) => RangeZip.ReadHttpRangeAsync(http, url, offset, count, manifest.Size, t), manifest.Size, token); }
+                    catch (Exception e) when (Releases.IsNetworkError(e, token)) { continue; }   // sonraki adres
+
+                    var entries = changed.Select(f => (File: f, Entry: zip.Entries.GetValueOrDefault(RangeZip.Normalize(f.Path)))).ToList();
+                    if (entries.Any(e => e.Entry == null)) return false;
+                    long total = entries.Sum(e => e.Entry!.CompressedSize);
+                    if (total > manifest.Size * DeltaLimit) return false;
+
+                    long done = 0;
+                    var clock = Stopwatch.StartNew();
+                    _report(new UpdateStatus("downloading", $"v{version} indiriliyor…", $"{changed.Count} dosya değişti · 0 / {Mb(total)} MB", 0, version, notes));
+                    foreach (var (file, entry) in entries)
+                    {
+                        string target = Releases.ResolveInside(staging, file.Path)!;
+                        await zip.ExtractAsync(entry!, target, token);
+                        if (!string.Equals(Releases.Sha256Of(target), file.Sha256, StringComparison.OrdinalIgnoreCase))
+                            throw new InvalidDataException($"Dosya doğrulanamadı: {file.Path}");
+                        done += entry!.CompressedSize;
+                        double seconds = Math.Max(clock.Elapsed.TotalSeconds, 0.1);
+                        _report(new UpdateStatus("downloading", $"v{version} indiriliyor…",
+                            $"{changed.Count} dosya değişti · {Mb(done)} / {Mb(total)} MB · {done / seconds / 1024 / 1024:F1} MB/sn",
+                            total > 0 ? (double)done / total : 1, version, notes));
+                    }
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception) when (!token.IsCancellationRequested)
+            {
+                // Range desteklenmiyor, ZIP64, bozuk parça…: tüm zip indirilir
+                TryDelete(staging);
+                return false;
+            }
+        }
+
 
         // ── Açma ve dosya doğrulama ───────────────────────────────────────
         private static void Extract(string zipPath, string staging, ReleaseManifest manifest)
