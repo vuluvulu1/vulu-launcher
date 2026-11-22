@@ -132,16 +132,21 @@ namespace VuluLauncher.Views
             Canvas.SetTop(_ghost, pointerInLayer.Y - _grab.Y);
         }
 
-        /// <summary>İmleç başka bir kapağın ortasına yaklaşınca yer tutucu oraya geçer; öbür kapaklar kayarak yer açar.</summary>
+        /// <summary>
+        /// İmleç başka bir kapağın ortasına yaklaşınca yer tutucu oraya geçer; öbür kapaklar kayarak yer açar. Bir grubun
+        /// başlığının üstüne gelince kapak o grubun başına geçer (bırakınca o gruba taşınır).
+        /// </summary>
         private void Reorder(Point p)
         {
             if (_pressItem is not { } dragged) return;
-            foreach (var other in _items.OfType<InstanceItem>())
+            foreach (var other in _items.Where(o => o is InstanceItem or GroupHeader).ToList())
             {
                 if (other == dragged || Posters.ContainerFromItem(other) is not Control c) continue;
                 var r = new Rect(LayoutPos(c), c.Bounds.Size);
-                if (!r.Deflate(new Thickness(r.Width * 0.2, r.Height * 0.15)).Contains(p)) continue;
+                bool header = other is GroupHeader;
+                if (!(header ? r : r.Deflate(new Thickness(r.Width * 0.2, r.Height * 0.15))).Contains(p)) continue;
                 int from = _items.IndexOf(dragged), to = _items.IndexOf(other);
+                if (header && from > to) to++;   // başlığın hemen arkası
                 if (from < 0 || to < 0 || from == to) return;
                 var before = SnapshotPositions();
                 _syncing = true;
@@ -186,8 +191,13 @@ namespace VuluLauncher.Views
                 if (target != null) SetPlaceholder(target, false);
             }
 
-            // Sıra saklanır; sıralama "Özel"e geçer
+            // Grubu değiştiyse (başka bir grubun arasına bırakıldı) yeni yerine göre yeniden dizilir
+            if (_pressItem != null && AssignFromPosition(_pressItem))
+                DispatcherTimer.RunOnce(Rebuild, TimeSpan.FromMilliseconds(260));
+
+            // Sıra saklanır (katlı gruplardaki paketler görünmese de sıradaki yerlerini korur); sıralama "Özel"e geçer
             var order = _items.OfType<InstanceItem>().Select(i => i.Id).ToList();
+            order.AddRange(CustomOrder.Where(id => !order.Contains(id)));
             VuluLauncher.Native.UiState.Set("libraryOrder", string.Join("\n", order));
             _customOrder = order;
             if (_sort != "custom")

@@ -103,6 +103,7 @@ namespace VuluLauncher.Views
             double w = Math.Min(max, Math.Floor(room / cols - gap));
             Resources["PosterW"] = w;
             Resources["PosterH"] = Math.Round(w * 230 / 180);
+            Resources["RowW"] = Math.Floor(room - gap);   // grup başlığı satırı boydan boya kaplar
         }
 
         private void Bind(HomeViewModel? vm)
@@ -196,10 +197,11 @@ namespace VuluLauncher.Views
                 // Son oynanan; hiç oynanmamışlar en yeni eklenen önce
                 _ => list.OrderByDescending(i => i.LastPlayed ?? DateTime.MinValue).ThenByDescending(i => i.CreatedAt ?? DateTime.MinValue),
             };
-            var items = list.ToList<object>();
-            // Kurulmakta olan paketler sonda, ilerleme halkasıyla (güncelleme süzgeci ve arama dışında)
-            if (_filter != "update" && q.Length == 0) items.AddRange(_vm.Pending);
-            if (_filter is "all" or "mine" && q.Length == 0) items.Add(NewPackCard.Instance);
+            // Kurulmakta olan paketler gruplanmamışların sonunda, ilerleme halkasıyla (güncelleme süzgeci ve arama dışında); gruplar sonra
+            var tail = new List<object>();
+            if (_filter != "update" && q.Length == 0) tail.AddRange(_vm.Pending);
+            if (_filter is "all" or "mine" && q.Length == 0) tail.Add(NewPackCard.Instance);
+            var items = Grouped(list.ToList(), tail);
             // Süzgeç ya da arama değişince kapaklar tek tek belirmesin; yalnızca eklenen yeni paket belirsin
             _bulk = _filter != _lastFilter || q != _lastQuery;
             _lastFilter = _filter; _lastQuery = q;
@@ -265,7 +267,7 @@ namespace VuluLauncher.Views
                     }
                 }, DispatcherPriority.Background);
             _syncing = false;
-            NoMatch.IsVisible = _items.Count == 0 && _vm.Instances.Count > 0;
+            NoMatch.IsVisible = !_items.Any(o => o is InstanceItem or PendingInstall or NewPackCard) && _vm.Instances.Count > 0;
             NoMatch.Title = q.Length > 0 ? L.F("“{0}” ile eşleşen paket yok", q) : "Bu süzgeçte paket yok";
 
             // Süzgeç haplarında sayılar; güncellemesi olan yoksa o hap gizlenir (seçiliyken kalır)
@@ -293,6 +295,7 @@ namespace VuluLauncher.Views
         {
             InstanceItem i => i.Id,
             PendingInstall p => "pending:" + System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(p),
+            GroupHeader g => "group:" + g.Name,
             _ => o?.GetType().Name ?? "",
         };
         private string? _lastFilter, _lastQuery;
@@ -367,6 +370,11 @@ namespace VuluLauncher.Views
                 case PendingInstall:
                     SyncSelection();   // kurulurken seçilemez; bitince kendiliğinden seçilir
                     break;
+                case GroupHeader header:
+                    // Başlık seçili kalmaz: grup katlanır ya da açılır
+                    SyncSelection();
+                    Dispatcher.UIThread.Post(() => ToggleGroup(header));
+                    break;
                 case NewPackCard:
                     // Kart seçili kalmaz: yeni paket kutusu açılır, seçim eski pakete döner
                     SyncSelection();
@@ -381,7 +389,10 @@ namespace VuluLauncher.Views
             if (sender is not Control { DataContext: InstanceItem item } target || _vm == null) return;
             if (_vm.Selected != item) _vm.Selected = item;
             if (target.ContextFlyout is MenuFlyout menu)
+            {
                 foreach (var entry in menu.Items.OfType<Control>()) entry.DataContext = _vm;
+                FillGroupMenu(menu, item);
+            }
         }
 
         // Konsol: en alttayken yeni satırlar gelince alta kayar (Oyna'daki konsolla aynı)

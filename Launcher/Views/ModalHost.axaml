@@ -1240,6 +1240,27 @@
                 </StackPanel>
             </DataTemplate>
 
+            <!-- ── Kütüphane: grup adı ─────────────────────────────────── -->
+            <DataTemplate DataType="vm:GroupNameModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,12" />
+                    <StackPanel Margin="22,0,22,18" Spacing="6">
+                        <TextBlock Text="Grup adı" Classes="label" />
+                        <TextBox Text="{Binding Name}" MaxLength="32" Watermark="ör. Modlu, Sunucular, Eski sürümler">
+                            <TextBox.KeyBindings><KeyBinding Gesture="Enter" Command="{Binding SaveCommand}" /></TextBox.KeyBindings>
+                        </TextBox>
+                        <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" FontSize="12.5" TextWrapping="Wrap"
+                                   IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    </StackPanel>
+                    <Border Classes="modal-foot">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Content="Vazgeç" Command="{Binding DismissCommand}" />
+                            <Button Classes="primary" Content="{Binding SaveText}" Command="{Binding SaveCommand}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
+
             <!-- ── Admin: rol ekle / düzenle ───────────────────────────── -->
             <DataTemplate DataType="vm:RoleEditorModal">
                 <StackPanel>
