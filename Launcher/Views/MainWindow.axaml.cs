@@ -321,7 +321,8 @@ namespace VuluLauncher.Views
                 TabIndicator.Opacity = 0;
                 return;
             }
-            var target = new Rect(p.X + 8, 0, active.Bounds.Width - 16, 2);
+            // Sekmenin yazısının çevresinde yumuşak zemin (sekme 50 yüksekliğinde, zemin 32)
+            var target = new Rect(p.X + 2, 9, active.Bounds.Width - 4, 32);
             if (target == _indicator && TabIndicator.Opacity > 0) return;
             bool first = TabIndicator.Opacity == 0 || _indicator == default;
             _indicator = target;

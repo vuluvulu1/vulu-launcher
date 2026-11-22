@@ -67,8 +67,8 @@
                         <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
                     </Style>
                     <Style Selector="Border.tabind">
-                        <Setter Property="Background" Value="{StaticResource Accent}" />
-                        <Setter Property="BoxShadow" Value="0 0 15 3 #B8F2A33A" />
+                        <Setter Property="Background" Value="{StaticResource AccentTint}" />
+                        <Setter Property="CornerRadius" Value="10" />
                     </Style>
                 </Border.Styles>
                 <Grid x:Name="TitleGrid" ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch">
@@ -94,6 +94,18 @@
                     </Border>
                     <Border x:Name="TabsHost" Grid.Column="1">
                     <Panel Margin="8,0,0,0" IsVisible="{Binding ShowShell}">
+                    <!-- Seçili sekmenin arkasındaki yumuşak zemin: sekme değişince yeni sekmeye kayarak gider (sekmelerin arkasında) -->
+                    <Canvas IsHitTestVisible="False" ClipToBounds="False">
+                        <Border x:Name="TabIndicator" Classes="tabind" Height="32" Canvas.Top="9" Opacity="0">
+                            <Border.Transitions>
+                                <Transitions>
+                                    <DoubleTransition Property="Canvas.Left" Duration="0:0:0.28" Easing="CubicEaseOut" />
+                                    <DoubleTransition Property="Width" Duration="0:0:0.28" Easing="CubicEaseOut" />
+                                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                                </Transitions>
+                            </Border.Transitions>
+                        </Border>
+                    </Canvas>
                     <ItemsControl x:Name="NavTabs" ItemsSource="{Binding Tabs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
@@ -136,9 +148,14 @@
                                 <Setter Property="BorderBrush" Value="Transparent" />
                                 <Setter Property="Foreground" Value="{StaticResource Text}" />
                             </Style>
+                            <Style Selector="Button.tab /template/ ContentPresenter#PART_ContentPresenter">
+                                <Setter Property="Transitions">
+                                    <Transitions><BrushTransition Property="Foreground" Duration="0:0:0.2" /></Transitions>
+                                </Setter>
+                            </Style>
                             <Style Selector="Button.tab.active">
                                 <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
-                                <Setter Property="Background" Value="{StaticResource TabGlow}" />
+                                <Setter Property="Background" Value="Transparent" />
                             </Style>
                             <Style Selector="Button.tab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
                                 <Setter Property="Background" Value="{Binding $parent[Button].Background}" />
@@ -163,18 +180,6 @@
                             </Style>
                         </ItemsControl.Styles>
                     </ItemsControl>
-                    <!-- Seçili sekmenin üstündeki parlayan çizgi: sekme değişince yeni sekmeye kayarak gider -->
-                    <Canvas IsHitTestVisible="False" ClipToBounds="False">
-                        <Border x:Name="TabIndicator" Classes="tabind" Height="2" Opacity="0">
-                            <Border.Transitions>
-                                <Transitions>
-                                    <DoubleTransition Property="Canvas.Left" Duration="0:0:0.28" Easing="CubicEaseOut" />
-                                    <DoubleTransition Property="Width" Duration="0:0:0.28" Easing="CubicEaseOut" />
-                                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
-                                </Transitions>
-                            </Border.Transitions>
-                        </Border>
-                    </Canvas>
                     </Panel>
                     </Border>
 

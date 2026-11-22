@@ -1,0 +1,138 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="using:VuluLauncher.Views"
+        x:Class="VuluLauncher.Views.SoftStyles">
+    <!--
+        Kütüphane ve Meşale'nin ortak görünümü: düğmeler, kutular, seçenek grupları, menüler ve kartlar yuvarlak köşeli,
+        seçili olan amber tonlu zeminle gösterilir (keskin çizgi yerine). İki temanın penceresi de "soft" sınıfını taşır
+        (Services/Themes.cs); temaya özgü iskelet KutuphaneStyles.axaml'da ve Meşale'nin kendi görünümlerinde.
+    -->
+    <!-- ── Bütün sayfalar: düğmeler, kutular, seçenek grupları yuvarlak  ── -->
+    <Style Selector="Window.soft Button">
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <Style Selector="Window.soft TextBox">
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Background" Value="{StaticResource Panel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ControlLine}" />
+    </Style>
+    <Style Selector="Window.soft TextBox /template/ Border#PART_BorderElement">
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <Style Selector="Window.soft TextBox:pointerover /template/ Border#PART_BorderElement, Window.soft TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{StaticResource Panel}" />
+    </Style>
+    <Style Selector="Window.soft ComboBox">
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <Style Selector="Window.soft ItemsControl.segmented">
+        <Setter Property="Background" Value="{StaticResource Panel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardLine}" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="Padding" Value="3" />
+    </Style>
+    <Style Selector="Window.soft Border.segmented">
+        <Setter Property="Background" Value="{StaticResource Panel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardLine}" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="Padding" Value="3" />
+    </Style>
+    <Style Selector="Window.soft Button.seg">
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Height" Value="30" />
+    </Style>
+    <Style Selector="Window.soft Button.seg.active">
+        <Setter Property="Background" Value="{StaticResource AccentTint}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+    </Style>
+    <Style Selector="Window.soft Button.seg.active /template/ ContentPresenter#PART_ContentPresenter, Window.soft Button.seg.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BoxShadow" Value="none" />
+        <Setter Property="Background" Value="{StaticResource AccentTint}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+    </Style>
+    <Style Selector="Window.soft Button.seg.loose">
+        <Setter Property="CornerRadius" Value="16" />
+    </Style>
+    <Style Selector="Window.soft Button.chip">
+        <Setter Property="CornerRadius" Value="14" />
+    </Style>
+    <Style Selector="Window.soft Border.tag">
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Background" Value="{StaticResource Surface}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="7,2" />
+    </Style>
+    <Style Selector="Window.soft Border.tag.accent, Window.soft Border.tag.friends">
+        <Setter Property="Background" Value="{StaticResource AccentTint}" />
+    </Style>
+    <Style Selector="Window.soft Border.filters">
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Background" Value="{StaticResource Panel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardLine}" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="Window.soft Border.skel">
+        <Setter Property="CornerRadius" Value="14" />
+    </Style>
+    <Style Selector="Window.soft Border.zoom">
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <Style Selector="Window.soft Border.bubble">
+        <Setter Property="CornerRadius" Value="14" />
+    </Style>
+    <Style Selector="Window.soft Border.bubble.mine">
+        <Setter Property="Background" Value="{StaticResource AccentTintStrong}" />
+    </Style>
+    <Style Selector="Window.soft Border.row">
+        <Setter Property="CornerRadius" Value="0" />
+    </Style>
+
+    <!-- Ayarlar ve Sosyal'in sol menüleri: soldaki çizgi yerine yuvarlak, amber yazılı seçili satır -->
+    <Style Selector="Window.soft Button.nav, Window.soft Button.row">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Margin" Value="0,0,0,2" />
+    </Style>
+    <Style Selector="Window.soft Button.nav:pointerover /template/ ContentPresenter#PART_ContentPresenter, Window.soft Button.row:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource HoverFill}" />
+    </Style>
+    <Style Selector="Window.soft Button.nav.current, Window.soft Button.row.active">
+        <Setter Property="Background" Value="{StaticResource AccentTint}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+    </Style>
+    <Style Selector="Window.soft Button.nav.current:pointerover /template/ ContentPresenter#PART_ContentPresenter, Window.soft Button.row.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource AccentTintHover}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+    </Style>
+    <Style Selector="Window.soft Button.address">
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <Style Selector="Window.soft Border.section, Window.soft Border.done, Window.soft Border.locked, Window.soft Border.worn">
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+
+
+    <!-- Giriş ekranı: kart öbür Kütüphane kartları gibi yuvarlak, ince sıcak çizgili -->
+    <Style Selector="Window.soft Border.login-card">
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Background" Value="{StaticResource Panel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardLine}" />
+    </Style>
+    <Style Selector="Window.soft Border.toast-card">
+        <Setter Property="CornerRadius" Value="12" />
+    </Style>
+    <Style Selector="Window.soft Border.modal-box">
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardLineHover}" />
+        <Setter Property="BoxShadow" Value="0 24 60 0 #CC000000" />
+    </Style>
+    <Style Selector="Window.soft Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <!-- Küçük açıklamalar koyu zeminde daha okunur olsun: soluk yazı bir ton açık -->
+    <Style Selector="Window.soft TextBlock.dim">
+        <Setter Property="Foreground" Value="#BBAFA2" />
+    </Style>
+</Styles>

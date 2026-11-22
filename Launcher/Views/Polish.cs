@@ -35,6 +35,8 @@ namespace VuluLauncher.Views
                 Stroke = Brush("LineStrong"),
                 StrokeThickness = 1,
                 StrokeDashArray = new AvaloniaList<double> { 4, 3 },
+                RadiusX = 14,
+                RadiusY = 14,
             };
             _icon = new TextBlock { FontSize = 22, Foreground = Brush("AccentHi"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
             _title = new TextBlock { FontSize = 16, FontWeight = FontWeight.SemiBold, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, IsVisible = false };

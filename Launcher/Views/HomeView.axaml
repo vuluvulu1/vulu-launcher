@@ -49,6 +49,7 @@
         <Style Selector="ListBox.rail ListBoxItem Border.thumb">
             <Setter Property="Width" Value="58" />
             <Setter Property="Height" Value="58" />
+            <Setter Property="CornerRadius" Value="14" />
             <Setter Property="RenderTransform" Value="none" />
             <Setter Property="Transitions">
                 <Transitions>
@@ -65,7 +66,7 @@
             <Setter Property="RenderTransform" Value="scale(0.94)" />
         </Style>
         <Style Selector="ListBox.rail ListBoxItem:selected Border.thumb">
-            <Setter Property="BoxShadow" Value="0 0 0 1 #B8FFC873, 0 0 24 1 #61F2A33A" />
+            <Setter Property="BoxShadow" Value="0 0 0 2 #F2A33A, 0 0 22 2 #4DF2A33A" />
         </Style>
         <!-- Sürüklenen paket: imleci takip eder, amber halkayla parlar; bırakılacağı paket amber çerçeveyle işaretlenir -->
         <Style Selector="ListBox.rail StackPanel.dragging Border.thumb">
@@ -78,6 +79,18 @@
         <Style Selector="ListBox.rail StackPanel.drop Border.thumb">
             <Setter Property="BoxShadow" Value="0 0 0 2 #F2A33A" />
         </Style>
+        <!-- "+ Yeni": paket karolarıyla aynı yuvarlak kare, kesik çizgili -->
+        <Style Selector="Button#NewButton">
+            <Setter Property="CornerRadius" Value="14" />
+        </Style>
+        <Style Selector="Button#NewButton /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="CornerRadius" Value="14" />
+        </Style>
+        <Style Selector="Button#NewButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentTint}" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
+        </Style>
         <Style Selector="ListBox.rail StackPanel.drop Border.dim"><Setter Property="Opacity" Value="0" /></Style>
         <Style Selector="ListBox.rail StackPanel.drop TextBlock"><Setter Property="Foreground" Value="{StaticResource AccentHi}" /></Style>
 
@@ -86,34 +99,47 @@
             <Setter Property="Background" Value="{StaticResource ChipBg}" />
             <Setter Property="Padding" Value="14,9" />
             <Setter Property="MinWidth" Value="108" />
+            <Setter Property="CornerRadius" Value="10" />
         </Style>
         <Style Selector="Border.chip">
             <Setter Property="Background" Value="{StaticResource ChipBg}" />
             <Setter Property="Padding" Value="9,3" />
+            <Setter Property="CornerRadius" Value="8" />
         </Style>
         <!-- Paket işlemleri (mesale.css #page-home .pack-actions .btn) -->
         <Style Selector="Button.hero">
-            <Setter Property="MinHeight" Value="36" />
-            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="Padding" Value="16,0" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="BorderBrush" Value="{StaticResource HeroLine}" />
-            <Setter Property="Background" Value="{StaticResource HeroBg}" />
+            <Setter Property="BorderBrush" Value="#2EFFD8A0" />
+            <Setter Property="Background" Value="#A6120E0B" />
+            <Setter Property="CornerRadius" Value="12" />
             <Setter Property="FontSize" Value="13.5" />
         </Style>
+        <Style Selector="Button.hero /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Transitions">
+                <Transitions><BrushTransition Property="Background" Duration="0:0:0.15" /><BrushTransition Property="BorderBrush" Duration="0:0:0.15" /></Transitions>
+            </Setter>
+        </Style>
         <Style Selector="Button.hero:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
-            <Setter Property="Background" Value="{StaticResource HeroHoverBg}" />
+            <Setter Property="BorderBrush" Value="#99F2A33A" />
+            <Setter Property="Background" Value="#CC2A1C0E" />
             <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
         </Style>
         <!-- Resmin üstündeki kart (mesale.css m-card ve m-edge) -->
         <Style Selector="Border.mcard">
             <Setter Property="Background" Value="{StaticResource Card}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardLine}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="ClipToBounds" Value="True" />
             <Setter Property="BoxShadow" Value="inset 0 1 0 0 #17FFD8A0" />
         </Style>
         <Style Selector="Border.mcard.console"><Setter Property="BoxShadow" Value="inset 0 1 0 0 #17FFD8A0, 0 14 34 0 #5C000000" /></Style>
-        <Style Selector="Border.announce"><Setter Property="BoxShadow" Value="inset 3 0 0 0 #F2A33A" /></Style>
+        <Style Selector="Border.announce"><Setter Property="BoxShadow" Value="inset 3 0 0 0 #F2A33A" /><Setter Property="CornerRadius" Value="12" /></Style>
         <Style Selector="Border.ring"><Setter Property="BoxShadow" Value="0 0 0 2 #0C0A08, 0 0 0 3 #F2A33A, 0 0 14 2 #75F2A33A" /></Style>
-        <Style Selector="Border.barthumb"><Setter Property="BoxShadow" Value="0 0 0 1 #B8FFC873, 0 0 24 1 #61F2A33A" /></Style>
+        <Style Selector="Border.barthumb"><Setter Property="BoxShadow" Value="0 0 0 1 #B8FFC873, 0 0 18 1 #4DF2A33A" /><Setter Property="CornerRadius" Value="10" /></Style>
         <Style Selector="Border.bar"><Setter Property="BoxShadow" Value="0 -1 0 0 #1AFFD8A0" /></Style>
         <Style Selector="Ellipse.sdot"><Setter Property="Fill" Value="{StaticResource Muted}" /><Setter Property="Opacity" Value="0.5" /></Style>
         <Style Selector="Ellipse.sdot.online"><Setter Property="Fill" Value="#4CAF6A" /><Setter Property="Opacity" Value="1" /></Style>
@@ -129,6 +155,7 @@
             <Setter Property="MinWidth" Value="132" />
             <Setter Property="Height" Value="52" />
             <Setter Property="Padding" Value="28,0" />
+            <Setter Property="CornerRadius" Value="12" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
@@ -154,41 +181,51 @@
         <Style Selector="ComboBox.bar">
             <Setter Property="Background" Value="{StaticResource Hover}" />
             <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <!-- İlerleme çubuğu: ince ve yuvarlak -->
+        <Style Selector="Border.bar ProgressBar">
+            <Setter Property="CornerRadius" Value="3" />
+        </Style>
+        <Style Selector="Border.bar ProgressBar /template/ Border">
+            <Setter Property="CornerRadius" Value="3" />
         </Style>
         <Style Selector="ComboBox.bar /template/ Border#Background">
             <Setter Property="BoxShadow" Value="inset 0 0 0 1 #42FFD8A0" />
         </Style>
         <Style Selector="Button.play /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #4DFFECC8" />
+            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #4DFFECC8, 0 6 18 0 #40F2A33A" />
+            <Setter Property="CornerRadius" Value="12" />
         </Style>
         <Style Selector="Button.play:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource PrimaryFillHover}" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
-            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #5CFFECC8" />
+            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #5CFFECC8, 0 8 22 0 #59F2A33A" />
         </Style>
 
         <Style Selector="Button.info-tab">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0,0,0,2" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource Text}" />
-            <Setter Property="Padding" Value="6,0" />
-            <Setter Property="Height" Value="39" />
+            <Setter Property="Foreground" Value="{StaticResource TextSoft}" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="9" />
             <Setter Property="FontSize" Value="12.5" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.info-tab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Background" Value="{StaticResource HoverFill}" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource Text}" />
         </Style>
         <Style Selector="Button.info-tab.active">
-            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Background" Value="{StaticResource AccentTint}" />
             <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
         </Style>
         <Style Selector="Button.info-tab.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+            <Setter Property="Background" Value="{StaticResource AccentTintHover}" />
             <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
         </Style>
         <Style Selector="Button.link">
@@ -323,14 +360,17 @@
                                         </MenuFlyout>
                                     </StackPanel.ContextFlyout>
                                     <Border Classes="thumb" Background="{StaticResource ButtonBg}">
-                                        <Panel ClipToBounds="True">
+                                        <!-- Resim yuvarlak köşeden kırpılır; seçili halkası dış kenarda (kırpılmasın diye ayrı) -->
+                                        <Border CornerRadius="14" ClipToBounds="True">
+                                        <Panel>
                                             <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="18" Foreground="{StaticResource Muted}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
                                             <Border Classes="dim" Background="#52000000" IsHitTestVisible="False" />
                                             <Ellipse Width="9" Height="9" Fill="{StaticResource Accent}" IsVisible="{Binding HasUpdate}"
-                                                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="3" ToolTip.Tip="Güncelleme var" />
+                                                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" ToolTip.Tip="Güncelleme var" />
                                         </Panel>
+                                        </Border>
                                     </Border>
                                     <TextBlock Classes="packname" Text="{Binding Name}" FontSize="11" FontWeight="Medium" TextTrimming="CharacterEllipsis"
                                                HorizontalAlignment="Center" MaxWidth="70" Margin="-6,0">
@@ -593,10 +633,12 @@
             <Grid x:Name="BarGrid" ColumnDefinitions="210,Auto,*,Auto,Auto,Auto" Margin="18,0">
                 <StackPanel x:Name="BarPack" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                     <Border Width="52" Height="52" Background="{StaticResource Raised}" Classes="barthumb">
-                        <Panel ClipToBounds="True">
+                        <Border CornerRadius="10" ClipToBounds="True">
+                        <Panel>
                             <TextBlock Text="{Binding Selected.Initial}" FontWeight="Bold" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <Image Source="{Binding Selected.Thumbnail}" Stretch="UniformToFill" />
                         </Panel>
+                        </Border>
                     </Border>
                     <TextBlock Text="{Binding Selected.Name, FallbackValue=Paket seçilmedi}" FontSize="14.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
                                MaxWidth="140" VerticalAlignment="Center" />

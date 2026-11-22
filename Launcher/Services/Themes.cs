@@ -18,7 +18,7 @@ namespace VuluLauncher
     ///   kutuphane: varsayılan; solda simge rayı, Oyna'da paketler kapak ızgarasında, seçilenin ayrıntısı ve OYNA sağdaki
     ///              çekmecede; başlık çubuğunda sekme yok (Views/LibraryView, Views/KutuphaneStyles.axaml)
     ///   mesale:    üstte sekmeler, Oyna'da paketin dünyası tam ekran, solda paket şeridi, altta oyun çubuğu (Views/HomeView)
-    /// Temaya özgü stiller pencere tema adıyla aynı sınıfı taşıdığında geçerli olur.
+    /// Temaya özgü stiller pencere tema adıyla aynı sınıfı taşıdığında geçerli olur; ortak yuvarlak görünüm "soft" sınıfıyla.
     /// </summary>
     internal static class Themes
     {
@@ -30,8 +30,8 @@ namespace VuluLauncher
         public static bool IsKutuphane => Current == Kutuphane;
         public static event Action? Changed;
 
-        /// <summary>Köşe yuvarlaklığı: Meşale köşeli, Kütüphane yumuşak.</summary>
-        private static (double Control, double Overlay) Corners(string name) => name == Kutuphane ? (10, 14) : (0, 0);
+        /// <summary>Köşe yuvarlaklığı: iki temada da yumuşak (Fluent denetimleri: açılır listeler, menüler, ipuçları).</summary>
+        private static (double Control, double Overlay) Corners(string name) => (10, 14);
 
         public static string Normalize(string? name) => All.Contains(name) ? name! : Kutuphane;
 
@@ -62,7 +62,7 @@ namespace VuluLauncher
         private static Styles? _appStyles;
 
         /// <summary>Temaların stil dosyaları; her biri yalnızca pencere kendi sınıfını taşırken geçerlidir.</summary>
-        private static Styles ThemeStyles() => new() { new Views.KutuphaneStyles() };
+        private static Styles ThemeStyles() => new() { new Views.SoftStyles(), new Views.KutuphaneStyles() };
 
         /// <summary>
         /// Kendi stilleri olan sayfalar (Oyna) için: sayfanın stilleri uygulamanınkinden önce geldiği için temaya özel
@@ -75,7 +75,8 @@ namespace VuluLauncher
 
         private static void MarkWith(Window window, string name)
         {
-            foreach (var theme in All) if (theme != Mesale) window.Classes.Set(theme, theme == name);
+            foreach (var theme in All) window.Classes.Set(theme, theme == name);
+            window.Classes.Set("soft", true);   // ortak yuvarlak görünüm (Views/SoftStyles.axaml)
         }
     }
 }
