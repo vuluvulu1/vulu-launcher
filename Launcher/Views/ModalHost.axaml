@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VuluLauncher.ViewModels"
              xmlns:v="using:VuluLauncher.Views"
+             xmlns:native="using:VuluLauncher.Native"
              x:Class="VuluLauncher.Views.ModalHost"
              x:DataType="vm:ModalViewModel">
     <!-- Bütün kutuların görünümleri: kutunun türüne göre biri seçilir -->
@@ -694,8 +695,11 @@
                                                 <TextBlock Text="{Binding Title}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" />
                                             </StackPanel>
-                                            <Button Grid.Column="2" Classes="sm primary" Content="{Binding UpdateText}" IsVisible="{Binding HasUpdate}"
-                                                    Command="{Binding UpdateCommand}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                <Button Classes="sm" Content="Neler değişti?" IsVisible="{Binding HasUpdate}" Command="{Binding ChangelogCommand}" />
+                                                <Button Classes="sm primary" Content="{Binding UpdateText}" IsVisible="{Binding HasUpdate}" Command="{Binding UpdateCommand}" />
+                                                <Button Classes="sm" Content="Geri al" IsVisible="{Binding CanRollback}" Command="{Binding RollbackCommand}" ToolTip.Tip="{Binding RollbackTip}" />
+                                            </StackPanel>
                                             <ToggleSwitch Grid.Column="3" IsChecked="{Binding Enabled}" OnContent="" OffContent="" MinWidth="0" VerticalAlignment="Center"
                                                           ToolTip.Tip="Aç / kapat" />
                                             <Button Grid.Column="4" Classes="sm danger" Content="Kaldır" Command="{Binding RemoveCommand}" VerticalAlignment="Center" Margin="8,0,0,0" />
@@ -705,6 +709,46 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- ── Mod güncellemesi: değişiklik notları ── -->
+            <DataTemplate DataType="vm:ChangelogModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,0" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Subtitle}" Classes="dim" FontSize="12.5" Margin="22,4,22,12" />
+                    <TextBlock Text="{Binding Message}" IsVisible="{Binding Message, Converter={x:Static ObjectConverters.IsNotNull}}"
+                               Classes="muted" Margin="22,0,22,14" TextWrapping="Wrap" />
+                    <ScrollViewer MaxHeight="440">
+                        <ItemsControl ItemsSource="{Binding Entries}" Margin="22,0,22,8">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ChangelogEntry">
+                                    <StackPanel Margin="0,0,0,14" Spacing="4">
+                                        <TextBlock IsVisible="{Binding HasHeader}" FontWeight="Bold"><Run Text="{Binding Name}" /><Run Text="  " /><Run Text="{Binding Date}" Foreground="{StaticResource Dim}" FontWeight="Normal" FontSize="12" /></TextBlock>
+                                        <TextBlock Text="Bu sürüm için not yazılmamış." IsVisible="{Binding IsEmpty}" Classes="dim" FontSize="12.5" />
+                                        <ItemsControl ItemsSource="{Binding Blocks}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="native:DescriptionBlock">
+                                                    <Panel Margin="0,0,0,4">
+                                                        <SelectableTextBlock Text="{Binding Text}" IsVisible="{Binding IsHeading}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                                        <SelectableTextBlock Text="{Binding Text}" IsVisible="{Binding IsParagraph}" TextWrapping="Wrap" FontSize="13" Foreground="{StaticResource Muted}" />
+                                                        <SelectableTextBlock Text="{Binding Text, StringFormat='• {0}'}" IsVisible="{Binding IsItem}" TextWrapping="Wrap" FontSize="13" Margin="8,0,0,0" Foreground="{StaticResource Muted}" />
+                                                        <Border IsVisible="{Binding IsCode}" Background="{StaticResource Surface}" Padding="10,8">
+                                                            <SelectableTextBlock Text="{Binding Text}" FontFamily="{StaticResource Mono}" FontSize="12" TextWrapping="Wrap" />
+                                                        </Border>
+                                                    </Panel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="22,4,22,18">
+                        <Button Classes="sm" Content="Kapat" Command="{Binding DismissCommand}" />
+                        <Button Classes="sm primary" Content="Güncelle" Command="{Binding UpdateCommand}" />
+                    </StackPanel>
                 </StackPanel>
             </DataTemplate>
 

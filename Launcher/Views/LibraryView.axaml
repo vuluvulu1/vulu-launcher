@@ -496,8 +496,14 @@
                                                     <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                                     <TextBlock Text="{Binding Meta}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis" />
                                                 </StackPanel>
-                                                <Button Grid.Column="3" Classes="dbtn" Height="30" Padding="10,0" FontSize="12" Foreground="{StaticResource AccentHi}"
-                                                        Content="{Binding UpdateText}" IsVisible="{Binding HasUpdate}" Command="{Binding UpdateCommand}" VerticalAlignment="Center" />
+                                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <Button Classes="dbtn" Height="30" Padding="10,0" FontSize="12" Content="Neler değişti?" IsVisible="{Binding HasUpdate}"
+                                                            Command="{Binding ChangelogCommand}" ToolTip.Tip="Güncellemenin değişiklik notları" />
+                                                    <Button Classes="dbtn" Height="30" Padding="10,0" FontSize="12" Foreground="{StaticResource AccentHi}"
+                                                            Content="{Binding UpdateText}" IsVisible="{Binding HasUpdate}" Command="{Binding UpdateCommand}" />
+                                                    <Button Classes="dbtn" Height="30" Padding="10,0" FontSize="12" Content="Geri al" IsVisible="{Binding CanRollback}"
+                                                            Command="{Binding RollbackCommand}" ToolTip.Tip="{Binding RollbackTip}" />
+                                                </StackPanel>
                                                 <ToggleSwitch Grid.Column="4" IsChecked="{Binding Enabled}" OnContent="" OffContent="" VerticalAlignment="Center" ToolTip.Tip="Aç / kapat" />
                                                 <Button Grid.Column="5" Classes="dbtn" Width="34" Height="30" Padding="0" Command="{Binding RemoveCommand}" VerticalAlignment="Center" ToolTip.Tip="Kaldır">
                                                     <Path Data="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10 11v5M14 11v5" Stroke="{StaticResource Dim}" StrokeThickness="1.6" Width="14" Height="14" Stretch="Uniform" />

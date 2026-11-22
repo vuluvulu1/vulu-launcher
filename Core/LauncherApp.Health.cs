@@ -28,6 +28,8 @@ namespace VuluLauncher
             _bridge.On("instances.setContentEnabled", args => Task.FromResult<object?>(SetContentEnabled(args.Str("id"), args.Str("file"), args.Bool("enabled"))));
             _bridge.On("instances.checkUpdates", async args => await CheckUpdatesAsync(args.Str("id")));
             _bridge.On("mods.update", async args => await UpdateModAsync(RequireGameDevice(args.Str("instanceId")), args.Str("projectId"), args.Str("versionId"), args.Str("source")));
+            _bridge.On("mods.rollback", args => Task.FromResult<object?>(RollbackMod(args.Str("instanceId"), args.Str("projectId"), args.Str("source"))));
+            _bridge.On("mods.changelog", async args => await ModChangelogAsync(args.Str("instanceId"), args.Str("projectId"), args.Str("versionId"), args.Str("source")));
         }
 
         // ── Çökme yardımcısı ──────────────────────────────────────────────
@@ -264,24 +266,97 @@ namespace VuluLauncher
         {
             var meta = RequireCustomInstance(instanceId);
             if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken mod güncellenemez.");
-            if (source == CurseForgeService.Source)
-            {
-                var (cfInstalled, manual) = await _curseforge.InstallAsync(meta, RequireCfId(projectId, "proje"), RequireCfId(versionId, "sürüm"));
-                return new { installed = cfInstalled, manual = ManualList(manual) };
-            }
-            if (!Regex.IsMatch(projectId, "^[A-Za-z0-9]{6,16}$") || !Regex.IsMatch(versionId, "^[A-Za-z0-9]{6,16}$"))
+            bool cf = source == CurseForgeService.Source;
+            if (!cf && (!Regex.IsMatch(projectId, "^[A-Za-z0-9]{6,16}$") || !Regex.IsMatch(versionId, "^[A-Za-z0-9]{6,16}$")))
                 throw new InvalidOperationException("Geçersiz sürüm.");
 
-            // Elle eklenmiş (izlenmeyen) dosyalar hash'ten bulunur. Önce yenisi kurulur, eskiler ancak ondan sonra silinir:
-            // indirme başarısız olursa mod kaybolmaz. İzlenen dosyaları InstallAsync kendisi değiştirir.
+            // Eski dosyalar önce yedeklenir: "Geri al" eski sürüme döndürür. Elle eklenmiş (izlenmeyen) Modrinth dosyaları
+            // hash'ten bulunur; yenisi kurulduktan sonra silinir (indirme başarısız olursa mod kaybolmaz).
             string dir = InstanceStore.PathOf(meta.Folder);
-            var stale = meta.Content.Any(c => c.ProjectId == projectId) ? new List<string>() : await FilesOfProjectAsync(dir, projectId);
-            var installed = await _modrinth.InstallAsync(meta, projectId, versionId);
-            var keep = meta.Content.Where(c => c.ProjectId == projectId)
-                .Select(c => Downloader.ResolveInside(dir, c.File)).Where(p => p != null).Select(p => p!)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-            foreach (var path in stale.Where(p => !keep.Contains(p) && File.Exists(p))) File.Delete(path);
-            return new { installed };
+            var tracked = meta.Content.FirstOrDefault(c => c.ProjectId == projectId && ModBackups.SameSource(c.Source, source));
+            var stale = tracked != null || cf ? new List<string>() : await FilesOfProjectAsync(dir, projectId);
+            var record = ModBackups.Prepare(dir, meta, projectId, source, tracked != null ? ModBackups.FilesOf(dir, tracked) : stale);
+            object result;
+            try
+            {
+                if (cf)
+                {
+                    var (cfInstalled, manual) = await _curseforge.InstallAsync(meta, RequireCfId(projectId, "proje"), RequireCfId(versionId, "sürüm"));
+                    result = new { installed = cfInstalled, manual = ManualList(manual) };
+                }
+                else
+                {
+                    var installed = await _modrinth.InstallAsync(meta, projectId, versionId);
+                    var keep = meta.Content.Where(c => c.ProjectId == projectId)
+                        .Select(c => Downloader.ResolveInside(dir, c.File)).Where(p => p != null).Select(p => p!)
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    foreach (var path in stale.Where(p => !keep.Contains(p) && File.Exists(p))) File.Delete(path);
+                    result = new { installed };
+                }
+            }
+            catch
+            {
+                ModBackups.Discard(dir, record);
+                throw;
+            }
+            if (ModBackups.Commit(dir, meta, record)) InstanceStore.Save(meta);
+            return result;
+        }
+
+        /// <summary>Modun son güncellemesini geri alır: eski sürümün dosyası ve kaydı yerine konur.</summary>
+        private object RollbackMod(string instanceId, string projectId, string source)
+        {
+            var meta = RequireCustomInstance(instanceId);
+            if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken mod değiştirilemez.");
+            var record = ModBackups.Rollback(InstanceStore.PathOf(meta.Folder), meta, projectId, source);
+            InstanceStore.Save(meta);
+            Log($"{record.Title} eski sürümüne döndü ({record.From}).", "ok");
+            return new { title = record.Title, version = record.From };
+        }
+
+        /// <summary>
+        /// Güncellemenin değişiklik notları: kurulu sürümden sonraki sürümlerden seçilene kadar (en çok 6, yeniden eskiye).
+        /// Modrinth'te markdown, CurseForge'da HTML; arayüz düz metne çevirir.
+        /// </summary>
+        private async Task<object?> ModChangelogAsync(string instanceId, string projectId, string versionId, string source)
+        {
+            var meta = RequireCustomInstance(instanceId);
+            var tracked = meta.Content.FirstOrDefault(c => c.ProjectId == projectId && ModBackups.SameSource(c.Source, source));
+            bool isMod = tracked == null || tracked.Type == "mod";
+            var entries = new List<object>();
+            if (source == CurseForgeService.Source)
+            {
+                int modId = RequireCfId(projectId, "proje"), fileId = RequireCfId(versionId, "sürüm");
+                var files = await _curseforge.CompatibleFilesAsync(modId, meta.McVersion, meta.Loader, isMod);
+                var target = files.FirstOrDefault(f => f.Id == fileId);
+                var current = tracked == null ? null : files.FirstOrDefault(f => f.Id.ToString() == tracked.VersionId);
+                var range = target == null ? new List<CfFile>()
+                    : files.Where(f => f.FileDate <= target.FileDate && (current == null ? f.Id == target.Id : f.FileDate > current.FileDate))
+                        .OrderByDescending(f => f.FileDate).Take(6).ToList();
+                var notes = await Task.WhenAll(range.Select(async f =>
+                {
+                    try { return await _curseforge.ChangelogAsync(modId, f.Id); } catch (Exception) { return ""; }
+                }));
+                for (int i = 0; i < range.Count; i++)
+                    entries.Add(new { name = range[i].DisplayName, date = (string?)range[i].FileDate.ToString("o"), text = notes[i], html = true });
+                if (target == null)
+                    entries.Add(new { name = "", date = (string?)null, text = await _curseforge.ChangelogAsync(modId, fileId), html = true });
+            }
+            else
+            {
+                if (!Regex.IsMatch(projectId, "^[A-Za-z0-9]{6,16}$") || !Regex.IsMatch(versionId, "^[A-Za-z0-9]{6,16}$"))
+                    throw new InvalidOperationException("Geçersiz sürüm.");
+                var versions = await _modrinth.VersionsAsync(projectId, meta.McVersion, isMod ? ModrinthService.CompatibleLoadersOf(meta.Loader) : null);
+                var target = versions.FirstOrDefault(v => v.Id == versionId);
+                var current = tracked == null ? null : versions.FirstOrDefault(v => v.Id == tracked.VersionId);
+                var range = target == null ? new List<MrVersion>()
+                    : versions.Where(v => string.CompareOrdinal(v.DatePublished, target.DatePublished) <= 0
+                            && (current == null ? v.Id == target.Id : string.CompareOrdinal(v.DatePublished, current.DatePublished) > 0))
+                        .OrderByDescending(v => v.DatePublished).Take(6).ToList();
+                foreach (var v in range)
+                    entries.Add(new { name = v.VersionNumber, date = v.DatePublished, text = v.Changelog ?? "", html = false });
+            }
+            return new { entries };
         }
 
         /// <summary>İçerik klasörlerinde bu Modrinth projesine ait (izlenmeyen) dosyalar.</summary>

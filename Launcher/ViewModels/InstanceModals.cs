@@ -397,7 +397,7 @@ namespace VuluLauncher.ViewModels
                 var update = _updates != null && _updates.TryGetValue(file, out var u) ? u : (JsonElement?)null;
                 var row = new ContentRow(this, file, i.Text("title") ?? file,
                     string.Join(" · ", new[] { TypeNames.GetValueOrDefault(i.Text("type") ?? ""), i.Text("version"), i.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR")) + " MB" }.Where(s => !string.IsNullOrEmpty(s))),
-                    i.Get("enabled").ValueKind != JsonValueKind.False, i.Text("iconUrl"), update);
+                    i.Get("enabled").ValueKind != JsonValueKind.False, i.Text("iconUrl"), update, i.Text("projectId"), i.Text("source"), i.Text("previous"));
                 if (selected.Contains(file)) row.SetSelected(true);
                 _all.Add(row);
             }
@@ -443,6 +443,31 @@ namespace VuluLauncher.ViewModels
             _main.Home.RefreshDetails();
         }
 
+        /// <summary>Güncellemenin değişiklik notları (kurulu sürümden seçilen sürüme kadar).</summary>
+        public async Task ShowChangelogAsync(ContentRow row, JsonElement update)
+        {
+            var modal = new ChangelogModal($"{row.Title} — neler değişti", $"{update.Text("from")} → {update.Text("to")}");
+            _ = modal.LoadAsync(new { instanceId = _item.Id, projectId = update.Text("projectId"), versionId = update.Text("versionId"), source = update.Text("source") ?? "" });
+            if (await _main.ShowAsync(modal) is true) await UpdateAsync(new List<JsonElement> { update });
+        }
+
+        /// <summary>Son güncellemeyi geri al: eski sürümün yedeği yerine konur.</summary>
+        public async Task RollbackAsync(ContentRow row)
+        {
+            if (row.ProjectId == null || row.Previous == null) return;
+            if (!await _main.ConfirmAsync("Güncellemeyi geri al", $"{row.Title} eski sürümüne ({row.Previous}) dönsün mü?", "Geri al")) return;
+            try
+            {
+                await _core.Call("mods.rollback", new { instanceId = _item.Id, projectId = row.ProjectId, source = row.Source ?? "" });
+                _main.ShowToast("Geri alındı", $"{row.Title} yeniden {row.Previous}.");
+            }
+            catch (Exception ex) { await _main.AlertAsync("Geri alınamadı", ex.Message); }
+            _updates = null;
+            CheckText = "Güncellemeleri denetle";
+            await LoadAsync();
+            _main.Home.RefreshDetails();
+        }
+
         public async Task SetEnabledAsync(ContentRow row, bool enabled)
         {
             try { await _core.Call("instances.setContentEnabled", new { id = _item.Id, file = row.File, enabled }); _updates = null; }
@@ -474,9 +499,13 @@ namespace VuluLauncher.ViewModels
         private readonly JsonElement? _update;
         private bool _loading = true;
 
-        public ContentRow(ContentModal owner, string file, string title, string meta, bool enabled, string? iconUrl, JsonElement? update)
+        public ContentRow(ContentModal owner, string file, string title, string meta, bool enabled, string? iconUrl, JsonElement? update,
+            string? projectId = null, string? source = null, string? previous = null)
         {
             _owner = owner;
+            ProjectId = projectId;
+            Source = source;
+            Previous = previous;
             File = file;
             Title = title;
             Meta = meta;
@@ -492,6 +521,12 @@ namespace VuluLauncher.ViewModels
         public string Meta { get; }
         public string? UpdateText { get; }
         public bool HasUpdate => UpdateText != null;
+        public string? ProjectId { get; }
+        public string? Source { get; }
+        /// <summary>Son güncellemeden önceki sürüm; varsa "Geri al" görünür.</summary>
+        public string? Previous { get; }
+        public bool CanRollback => Previous != null && ProjectId != null;
+        public string RollbackTip => $"Güncellemeyi geri al ({Previous} sürümüne dön)";
         [ObservableProperty] private bool _enabled;
         /// <summary>Toplu işlem için seçili (satırın solundaki kutu).</summary>
         [ObservableProperty] private bool _isSelected;
@@ -507,6 +542,42 @@ namespace VuluLauncher.ViewModels
 
         [RelayCommand] private Task Update() => _update is { } u ? _owner.UpdateAsync(new List<JsonElement> { u }) : Task.CompletedTask;
         [RelayCommand] private Task Remove() => _owner.RemoveAsync(this);
+        [RelayCommand] private Task Changelog() => _update is { } u ? _owner.ShowChangelogAsync(this, u) : Task.CompletedTask;
+        [RelayCommand] private Task Rollback() => _owner.RollbackAsync(this);
+    }
+
+    /// <summary>Mod güncellemesinin değişiklik notları; "Güncelle" ile kapanınca true döner.</summary>
+    internal sealed partial class ChangelogModal(string title, string subtitle) : ModalViewModel
+    {
+        public override double Width => 640;
+        public string Title { get; } = title;
+        public string Subtitle { get; } = subtitle;
+        public ObservableCollection<ChangelogEntry> Entries { get; } = new();
+        [ObservableProperty] private string? _message = "Notlar yükleniyor...";
+
+        public async Task LoadAsync(object args)
+        {
+            try
+            {
+                var r = await CoreClient.Instance.Call("mods.changelog", args);
+                foreach (var e in r.Items("entries"))
+                {
+                    string text = e.Text("text") ?? "";
+                    var blocks = (e.Bool("html") ? Description.FromHtml(text) : Description.FromMarkdown(text)).Where(b => !b.IsImage).ToList();
+                    Entries.Add(new ChangelogEntry(e.Text("name") ?? "", Names.Ago(e.Text("date")), blocks));
+                }
+                Message = Entries.Count == 0 ? "Bu güncelleme için not bulunamadı." : null;
+            }
+            catch (Exception ex) { Message = "Notlar alınamadı: " + ex.Message; }
+        }
+
+        [RelayCommand] private void Update() => Close(true);
+    }
+
+    internal sealed record ChangelogEntry(string Name, string Date, List<DescriptionBlock> Blocks)
+    {
+        public bool HasHeader => Name.Length > 0;
+        public bool IsEmpty => Blocks.Count == 0;
     }
 
     /// <summary>Dünyalar ve yedekleri: yedekle, geri yükle, yedeği sil.</summary>

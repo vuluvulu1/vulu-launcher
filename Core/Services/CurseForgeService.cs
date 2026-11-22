@@ -134,6 +134,10 @@ namespace VuluLauncher
         }
 
         /// <summary>Projenin açıklaması (HTML).</summary>
+        /// <summary>Dosyanın değişiklik notu (HTML).</summary>
+        public async Task<string> ChangelogAsync(int modId, int fileId) =>
+            (await _api.GetAsync<CfResponse<string>>($"/curseforge/mods/{modId}/files/{fileId}/changelog")).Data ?? "";
+
         public async Task<string> DescriptionAsync(int modId) =>
             (await _api.GetAsync<CfResponse<string>>($"/curseforge/mods/{modId}/description")).Data ?? "";
 

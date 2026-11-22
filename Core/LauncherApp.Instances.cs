@@ -284,11 +284,14 @@ namespace VuluLauncher
                     bool enabled = !relative.EndsWith(DisabledSuffix, StringComparison.OrdinalIgnoreCase);
                     string baseFile = enabled ? relative : relative[..^DisabledSuffix.Length];
                     tracked.TryGetValue(baseFile, out var info);
+                    var update = info == null ? null : ModBackups.Latest(meta, info.ProjectId, info.Source);
                     items.Add(new
                     {
                         file = relative,
                         enabled,
                         projectId = info?.ProjectId,
+                        source = info == null ? null : info.Source ?? "modrinth",
+                        previous = update?.From,   // son güncellemeden önceki sürüm: "Geri al"
                         type = folder == "mods" ? "mod" : folder == "resourcepacks" ? "resourcepack" : "shader",
                         title = info?.Title ?? Path.GetFileName(baseFile),
                         version = info?.VersionNumber,
@@ -314,6 +317,9 @@ namespace VuluLauncher
             if (File.Exists(path)) File.Delete(path);
 
             string baseFile = normalized.EndsWith(DisabledSuffix, StringComparison.OrdinalIgnoreCase) ? normalized[..^DisabledSuffix.Length] : normalized;
+            foreach (var removed in meta.Content.Where(c => string.Equals(c.File, baseFile, StringComparison.OrdinalIgnoreCase)).ToList())
+                if (ModBackups.Latest(meta, removed.ProjectId, removed.Source) is { } record)
+                    ModBackups.Forget(InstanceStore.PathOf(meta.Folder), meta, record);   // kaldırılan modun yedeği de gider
             meta.Content.RemoveAll(c => string.Equals(c.File, baseFile, StringComparison.OrdinalIgnoreCase));
             InstanceStore.Save(meta);
             return new { success = true };

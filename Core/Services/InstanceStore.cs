@@ -21,6 +21,27 @@ namespace VuluLauncher
         public bool FromPack { get; set; }
     }
 
+    /// <summary>Bir mod güncellemesi: eski sürümün içerik kaydı ve yedeklenen dosyaları (instance klasörüne göre yollar).</summary>
+    public sealed class ModUpdateRecord
+    {
+        public string? Source { get; set; }
+        public string ProjectId { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string From { get; set; } = "";
+        public string To { get; set; } = "";
+        public DateTime Date { get; set; } = DateTime.UtcNow;
+        /// <summary>Güncellemeden önceki kayıt; dosya elle eklenmişse (izlenmiyorsa) boş.</summary>
+        public InstalledContent? OldContent { get; set; }
+        public List<ModBackupFile> Backups { get; set; } = new();
+    }
+
+    /// <summary>Yedeklenen dosya: asıl yeri (örn. "mods/x.jar.disabled") ve yedeğin yeri ("mod-yedekleri/...").</summary>
+    public sealed class ModBackupFile
+    {
+        public string File { get; set; } = "";
+        public string Backup { get; set; } = "";
+    }
+
     /// <summary>Kullanıcının oluşturduğu instance'ın bilgileri; instances/&lt;klasör&gt;/instance.json içinde durur.</summary>
     public sealed class InstanceMeta
     {
@@ -53,6 +74,8 @@ namespace VuluLauncher
         public List<InstalledContent> Content { get; set; } = new();
         /// <summary>CurseForge'un elle indirilmesini istediği, henüz yerine konmamış dosyalar.</summary>
         public List<ManualDownload> PendingManual { get; set; } = new();
+        /// <summary>Son mod güncellemeleri: eski dosyanın yedeği durur, "Geri al" ile eski sürüme dönülür (proje başına en son güncelleme).</summary>
+        public List<ModUpdateRecord> UpdateHistory { get; set; } = new();
 
         /// <summary>Klasör adı; dosyaya yazılmaz, yüklenirken doldurulur.</summary>
         [System.Text.Json.Serialization.JsonIgnore]

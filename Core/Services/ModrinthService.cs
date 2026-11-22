@@ -733,6 +733,8 @@ namespace VuluLauncher
         public string VersionNumber { get; set; } = "";
         public string VersionType { get; set; } = "";
         public string? DatePublished { get; set; }
+        /// <summary>Değişiklik notu (markdown); sürüm listesiyle birlikte gelir.</summary>
+        public string? Changelog { get; set; }
         public List<string> GameVersions { get; set; } = new();
         public List<string> Loaders { get; set; } = new();
         public List<MrFile> Files { get; set; } = new();
