@@ -566,13 +566,13 @@
                             <!-- Açılış: karartma solarak gelir, kutu hafifçe büyüyüp yükselerek belirir.
                                  Kapanış: ikisi birlikte 0,15 sn'de söner, kutu biraz küçülür (MainViewModel.ShowAsync bekler) -->
                             <Border.Styles>
-                                <!-- Kapat: kutunun hemen üstünde sağa yaslı küçük, yarı saydam düğme (× ve Esc); içeriğe binmez -->
+                                <!-- Kapat: kutunun üst kenarının üstünde (yarısı içeride), köşeden biraz içeride küçük, yarı saydam düğme (× ve Esc) -->
                                 <Style Selector="Button.modal-close">
                                     <Setter Property="Height" Value="30" /><Setter Property="Padding" Value="10,0,11,0" />
-                                    <Setter Property="CornerRadius" Value="10" /><Setter Property="Margin" Value="0,0,0,8" />
-                                    <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" />
+                                    <Setter Property="CornerRadius" Value="10" /><Setter Property="Margin" Value="0,-15,18,0" />
+                                    <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Top" />
                                     <Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="VerticalContentAlignment" Value="Center" />
-                                    <Setter Property="Background" Value="#B3141110" /><Setter Property="BorderBrush" Value="#29FFD8A0" /><Setter Property="BorderThickness" Value="1" />
+                                    <Setter Property="Background" Value="#F2181412" /><Setter Property="BorderBrush" Value="#29FFD8A0" /><Setter Property="BorderThickness" Value="1" />
                                     <Setter Property="Cursor" Value="Hand" />
                                 </Style>
                                 <Style Selector="Button.modal-close /template/ ContentPresenter#PART_ContentPresenter">
@@ -596,8 +596,8 @@
                             </Border.Styles>
                             <!-- Kutu başlık çubuğunun altında kalır (üstte pay) ve kenarlara yapışmaz; büyük kutular bu alana sığacak
                                  kadar kısalır, köşedeki × de bu payın içinde durur (başlık çubuğuyla ve pencere düğmeleriyle çakışmaz) -->
-                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="32,60,32,28" RowDefinitions="38,Auto">
-                                <Border Grid.Row="1" Classes="modal-box" Width="{Binding Width}" MaxHeight="760" Background="{StaticResource Panel}" BorderThickness="1">
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="32,76,32,28">
+                                <Border Classes="modal-box" Width="{Binding Width}" MaxHeight="760" Background="{StaticResource Panel}" BorderThickness="1">
                                     <v:ModalHost />
                                 </Border>
                                 <!-- Her kutuda sağ üst köşede büyük, yuvarlak kapat düğmesi: köşeden yarı dışarıda (kutu kırpılsa da kesilmez, içerikle çakışmaz) -->
