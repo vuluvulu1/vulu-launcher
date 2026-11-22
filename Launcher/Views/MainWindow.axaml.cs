@@ -64,6 +64,7 @@ namespace VuluLauncher.Views
                             var all = this.GetVisualDescendants().OfType<Control>().Where(c => c.IsEffectivelyVisible).ToList();
                             all.FirstOrDefault(c => c is Border b && b.Classes.Contains("lift"))?.Classes.Set("hover", true);
                             all.OfType<ListBoxItem>().Skip(1).FirstOrDefault()?.Classes.Set("hover", true);
+                            all.OfType<Button>().FirstOrDefault(b => b.Classes.Contains("rail-avatar"))?.Classes.Set("hover", true);
                         }
                         var size = new Avalonia.PixelSize((int)Bounds.Width, (int)Bounds.Height);
                         using var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(size);

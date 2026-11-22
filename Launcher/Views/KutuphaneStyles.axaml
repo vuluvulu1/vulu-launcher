@@ -180,9 +180,33 @@
     <Style Selector="Button.rail-avatar /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="CornerRadius" Value="22" />
     </Style>
+    <!-- Üstüne gelince: düğmenin çevresinde halka yok; resim hafifçe büyür, çerçevesi amber tona döner -->
     <Style Selector="Button.rail-avatar:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BoxShadow" Value="0 0 0 2 #F2A33A" />
+        <Setter Property="BoxShadow" Value="none" />
+    </Style>
+    <Style Selector="Button.rail-avatar:pressed">
+        <Setter Property="RenderTransform" Value="none" />
+    </Style>
+    <Style Selector="Button.rail-avatar Panel.avatar-wrap">
+        <Setter Property="RenderTransform" Value="scale(1)" />
+        <Setter Property="Transitions">
+            <Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" /></Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.rail-avatar:pointerover Panel.avatar-wrap, Button.rail-avatar.hover Panel.avatar-wrap">
+        <Setter Property="RenderTransform" Value="scale(1.07)" />
+    </Style>
+    <Style Selector="Button.rail-avatar:pressed Panel.avatar-wrap">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+    <Style Selector="Button.rail-avatar Border.avatar">
+        <Setter Property="Transitions">
+            <Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.18" /></Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.rail-avatar:pointerover Border.avatar, Button.rail-avatar.hover Border.avatar">
+        <Setter Property="BorderBrush" Value="#B3F2A33A" />
     </Style>
 
     <!-- ── Kartlar: yuvarlak köşe, ince sıcak çizgi, gölge yok ── -->

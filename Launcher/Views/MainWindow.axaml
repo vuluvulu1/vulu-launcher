@@ -394,8 +394,8 @@
                             <Button Classes="rail-avatar" HorizontalAlignment="Center" Command="{Binding OpenMyProfileCommand}" ToolTip.Tip="Profilim"
                                     ToolTip.Placement="Right" ToolTip.ShowDelay="150" AutomationProperties.Name="Profilim">
                                 <!-- Yuvarlak resim, ince çerçeve; sağ altta yeşil çevrimiçi noktası (kalın halka yerine) -->
-                                <Panel Width="34" Height="34">
-                                    <Border CornerRadius="17" ClipToBounds="True" Background="{StaticResource Raised}" BorderBrush="{StaticResource CardLineStrong}" BorderThickness="1">
+                                <Panel Classes="avatar-wrap" Width="34" Height="34">
+                                    <Border Classes="avatar" CornerRadius="17" ClipToBounds="True" Background="{StaticResource Raised}" BorderBrush="{StaticResource CardLineStrong}" BorderThickness="1">
                                         <Grid>
                                             <TextBlock Text="{Binding UserInitial}" FontWeight="SemiBold" FontSize="13" TextAlignment="Center" LineHeight="32"
                                                        HorizontalAlignment="Stretch" VerticalAlignment="Center" />
