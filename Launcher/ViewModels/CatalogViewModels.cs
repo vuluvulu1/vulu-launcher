@@ -491,6 +491,23 @@ namespace VuluLauncher.ViewModels
             return false;
         }
 
+        /// <summary>Bağlantıdaki proje doğrudan ayrıntı penceresinde açılır (aramada çıkmasını beklemeden).</summary>
+        private async Task OpenLinkedAsync(string source, string type, string slug)
+        {
+            try
+            {
+                var r = await _core.Call("content.bySlug", new { source, type, slug });
+                if (r.Get("hit").ValueKind != System.Text.Json.JsonValueKind.Object)
+                {
+                    Status = "Bağlantıdaki proje bulunamadı; benzer sonuçlar listeleniyor.";
+                    return;
+                }
+                _pendingSlug = null;   // arama sonucu geldiğinde ikinci kez açılmasın
+                await ShowDetailsAsync(new ContentHit(this, r.Get("hit"), source == "curseforge"));
+            }
+            catch (Exception ex) { Status = ex.Message; }
+        }
+
         partial void OnQueryChanged(string value)
         {
             if (TryParseLink(value, out var source, out var type, out var slug))
@@ -510,6 +527,7 @@ namespace VuluLauncher.ViewModels
                     }
                     Query = slug;
                     if (source != Source) SourceRequested?.Invoke(source);
+                    _ = OpenLinkedAsync(source, type, slug);
                 }, DispatcherPriority.Background);
                 return;
             }

@@ -98,6 +98,22 @@ namespace VuluLauncher
             return list;
         }
 
+        /// <summary>
+        /// Kısa adı (bağlantıdaki) tutan proje. Önce CurseForge'un kısa ad süzgeciyle, olmazsa kısa addan türeyen metinle
+        /// aranır ve kısa adı aynı olan seçilir; bulunamazsa null.
+        /// </summary>
+        public async Task<CfMod?> BySlugAsync(string slug, string type)
+        {
+            try
+            {
+                var exact = await _api.GetAsync<CfResponse<List<CfMod>>>($"/curseforge/search?classId={ClassIdOf(type)}&slug={Uri.EscapeDataString(slug)}&pageSize=5");
+                if (exact.Data?.FirstOrDefault(m => string.Equals(m.Slug, slug, StringComparison.OrdinalIgnoreCase)) is { } hit) return hit;
+            }
+            catch { /* eski API kısa adı iletmeyebilir; metinle aranır */ }
+            var (hits, _) = await SearchAsync(slug.Replace('-', ' '), type, null, null, 0, null, null);
+            return hits.FirstOrDefault(m => string.Equals(m.Slug, slug, StringComparison.OrdinalIgnoreCase));
+        }
+
         public async Task<CfMod> ModAsync(int modId) =>
             (await _api.GetAsync<CfResponse<CfMod>>($"/curseforge/mods/{modId}")).Data
                 ?? throw new InvalidOperationException("CurseForge projesi bulunamadı.");

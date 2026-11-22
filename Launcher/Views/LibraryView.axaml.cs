@@ -103,7 +103,7 @@ namespace VuluLauncher.Views
             const double gap = 18, min = 170, max = 240;
             if (width <= 0 || Math.Abs(width - _fitWidth) < 1) return;
             _fitWidth = width;
-            double room = width - 1;   // her öğe sağ boşluğuyla (gap) birlikte yer kaplar
+            double room = width - 1 - 14;   // listenin sol payı (kapak kalkınca kesilmesin diye)   // her öğe sağ boşluğuyla (gap) birlikte yer kaplar
             int cols = Math.Max(1, (int)(room / (min + gap)));
             double w = Math.Min(max, Math.Floor(room / cols - gap));
             Resources["PosterW"] = w;

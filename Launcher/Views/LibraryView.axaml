@@ -86,8 +86,8 @@
             </Setter>
         </Style>
         <Style Selector="ListBox.posters ListBoxItem:pointerover Border.art">
-            <Setter Property="RenderTransform" Value="translateY(-3px)" />
-            <Setter Property="BoxShadow" Value="0 12 26 0 #99000000" />
+            <Setter Property="RenderTransform" Value="translateY(-5px) scale(1.015)" />
+            <Setter Property="BoxShadow" Value="0 14 28 -6 #A6000000" />
         </Style>
         <Style Selector="ListBox.posters ListBoxItem:selected Border.art">
             <Setter Property="BoxShadow" Value="0 0 0 2 #0B0A09, 0 0 0 4 #F2A33A" />
@@ -258,7 +258,8 @@
             </Border>
             <v:EmptyState x:Name="NoMatch" Grid.Row="1" IsVisible="False" Margin="0,30,18,0" VerticalAlignment="Top" Icon="🔍"
                           Title="Bu süzgeçte paket yok" Text="Başka bir süzgeç seç ya da aramayı temizle." />
-            <ScrollViewer x:Name="PosterScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <!-- Kapak üstüne gelince kalkıp gölge salıyor: kaydırma alanı kenarlardan taşırılır, liste aynı yerde kalır (kesilmesin) -->
+            <ScrollViewer x:Name="PosterScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="-14,-14,0,0">
                 <StackPanel>
                 <!-- İlk açılış: henüz kendi paketin yoksa yol gösteren karşılama (LibraryView.axaml.cs Rebuild gösterir) -->
                 <Border x:Name="Welcome" IsVisible="False" Margin="0,0,18,20" Padding="26,22" CornerRadius="18"
@@ -277,7 +278,7 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-                <ListBox x:Name="Posters" Classes="posters" SelectionMode="Single" v:Reveal.Stagger="True">
+                <ListBox x:Name="Posters" Classes="posters" SelectionMode="Single" v:Reveal.Stagger="True" Padding="14,14,0,0">
                     <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
                     <ListBox.DataTemplates>
                         <DataTemplate DataType="v:NewPackCard">

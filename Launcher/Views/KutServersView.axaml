@@ -146,10 +146,12 @@
                         </Border>
                     </Panel>
                     <StackPanel DockPanel.Dock="Bottom" Margin="18,10,18,18" Spacing="8">
-                        <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
+                        <Grid ColumnDefinitions="*,*,*,Auto" ColumnSpacing="8">
                             <Button Classes="dbtn" Content="Davet et" HorizontalAlignment="Stretch" Command="{Binding InviteCommand}" ToolTip.Tip="Bir arkadaşını mesajla davet et" />
                             <Button Grid.Column="1" Classes="dbtn" Content="Kısayol" HorizontalAlignment="Stretch" Command="{Binding ShortcutCommand}" ToolTip.Tip="Masaüstüne bu sunucuya bağlanan kısayol" />
-                            <Button Grid.Column="2" Classes="dbtn" Width="42" Content="⋯" ToolTip.Tip="Diğer işlemler">
+                            <!-- Canlı harita yalnızca vulu'nun kendi sunucusunda (sohbeti olan); öbürlerinde düğme yerini boş bırakmaz -->
+                            <Button Grid.Column="2" Classes="dbtn" Content="Harita" HorizontalAlignment="Stretch" IsVisible="{Binding HasChat}" Command="{Binding MapCommand}" ToolTip.Tip="Sunucunun canlı haritası: kim nerede" />
+                            <Button Grid.Column="3" Classes="dbtn" Width="42" Content="⋯" ToolTip.Tip="Diğer işlemler">
                                 <Button.Flyout>
                                     <MenuFlyout Placement="TopEdgeAlignedRight">
                                         <MenuItem Header="Masaüstüne kısayol" Command="{Binding ShortcutCommand}" />
@@ -188,7 +190,7 @@
                                     <TextBox Text="{Binding ChatDraft}" Watermark="Oyundakilere yaz" MaxLength="200">
                                         <TextBox.KeyBindings><KeyBinding Gesture="Enter" Command="{Binding SendChatCommand}" /></TextBox.KeyBindings>
                                     </TextBox>
-                                    <Button Grid.Column="1" Classes="primary dbtn" Content="Gönder" Command="{Binding SendChatCommand}" Margin="8,0,0,0" />
+                                    <Button Grid.Column="1" Classes="primary" Height="36" Padding="16,0" FontWeight="SemiBold" VerticalContentAlignment="Center" Content="Gönder" Command="{Binding SendChatCommand}" Margin="8,0,0,0" />
                                 </Grid>
                                 <TextBlock DockPanel.Dock="Bottom" Text="{Binding ChatStatus}" IsVisible="{Binding ChatStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Foreground="{StaticResource Error}" FontSize="12" TextWrapping="Wrap" />
                                 <TextBlock DockPanel.Dock="Top" Text="OYUN SOHBETİ" FontSize="11" FontWeight="SemiBold" LetterSpacing="0.8" Classes="dim" Margin="2,0,0,6" />

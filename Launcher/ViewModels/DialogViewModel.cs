@@ -42,6 +42,13 @@ namespace VuluLauncher.ViewModels
         [RelayCommand] private void Mclogs() => Close("mclogs");
     }
 
+    /// <summary>Sunucunun canlı haritası, Sunucular sayfasından (Sosyal › Harita ile aynı görünüm).</summary>
+    internal sealed class MapModal(WorldViewModel world) : ModalViewModel
+    {
+        public WorldViewModel World { get; } = world;
+        public override double Width => 1120;
+    }
+
     /// <summary>Soru ya da bilgi kutusu: tamam ise true, vazgeç ise null.</summary>
     internal sealed partial class DialogViewModel(string title, string message, string okText, string? cancelText, bool danger) : ModalViewModel
     {

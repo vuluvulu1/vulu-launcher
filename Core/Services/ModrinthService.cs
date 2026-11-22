@@ -600,6 +600,13 @@ namespace VuluLauncher
         public string Title { get; set; } = "";
         public string ProjectType { get; set; } = "";
         public string? IconUrl { get; set; }
+        public string Description { get; set; } = "";
+        public long Downloads { get; set; }
+        public long Followers { get; set; }
+        public string? Updated { get; set; }
+        public List<string> Categories { get; set; } = new();
+        public List<string> Loaders { get; set; } = new();
+        public List<string> GameVersions { get; set; } = new();
     }
 
     internal sealed class MrVersion

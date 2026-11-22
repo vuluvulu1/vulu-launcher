@@ -28,6 +28,33 @@ namespace VuluLauncher
                 return Task.FromResult<object?>(new { opened = true });
             });
             _bridge.On("cf.manualPlace", async args => await PlaceManualAsync(args.Str("instanceId")));
+            // Yapıştırılan proje bağlantısı: projeyi kısa adıyla bulur, arama sonucuyla aynı biçimde döner (bulunamazsa hit null)
+            _bridge.On("content.bySlug", async args =>
+            {
+                RequireLogin();
+                string slug = args.Str("slug"), type = ContentType(args.Str("type", "mod"));
+                if (!System.Text.RegularExpressions.Regex.IsMatch(slug, "^[A-Za-z0-9_.-]{1,100}$")) throw new InvalidOperationException("Geçersiz bağlantı.");
+                if (args.Str("source") == "modrinth")
+                {
+                    MrProject p;
+                    try { p = await _modrinth.ProjectAsync(slug); }
+                    catch (HttpRequestException) { return new { hit = (object?)null }; }
+                    return new
+                    {
+                        hit = (object?)new
+                        {
+                            id = p.Id, slug = p.Slug, type = p.ProjectType, title = p.Title, description = p.Description, author = "",
+                            iconUrl = p.IconUrl, downloads = p.Downloads, follows = p.Followers, updated = p.Updated,
+                            categories = p.Categories.Where(c => !PackCatalog.Loaders.Contains(c)).Take(4),
+                            loaders = p.Loaders.Where(l => PackCatalog.Loaders.Contains(l) && l != "vanilla"),
+                            gameVersions = p.GameVersions.Where(v => ReleaseVersion.IsMatch(v)).TakeLast(30),
+                            installed = false,
+                        },
+                    };
+                }
+                var m = await _curseforge.BySlugAsync(slug, type);
+                return new { hit = m == null ? null : CfHit(m, CurseForgeService.TypeOf(m.ClassId) ?? type, new HashSet<string>()) };
+            });
             _bridge.On("mods.backupFiles", async args =>
             {
                 var instance = RequireCustomInstance(args.Str("instanceId"));
@@ -96,7 +123,12 @@ namespace VuluLauncher
             {
                 total,
                 offset = args.Int("offset"),
-                hits = hits.Select(m => new
+                hits = hits.Select(m => CfHit(m, type, installed)),
+            };
+        }
+
+        /// <summary>CurseForge projesi, arayüzün arama sonucu biçiminde.</summary>
+        private static object CfHit(CfMod m, string type, HashSet<string> installed) => new
                 {
                     id = m.Id.ToString(),
                     slug = m.Slug,
@@ -118,9 +150,7 @@ namespace VuluLauncher
                     latestVersion = m.MainFileId > 0 ? m.MainFileId.ToString() : null,   // modpack özeti (mod sayısı) için
                     // Yapımcı başka uygulamalardan indirmeye izin vermiyorsa arayüz önceden haber verir
                     manualOnly = m.AllowModDistribution == false,
-                }),
-            };
-        }
+                };
 
         private async Task<object?> CurseForgeFiltersAsync(string type)
         {

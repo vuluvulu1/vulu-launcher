@@ -78,6 +78,9 @@ namespace VuluLauncher.ViewModels
             else await OpenMapAsync();
         }
 
+        /// <summary>Sunucular'daki "Harita" penceresi: Sosyal sekmesine bağlı değil, pencere açık kaldıkça yenilenir.</summary>
+        public bool Standalone { get; init; }
+
         /// <summary>Sekmeden çıkılınca harita yenilemesi durur.</summary>
         public void Leave() { _timer?.Stop(); }
 
@@ -180,7 +183,7 @@ namespace VuluLauncher.ViewModels
             // Harita açıkken: konumlar 2 sn'de bir, değişen karolar dakikada bir
             _timer ??= new DispatcherTimer(TimeSpan.FromSeconds(PlayerSeconds), DispatcherPriority.Background, async (_, _) =>
             {
-                if (!(IsMap && main.SelectedTab?.Page == main.Social && main.Social.View == "map")) { _timer?.Stop(); return; }
+                if (!(IsMap && (Standalone || main.SelectedTab?.Page == main.Social && main.Social.View == "map"))) { _timer?.Stop(); return; }
                 await RefreshPlayersAsync();
                 if (++_ticks % (TileCheckSeconds / PlayerSeconds) == 0) { try { await CheckTilesAsync(first: false); } catch { } }
             });

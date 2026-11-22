@@ -273,6 +273,7 @@ namespace VuluLauncher.ViewModels
         [RelayCommand] private Task Join() => _owner.JoinAsync(this);
         [RelayCommand] private Task CopyAddress() => _owner.CopyAsync(Address);
         [RelayCommand] private Task Shortcut() => _owner.ShortcutAsync(this);
+        [RelayCommand] private Task Map() => _owner.OpenMapAsync();
         [RelayCommand] private Task Edit() => _owner.EditAsync(this);
         [RelayCommand] private Task Invite() => _owner.InviteAsync(this);
         [RelayCommand] private Task Delete() => _owner.DeleteAsync(this);
@@ -431,6 +432,15 @@ namespace VuluLauncher.ViewModels
                 await Avalonia.Input.Platform.ClipboardExtensions.SetTextAsync(clipboard, text);
                 _main.ShowToast("Kopyalandı", text);
             }
+        }
+
+        /// <summary>Canlı harita penceresi (vulu sunucusu); kapanınca yenileme durur.</summary>
+        public async Task OpenMapAsync()
+        {
+            var modal = new MapModal(new WorldViewModel(_main) { View = "map", Standalone = true });
+            _ = modal.World.OpenAsync();
+            await _main.ShowAsync(modal);
+            modal.World.Leave();
         }
 
         public async Task ShortcutAsync(ServerCard s)

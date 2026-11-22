@@ -172,6 +172,11 @@
     <ContentControl Content="{Binding}">
         <ContentControl.DataTemplates>
             <!-- ── Soru / bilgi ─────────────────────────────────────────── -->
+            <!-- ── Canlı harita (Sunucular › Harita) ── -->
+            <DataTemplate DataType="vm:MapModal">
+                <v:WorldView DataContext="{Binding World}" Height="660" Margin="8,8,8,0" />
+            </DataTemplate>
+
             <!-- ── Günlüğü paylaş: vulu'da ya da mclo.gs bağlantısı ── -->
             <DataTemplate DataType="vm:LogShareModal">
                 <StackPanel>
