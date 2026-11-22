@@ -126,7 +126,7 @@
         <Setter Property="Background" Value="{StaticResource Hover}" />
         <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
     </Style>
-    <!-- Başlık çubuğundaki arama kutusu (Ctrl+K): iki temada da kutu; Meşale'de sekmelerin sağında, büyütecin yerine -->
+    <!-- Başlık çubuğundaki arama kutusu (Ctrl+K): iki temada da kutu; Meşale'de başlık çubuğunun ortasında, büyütecin yerine -->
     <Style Selector="Window.soft Button.search-pill">
         <Setter Property="Height" Value="36" />
         <Setter Property="Padding" Value="12,0" />
@@ -147,16 +147,18 @@
     <Style Selector="Window.soft Button.search-pill Path.icon">
         <Setter Property="Stroke" Value="{StaticResource Dim}" />
     </Style>
+    <!-- Meşale: pencerenin tam ortasında (orta sütunun ortası sekmelere binerdi); kutunun kendisi saydam, tıklamayı engellemez -->
     <Style Selector="Window.mesale Border#SearchPillHost">
         <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Grid.Column" Value="0" />
+        <Setter Property="Grid.ColumnSpan" Value="3" />
     </Style>
     <Style Selector="Window.mesale Border#SearchIconHost">
         <Setter Property="IsVisible" Value="False" />
     </Style>
     <Style Selector="Window.mesale Button.search-pill">
         <Setter Property="Width" Value="300" />
-        <Setter Property="HorizontalAlignment" Value="Right" />
-        <Setter Property="Margin" Value="0,0,10,0" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
     <Style Selector="Window.soft Button.address">
         <Setter Property="CornerRadius" Value="8" />

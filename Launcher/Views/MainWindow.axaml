@@ -82,7 +82,7 @@
                     </StackPanel>
 
                     <!-- Kütüphane: sekmeler yerine geniş arama kutusu (sekmeler soldaki rayda) -->
-                    <Border x:Name="SearchPillHost" Grid.Column="1">
+                    <Border x:Name="SearchPillHost">
                     <Button x:Name="SearchPill" Classes="search-pill" IsVisible="{Binding ShowShell}" Command="{Binding OpenPaletteCommand}"
                             VerticalAlignment="Center" AutomationProperties.Name="Hızlı arama">
                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">

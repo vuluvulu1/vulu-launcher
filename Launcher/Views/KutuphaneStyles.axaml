@@ -17,6 +17,10 @@
     <Style Selector="Border#Rail, Border#SearchPillHost">
         <Setter Property="IsVisible" Value="False" />
     </Style>
+    <!-- Arama kutusunun yeri stilde (Meşale onu pencerenin ortasına alır; yerel değer olsaydı değiştiremezdi) -->
+    <Style Selector="Border#SearchPillHost">
+        <Setter Property="Grid.Column" Value="1" />
+    </Style>
     <Style Selector="Window.kutuphane Border#Rail">
         <Setter Property="IsVisible" Value="True" />
     </Style>
