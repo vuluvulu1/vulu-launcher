@@ -898,15 +898,27 @@ namespace VuluLauncher.ViewModels
         [RelayCommand]
         private async Task NewMessage()
         {
-            if (await PickUserAsync("Yeni mesaj") is { } user) await OpenConversationAsync(user);
+            if (await PickUserAsync("Yeni mesaj", friendsOnly: false) is { } user) await OpenConversationAsync(user);
         }
 
-        /// <summary>Kullanıcı seçtirir (son yazışılanlar önce); vazgeçilirse null.</summary>
-        public async Task<string?> PickUserAsync(string title)
+        /// <summary>
+        /// Kullanıcı seçtirir (son yazışılanlar önce); vazgeçilirse null. Davet, paket ve günlük gönderme yalnızca
+        /// arkadaşlara (friendsOnly); "Yeni mesaj" bütün üyelere açık.
+        /// </summary>
+        public async Task<string?> PickUserAsync(string title, bool friendsOnly = true)
         {
             var members = await Main.MembersAsync();
+            if (friendsOnly)
+            {
+                if (!_friendsLoaded) await RefreshFriendsAsync();
+                if (_friends.Count == 0)
+                {
+                    await Main.AlertAsync(title, "Henüz arkadaşın yok. Sosyal'deki arama kutusundan birini bulup arkadaş ekleyebilirsin.");
+                    return null;
+                }
+            }
             var recent = _conversations.Select(c => c.Text("username")).ToList();
-            var ordered = members.Where(m => m.Key != Main.Username)
+            var ordered = members.Where(m => m.Key != Main.Username && (!friendsOnly || _friends.Contains(m.Key)))
                 .OrderBy(m => recent.IndexOf(m.Key) is var i && i >= 0 ? i : int.MaxValue)
                 .Select(m => new PersonItem(m.Key, m.Value)).ToList();
             return await Main.ShowAsync(new UserPickerModal(title, ordered)) as string;
