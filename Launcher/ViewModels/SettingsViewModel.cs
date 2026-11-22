@@ -230,12 +230,18 @@ namespace VuluLauncher.ViewModels
                 .Add(new ToggleRow("Discord'da durum göster", "Discord açıksa arkadaşların ne oynadığını görür: \"vulu Launcher · AGLR SMP oynuyor\".", B("discordPresence", true), toggle("discordPresence")));
         }
 
-        private SettingSection LookSection() =>
+        /// <summary>Ses ve görünüm bölümü: tema değişince sayfa bu bölümde kalır.</summary>
+        private SettingSection? _lookSection;
+
+        private SettingSection LookSection() => _lookSection =
             new SettingSection("Ses ve görünüm")
                 .Add(new ChoiceRow("Tema", "Kütüphane: solda simgeler, paketler kapak kapak. Meşale: üstte sekmeler, paketin dünyası tam ekran.",
                     new[] { ("kutuphane", "Kütüphane"), ("mesale", "Meşale") }, S("theme", "kutuphane"), async value =>
                     {
                         if (!await Change(("theme", value))) return false;
+                        // Bulunulan bölüm temanın satırınınki: Meşale'de kaydırmaya göre üstteki bölüm (ör. Launcher)
+                        // sayılıyordu, Kütüphane'ye geçince o kategori açılıyordu
+                        foreach (var s in Sections) s.IsCurrent = s == _lookSection;
                         await main.SwitchThemeAsync(value);
                         return true;
                     }))

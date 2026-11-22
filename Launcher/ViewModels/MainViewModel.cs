@@ -182,6 +182,11 @@ namespace VuluLauncher.ViewModels
                 }
                 // VULU_UI_PAGE=settings: o sekmeyle açılır
                 if (Tabs.FirstOrDefault(t => t.Key == Environment.GetEnvironmentVariable("VULU_UI_PAGE")) is { } page) SelectedTab = page;
+                // VULU_UI_PICKTHEME=kutuphane / mesale: 5 sn sonra Ayarlar'daki tema seçimine basılır (tema değişince sayfanın yeri)
+                if (Environment.GetEnvironmentVariable("VULU_UI_PICKTHEME") is { Length: > 0 } pickTheme)
+                    Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                        Settings.Sections.SelectMany(sec => sec.Rows).OfType<ChoiceRow>().FirstOrDefault(r => r.Title == "Tema")?
+                            .Options.FirstOrDefault(o => o.Key == pickTheme)?.PickCommand.Execute(null), TimeSpan.FromSeconds(5));
                 else if (Environment.GetEnvironmentVariable("VULU_UI_PAGE") is { } world && world is "board" or "map") { SelectedTab = Tabs.First(t => t.Key == "social"); Social.ShowWorld(world); }
                 _ = PerfProbe.RunAsync(this);
                 // VULU_UI_LOADING=1: yükleme iskeletleri açık kalır (yükleniyor görünümünü denemek için)

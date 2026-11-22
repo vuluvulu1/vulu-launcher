@@ -52,6 +52,20 @@ namespace VuluLauncher.Views
             KutRoot.IsVisible = k;
             ClassicRoot.IsVisible = !k;
             if (k) { FillAccount(); ShowCards(); }
+            // Meşale'ye geçince liste bulunulan bölüme kayar (Kütüphane'de seçili kategori; tema değişince Ses ve görünüm)
+            else if (DataContext is SettingsViewModel vm && vm.Sections.FirstOrDefault(s => s.IsCurrent) is { } current && current != vm.Sections.FirstOrDefault())
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => ScrollToSection(current), Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
+        /// <summary>Klasik listede bölüme kaydırır; bölüm menüde seçili kalır.</summary>
+        private void ScrollToSection(SettingSection section)
+        {
+            if (SectionList.ContainerFromItem(section) is not Control container) return;
+            if (container.TranslatePoint(new Point(0, 0), Body) is not { } top) return;
+            _navTarget = section;
+            Scroll.Offset = new Vector(0, Math.Max(0, top.Y));
+            if (DataContext is SettingsViewModel vm)
+                foreach (var s in vm.Sections) s.IsCurrent = s == section;
         }
 
         private void BindKut(SettingsViewModel? vm)
@@ -148,14 +162,8 @@ namespace VuluLauncher.Views
         /// <summary>Bölüm menüsünden tıklanan bölüme kaydırır.</summary>
         private void OnNavClick(object? sender, RoutedEventArgs e)
         {
-            if (sender is not Button { DataContext: SettingSection section }) return;
-            if (SectionList.ContainerFromItem(section) is not Control container) return;
-            if (container.TranslatePoint(new Point(0, 0), Body) is not { } top) return;
             // Tıklanan bölüm seçili kalır (son bölümlere inince sayfa en alta dayanır, üstteki bölüm başka olur)
-            _navTarget = section;
-            Scroll.Offset = new Vector(0, Math.Max(0, top.Y));
-            if (DataContext is SettingsViewModel vm)
-                foreach (var s in vm.Sections) s.IsCurrent = s == section;
+            if (sender is Button { DataContext: SettingSection section }) ScrollToSection(section);
         }
 
         // Menüden gidilen bölüm; kullanıcı bir sonraki kaydırışında yeniden hesaplanır
