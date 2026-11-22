@@ -38,6 +38,8 @@ namespace VuluLauncher
             _bridge.On("packs.shareInfo", async args => await ShareInfoAsync(args.Str("instanceId")));
             _bridge.On("packs.pickCover", async _ => await PickCoverAsync());
             _bridge.On("packs.publish", async args => await PublishPackAsync(args));
+            _bridge.On("packs.sendToFriend", async args => await SendPackToFriendAsync(args.Str("instanceId"), args.Str("user")));
+            _bridge.On("packs.installShare", async args => await InstallSharedFromFriendAsync(RequireGameDevice(args.Str("id"))));
             _bridge.On("packs.delete", async args => await DeletePackAsync(args.Str("id")));
             _bridge.On("packs.setRoles", async args =>
             {
@@ -643,19 +645,10 @@ namespace VuluLauncher
                 pack.Id = meta.SharedPackId;
 
             Log($"{name} hazırlanıyor...", "accent");
-            var (mods, fallbackFiles) = await ResolvePackModsAsync(meta, dir);
-            var tracked = TrackedFiles(meta);
-            mods.AddRange(await ResolveUntrackedByHashAsync(dir, includes, tracked));
-
             string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-share-{Guid.NewGuid():N}.zip");
             try
             {
-                // Kaynak paketleri paylaşılıyorsa hangilerinin açık olduğu da gider (kuranda da açık gelsin)
-                var resourcePacks = includes.Contains("resourcepacks", StringComparer.OrdinalIgnoreCase) ? PackOptions.ReadResourcePacks(dir) : null;
-                var incompatiblePacks = resourcePacks == null ? null : PackOptions.ReadIncompatiblePacks(dir);
-                // Tuş atamaları her zaman gider: kuranların modlardan gelen çakışmaları düzelir, kendi seçtikleri korunur
-                var keys = PackOptions.ReadKeys(dir);
-                int fileCount = await Task.Run(() => BuildOverridesZip(zipPath, dir, includes, tracked, fallbackFiles, resourcePacks, incompatiblePacks, keys));
+                var (mods, fileCount) = await BuildPackFilesAsync(meta, dir, includes, zipPath);
                 if (new FileInfo(zipPath).Length > MaxOverridesBytes)
                     throw new InvalidOperationException("Paket dosyaları 200 MB'ı aşıyor. Büyük klasörleri (ör. resourcepacks) çıkarmayı dene.");
 
@@ -702,6 +695,107 @@ namespace VuluLauncher
         /// Instance'taki Modrinth içeriklerinin sabit indirme adreslerini toplar. Modrinth'te artık bulunmayan
         /// (silinmiş) sürümlerin dosyaları bağlantı yerine pakete gömülür.
         /// </summary>
+        /// <summary>
+        /// Paylaşılacak paketin dosyaları: CurseForge/Modrinth'te bulunan içerik bağlantı olur (sabit indirme adresi),
+        /// geri kalan seçili klasörler zip'e girer. Kaynak paketlerinden açık olanlar ve tuş atamaları da gider.
+        /// </summary>
+        private async Task<(List<PackMod> Mods, int FileCount)> BuildPackFilesAsync(InstanceMeta meta, string dir, List<string> includes, string zipPath)
+        {
+            var (mods, fallbackFiles) = await ResolvePackModsAsync(meta, dir);
+            var tracked = TrackedFiles(meta);
+            mods.AddRange(await ResolveUntrackedByHashAsync(dir, includes, tracked));
+            // Kaynak paketleri paylaşılıyorsa hangilerinin açık olduğu da gider (kuranda da açık gelsin)
+            var resourcePacks = includes.Contains("resourcepacks", StringComparer.OrdinalIgnoreCase) ? PackOptions.ReadResourcePacks(dir) : null;
+            var incompatiblePacks = resourcePacks == null ? null : PackOptions.ReadIncompatiblePacks(dir);
+            // Tuş atamaları her zaman gider: kuranların modlardan gelen çakışmaları düzelir, kendi seçtikleri korunur
+            var keys = PackOptions.ReadKeys(dir);
+            int fileCount = await Task.Run(() => BuildOverridesZip(zipPath, dir, includes, tracked, fallbackFiles, resourcePacks, incompatiblePacks, keys));
+            return (mods, fileCount);
+        }
+
+        // ── Arkadaşa gönderme (herkes) ────────────────────────────────────
+        private const long MaxFriendShareBytes = 100L * 1024 * 1024;
+
+        /// <summary>
+        /// Kendi paketini bir kişiye gönderir: modlar bağlantı olarak, ayar klasörleri (config, kubejs…) zip olarak gider;
+        /// dünyalar ve kişisel ayarlar gitmez. Arayüz dönen kimlikle kişiye mesajla kart gönderir.
+        /// </summary>
+        private async Task<object?> SendPackToFriendAsync(string instanceId, string user)
+        {
+            RequireLogin();
+            if (!System.Text.RegularExpressions.Regex.IsMatch(user, "^[A-Za-z0-9_]{3,16}$") || user == _login.Username)
+                throw new InvalidOperationException("Alıcı geçersiz.");
+            var meta = RequireCustomInstance(instanceId);
+            string dir = InstanceStore.PathOf(meta.Folder);
+            var includes = Directory.Exists(dir)
+                ? new DirectoryInfo(dir).EnumerateFileSystemInfos().Select(e => e.Name).Where(n => SharedByDefault.Contains(n) && !NeverShared.Contains(n)).ToList()
+                : new List<string>();
+
+            Log($"{meta.Name} {user} için hazırlanıyor...", "accent");
+            using var job = new DownloadJob($"{meta.Name} gönderiliyor") { Phase = "Hazırlanıyor" };
+            string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-friend-{Guid.NewGuid():N}.zip");
+            try
+            {
+                var (mods, fileCount) = await BuildPackFilesAsync(meta, dir, includes, zipPath);
+                if (new FileInfo(zipPath).Length > MaxFriendShareBytes)
+                    throw new InvalidOperationException("Paketin ayar ve mod dosyaları 100 MB'ı aşıyor; CurseForge ya da Modrinth'te bulunmayan büyük dosyaları çıkarmayı dene.");
+                job.Phase = "Yükleniyor";
+                var pack = new SharedPack
+                {
+                    Name = meta.Name.Length > 40 ? meta.Name[..40] : meta.Name,
+                    McVersion = meta.McVersion,
+                    Loader = meta.Loader,
+                    LoaderVersion = meta.LoaderVersion,
+                    RecommendedRamGb = DefaultRamGb(meta),
+                    Mods = mods,
+                };
+                var share = await Packs.CreateShareAsync(pack, zipPath, user);
+                Log($"{meta.Name} {user} adlı kişiye gönderildi ({mods.Count} mod bağlantısı, {fileCount} dosya).", "ok");
+                job.Complete($"{meta.Name} gönderildi");
+                return new { id = share.Id, name = share.Name };
+            }
+            catch (Exception ex)
+            {
+                job.Fail(ex.Message);
+                throw;
+            }
+            finally
+            {
+                if (File.Exists(zipPath)) File.Delete(zipPath);
+            }
+        }
+
+        /// <summary>Arkadaşın gönderdiği paketi yeni bir paket olarak kurar (vulu Packs'e bağlı değildir, güncellenmez).</summary>
+        private async Task<object?> InstallSharedFromFriendAsync(string id)
+        {
+            RequireLogin();
+            var store = Packs;
+            var pack = await store.GetShareAsync(id) ?? throw new InvalidOperationException("Gönderilen paket bulunamadı ya da süresi doldu (30 gün).");
+            ValidatePackVersions(pack);
+
+            var meta = InstanceStore.Create(pack.Name, pack.McVersion, pack.Loader, pack.LoaderVersion);
+            using var job = new DownloadJob($"{pack.Name} kuruluyor");
+            try
+            {
+                Log($"{pack.Name} kuruluyor ({pack.Author} gönderdi)...", "accent");
+                await ApplyPackAsync(store, pack, meta, job);
+                meta.SharedPackId = null;
+                meta.SharedPackRevision = 0;
+                meta.Description = $"{pack.Author} gönderdi";
+                foreach (var content in meta.Content) content.FromPack = false;
+                InstanceStore.Save(meta);
+                Log($"{pack.Name} kuruldu.", "ok");
+                job.Complete($"{pack.Name} kuruldu");
+                return new { id = InstancePrefix + meta.Folder, manual = meta.PendingManual.Count };
+            }
+            catch (Exception ex)
+            {
+                job.Fail(ex.Message);
+                try { InstanceStore.Delete(meta.Folder); } catch { }
+                throw;
+            }
+        }
+
         /// <summary>İki kayıt aynı kaynaktan mı (CurseForge ya da Modrinth; boş = Modrinth).</summary>
         private static bool SameSource(string? a, string? b) => (a == CurseForgeService.Source) == (b == CurseForgeService.Source);
 

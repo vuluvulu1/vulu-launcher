@@ -587,6 +587,7 @@
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                     <Button Classes="dbtn" Padding="14,0" Content="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
+                                    <Button Classes="dbtn" Padding="14,0" Content="Arkadaşına gönder" IsVisible="{Binding SelectedIsCustom}" Command="{Binding SendToFriendCommand}" />
                                     <Button Classes="dbtn" Padding="14,0" Content="{Binding ShareText}" IsVisible="{Binding CanShare}" Command="{Binding ShareCommand}" />
                                 </StackPanel>
                             </Grid>
@@ -679,6 +680,7 @@
                                     <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
                                     <MenuItem Header="Çoğalt" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DuplicateCommand}" />
                                     <MenuItem Header=".mrpack olarak dışa aktar" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ExportMrpackCommand}" />
+                                    <MenuItem Header="Arkadaşına gönder" IsVisible="{Binding SelectedIsCustom}" Command="{Binding SendToFriendCommand}" />
                                     <MenuItem Header="{Binding ShareText}" IsVisible="{Binding CanShare}" Command="{Binding ShareCommand}" Foreground="{StaticResource Accent}" />
                                     <Separator IsVisible="{Binding SelectedIsCustom}" />
                                     <MenuItem Header="Sil" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DeleteInstanceCommand}" Foreground="{StaticResource Error}" />

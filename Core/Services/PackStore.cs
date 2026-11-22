@@ -25,7 +25,38 @@ namespace VuluLauncher
         }
 
         public Task DownloadOverridesAsync(SharedPack pack, string path, IProgress<long>? bytesRead = null) =>
-            _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/overrides", path, bytesRead);
+            _api.DownloadAsync($"/{(pack.IsShare ? "packshares" : "packs")}/{Uri.EscapeDataString(pack.Id)}/overrides", path, bytesRead);
+
+        // ── Arkadaşa gönderilen paketler (yalnızca gönderen ve alıcı görür, 30 gün durur) ──
+        public async Task<SharedPack?> GetShareAsync(string id)
+        {
+            try
+            {
+                var pack = await _api.GetAsync<SharedPack>($"/packshares/{Uri.EscapeDataString(id)}");
+                pack.IsShare = true;
+                return pack;
+            }
+            catch (ApiException ex) when (ex.Status == HttpStatusCode.NotFound) { return null; }
+        }
+
+        /// <summary>Ayar dosyalarının zip'ini yükler ve paylaşımı kişiye oluşturur.</summary>
+        public async Task<SharedPack> CreateShareAsync(SharedPack pack, string overridesZip, string to)
+        {
+            var overrides = await _api.UploadFileAsync<UploadResult>("/packshares/files", overridesZip);
+            var share = await _api.PostAsync<SharedPack>("/packshares", new
+            {
+                to,
+                name = pack.Name,
+                mcVersion = pack.McVersion,
+                loader = pack.Loader,
+                loaderVersion = pack.LoaderVersion,
+                recommendedRamGb = pack.RecommendedRamGb,
+                mods = pack.Mods,
+                overridesFileId = overrides.FileId,
+            });
+            share.IsShare = true;
+            return share;
+        }
 
         public Task DownloadLogoAsync(SharedPack pack, string path) =>
             _api.DownloadAsync($"/packs/{Uri.EscapeDataString(pack.Id)}/logo?v={pack.Revision}", path);
@@ -108,6 +139,9 @@ namespace VuluLauncher
     public sealed class SharedPack
     {
         public string Id { get; set; } = "";
+        /// <summary>vulu Packs'te değil, bir kişiye gönderilmiş paket (dosyaları /packshares'ten iner).</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool IsShare { get; set; }
         public string Name { get; set; } = "";
         public string Description { get; set; } = "";
         public string Author { get; set; } = "";

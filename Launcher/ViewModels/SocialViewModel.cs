@@ -136,9 +136,10 @@ namespace VuluLauncher.ViewModels
         public string? Address { get; } = card.Text("address");
         public bool Mine { get; } = mine;
         public bool HasAddress => Address != null;
-        public string Icon => Type == "pack" ? "📦" : "🎮";
-        public string Kind => Type == "pack" ? "vulu pack" : "Sunucu daveti";
-        public string ActionText => Type == "pack" ? "Paketi aç" : "Katıl";
+        public bool IsPack => Type is "pack" or "packshare";
+        public string Icon => IsPack ? "📦" : "🎮";
+        public string Kind => Type switch { "pack" => "vulu pack", "packshare" => Mine ? "Gönderdiğin paket" : "Sana gönderilen paket", _ => "Sunucu daveti" };
+        public string ActionText => Type switch { "pack" => "Paketi aç", "packshare" => Mine ? "Gönderildi" : "Paketi kur", _ => "Katıl" };
         [ObservableProperty] private string? _note;
         [ObservableProperty] private bool _busy;
 
@@ -922,6 +923,11 @@ namespace VuluLauncher.ViewModels
         /// <summary>Karttaki düğme: paketi kur/güncelle/aç ya da sunucuya katıl. Gösterilecek not döner.</summary>
         public async Task<string?> OpenCardAsync(DmCardItem card)
         {
+            if (card.Type == "packshare")
+            {
+                if (card.Mine) return "Arkadaşın bu karttan paketi kurabilir (30 gün geçerli).";
+                return await Main.InstallFriendPackAsync(card.Id, card.Name);
+            }
             if (card.Type == "pack")
             {
                 await Main.Packs.LoadAsync();
@@ -966,7 +972,7 @@ namespace VuluLauncher.ViewModels
                 {
                     string preview = m.Text("text") is { Length: > 0 } t ? (t.Length > 80 ? t[..80] : t)
                         : m.Get("media").ValueKind == JsonValueKind.Object ? "🖼 resim"
-                        : m.Get("card").ValueKind == JsonValueKind.Object ? (m.Get("card").Text("type") == "pack" ? "📦 " : "🎮 ") + m.Get("card").Text("name") : "yeni mesaj";
+                        : m.Get("card").ValueKind == JsonValueKind.Object ? (m.Get("card").Text("type") is "pack" or "packshare" ? "📦 " : "🎮 ") + m.Get("card").Text("name") : "yeni mesaj";
                     Main.Home.AppendLog($"💬 {peer}: {preview}", "accent");
                 }
             }

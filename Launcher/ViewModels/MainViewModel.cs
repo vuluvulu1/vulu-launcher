@@ -708,6 +708,23 @@ namespace VuluLauncher.ViewModels
             await AlertAsync($"v{version} ile gelenler", notes.Trim());
         }
 
+        /// <summary>Arkadaşın mesajla gönderdiği paketi kurar; kurulunca Kütüphane'de seçilir. Karta yazılacak not döner.</summary>
+        public async Task<string?> InstallFriendPackAsync(string shareId, string name)
+        {
+            if (!await ConfirmAsync("Paketi kur", $"{name} yeni bir paket olarak kurulsun mu? Modlar CurseForge ve Modrinth'ten iner.", "Kur")) return null;
+            Home.AppendLog($"{name} kuruluyor…", "accent");
+            try
+            {
+                var r = await _core.Call("packs.installShare", new { id = shareId });
+                string id = r.Text("id") ?? "";
+                await Home.ReloadInstancesAsync(id);
+                SelectedTab = Tabs[0];
+                ShowToast("Paket kuruldu", $"{name} Kütüphane'de.");
+                return r.Int("manual") > 0 ? "Kuruldu; birkaç dosyanın elle indirilmesi gerekiyor (paketin sayfasında)." : "Kuruldu ✓";
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
         /// <summary>Adminlere açık launcher bildirimlerinin sayısı (geri bildirim düğmesinde rozet).</summary>
         [ObservableProperty] private int _feedbackCount;
         public bool HasFeedbackCount => FeedbackCount > 0;

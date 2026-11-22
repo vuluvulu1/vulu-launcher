@@ -674,6 +674,26 @@ namespace VuluLauncher.ViewModels
             catch { /* özet genel kalır */ }
         }
 
+        /// <summary>
+        /// Paketi bir arkadaşa gönder: kişi seçilir, paket (modlar bağlantı, ayarlar zip) yüklenir ve kişiye mesajla
+        /// "Paketi kur" kartı gider. Dünyalar ve kişisel ayarlar gitmez.
+        /// </summary>
+        [RelayCommand]
+        private async Task SendToFriend()
+        {
+            if (Selected is not { IsCustom: true } item) return;
+            if (await Main.Social.PickUserAsync($"{item.Name} paketini kime gönderelim?") is not { } user) return;
+            AppendLog($"{item.Name} {user} için hazırlanıyor…", "accent");
+            try
+            {
+                var r = await _core.Call("packs.sendToFriend", new { instanceId = item.Id, user });
+                var card = JsonSerializer.SerializeToElement(new { type = "packshare", id = r.Text("id"), name = r.Text("name") ?? item.Name });
+                if (await Main.Social.SendToAsync(user, $"{item.Name} paketimi gönderdim ({item.LoaderLabel} {item.McVersion}).", card))
+                    Main.ShowToast("Paket gönderildi", $"{user} mesajdaki karttan kurabilir.");
+            }
+            catch (Exception ex) { await Main.AlertAsync("Paket gönderilemedi", ex.Message); }
+        }
+
         /// <summary>Bu paketin kendi oyun ayarları: Java, ek JVM argümanları, oyun penceresi.</summary>
         [RelayCommand]
         private async Task GameSettings()

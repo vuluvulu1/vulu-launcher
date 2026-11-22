@@ -59,6 +59,7 @@ namespace VuluLauncher
             return card.Type switch
             {
                 "pack" => new DmCard("pack", card.Id!, name),
+                "packshare" => new DmCard("packshare", card.Id!, name),   // arkadaşın gönderdiği paket (kişiye özel)
                 "server" when DmAddress.IsMatch(card.Address ?? "") => new DmCard("server", card.Id!, name, card.Address),
                 _ => null,
             };
