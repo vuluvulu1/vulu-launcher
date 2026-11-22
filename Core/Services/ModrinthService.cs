@@ -399,7 +399,6 @@ namespace VuluLauncher
                 ?? throw new InvalidOperationException($"{project.Title}: .mrpack dosyası bulunamadı.");
 
             string packPath = Path.Combine(Path.GetTempPath(), $"vulu-{Guid.NewGuid():N}.mrpack");
-            InstanceMeta? instance = null;
             using var job = new DownloadJob($"{project.Title} kuruluyor") { Phase = "Modpack indiriliyor" };
 
             try
@@ -407,7 +406,33 @@ namespace VuluLauncher
                 _log($"{project.Title} {version.VersionNumber} indiriliyor...", "accent");
                 await job.Add(packFile.Filename, packFile.Size)
                     .DownloadAsync(packFile.Url, packPath, packFile.Hashes?.Sha1, packFile.Hashes?.Sha512);
+                return await CreateFromPackAsync(packPath, project.Title, project.IconUrl, project.Id, version.VersionNumber, job);
+            }
+            catch (Exception ex) { job.Fail(ex.Message); throw; }
+            finally
+            {
+                if (File.Exists(packPath)) File.Delete(packPath);
+            }
+        }
 
+        /// <summary>Bilgisayardaki .mrpack dosyasından yeni instance (içe aktarma). Adı paketin kendi adından.</summary>
+        public async Task<InstanceMeta> ImportPackAsync(string packPath)
+        {
+            string name = Path.GetFileNameWithoutExtension(packPath);
+            using var job = new DownloadJob($"{name} kuruluyor") { Phase = "Paket okunuyor" };
+            try { return await CreateFromPackAsync(packPath, null, null, null, null, job); }
+            catch (Exception ex) { job.Fail(ex.Message); throw; }
+        }
+
+        /// <summary>
+        /// .mrpack dosyasından instance kurar: dizindeki dosyalar indirilir, overrides açılır. Yarıda kalırsa klasör silinir.
+        /// title boşsa paketin kendi adı kullanılır.
+        /// </summary>
+        private async Task<InstanceMeta> CreateFromPackAsync(string packPath, string? title, string? iconUrl, string? projectId, string? versionNumber, DownloadJob job)
+        {
+            InstanceMeta? instance = null;
+            try
+            {
                 using var zip = ZipFile.OpenRead(packPath);
                 var indexEntry = zip.GetEntry("modrinth.index.json")
                     ?? throw new InvalidDataException("Modpack bozuk: modrinth.index.json yok.");
@@ -421,13 +446,17 @@ namespace VuluLauncher
                 if (!index.Dependencies.TryGetValue("minecraft", out var mcVersion) || string.IsNullOrEmpty(mcVersion))
                     throw new InvalidDataException("Modpack hangi Minecraft sürümünü istediğini belirtmiyor.");
 
-                instance = InstanceStore.Create(project.Title, mcVersion, loader, loaderVersion);
-                instance.IconUrl = project.IconUrl;
-                instance.ModpackProjectId = project.Id;
-                instance.ModpackVersion = version.VersionNumber;
+                string name = !string.IsNullOrWhiteSpace(title) ? title : !string.IsNullOrWhiteSpace(index.Name) ? index.Name : Path.GetFileNameWithoutExtension(packPath);
+                if (name.Length > 40) name = name[..40];
+                job.Title = $"{name} kuruluyor";
+                instance = InstanceStore.Create(name, mcVersion, loader, loaderVersion);
+                instance.IconUrl = iconUrl;
+                instance.ModpackProjectId = projectId;
+                instance.ModpackVersion = versionNumber ?? (string.IsNullOrWhiteSpace(index.VersionId) ? null : index.VersionId);
                 InstanceStore.Save(instance);
 
                 string instanceDir = InstanceStore.PathOf(instance.Folder);
+                job.Phase = "Modlar indiriliyor";
                 await DownloadPackFilesAsync(index, instanceDir, job);
 
                 _log("Modpack ayarları açılıyor...", "replace");
@@ -435,22 +464,17 @@ namespace VuluLauncher
                 ExtractOverrides(zip, "overrides/", instanceDir);
                 ExtractOverrides(zip, "client-overrides/", instanceDir);
 
-                _log($"{project.Title} kuruldu.", "ok");
-                job.Complete($"{project.Title} kuruldu");
+                _log($"{name} kuruldu.", "ok");
+                job.Complete($"{name} kuruldu");
                 return instance;
             }
-            catch (Exception ex)
+            catch
             {
-                job.Fail(ex.Message);
                 if (instance != null)
                 {
                     try { InstanceStore.Delete(instance.Folder); } catch { }
                 }
                 throw;
-            }
-            finally
-            {
-                if (File.Exists(packPath)) File.Delete(packPath);
             }
         }
 

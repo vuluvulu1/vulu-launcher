@@ -538,6 +538,19 @@
                     </ScrollViewer>
                 </StackPanel>
             </Border>
+            <!-- ── Dosya bırakma ipucu: modpack dosyası pencerenin üstüne sürüklenince ── -->
+            <Border x:Name="DropHint" Grid.Row="0" Grid.RowSpan="2" IsVisible="False" IsHitTestVisible="False" ZIndex="20" Background="#B3000000">
+                <Border HorizontalAlignment="Center" VerticalAlignment="Center" Padding="36,28" CornerRadius="18" BorderThickness="2"
+                        BorderBrush="{StaticResource Accent}" Background="{StaticResource Panel}">
+                    <StackPanel Spacing="8" HorizontalAlignment="Center">
+                        <Path Data="M12 4v11M7 10l5 5 5-5M5 19h14" Stroke="{StaticResource Accent}" StrokeThickness="2" StrokeLineCap="Round" StrokeJoin="Round"
+                              Width="34" Height="34" Stretch="Uniform" HorizontalAlignment="Center" />
+                        <TextBlock Text="Bırak, kütüphanene eklensin" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Modrinth (.mrpack), CurseForge modpack zip'i ya da Prism/MultiMC dışa aktarması" Classes="dim" FontSize="12.5" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+            </Border>
+
             <!-- ── Kutular: pencerenin üstünde, arkası karartılır; üst üste açılabilir ── -->
             <ItemsControl Grid.Row="0" Grid.RowSpan="2" ItemsSource="{Binding Modals}">
                 <ItemsControl.ItemsPanel>

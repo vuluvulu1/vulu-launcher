@@ -38,7 +38,10 @@ namespace VuluLauncher.ViewModels
             Sources.Add(new SourceItem("curseforge", "CurseForge", "Modpack ara", "M11 4.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 0 0 0-13zM16 16l4.5 4.5"));
             Sources.Add(new SourceItem("modrinth", "Modrinth", "Modpack ara", "M11 4.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 0 0 0-13zM16 16l4.5 4.5"));
             Sources.Add(new SourceItem("blank", "Boş instance", "Sürümü ve yükleyiciyi sen seç", "M12 5v14M5 12h14"));
+            // Bilgisayardaki bir modpack dosyası (pencereye sürükleyip bırakmak da olur)
+            Sources.Add(new SourceItem("import", "Dosyadan içe aktar", "Modpack dosyası (.mrpack, .zip)", "M12 4v11M7 10l5 5 5-5M5 19h14"));
             string start = source ?? UiState.Get("newPackSource") ?? "packs";
+            if (start == "import") start = "packs";
             Select(Sources.FirstOrDefault(s => s.Key == start) ?? Sources[0]);
         }
 
@@ -59,6 +62,8 @@ namespace VuluLauncher.ViewModels
         [RelayCommand]
         private void Select(SourceItem item)
         {
+            // İçe aktarma bir sekme değil: pencere kapanır, dosya seçtirilir, paket kütüphanede belirir
+            if (item.Key == "import") { Close(); _ = Main.ImportFileAsync(); return; }
             foreach (var s in Sources) s.IsSelected = s == item;
             Source = item.Key;
             UiState.Set("newPackSource", item.Key);

@@ -4,6 +4,7 @@ using Xunit;
 namespace VuluLauncher.Tests
 {
     /// <summary>Elle indirilen dosyaların yerine konması (ManualFiles.Place).</summary>
+    [Collection("AppPaths")]   // AppPaths ortak: aynı anda çalışmasın
     public class ManualFilesTests : IDisposable
     {
         private readonly string _root = Path.Combine(Path.GetTempPath(), "vulu-manual-" + Guid.NewGuid().ToString("N"));

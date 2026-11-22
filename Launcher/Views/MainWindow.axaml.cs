@@ -99,6 +99,7 @@ namespace VuluLauncher.Views
             PlaceDownloads();
             Themes.Changed += PlaceDownloads;
             InitDownloadsDrag();
+            InitFileDrop();
             RailTabs.SizeChanged += (_, _) => QueueRailMark();
             // Simge rayından da pencere sürüklenebilir (düğmelerin üstünde değilse)
             Rail.PointerPressed += (_, e) =>
@@ -341,6 +342,41 @@ namespace VuluLauncher.Views
                 TabIndicator.Width = target.Width;
             }
             TabIndicator.Opacity = 1;
+        }
+
+        // ── Dosya bırakma: pencereye sürüklenen modpack dosyası içe aktarılır ──
+        private static readonly string[] DropExtensions = [".mrpack", ".zip"];
+
+        private void InitFileDrop()
+        {
+            Avalonia.Input.DragDrop.SetAllowDrop(this, true);
+            AddHandler(Avalonia.Input.DragDrop.DragEnterEvent, (_, e) => OnFileDrag(e));
+            AddHandler(Avalonia.Input.DragDrop.DragOverEvent, (_, e) => OnFileDrag(e));
+            AddHandler(Avalonia.Input.DragDrop.DragLeaveEvent, (_, _) => DropHint.IsVisible = false);
+            AddHandler(Avalonia.Input.DragDrop.DropEvent, (_, e) =>
+            {
+                DropHint.IsVisible = false;
+                if (DroppedPack(e) is { } path && DataContext is MainViewModel m && m.LoggedIn) _ = m.ImportFileAsync(path);
+            });
+        }
+
+        private void OnFileDrag(Avalonia.Input.DragEventArgs e)
+        {
+            bool ok = DroppedPack(e) != null && DataContext is MainViewModel { LoggedIn: true };
+            e.DragEffects = ok ? Avalonia.Input.DragDropEffects.Copy : Avalonia.Input.DragDropEffects.None;
+            DropHint.IsVisible = ok;
+            e.Handled = true;
+        }
+
+        /// <summary>Bırakılan ilk modpack dosyasının yolu (.mrpack ya da .zip); yoksa null.</summary>
+        private static string? DroppedPack(Avalonia.Input.DragEventArgs e)
+        {
+            var files = Avalonia.Input.DataTransferExtensions.TryGetFiles(e.DataTransfer);
+            if (files == null) return null;
+            foreach (var f in files)
+                if (Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f) is { } p
+                    && DropExtensions.Contains(System.IO.Path.GetExtension(p).ToLowerInvariant())) return p;
+            return null;
         }
 
         // ── İndirme kutusu: tutup pencerenin içinde istenen yere taşınır ──

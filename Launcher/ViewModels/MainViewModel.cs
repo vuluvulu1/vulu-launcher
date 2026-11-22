@@ -379,6 +379,9 @@ namespace VuluLauncher.ViewModels
             SelectedTab = Tabs[0];
             LoggedIn = true;
 #if DEBUG
+            // Yalnızca geliştirmede: VULU_UI_IMPORT=<dosya> giriş sonrası o paketi içe aktarır (içe aktarma denemesi)
+            if (Environment.GetEnvironmentVariable("VULU_UI_IMPORT") is { Length: > 0 } importPath)
+                Avalonia.Threading.DispatcherTimer.RunOnce(() => _ = ImportFileAsync(importPath), TimeSpan.FromSeconds(4));
             // Yalnızca geliştirmede: VULU_UI_PAGE=board / map / profile ile giriş sonrası o sayfa açılır (arayüz denemesi)
             if (Environment.GetEnvironmentVariable("VULU_UI_PAGE") is { Length: > 0 } devPage)
             {
@@ -640,6 +643,34 @@ namespace VuluLauncher.ViewModels
         }
 
         public Task AlertAsync(string title, string message) => ConfirmAsync(title, message, "Tamam", null);
+
+        /// <summary>
+        /// Paket içe aktarma (.mrpack, CurseForge zip'i, Prism/MultiMC dışa aktarması): yol verilmezse dosya seçtirilir.
+        /// Kütüphanede kurulan paket gibi ilerleme halkasıyla belirir; elle indirilecek dosya varsa pencere açılır.
+        /// </summary>
+        public async Task ImportFileAsync(string? path = null)
+        {
+            if (!LoggedIn) return;
+            string name;
+            if (path == null)
+            {
+                JsonElement picked;
+                try { picked = await _core.Call("instances.pickImport"); }
+                catch (Exception ex) { await AlertAsync("İçe aktarılamadı", ex.Message); return; }
+                if (picked.ValueKind != JsonValueKind.Object || picked.Text("path") is not { } chosen) return;
+                path = chosen;
+                name = picked.Text("name") ?? "Paket";
+            }
+            else name = System.IO.Path.GetFileNameWithoutExtension(path);
+            try
+            {
+                string file = path;
+                var result = await InstallInLibraryAsync(name, null, () => _core.Call("instances.import", new { path = file }));
+                if (result.Items("manual").Any()) await ShowAsync(new ManualDownloadsModal(result.Get("manual"), result.Text("id")));
+                ShowToast("İçe aktarıldı", $"{result.Text("name") ?? name} kütüphanene eklendi.");
+            }
+            catch (Exception ex) { await AlertAsync("İçe aktarılamadı", ex.Message); }
+        }
 
         /// <summary>
         /// Yenilikler: güncellemeden sonraki ilk açılışta o sürümün notları bir kez gösterilir (ilk kurulumda değil);

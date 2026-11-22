@@ -351,15 +351,37 @@ namespace VuluLauncher
                 throw new InvalidOperationException($"{mod.Name}: yapımcısı modpack'in başka uygulamalardan indirilmesine izin vermiyor. CurseForge uygulamasıyla kurulabilir.");
 
             string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-{Guid.NewGuid():N}.zip");
-            InstanceMeta? instance = null;
-            var manual = new List<ManualDownload>();
             using var job = new DownloadJob($"{mod.Name} kuruluyor") { Phase = "Modpack indiriliyor" };
             try
             {
                 _log($"{mod.Name} {packFile.DisplayName} indiriliyor...", "accent");
                 await job.Add(packFile.FileName, packFile.FileLength).DownloadAsync(packFile.DownloadUrl, zipPath,
                     packFile.Hashes.FirstOrDefault(h => h.Algo == 1)?.Value, null);
+                return await CreateFromZipAsync(zipPath, mod.Name, mod.Logo?.ThumbnailUrl, $"{Source}:{mod.Id}", packFile.DisplayName, job);
+            }
+            catch (Exception ex) { job.Fail(ex.Message); throw; }
+            finally
+            {
+                if (File.Exists(zipPath)) File.Delete(zipPath);
+            }
+        }
 
+        /// <summary>Bilgisayardaki CurseForge modpack zip'inden yeni instance (içe aktarma). Adı manifestteki addan.</summary>
+        public async Task<(InstanceMeta Instance, List<ManualDownload> Manual)> ImportZipAsync(string zipPath)
+        {
+            string name = Path.GetFileNameWithoutExtension(zipPath);
+            using var job = new DownloadJob($"{name} kuruluyor") { Phase = "Paket okunuyor" };
+            try { return await CreateFromZipAsync(zipPath, null, null, null, null, job); }
+            catch (Exception ex) { job.Fail(ex.Message); throw; }
+        }
+
+        /// <summary>CurseForge modpack zip'inden instance kurar (manifest + overrides). Yarıda kalırsa klasör silinir.</summary>
+        private async Task<(InstanceMeta Instance, List<ManualDownload> Manual)> CreateFromZipAsync(string zipPath, string? title, string? iconUrl, string? projectRef, string? versionName, DownloadJob job)
+        {
+            InstanceMeta? instance = null;
+            var manual = new List<ManualDownload>();
+            try
+            {
                 using var zip = ZipFile.OpenRead(zipPath);
                 var manifestEntry = zip.GetEntry("manifest.json") ?? throw new InvalidDataException("Modpack bozuk: manifest.json yok.");
                 CfManifest manifest;
@@ -369,10 +391,13 @@ namespace VuluLauncher
                 string mcVersion = manifest.Minecraft?.Version ?? throw new InvalidDataException("Modpack hangi Minecraft sürümünü istediğini belirtmiyor.");
                 var (loader, loaderVersion) = ReadLoader(manifest);
 
-                instance = InstanceStore.Create(mod.Name.Length > 40 ? mod.Name[..40] : mod.Name, mcVersion, loader, loaderVersion);
-                instance.IconUrl = mod.Logo?.ThumbnailUrl;
-                instance.ModpackProjectId = $"{Source}:{mod.Id}";
-                instance.ModpackVersion = packFile.DisplayName;
+                string name = !string.IsNullOrWhiteSpace(title) ? title : !string.IsNullOrWhiteSpace(manifest.Name) ? manifest.Name! : Path.GetFileNameWithoutExtension(zipPath);
+                if (name.Length > 40) name = name[..40];
+                job.Title = $"{name} kuruluyor";
+                instance = InstanceStore.Create(name, mcVersion, loader, loaderVersion);
+                instance.IconUrl = iconUrl;
+                instance.ModpackProjectId = projectRef;
+                instance.ModpackVersion = versionName ?? manifest.Version;
                 InstanceStore.Save(instance);
                 string instanceDir = InstanceStore.PathOf(instance.Folder);
 
@@ -420,19 +445,14 @@ namespace VuluLauncher
                 job.Phase = "Ayarlar yerleştiriliyor";
                 ModrinthService.ExtractOverrides(zip, (manifest.Overrides is { Length: > 0 } o ? o.TrimEnd('/') : "overrides") + "/", instanceDir);
 
-                _log(manual.Count == 0 ? $"{mod.Name} kuruldu." : $"{mod.Name} kuruldu; {manual.Count} dosyanın CurseForge'dan elle indirilmesi gerekiyor.", manual.Count == 0 ? "ok" : "warn");
-                job.Complete($"{mod.Name} kuruldu");
+                _log(manual.Count == 0 ? $"{name} kuruldu." : $"{name} kuruldu; {manual.Count} dosyanın CurseForge'dan elle indirilmesi gerekiyor.", manual.Count == 0 ? "ok" : "warn");
+                job.Complete($"{name} kuruldu");
                 return (instance, manual);
             }
-            catch (Exception ex)
+            catch
             {
-                job.Fail(ex.Message);
                 if (instance != null) { try { InstanceStore.Delete(instance.Folder); } catch { } }
                 throw;
-            }
-            finally
-            {
-                if (File.Exists(zipPath)) File.Delete(zipPath);
             }
         }
 
@@ -563,6 +583,8 @@ namespace VuluLauncher
     // manifest.json (CurseForge modpack biçimi)
     internal sealed class CfManifest
     {
+        public string? Name { get; set; }
+        public string? Version { get; set; }
         public CfManifestMinecraft? Minecraft { get; set; }
         public List<CfManifestFile> Files { get; set; } = new();
         public string? Overrides { get; set; }

@@ -46,6 +46,7 @@ namespace VuluLauncher
                 return new { success = true };
             });
             RegisterFeedbackCommands();
+            RegisterImportCommands();
             RegisterRegistrationCommands();
         }
 
