@@ -251,6 +251,8 @@ namespace VuluLauncher.ViewModels
                 if (Environment.GetEnvironmentVariable("VULU_UI_OPEN") is { Length: > 0 } open)
                     Avalonia.Threading.DispatcherTimer.RunOnce(() =>
                     {
+                        // tour / tournew: tanıtım rehberi (hepsi / rehberi görmüş olana yalnızca yeni adımlar)
+                        if (open is "tour" or "tournew") { _ = ShowTourAsync(open == "tournew" ? 1 : 0); return; }
                         // gamesettings: paketin oyun ayarları penceresi örnek verilerle
                         if (open == "gamesettings")
                         {
@@ -424,15 +426,30 @@ namespace VuluLauncher.ViewModels
             // Bildirime tıklanarak ya da masaüstü kısayoluyla açıldıysa bekleyen istek şimdi yapılır
             await TakeNotificationAsync();
             await RunStartupActionAsync();
-            if (!resume && UiState.Get("tourDone") != "true") await ShowTourAsync();
+            if (!resume) await MaybeShowTourAsync();
         }
 
-        /// <summary>Tanıtım rehberi; bir kez gösterilir (Ayarlar → Launcher'dan yeniden açılır).</summary>
-        public async Task ShowTourAsync()
+        /// <summary>
+        /// İlk girişte rehberin tamamı; rehberi görmüş olana yeni adımlar eklendiyse yalnızca onlar, bir kez.
+        /// Başka bir kutu (ör. Yenilikler) açıksa beklemez: bir sonraki açılışta gösterilir.
+        /// </summary>
+        private async Task MaybeShowTourAsync()
         {
-            var tour = new TourModal(Tabs);
+            int seen = int.TryParse(UiState.Get("tourEdition"), out int e) ? e : UiState.Get("tourDone") == "true" ? 1 : 0;
+            if (seen >= TourModal.CurrentEdition) return;
+            if (seen > 0 && Modals.Count > 0) return;
+            await ShowTourAsync(seen);
+        }
+
+        /// <summary>Tanıtım rehberi (Ayarlar → Launcher'dan hepsi yeniden açılır).</summary>
+        public Task ShowTourAsync() => ShowTourAsync(0);
+
+        private async Task ShowTourAsync(int sinceEdition)
+        {
+            var tour = new TourModal(Tabs, sinceEdition);
             var result = await ShowAsync(tour);
             UiState.Set("tourDone", "true");
+            UiState.Set("tourEdition", TourModal.CurrentEdition.ToString());
             tour.Glow(null);
             if (result is string key && Tabs.FirstOrDefault(t => t.Key == key && t.IsVisible) is { } tab) SelectedTab = tab;
         }
