@@ -9,7 +9,11 @@ namespace Installer
         /// <summary>Program.Main'in kurduğu model; pencere bununla açılır.</summary>
         public static SetupViewModel? Model { get; set; }
 
-        public override void Initialize() => AvaloniaXamlLoader.Load(this);
+        public override void Initialize()
+        {
+            AvaloniaXamlLoader.Load(this);
+            VuluShared.UiTranslator.Install();
+        }
 
         public override void OnFrameworkInitializationCompleted()
         {

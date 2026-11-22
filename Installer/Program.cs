@@ -19,6 +19,7 @@ namespace Installer
         [STAThread]
         private static int Main(string[] args)
         {
+            VuluShared.L.Init("");   // kurulumda ayar yok: sistem dili
             string? dirArg = ArgValue(args, "--dir");
             if (args.Contains("--silent")) return RunSilent(dirArg, !args.Contains("--no-desktop"), !args.Contains("--no-startmenu"));
 

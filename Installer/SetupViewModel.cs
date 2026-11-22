@@ -133,7 +133,7 @@ namespace Installer
                 _latest = await Releases.GetLatestAsync(http);
                 var m = _latest.Manifest;
                 VersionText = "v" + Releases.Clean(m.Version);
-                SizeInfo = $"İndirme {FormatMb(m.Size / 1024.0 / 1024.0)} · Kurulum {FormatMb(m.Files.Sum(f => f.Size) / 1024.0 / 1024.0)}";
+                SizeInfo = L.F("İndirme {0} · Kurulum {1}", FormatMb(m.Size / 1024.0 / 1024.0), FormatMb(m.Files.Sum(f => f.Size) / 1024.0 / 1024.0));
                 HasRelease = true;
             }
             catch (ReleaseSignatureException ex) { error = ex.Message; }

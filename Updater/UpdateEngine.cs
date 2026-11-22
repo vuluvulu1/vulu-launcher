@@ -112,7 +112,7 @@ namespace Updater
         {
             string exe = Path.Combine(_installDir, Releases.LauncherExeName);
             if (!File.Exists(exe))
-                throw new FileNotFoundException($"{Releases.LauncherExeName} bulunamadı.");
+                throw new FileNotFoundException(L.F("{0} bulunamadı.", Releases.LauncherExeName));
 
             var start = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = _installDir };
             start.ArgumentList.Add("--from-updater");
@@ -231,7 +231,7 @@ namespace Updater
             {
                 var changed = await Task.Run(() => manifest.Files.Where(f => !IsProtected(f.Path)).Where(f =>
                 {
-                    string? target = Releases.ResolveInside(_installDir, f.Path) ?? throw new InvalidDataException($"Geçersiz dosya yolu: {f.Path}");
+                    string? target = Releases.ResolveInside(_installDir, f.Path) ?? throw new InvalidDataException(L.F("Geçersiz dosya yolu: {0}", f.Path));
                     return !File.Exists(target) || !string.Equals(Releases.Sha256Of(target), f.Sha256, StringComparison.OrdinalIgnoreCase);
                 }).ToList(), token);
 
@@ -253,17 +253,17 @@ namespace Updater
 
                     long done = 0;
                     var clock = Stopwatch.StartNew();
-                    _report(new UpdateStatus("downloading", $"v{version} indiriliyor…", $"{changed.Count} dosya değişti · 0 / {Mb(total)} MB", 0, version, notes));
+                    _report(new UpdateStatus("downloading", $"v{version} indiriliyor…", L.F("{0} dosya değişti · 0 / {1} MB", changed.Count, Mb(total)), 0, version, notes));
                     foreach (var (file, entry) in entries)
                     {
                         string target = Releases.ResolveInside(staging, file.Path)!;
                         await zip.ExtractAsync(entry!, target, token);
                         if (!string.Equals(Releases.Sha256Of(target), file.Sha256, StringComparison.OrdinalIgnoreCase))
-                            throw new InvalidDataException($"Dosya doğrulanamadı: {file.Path}");
+                            throw new InvalidDataException(L.F("Dosya doğrulanamadı: {0}", file.Path));
                         done += entry!.CompressedSize;
                         double seconds = Math.Max(clock.Elapsed.TotalSeconds, 0.1);
                         _report(new UpdateStatus("downloading", $"v{version} indiriliyor…",
-                            $"{changed.Count} dosya değişti · {Mb(done)} / {Mb(total)} MB · {done / seconds / 1024 / 1024:F1} MB/sn",
+                            L.F("{0} dosya değişti · {1} / {2} MB · {3:F1} MB/sn", changed.Count, Mb(done), Mb(total), done / seconds / 1024 / 1024),
                             total > 0 ? (double)done / total : 1, version, notes));
                     }
                     return true;
@@ -289,11 +289,11 @@ namespace Updater
             foreach (var file in manifest.Files)
             {
                 string path = Releases.ResolveInside(staging, file.Path)
-                    ?? throw new InvalidDataException($"Geçersiz dosya yolu: {file.Path}");
+                    ?? throw new InvalidDataException(L.F("Geçersiz dosya yolu: {0}", file.Path));
                 if (!File.Exists(path))
-                    throw new InvalidDataException($"Pakette eksik dosya: {file.Path}");
+                    throw new InvalidDataException(L.F("Pakette eksik dosya: {0}", file.Path));
                 if (!string.Equals(Releases.Sha256Of(path), file.Sha256, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException($"Dosya doğrulanamadı: {file.Path}");
+                    throw new InvalidDataException(L.F("Dosya doğrulanamadı: {0}", file.Path));
             }
         }
 

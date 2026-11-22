@@ -9,7 +9,7 @@ namespace VuluLauncher
         {
             VuluShared.L.Init(AppSettings.Current.Language);
             AvaloniaXamlLoader.Load(this);
-            Native.UiTranslator.Install();
+            VuluShared.UiTranslator.Install();
             try { Themes.Apply(AppSettings.Current.Theme); } catch { /* tema uygulanamazsa Meşale kalır */ }
             Views.SynthwaveBackdrop.Animated = AppSettings.Current.AnimatedBackground;
         }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- Yayın sürümü önceden derlenir: ilk açılışta ve ana ekran kurulurken JIT beklemesi olmaz (paket ~19 MB büyür) -->
@@ -25,6 +25,7 @@
   <ItemGroup>
     <!-- Updater ile ortak: pencere simgesi ve kurulum kaydı (Releases.cs Vulu.Core'da) -->
     <Compile Include="..\Shared\InstallInfo.cs" Link="Shared\InstallInfo.cs" />
+    <Compile Include="..\Shared\UiTranslator.cs" Link="Shared\UiTranslator.cs" />
     <Compile Include="..\Shared\ScriptTitle*.cs" Link="Shared\%(Filename)%(Extension)" />
   </ItemGroup>
 

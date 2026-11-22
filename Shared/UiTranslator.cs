@@ -2,9 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
-using VuluShared;
 
-namespace VuluLauncher.Native
+namespace VuluShared
 {
     /// <summary>
     /// İngilizce seçiliyse arayüzdeki metinleri yerinde çevirir: TextBlock, Run, düğme içeriği, menü ve sekme başlığı,

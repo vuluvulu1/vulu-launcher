@@ -115,7 +115,7 @@ namespace Updater
             script.AppendLine("@echo off");
             script.AppendLine("chcp 65001 >nul"); // betik UTF-8; Türkçe karakterli yollar için
             script.AppendLine(":wait");
-            script.AppendLine($"tasklist /FI \"PID eq {Environment.ProcessId}\" 2>nul | find \"{Environment.ProcessId}\" >nul && (ping -n 2 127.0.0.1 >nul & goto wait)");
+            script.AppendLine(L.F("tasklist /FI \"PID eq {0}\" 2>nul | find \"{1}\" >nul && (ping -n 2 127.0.0.1 >nul & goto wait)", Environment.ProcessId, Environment.ProcessId));
             foreach (var file in pending) script.AppendLine($"del /f /q \"{file}\" 2>nul");
             foreach (var d in dirs.Distinct(StringComparer.OrdinalIgnoreCase).OrderByDescending(d => d.Length))
                 script.AppendLine($"rd \"{d}\" 2>nul");

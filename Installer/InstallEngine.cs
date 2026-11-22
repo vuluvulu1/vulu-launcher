@@ -106,7 +106,7 @@ namespace Installer
             long needed = installed + manifest.Size + 200L * 1024 * 1024; // zip + açılmış hali + pay
             long? free = FreeSpaceMb(dir);
             if (free != null && free.Value * 1024 * 1024 < needed)
-                throw new InvalidOperationException($"Yeterli boş alan yok. Gereken: {needed / 1024 / 1024} MB, boş: {free} MB.");
+                throw new InvalidOperationException(L.F("Yeterli boş alan yok. Gereken: {0} MB, boş: {1} MB.", needed / 1024 / 1024, free));
         }
 
         // ── İndirme ───────────────────────────────────────────────────────
@@ -172,9 +172,9 @@ namespace Installer
             foreach (var file in manifest.Files)
             {
                 string path = Releases.ResolveInside(staging, file.Path)
-                    ?? throw new InvalidDataException($"Geçersiz dosya yolu: {file.Path}");
+                    ?? throw new InvalidDataException(L.F("Geçersiz dosya yolu: {0}", file.Path));
                 if (!File.Exists(path) || !string.Equals(Releases.Sha256Of(path), file.Sha256, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException($"Dosya doğrulanamadı: {file.Path}");
+                    throw new InvalidDataException(L.F("Dosya doğrulanamadı: {0}", file.Path));
             }
         }
 
@@ -193,7 +193,7 @@ namespace Installer
             {
                 string source = Releases.ResolveInside(staging, file.Path)!;
                 string target = Releases.ResolveInside(dir, file.Path)
-                    ?? throw new InvalidDataException($"Geçersiz dosya yolu: {file.Path}");
+                    ?? throw new InvalidDataException(L.F("Geçersiz dosya yolu: {0}", file.Path));
                 newPaths.Add(target);
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                 File.Copy(source, target, overwrite: true);

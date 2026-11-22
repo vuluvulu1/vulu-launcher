@@ -39,6 +39,9 @@
     <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
     <Compile Include="..\Shared\ServerConnection.cs" Link="Shared\ServerConnection.cs" />
     <Compile Include="..\Shared\InstallInfo.cs" Link="Shared\InstallInfo.cs" />
+    <Compile Include="..\Shared\Lang.cs" Link="Shared\Lang.cs" />
+    <Compile Include="..\Shared\UiTranslator.cs" Link="Shared\UiTranslator.cs" />
+    <EmbeddedResource Include="..\Shared\i18n\en.json" LogicalName="i18n.en.json" Link="Shared\i18n\en.json" />
     <Compile Include="..\Shared\ScriptTitle*.cs" Link="Shared\%(Filename)%(Extension)" />
 
     <!-- Yazı tipleri ve logo exe'nin içine gömülür -->
