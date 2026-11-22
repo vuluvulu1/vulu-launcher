@@ -152,6 +152,13 @@ namespace VuluLauncher.ViewModels
         }
     }
 
+    /// <summary>Mesaj durumu rengi: okundu vurgu rengi, gönderildi soluk.</summary>
+    internal static class DmColors
+    {
+        public static readonly Avalonia.Data.Converters.IValueConverter Status = new Avalonia.Data.Converters.FuncValueConverter<bool, Avalonia.Media.IBrush?>(read =>
+            Avalonia.Application.Current?.TryGetResource(read ? "Accent" : "Dim", null, out var b) == true ? b as Avalonia.Media.IBrush : null);
+    }
+
     internal sealed partial class ChatMessage : ObservableObject
     {
         private readonly SocialViewModel _owner;
@@ -165,8 +172,54 @@ namespace VuluLauncher.ViewModels
             Problem = m.Text("problem");
             CreatedAt = DateTime.TryParse(m.Text("createdAt"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at) ? at.ToLocalTime() : DateTime.Now;
             CreatedAtRaw = m.Text("createdAt") ?? "";
-            Read = m.Bool("read");
+            _read = m.Bool("read");
             if (m.Get("card").ValueKind == JsonValueKind.Object) Card = new DmCardItem(owner, m.Get("card").Clone(), Mine);
+            if (m.Get("media").ValueKind == JsonValueKind.Object)
+            {
+                _media = m.Get("media").Clone();
+                int w = _media.Value.Int("width"), h = _media.Value.Int("height");
+                // Resim yüklenmeden balon doğru oranda yer ayırır (en çok 320×320)
+                double scale = w > 0 && h > 0 ? Math.Min(1, Math.Min(320.0 / w, 320.0 / h)) : 0;
+                ImageWidth = scale > 0 ? Math.Max(80, w * scale) : 260;
+                ImageHeight = scale > 0 ? Math.Max(60, h * scale) : 180;
+                _ = LoadImageAsync();
+            }
+        }
+
+        // ── Resim ──
+        private readonly JsonElement? _media;
+        private string? _imagePath;
+        public bool HasImage => _media != null;
+        public double ImageWidth { get; }
+        public double ImageHeight { get; }
+        [ObservableProperty] private Avalonia.Media.Imaging.Bitmap? _image;
+        [ObservableProperty] private string? _imageError;
+
+        private async Task LoadImageAsync()
+        {
+            if (_media is not { } m) return;
+            try
+            {
+                var r = await CoreClient.Instance.Call("dm.media", new { id = m.Text("id"), key = m.Text("key"), nonce = m.Text("nonce"), mime = m.Text("mime") });
+                _imagePath = r.Text("path");
+                if (_imagePath == null) return;
+                string path = _imagePath;
+                var bitmap = await Task.Run(() =>
+                {
+                    using var stream = File.OpenRead(path);
+                    return Avalonia.Media.Imaging.Bitmap.DecodeToWidth(stream, 640);
+                });
+                Image = bitmap;
+            }
+            catch (Exception ex) { ImageError = ex.Message; }
+        }
+
+        /// <summary>Resme tıklayınca Windows'un resim görüntüleyicisinde açılır.</summary>
+        [RelayCommand]
+        private void OpenImage()
+        {
+            if (_imagePath == null || !File.Exists(_imagePath)) return;
+            try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(_imagePath) { UseShellExecute = true }); } catch { }
         }
 
         public string Id { get; }
@@ -175,14 +228,20 @@ namespace VuluLauncher.ViewModels
         public string? Problem { get; }
         public DateTime CreatedAt { get; }
         public string CreatedAtRaw { get; }
-        public bool Read { get; }
+        /// <summary>Karşı taraf okudu (kendi mesajlarımda ✓✓; okununca yoklamayla güncellenir).</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Status), nameof(StatusTip))]
+        private bool _read;
         public DmCardItem? Card { get; }
         public bool HasCard => Card != null;
-        /// <summary>Yalnızca kart (paket/sunucu daveti) gönderilen mesajda metin boş gelir: boş balon gösterilmez.</summary>
-        public bool HasBubble => !string.IsNullOrEmpty(Text) || Problem != null || Card == null;
+        /// <summary>Yalnızca kart ya da resim gönderilen mesajda metin boş gelir: boş balon gösterilmez.</summary>
+        public bool HasBubble => !string.IsNullOrEmpty(Text) || Problem != null || (Card == null && _media == null);
         public string Bubble => Text ?? Problem ?? "";
         public bool IsBroken => Problem != null && Text == null;
-        public string Time => CreatedAt.ToString("HH:mm", CultureInfo.InvariantCulture) + (Mine && Read ? " · okundu" : "");
+        public string Time => CreatedAt.ToString("HH:mm", CultureInfo.InvariantCulture);
+        /// <summary>Gönderdiğim mesajın durumu: ✓ gönderildi, ✓✓ okundu.</summary>
+        public string Status => !Mine ? "" : Read ? "✓✓" : "✓";
+        public string StatusTip => Read ? "Okundu" : "Gönderildi";
         /// <summary>Günün ilk mesajıysa üstünde tarih ayracı.</summary>
         public string? Day { get; set; }
         public bool HasDay => Day != null;
@@ -231,7 +290,7 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsFeed), nameof(IsChat), nameof(IsWorld))]
         private string _view = "feed";
-        partial void OnViewChanged(string value) { if (!IsWorld) World?.Leave(); }
+        partial void OnViewChanged(string value) { if (!IsWorld) World?.Leave(); UpdateViewing(); }
         public bool IsFeed => View == "feed";
         public bool IsChat => View == "chat";
         /// <summary>Liderlik tablosu ya da harita açık (vulu sunucusu; WorldViewModel).</summary>
@@ -280,7 +339,50 @@ namespace VuluLauncher.ViewModels
         public string Placeholder => $"{Active} kişisine yaz…";
         public string Counter => Draft.Length > DmMax - 200 ? $"{Draft.Length}/{DmMax}" : "";
         partial void OnVerifiedChanged(bool value) => OnPropertyChanged(nameof(LockText));
-        partial void OnActiveChanged(string? value) => OnPropertyChanged(nameof(Placeholder));
+        partial void OnActiveChanged(string? value)
+        {
+            OnPropertyChanged(nameof(Placeholder));
+            UpdateViewing();
+        }
+
+        /// <summary>
+        /// Çekirdeğe açık konuşmayı söyler: pencere öndeyken o kişiden gelen mesaj masaüstü bildirimi olmaz.
+        /// Sosyal sekmesinden çıkılınca ya da konuşma kapanınca boşalır.
+        /// </summary>
+        public void UpdateViewing()
+        {
+            string user = Main?.SelectedTab?.Page == this && IsChat && Active is { } a ? a : "";
+            if (user == _viewingSent) return;
+            _viewingSent = user;
+            _ = _core.Call("dm.viewing", new { user });
+        }
+
+        private string? _viewingSent;
+
+        /// <summary>Resim gönder: dosya seçilir, şifrelenip gönderilir (yazılan metin de altına eklenir).</summary>
+        [RelayCommand]
+        private async Task SendImage()
+        {
+            if (Active is not { } user || Sending) return;
+            Sending = true;
+            try
+            {
+                var result = await _core.Call("dm.sendImage", new { user, text = Draft.Trim() });
+                if (result.Get("message").ValueKind == JsonValueKind.Object)
+                {
+                    Draft = "";
+                    if (Active == user)
+                    {
+                        SetMessages(Messages.Append(new ChatMessage(this, result.Get("message"))).ToList());
+                        ScrollToEnd?.Invoke();
+                    }
+                    await LoadConversationsAsync();
+                    RenderList();
+                }
+            }
+            catch (Exception ex) { await Main.AlertAsync("Resim gönderilemedi", ex.Message); }
+            finally { Sending = false; }
+        }
         partial void OnDraftChanged(string value) => OnPropertyChanged(nameof(Counter));
 
         /// <summary>Sosyal sekmesindeki rozet: okunmamış mesajlar ve bekleyen arkadaşlık istekleri.</summary>
@@ -840,6 +942,13 @@ namespace VuluLauncher.ViewModels
         {
             _dmUnread = update.Int("unread");
             UpdateBadge();
+            // Okundu bilgisi: açık konuşmada, karşı tarafın okuduğu zamana kadar gönderdiğim mesajlar ✓✓
+            foreach (var r in update.Items("reads"))
+            {
+                if (r.Text("peer") != Active || !DateTime.TryParse(r.Text("upTo"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var upTo)) continue;
+                var limit = upTo.ToLocalTime().AddSeconds(1);
+                foreach (var msg in Messages) if (msg.Mine && !msg.Read && msg.CreatedAt <= limit) msg.Read = true;
+            }
             var incoming = update.Items("messages").ToList();
             if (incoming.Count == 0) return;
             bool added = false;
@@ -855,7 +964,8 @@ namespace VuluLauncher.ViewModels
                 }
                 else if (Main.SelectedTab?.Page != this)
                 {
-                    string preview = m.Text("text") is { } t ? (t.Length > 80 ? t[..80] : t)
+                    string preview = m.Text("text") is { Length: > 0 } t ? (t.Length > 80 ? t[..80] : t)
+                        : m.Get("media").ValueKind == JsonValueKind.Object ? "🖼 resim"
                         : m.Get("card").ValueKind == JsonValueKind.Object ? (m.Get("card").Text("type") == "pack" ? "📦 " : "🎮 ") + m.Get("card").Text("name") : "yeni mesaj";
                     Main.Home.AppendLog($"💬 {peer}: {preview}", "accent");
                 }

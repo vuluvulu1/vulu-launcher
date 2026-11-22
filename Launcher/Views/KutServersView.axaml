@@ -150,7 +150,7 @@
                             <Button Classes="dbtn" Content="Davet et" HorizontalAlignment="Stretch" Command="{Binding InviteCommand}" ToolTip.Tip="Bir arkadaşını mesajla davet et" />
                             <Button Grid.Column="1" Classes="dbtn" Content="Kısayol" HorizontalAlignment="Stretch" Command="{Binding ShortcutCommand}" ToolTip.Tip="Masaüstüne bu sunucuya bağlanan kısayol" />
                             <!-- Canlı harita yalnızca vulu'nun kendi sunucusunda (sohbeti olan); öbürlerinde düğme yerini boş bırakmaz -->
-                            <Button Grid.Column="2" Classes="dbtn" Content="Harita" HorizontalAlignment="Stretch" IsVisible="{Binding HasChat}" Command="{Binding MapCommand}" ToolTip.Tip="Sunucunun canlı haritası: kim nerede" />
+                            <Button Grid.Column="2" Classes="dbtn" Content="Harita" HorizontalAlignment="Stretch" IsVisible="{Binding HasChat}" Command="{Binding MapCommand}" ToolTip.Tip="vulu resmi sunucusunun canlı haritası: kim nerede" />
                             <Button Grid.Column="3" Classes="dbtn" Width="42" Content="⋯" ToolTip.Tip="Diğer işlemler">
                                 <Button.Flyout>
                                     <MenuFlyout Placement="TopEdgeAlignedRight">

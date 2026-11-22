@@ -25,8 +25,30 @@ namespace VuluLauncher
         /// </summary>
         private sealed record DmCard(string Type, string Id, string Name, string? Address = null);
 
-        /// <summary>Şifrelenen düz metin: {"v":1,"text":"…","card":{…}}. Düz metin mesajlar olduğu gibi okunur.</summary>
-        private sealed record DmPayload(int V, string Text, DmCard? Card);
+        /// <summary>
+        /// Mesajdaki resim: şifreli baytları API'de (yalnızca iki taraf indirir); onları çözen anahtar burada, mesajın
+        /// şifreli içeriğinde. Sunucu resmi göremez.
+        /// </summary>
+        private sealed record DmMedia(string Id, string Key, string Nonce, string Mime, long Size, int Width = 0, int Height = 0);
+
+        /// <summary>Şifrelenen düz metin: {"v":1,"text":"…","card":{…},"media":{…}}. Düz metin mesajlar olduğu gibi okunur.</summary>
+        private sealed record DmPayload(int V, string Text, DmCard? Card, DmMedia? Media = null);
+
+        private static readonly System.Text.RegularExpressions.Regex DmMediaId = new("^[0-9a-f]{24}$");
+        private static readonly string[] DmImageTypes = [".png", ".jpg", ".jpeg", ".webp", ".gif"];
+        private const long DmMaxImage = 8L * 1024 * 1024;
+
+        private static DmMedia? CleanMedia(DmMedia? m)
+        {
+            if (m == null || !DmMediaId.IsMatch(m.Id ?? "")) return null;
+            try { if (Convert.FromBase64String(m.Key).Length != 32 || Convert.FromBase64String(m.Nonce).Length != 12) return null; }
+            catch (FormatException) { return null; }
+            string mime = m.Mime is "image/png" or "image/jpeg" or "image/webp" or "image/gif" ? m.Mime : "image/png";
+            return m with { Mime = mime, Size = Math.Clamp(m.Size, 0, DmMaxImage) };
+        }
+
+        /// <summary>Açık konuşma (pencere öndeyken bu kişiden gelen mesaj bildirim olmaz; arayüz söyler).</summary>
+        private string? _dmViewing;
 
         private static DmCard? CleanCard(DmCard? card)
         {
@@ -42,7 +64,7 @@ namespace VuluLauncher
             };
         }
 
-        private static (string Text, DmCard? Card) ParsePayload(string plain)
+        private static (string Text, DmCard? Card, DmMedia? Media) ParsePayload(string plain)
         {
             if (plain.StartsWith("{\"v\":", StringComparison.Ordinal))
             {
@@ -52,12 +74,12 @@ namespace VuluLauncher
                     if (p != null)
                     {
                         string text = p.Text ?? "";
-                        return (text.Length > DmMaxLength ? text[..DmMaxLength] : text, CleanCard(p.Card));
+                        return (text.Length > DmMaxLength ? text[..DmMaxLength] : text, CleanCard(p.Card), CleanMedia(p.Media));
                     }
                 }
                 catch (JsonException) { }
             }
-            return (plain, null);
+            return (plain, null, null);
         }
 
         private readonly object _dmGate = new();
@@ -87,6 +109,12 @@ namespace VuluLauncher
             _bridge.On("dm.read", async args => { RequireDm(args.Str("user")); return await _api.PostAsync<JsonElement>($"/messages/with/{args.Str("user")}/read", new { }); });
             _bridge.On("dm.delete", async args => { RequireLogin(); return await _api.DeleteAsync<JsonElement>($"/messages/{Uri.EscapeDataString(args.Str("id"))}"); });
             _bridge.On("dm.safety", async args => await DmSafetyAsync(args.Str("user")));
+            // Arayüz açık konuşmayı bildirir: o kişiden gelen mesaj, pencere öndeyken bildirim olmaz
+            _bridge.On("dm.viewing", args => { _dmViewing = NullIfEmptyName(args.Str("user")); return Task.FromResult<object?>(null); });
+            // Resim gönder: dosya seçilir, rastgele anahtarla şifrelenip yüklenir, anahtar mesajın şifreli içeriğinde gider
+            _bridge.On("dm.sendImage", async args => await DmSendImageAsync(args.Str("user"), args.Str("text")));
+            // Mesajdaki resim: indirilir, çözülür, önbelleğe yazılır; dosya yolu döner
+            _bridge.On("dm.media", async args => await DmMediaAsync(args.Str("id"), args.Str("key"), args.Str("nonce"), args.Str("mime")));
             _bridge.On("dm.verify", args => Task.FromResult<object?>(DmVerify(args.Str("user"))));
         }
 
@@ -244,6 +272,7 @@ namespace VuluLauncher
 
             string? text = null, problem = null;
             DmCard? card = null;
+            DmMedia? media = null;
             if (myKeyIdInMessage != _dmKeyId) problem = "Bu mesaj eski bir anahtarınla şifrelenmiş; okunamıyor.";
             else
             {
@@ -258,30 +287,111 @@ namespace VuluLauncher
                     string? plain = MessageCrypto.Decrypt(key, peerPub, from, to, senderKeyId, recipientKeyId,
                         new EncryptedMessage(m.GetProperty("cipher").GetString()!, m.GetProperty("nonce").GetString()!, m.GetProperty("salt").GetString()!));
                     if (plain == null) problem = "Bu mesaj çözülemedi (bozulmuş ya da değiştirilmiş olabilir).";
-                    else (text, card) = ParsePayload(plain);
+                    else (text, card, media) = ParsePayload(plain);
                 }
             }
             return new
             {
                 id = m.GetProperty("id").GetString(), from, to, mine, text, problem,
                 card = card == null ? null : new { type = card.Type, id = card.Id, name = card.Name, address = card.Address },
+                media = media == null ? null : new { id = media.Id, key = media.Key, nonce = media.Nonce, mime = media.Mime, size = media.Size, width = media.Width, height = media.Height },
                 createdAt = m.GetProperty("createdAt").GetString(),
                 read = m.TryGetProperty("readAt", out var r) && r.ValueKind == JsonValueKind.String,
                 peer = peerName,
             };
         }
 
-        private async Task<object?> DmSendAsync(string user, string text, DmCard? rawCard = null)
+        private static string? NullIfEmptyName(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+        /// <summary>Resim seçtirir, şifreleyip yükler ve resimli mesaj olarak gönderir; vazgeçilirse null.</summary>
+        private async Task<object?> DmSendImageAsync(string user, string text)
+        {
+            RequireDm(user);
+            string? path = await _host.PickFileAsync("Gönderilecek resmi seç", "Resimler", DmImageTypes.Select(e => e.TrimStart('.')).ToArray());
+            if (path == null) return null;
+            var info = new FileInfo(path);
+            if (!DmImageTypes.Contains(info.Extension.ToLowerInvariant())) throw new InvalidOperationException("Yalnızca PNG, JPG, WEBP ya da GIF gönderilebilir.");
+            if (info.Length > DmMaxImage) throw new InvalidOperationException("Resim en fazla 8 MB olabilir.");
+            byte[] plainBytes = await File.ReadAllBytesAsync(path);
+            string mime = info.Extension.ToLowerInvariant() switch { ".png" => "image/png", ".webp" => "image/webp", ".gif" => "image/gif", _ => "image/jpeg" };
+            var (w, h) = ImageSize(plainBytes);
+
+            // Rastgele anahtar ve nonce ile AES-256-GCM: şifreli bayt + 16 baytlık etiket
+            byte[] key = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32), nonce = System.Security.Cryptography.RandomNumberGenerator.GetBytes(12);
+            byte[] cipher = new byte[plainBytes.Length], tag = new byte[16];
+            using (var aes = new System.Security.Cryptography.AesGcm(key, 16)) aes.Encrypt(nonce, plainBytes, cipher, tag);
+            var uploaded = await _api.PostBytesAsync<JsonElement>($"/messages/media?to={Uri.EscapeDataString(user)}", [.. cipher, .. tag]);
+            string id = uploaded.GetProperty("id").GetString() ?? throw new InvalidOperationException("Resim yüklenemedi.");
+            // Gönderenin kendi önbelleğine de yazılır (kendi resmini yeniden indirmesin)
+            try { File.WriteAllBytes(DmMediaPath(id, mime), plainBytes); } catch { }
+            var media = new DmMedia(id, Convert.ToBase64String(key), Convert.ToBase64String(nonce), mime, plainBytes.Length, w, h);
+            return await DmSendAsync(user, text ?? "", null, media);
+        }
+
+        private static string DmMediaPath(string id, string mime)
+        {
+            string dir = Path.Combine(AppPaths.AppData, "cache", "dm-media");
+            Directory.CreateDirectory(dir);
+            return Path.Combine(dir, id + (mime switch { "image/png" => ".png", "image/webp" => ".webp", "image/gif" => ".gif", _ => ".jpg" }));
+        }
+
+        /// <summary>Mesajdaki resmi indirir ve çözer (önbellekte varsa oradan); yerel dosya yolu döner.</summary>
+        private async Task<object?> DmMediaAsync(string id, string key, string nonce, string mime)
+        {
+            RequireLogin();
+            var media = CleanMedia(new DmMedia(id, key, nonce, mime, 0)) ?? throw new InvalidOperationException("Resim geçersiz.");
+            string path = DmMediaPath(media.Id, media.Mime);
+            if (File.Exists(path)) return new { path };
+            byte[] data = await _api.GetBytesAsync($"/messages/media/{media.Id}") ?? throw new InvalidOperationException("Resim artık yok (silinmiş olabilir).");
+            if (data.Length < 17) throw new InvalidOperationException("Resim bozuk.");
+            byte[] plain = new byte[data.Length - 16];
+            try
+            {
+                using var aes = new System.Security.Cryptography.AesGcm(Convert.FromBase64String(media.Key), 16);
+                aes.Decrypt(Convert.FromBase64String(media.Nonce), data.AsSpan(0, data.Length - 16), data.AsSpan(data.Length - 16), plain);
+            }
+            catch (System.Security.Cryptography.CryptographicException) { throw new InvalidOperationException("Resim çözülemedi (bozulmuş ya da değiştirilmiş olabilir)."); }
+            await File.WriteAllBytesAsync(path, plain);
+            return new { path };
+        }
+
+        /// <summary>PNG/JPEG/GIF/WEBP başlığından boyut (balonu yüklenmeden doğru oranda ayırmak için); okunamazsa 0.</summary>
+        private static (int W, int H) ImageSize(byte[] b)
+        {
+            try
+            {
+                if (b.Length > 24 && b[0] == 0x89 && b[1] == 'P') return (b[16] << 24 | b[17] << 16 | b[18] << 8 | b[19], b[20] << 24 | b[21] << 16 | b[22] << 8 | b[23]);
+                if (b.Length > 10 && b[0] == 'G' && b[1] == 'I') return (b[6] | b[7] << 8, b[8] | b[9] << 8);
+                if (b.Length > 30 && b[0] == 'R' && b[8] == 'W' && b[12] == 'V' && b[15] == 'X') return (1 + (b[24] | b[25] << 8 | b[26] << 16), 1 + (b[27] | b[28] << 8 | b[29] << 16));
+                if (b.Length > 4 && b[0] == 0xFF && b[1] == 0xD8)
+                {
+                    int i = 2;
+                    while (i + 9 < b.Length)
+                    {
+                        if (b[i] != 0xFF) { i++; continue; }
+                        byte marker = b[i + 1];
+                        int len = b[i + 2] << 8 | b[i + 3];
+                        if (marker is >= 0xC0 and <= 0xCF and not 0xC4 and not 0xC8 and not 0xCC)
+                            return (b[i + 7] << 8 | b[i + 8], b[i + 5] << 8 | b[i + 6]);
+                        i += 2 + len;
+                    }
+                }
+            }
+            catch (IndexOutOfRangeException) { }
+            return (0, 0);
+        }
+
+        private async Task<object?> DmSendAsync(string user, string text, DmCard? rawCard = null, DmMedia? media = null)
         {
             RequireDm(user);
             text = (text ?? "").Trim();
             var card = CleanCard(rawCard);
             if (rawCard != null && card == null) throw new InvalidOperationException("Paylaşılan paket ya da sunucu geçersiz.");
-            if (text.Length == 0 && card == null) throw new InvalidOperationException("Boş mesaj gönderilemez.");
+            if (text.Length == 0 && card == null && media == null) throw new InvalidOperationException("Boş mesaj gönderilemez.");
             if (text.Length > DmMaxLength) throw new InvalidOperationException($"Mesaj en fazla {DmMaxLength} karakter olabilir.");
             // Zarf gibi başlayan düz metin de zarfa konur; yoksa alıcıda yanlışlıkla zarf sanılır
-            string plain = card == null && !text.StartsWith("{\"v\":", StringComparison.Ordinal)
-                ? text : JsonSerializer.Serialize(new DmPayload(1, text, card), DmJson);
+            string plain = card == null && media == null && !text.StartsWith("{\"v\":", StringComparison.Ordinal)
+                ? text : JsonSerializer.Serialize(new DmPayload(1, text, card, media), DmJson);
 
             for (int attempt = 0; ; attempt++)
             {
@@ -323,7 +433,10 @@ namespace VuluLauncher
         {
             var settings = AppSettings.Current;
             if (!settings.DmNotifications || views.Count == 0) return;
-            var incoming = views.Select(v => JsonSerializer.SerializeToElement(v, DmJson)).Where(v => !v.GetProperty("mine").GetBoolean());
+            // Pencere öndeyken açık konuşmadaki kişiden gelen mesaj bildirim olmaz (zaten ekranda)
+            string? viewing = _host.IsForeground ? _dmViewing : null;
+            var incoming = views.Select(v => JsonSerializer.SerializeToElement(v, DmJson)).Where(v => !v.GetProperty("mine").GetBoolean())
+                .Where(v => !string.Equals(v.GetProperty("peer").GetString(), viewing, StringComparison.OrdinalIgnoreCase));
             foreach (var group in incoming.GroupBy(v => v.GetProperty("peer").GetString()!).Take(3))
             {
                 int count = group.Count();
@@ -334,7 +447,9 @@ namespace VuluLauncher
                     var last = group.Last();
                     string? text = last.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() : null;
                     var card = last.TryGetProperty("card", out var c) && c.ValueKind == JsonValueKind.Object ? c : (JsonElement?)null;
+                    bool image = last.TryGetProperty("media", out var md) && md.ValueKind == JsonValueKind.Object;
                     body = !string.IsNullOrWhiteSpace(text) ? text!
+                        : image ? "🖼 Bir resim gönderdi"
                         : card is { } k ? (k.GetProperty("type").GetString() == "pack"
                             ? $"📦 Bir paket paylaştı: {k.GetProperty("name").GetString()}"
                             : $"🎮 Sunucuya davet etti: {k.GetProperty("name").GetString()}")
@@ -377,7 +492,9 @@ namespace VuluLauncher
                                 try { known = (await PeerKeyAsync(group.Key)).Known; } catch { }
                                 views.AddRange(group.Select(m => DecryptForView(m, group.Key, known)));
                             }
-                            _bridge.Emit("dmUpdate", new { messages = views, unread = update.GetProperty("unread").GetInt32() });
+                            // Okundu bilgisi: karşı taraf gönderdiğim mesajları okudu (kişi başına okunan en yeni mesajın zamanı)
+                            var reads = update.TryGetProperty("reads", out var rd) && rd.ValueKind == JsonValueKind.Array ? rd.Clone() : default;
+                            _bridge.Emit("dmUpdate", new { messages = views, unread = update.GetProperty("unread").GetInt32(), reads = reads.ValueKind == JsonValueKind.Array ? (object)reads : Array.Empty<object>() });
                             NotifyMessages(views);
                         }
                     }

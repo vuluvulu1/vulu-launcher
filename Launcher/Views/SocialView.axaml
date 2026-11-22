@@ -309,8 +309,15 @@
                 <Panel>
                     <TextBlock Text="{Binding PeerNotice}" IsVisible="{Binding !PeerReady}" Classes="muted" TextWrapping="Wrap" />
                     <Grid ColumnDefinitions="Auto,*,Auto" IsVisible="{Binding PeerReady}">
-                        <Button Content="+" Width="38" Height="38" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                Command="{Binding AttachCardCommand}" ToolTip.Tip="Paket ya da sunucu paylaş" VerticalAlignment="Bottom" />
+                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Bottom">
+                            <Button Content="+" Width="38" Height="38" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Command="{Binding AttachCardCommand}" ToolTip.Tip="Paket ya da sunucu paylaş" />
+                            <!-- Resim: şifrelenip gönderilir (en çok 8 MB) -->
+                            <Button Width="38" Height="38" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Command="{Binding SendImageCommand}" IsEnabled="{Binding !Sending}" ToolTip.Tip="Resim gönder (şifreli, en çok 8 MB)">
+                                <Path Data="M4 5h16v14H4zM4 15l4-4 4 4 3-3 5 5M15 9h.01" Stroke="{StaticResource Text}" StrokeThickness="1.7" StrokeLineCap="Round" StrokeJoin="Round" Width="16" Height="16" Stretch="Uniform" />
+                            </Button>
+                        </StackPanel>
                         <TextBox x:Name="Compose" Grid.Column="1" Text="{Binding Draft}" Watermark="{Binding Placeholder}" AcceptsReturn="True"
                                  TextWrapping="Wrap" MaxLength="2000" MaxHeight="120" Margin="8,0" />
                         <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Spacing="4">
@@ -335,6 +342,16 @@
                                         <Border Classes="bubble" Classes.mine="{Binding Mine}" Classes.broken="{Binding IsBroken}" IsVisible="{Binding HasBubble}">
                                             <SelectableTextBlock Text="{Binding Bubble}" TextWrapping="Wrap" />
                                         </Border>
+                                        <!-- Resim: yer önceden ayrılır, çözülünce belirir; tıklayınca büyük açılır -->
+                                        <Button Classes="flat" Padding="0" IsVisible="{Binding HasImage}" Command="{Binding OpenImageCommand}" ToolTip.Tip="Büyüt">
+                                            <Border Width="{Binding ImageWidth}" Height="{Binding ImageHeight}" CornerRadius="12" ClipToBounds="True" Background="{StaticResource Raised}">
+                                                <Panel>
+                                                    <v:Spinner Width="20" Height="20" IsVisible="{Binding Image, Converter={x:Static ObjectConverters.IsNull}}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding ImageError}" IsVisible="{Binding ImageError, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="dim" FontSize="12" TextWrapping="Wrap" Margin="10" VerticalAlignment="Center" />
+                                                    <Image Source="{Binding Image}" Stretch="UniformToFill" />
+                                                </Panel>
+                                            </Border>
+                                        </Button>
                                         <Border Classes="card" IsVisible="{Binding HasCard}" Padding="12,10" MinWidth="280">
                                             <Grid ColumnDefinitions="Auto,*,Auto" DataContext="{Binding Card}" x:DataType="vm:DmCardItem">
                                                 <TextBlock Text="{Binding Icon}" FontSize="22" VerticalAlignment="Center" />
@@ -351,6 +368,8 @@
                                         </Border>
                                         <StackPanel Orientation="Horizontal" Spacing="8" Classes="msg" Classes.mine="{Binding Mine}">
                                             <TextBlock Text="{Binding Time}" Classes="dim" FontSize="11" />
+                                            <TextBlock Text="{Binding Status}" ToolTip.Tip="{Binding StatusTip}" FontSize="11" FontWeight="SemiBold" IsVisible="{Binding Mine}"
+                                                       Foreground="{Binding Read, Converter={x:Static vm:DmColors.Status}}" />
                                             <Button Classes="link" Content="sil" FontSize="11" IsVisible="{Binding Mine}" Command="{Binding DeleteCommand}" ToolTip.Tip="Herkesten sil" />
                                         </StackPanel>
                                     </StackPanel>

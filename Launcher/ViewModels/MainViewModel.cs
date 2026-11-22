@@ -709,6 +709,7 @@ namespace VuluLauncher.ViewModels
 
         partial void OnSelectedTabChanged(PageTab? value)
         {
+            Social?.UpdateViewing();   // Sosyal'den çıkınca açık konuşmaya da bildirim gelir
             foreach (var tab in Tabs) tab.IsActive = tab == value;
             IsHomePage = value?.Page is HomeViewModel;
             // Ayarlar her açılışta baştan okunur (başka yerden değişen ayarlar da görünsün)

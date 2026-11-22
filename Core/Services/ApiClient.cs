@@ -41,6 +41,13 @@ namespace VuluLauncher
             return SendAsync<T>(HttpMethod.Put, path, content);
         }
 
+        public Task<T> PostBytesAsync<T>(string path, byte[] data)
+        {
+            var content = new ByteArrayContent(data);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            return SendAsync<T>(HttpMethod.Post, path, content);
+        }
+
         public Task<T> PatchAsync<T>(string path, object body) =>
             SendAsync<T>(HttpMethod.Patch, path, JsonContent.Create(body, options: Json));
 

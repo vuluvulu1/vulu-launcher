@@ -111,7 +111,7 @@ namespace VuluLauncher.Views
             };
             // Bırakılan kapak, imlecin yanından yeni yerine kayarak oturur
             box.Transitions = null;
-            box.RenderTransform = new TranslateTransform(_dragOffset.X, _dragOffset.Y);
+            box.RenderTransform = Shift(_dragOffset.X, _dragOffset.Y);
             var settle = box;
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -120,7 +120,7 @@ namespace VuluLauncher.Views
                     new Avalonia.Animation.TransformOperationsTransition { Property = RenderTransformProperty, Duration = TimeSpan.FromMilliseconds(260), Easing = new Avalonia.Animation.Easings.SplineEasing(0.2, 0.9, 0.3, 1) },
                     new Avalonia.Animation.DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(150) },
                 };
-                settle.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("none");
+                settle.RenderTransform = Shift(0, 0);
                 settle.Opacity = 1;
             }, Avalonia.Threading.DispatcherPriority.Background);
             if (box.FindDescendantOfType<Border>() is { } art) art.ClearValue(Border.BoxShadowProperty);
@@ -139,23 +139,32 @@ namespace VuluLauncher.Views
             }
         }
 
-        private Dictionary<Control, Point> SnapshotPositions()
+        private Dictionary<object, Point> SnapshotPositions()
         {
-            var map = new Dictionary<Control, Point>();
+            var map = new Dictionary<object, Point>();
             foreach (var o in _items)
-                if (Posters.ContainerFromItem(o) is Control c && c != _dragBox) map[c] = LayoutPos(c);
+                if (o != _dragItem && Posters.ContainerFromItem(o) is Control c) map[o] = LayoutPos(c);
             return map;
         }
 
-        /// <summary>Yer değiştiren kapaklar eski yerlerinden yenisine kayar (anında sıçramaz).</summary>
-        private void SlideFrom(Dictionary<Control, Point> before)
+        /// <summary>Kaydırma başlangıcı: geçiş yalnızca TransformOperations'tan TransformOperations'a canlanıyor (başka türden başlayınca kapak yerine ışınlanıyordu).</summary>
+        private static Avalonia.Media.Transformation.TransformOperations Shift(double x, double y)
         {
-            foreach (var (c, old) in before)
+            var b = Avalonia.Media.Transformation.TransformOperations.CreateBuilder(1);
+            b.AppendTranslate(x, y);
+            return b.Build();
+        }
+
+        /// <summary>Yer değiştiren kapaklar eski yerlerinden yenisine kayar (anında sıçramaz).</summary>
+        private void SlideFrom(Dictionary<object, Point> before)
+        {
+            foreach (var (item, old) in before)
             {
+                if (Posters.ContainerFromItem(item) is not Control c) continue;
                 var d = old - LayoutPos(c);
                 if (Math.Abs(d.X) < 1 && Math.Abs(d.Y) < 1) continue;
                 c.Transitions = null;
-                c.RenderTransform = new TranslateTransform(d.X, d.Y);
+                c.RenderTransform = Shift(d.X, d.Y);
                 var box = c;
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
@@ -163,7 +172,7 @@ namespace VuluLauncher.Views
                     {
                         new Avalonia.Animation.TransformOperationsTransition { Property = RenderTransformProperty, Duration = TimeSpan.FromMilliseconds(240), Easing = new Avalonia.Animation.Easings.SplineEasing(0.2, 0.9, 0.3, 1) },
                     };
-                    box.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("none");
+                    box.RenderTransform = Shift(0, 0);   // aynı türde hedef: geçiş adım adım işler
                 }, Avalonia.Threading.DispatcherPriority.Background);
             }
         }
