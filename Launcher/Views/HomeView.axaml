@@ -194,14 +194,14 @@
             <Setter Property="BoxShadow" Value="inset 0 0 0 1 #42FFD8A0" />
         </Style>
         <Style Selector="Button.play /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #4DFFECC8, 0 6 18 0 #40F2A33A" />
+            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #4DFFECC8" />
             <Setter Property="CornerRadius" Value="12" />
         </Style>
         <Style Selector="Button.play:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource PrimaryFillHover}" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource AccentInk}" />
-            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #5CFFECC8, 0 8 22 0 #59F2A33A" />
+            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #5CFFECC8" />
         </Style>
 
         <Style Selector="Button.info-tab">

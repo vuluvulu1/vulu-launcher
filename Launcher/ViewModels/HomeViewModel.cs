@@ -487,6 +487,7 @@ namespace VuluLauncher.ViewModels
             RamOptions.Clear();
             foreach (var gb in init.Items("ramOptionsGb")) RamOptions.Add(gb.GetInt32());
             _totalRamGb = init.Num("totalRamGb");
+            OnPropertyChanged(nameof(RamGb));   // liste yenilenince seçici seçimini yeniden bulsun
         }
 
         // ── Bellek önerisi ──
@@ -673,6 +674,9 @@ namespace VuluLauncher.ViewModels
             int fallback = RamOptions.Contains(AppSettings.Current.DefaultRamGb) ? AppSettings.Current.DefaultRamGb
                 : RecommendedRamFor(value);
             RamGb = int.TryParse(UiState.Get("ram_" + value.Id), out int saved) && RamOptions.Contains(saved) ? saved : fallback;
+            // Değer aynı kalsa da bildirilir: bellek listesi sonradan dolunca seçici seçimini boşaltmış olabilir
+            // (liste boşken değeri bulamaz); aynı değerde bildirim gitmezse seçici boş görünürdü
+            OnPropertyChanged(nameof(RamGb));
             OnPropertyChanged(nameof(RamHint));
             OnPropertyChanged(nameof(RamWarn));
             PackUpdateText = _packUpdates.TryGetValue(value.Id, out var u) ? $"rev {u.Int("from")} → rev {u.Int("to")}" : null;

@@ -160,6 +160,11 @@
         <Setter Property="Width" Value="300" />
         <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
+    <!-- Meşale: kartlar (Liderlik, Profil, listeler) yuvarlak; renkleri sayfanın kendi kartlarının (Kütüphane'de KutuphaneStyles) -->
+    <Style Selector="Window.mesale Border.card, Window.mesale Border.row-card">
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
     <Style Selector="Window.soft Button.address">
         <Setter Property="CornerRadius" Value="8" />
     </Style>

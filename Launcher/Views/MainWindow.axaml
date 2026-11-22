@@ -566,20 +566,26 @@
                             <!-- Açılış: karartma solarak gelir, kutu hafifçe büyüyüp yükselerek belirir.
                                  Kapanış: ikisi birlikte 0,15 sn'de söner, kutu biraz küçülür (MainViewModel.ShowAsync bekler) -->
                             <Border.Styles>
+                                <!-- Kapat: kutunun hemen üstünde sağa yaslı küçük, yarı saydam düğme (× ve Esc); içeriğe binmez -->
                                 <Style Selector="Button.modal-close">
-                                    <Setter Property="Width" Value="34" /><Setter Property="Height" Value="34" /><Setter Property="Padding" Value="0" />
-                                    <Setter Property="CornerRadius" Value="17" /><Setter Property="Margin" Value="0,-14,-14,0" />
-                                    <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Top" />
+                                    <Setter Property="Height" Value="30" /><Setter Property="Padding" Value="10,0,11,0" />
+                                    <Setter Property="CornerRadius" Value="10" /><Setter Property="Margin" Value="0,0,0,8" />
+                                    <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" />
                                     <Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="VerticalContentAlignment" Value="Center" />
-                                    <Setter Property="Background" Value="{StaticResource Raised}" /><Setter Property="BorderBrush" Value="{StaticResource LineStrong}" /><Setter Property="BorderThickness" Value="1" />
+                                    <Setter Property="Background" Value="#B3141110" /><Setter Property="BorderBrush" Value="#29FFD8A0" /><Setter Property="BorderThickness" Value="1" />
                                     <Setter Property="Cursor" Value="Hand" />
                                 </Style>
                                 <Style Selector="Button.modal-close /template/ ContentPresenter#PART_ContentPresenter">
-                                    <Setter Property="CornerRadius" Value="17" />
+                                    <Setter Property="CornerRadius" Value="10" />
                                 </Style>
                                 <Style Selector="Button.modal-close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                                    <Setter Property="Background" Value="{StaticResource Error}" /><Setter Property="BorderBrush" Value="{StaticResource Error}" />
+                                    <Setter Property="Background" Value="{StaticResource AccentTint}" /><Setter Property="BorderBrush" Value="#80F2A33A" />
                                 </Style>
+                                <Style Selector="Button.modal-close Path"><Setter Property="Stroke" Value="{StaticResource TextSoft}" /></Style>
+                                <Style Selector="Button.modal-close:pointerover Path"><Setter Property="Stroke" Value="{StaticResource AccentHi}" /></Style>
+                                <Style Selector="Button.modal-close TextBlock"><Setter Property="Foreground" Value="{StaticResource Dim}" /></Style>
+                                <Style Selector="Button.modal-close:pointerover TextBlock"><Setter Property="Foreground" Value="{StaticResource AccentHi}" /></Style>
+                                <Style Selector="Button.modal-close:pressed"><Setter Property="RenderTransform" Value="none" /></Style>
                                 <!-- Başlangıç hâli; açılış ve kapanış MainWindow.OnModalLoaded'da (kutunun içi kurulduktan sonra başlar,
                                      böylece ağır pencerelerde de animasyon atlanmaz; × düğmesi kutuyla birlikte gelir) -->
                                 <Style Selector="Border.backdrop"><Setter Property="Opacity" Value="0" /></Style>
@@ -590,13 +596,16 @@
                             </Border.Styles>
                             <!-- Kutu başlık çubuğunun altında kalır (üstte pay) ve kenarlara yapışmaz; büyük kutular bu alana sığacak
                                  kadar kısalır, köşedeki × de bu payın içinde durur (başlık çubuğuyla ve pencere düğmeleriyle çakışmaz) -->
-                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="32,76,32,28">
-                                <Border Classes="modal-box" Width="{Binding Width}" MaxHeight="760" Background="{StaticResource Panel}" BorderThickness="1">
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="32,60,32,28" RowDefinitions="38,Auto">
+                                <Border Grid.Row="1" Classes="modal-box" Width="{Binding Width}" MaxHeight="760" Background="{StaticResource Panel}" BorderThickness="1">
                                     <v:ModalHost />
                                 </Border>
                                 <!-- Her kutuda sağ üst köşede büyük, yuvarlak kapat düğmesi: köşeden yarı dışarıda (kutu kırpılsa da kesilmez, içerikle çakışmaz) -->
                                 <Button Classes="modal-close" IsVisible="{Binding IsTop}" Command="{Binding DismissCommand}" ToolTip.Tip="Kapat (Esc)" AutomationProperties.Name="Kapat">
-                                    <Path Data="M6 6l12 12M18 6L6 18" Stroke="{StaticResource Text}" StrokeThickness="2" StrokeLineCap="Round" Width="12" Height="12" Stretch="Uniform" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Path Data="M6 6l12 12M18 6L6 18" StrokeThickness="1.8" StrokeLineCap="Round" Width="10" Height="10" Stretch="Uniform" VerticalAlignment="Center" />
+                                        <TextBlock Text="Esc" FontFamily="{StaticResource Mono}" FontSize="11" VerticalAlignment="Center" />
+                                    </StackPanel>
                                 </Button>
                             </Grid>
                         </Border>
