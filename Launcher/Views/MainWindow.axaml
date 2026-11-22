@@ -84,7 +84,7 @@
                     <!-- Kütüphane: sekmeler yerine geniş arama kutusu (sekmeler soldaki rayda) -->
                     <Border x:Name="SearchPillHost" Grid.Column="1">
                     <Button x:Name="SearchPill" Classes="search-pill" IsVisible="{Binding ShowShell}" Command="{Binding OpenPaletteCommand}"
-                            HorizontalAlignment="Left" VerticalAlignment="Center" Margin="28,0,0,0" AutomationProperties.Name="Hızlı arama">
+                            VerticalAlignment="Center" AutomationProperties.Name="Hızlı arama">
                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                             <Path Classes="icon" Data="M11 4.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 0 0 0-13zM16 16l4.5 4.5" Width="15" Height="15" />
                             <TextBlock Grid.Column="1" Text="Paket, sayfa ya da kişi ara" Classes="dim" FontSize="13" VerticalAlignment="Center" />

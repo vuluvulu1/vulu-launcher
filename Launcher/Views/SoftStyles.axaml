@@ -126,6 +126,38 @@
         <Setter Property="Background" Value="{StaticResource Hover}" />
         <Setter Property="Foreground" Value="{StaticResource AccentHi}" />
     </Style>
+    <!-- Başlık çubuğundaki arama kutusu (Ctrl+K): iki temada da kutu; Meşale'de sekmelerin sağında, büyütecin yerine -->
+    <Style Selector="Window.soft Button.search-pill">
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Background" Value="{StaticResource Panel}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardLine}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Window.soft Button.search-pill /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <Style Selector="Window.soft Button.search-pill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource Surface}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardLineStrong}" />
+    </Style>
+    <Style Selector="Window.soft Button.search-pill Path.icon">
+        <Setter Property="Stroke" Value="{StaticResource Dim}" />
+    </Style>
+    <Style Selector="Window.mesale Border#SearchPillHost">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="Window.mesale Border#SearchIconHost">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="Window.mesale Button.search-pill">
+        <Setter Property="Width" Value="300" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="Margin" Value="0,0,10,0" />
+    </Style>
     <Style Selector="Window.soft Button.address">
         <Setter Property="CornerRadius" Value="8" />
     </Style>
