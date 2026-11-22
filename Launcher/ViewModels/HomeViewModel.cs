@@ -635,6 +635,8 @@ namespace VuluLauncher.ViewModels
             OnPropertyChanged(nameof(SelectedCanEditLook));
             OnPropertyChanged(nameof(SelectedIsModpack));
             OnPropertyChanged(nameof(SelectedModpackVersion));
+            GameSettingsSummary = "Genel ayarlar kullanılıyor";
+            if (value != null && !_preview) _ = LoadGameSettingsSummaryAsync(value);
             OnPropertyChanged(nameof(CanShare));
             OnPropertyChanged(nameof(ShareText));
             if (value == null) { Refresh(); return; }
@@ -658,6 +660,30 @@ namespace VuluLauncher.ViewModels
         }
 
         public bool SelectedIsCustom => Selected?.IsCustom == true;
+
+        /// <summary>Paketin oyun ayarları satırındaki özet: genel mi, pakete özel mi (neler).</summary>
+        [ObservableProperty] private string _gameSettingsSummary = "Genel ayarlar kullanılıyor";
+
+        private async Task LoadGameSettingsSummaryAsync(InstanceItem item)
+        {
+            try
+            {
+                var r = await _core.Call("instances.gameSettings", new { id = item.Id });
+                if (Selected == item) GameSettingsSummary = GameSettingsModal.Summary(r);
+            }
+            catch { /* özet genel kalır */ }
+        }
+
+        /// <summary>Bu paketin kendi oyun ayarları: Java, ek JVM argümanları, oyun penceresi.</summary>
+        [RelayCommand]
+        private async Task GameSettings()
+        {
+            if (Selected is not { } item) return;
+            JsonElement r;
+            try { r = await _core.Call("instances.gameSettings", new { id = item.Id }); }
+            catch (Exception ex) { await Main.AlertAsync("Ayarlar açılamadı", ex.Message); return; }
+            if (await Main.ShowAsync(new GameSettingsModal(item.Id, item.Name, r)) is string summary && Selected == item) GameSettingsSummary = summary;
+        }
         public bool SelectedCanEditLook => Selected?.CanEditLook == true;
         public bool SelectedIsModpack => Selected?.IsModpack == true;
         public string SelectedModpackVersion => Selected?.ModpackVersion ?? "";

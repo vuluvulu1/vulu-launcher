@@ -251,6 +251,13 @@ namespace VuluLauncher.ViewModels
                 if (Environment.GetEnvironmentVariable("VULU_UI_OPEN") is { Length: > 0 } open)
                     Avalonia.Threading.DispatcherTimer.RunOnce(() =>
                     {
+                        // gamesettings: paketin oyun ayarları penceresi örnek verilerle
+                        if (open == "gamesettings")
+                        {
+                            _ = ShowAsync(new GameSettingsModal("pack:ornek", "Örnek paket", System.Text.Json.JsonDocument.Parse(
+                                """{"javaPath":"","jvmArgs":"-XX:+UseZGC","gameWidth":1600,"gameHeight":900,"fullscreen":false,"global":{"javaPath":"","jvmArgs":"","gameWidth":0,"gameHeight":0,"fullscreen":false}}""").RootElement));
+                            return;
+                        }
                         if (open != "content") _ = OpenNewPackAsync(open);
                         else if (Home.Instances.FirstOrDefault(i => i.IsCustom) is { } custom) _ = OpenAddContentAsync(custom);
                         // Oturum yok: istekler başarısız olunca örnek veriler konur

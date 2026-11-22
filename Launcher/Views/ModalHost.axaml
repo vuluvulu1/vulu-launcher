@@ -712,6 +712,55 @@
                 </StackPanel>
             </DataTemplate>
 
+            <!-- ── Paketin oyun ayarları ── -->
+            <DataTemplate DataType="vm:GameSettingsModal">
+                <StackPanel>
+                    <TextBlock Classes="modal-title" Text="{Binding Title}" Margin="22,18,22,0" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="Yalnızca bu pakette geçerli. Boş bıraktığın ayar için genel Ayarlar kullanılır."
+                               Classes="dim" FontSize="12.5" TextWrapping="Wrap" Margin="22,4,22,14" />
+                    <StackPanel Spacing="16" Margin="22,0,22,8">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Java" FontWeight="SemiBold" />
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                                <TextBox Text="{Binding JavaPath}" Watermark="Genel ayarı kullan" />
+                                <Button Grid.Column="1" Classes="sm" Content="Gözat" Command="{Binding BrowseJavaCommand}" />
+                                <Button Grid.Column="2" Classes="sm" Content="Temizle" Command="{Binding ClearJavaCommand}" />
+                            </Grid>
+                            <TextBlock Text="{Binding GlobalJava}" Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Ek JVM argümanları" FontWeight="SemiBold" />
+                            <TextBox Text="{Binding JvmArgs}" Watermark="Örn. -XX:+UseZGC" />
+                            <TextBlock Text="{Binding GlobalJvm}" Classes="dim" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Oyun penceresi" FontWeight="SemiBold" />
+                            <ItemsControl Classes="segmented" ItemsSource="{Binding Window}">
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:WindowChoice">
+                                        <Button Classes="seg" Classes.active="{Binding IsSelected}" Content="{Binding Label}" Command="{Binding PickCommand}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsCustomSize}">
+                                <TextBox Text="{Binding SizeW}" Watermark="Genişlik" Width="96" />
+                                <TextBlock Text="×" VerticalAlignment="Center" />
+                                <TextBox Text="{Binding SizeH}" Watermark="Yükseklik" Width="96" />
+                            </StackPanel>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="error" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Grid ColumnDefinitions="*,Auto" Margin="22,8,22,18">
+                        <Button Classes="link" Content="Hepsini genel ayara döndür" Command="{Binding ResetAllCommand}" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                            <Button Classes="sm" Content="Vazgeç" Command="{Binding DismissCommand}" />
+                            <Button Classes="sm primary" Content="Kaydet" Command="{Binding SaveCommand}" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </DataTemplate>
+
             <!-- ── Mod güncellemesi: değişiklik notları ── -->
             <DataTemplate DataType="vm:ChangelogModal">
                 <StackPanel>

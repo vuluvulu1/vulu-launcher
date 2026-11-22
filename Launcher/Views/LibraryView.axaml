@@ -529,6 +529,16 @@
                                 <Button Grid.Column="1" Classes="dbtn" Padding="14,0" Content="Değiştir" Command="{Binding EditInstanceCommand}" VerticalAlignment="Center" />
                             </Grid>
                         </Border>
+                        <!-- Paketin kendi oyun ayarları (Java, JVM argümanları, pencere) -->
+                        <Border Classes="srow">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="Oyun ayarları" FontSize="14" FontWeight="SemiBold" />
+                                    <TextBlock Classes="dim" FontSize="12.5" TextWrapping="Wrap"><Run Text="{Binding GameSettingsSummary}" /><Run Text=" · Java, JVM argümanları ve oyun penceresi" /></TextBlock>
+                                </StackPanel>
+                                <Button Grid.Column="1" Classes="dbtn" Padding="14,0" Content="Düzenle" Command="{Binding GameSettingsCommand}" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
                         <!-- CurseForge/Modrinth modpack'i: sürüm değiştir -->
                         <Border Classes="srow" IsVisible="{Binding SelectedIsModpack}">
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">

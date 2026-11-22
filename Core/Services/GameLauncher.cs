@@ -14,7 +14,8 @@ using CmlLib.Core.Version;
 namespace VuluLauncher
 {
     /// <summary>Başlatılacak şey: sunucu paketi ya da kullanıcı instance'ı.</summary>
-    internal sealed record LaunchTarget(string Name, string Folder, string McVersion, string Loader, string? LoaderVersion);
+    /// <param name="Own">Paketin kendi oyun ayarları (Java, JVM argümanları, pencere); boşsa genel ayarlar.</param>
+    internal sealed record LaunchTarget(string Name, string Folder, string McVersion, string Loader, string? LoaderVersion, InstanceSettings? Own = null);
 
     /// <summary>
     /// Oyunu kurar ve başlatır. Bütün instance'lar oyun dosyalarını (assets, libraries, versions)
@@ -210,7 +211,7 @@ namespace VuluLauncher
             _process = null;
             try
             {
-                var settings = AppSettings.Current;
+                var settings = EffectiveGameSettings.Of(AppSettings.Current, target.Own);
                 _log($"{target.Name} hazırlanıyor...", "accent");
 
                 string instanceDir = Path.Combine(AppPaths.Instances, target.Folder);
@@ -227,7 +228,7 @@ namespace VuluLauncher
                 job.Phase = "Java hazırlanıyor";
                 int javaMajor = await GetRequiredJavaAsync(launcher, target.McVersion);
                 timer?.Mark("sürüm bilgisi");
-                string javaPath = await _java.EnsureAsync(javaMajor);
+                string javaPath = await _java.EnsureAsync(javaMajor, ownPath: target.Own?.JavaPath);
                 timer?.Mark("java");
 
                 job.Phase = target.Loader == "vanilla" ? "Minecraft hazırlanıyor" : "Mod yükleyici hazırlanıyor";
@@ -299,7 +300,7 @@ namespace VuluLauncher
                 }
 
                 // Launcher oyun açılınca kapanacaksa çıktı yönlendirilmez; okuyan kalmayacağı için
-                bool closeAfterStart = settings.OnGameStart == "close";
+                bool closeAfterStart = AppSettings.Current.OnGameStart == "close";
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.RedirectStandardOutput = !closeAfterStart;
@@ -389,7 +390,7 @@ namespace VuluLauncher
 
             // Android'de Java'yı oyun motoru seçer; Forge ve NeoForge orada henüz kurulamıyor
             string javaPath = "";
-            if (_runner == null) javaPath = await _java.EnsureAsync(await GetRequiredJavaAsync(launcher, target.McVersion));
+            if (_runner == null) javaPath = await _java.EnsureAsync(await GetRequiredJavaAsync(launcher, target.McVersion), ownPath: target.Own?.JavaPath);
             else if (target.Loader is "forge" or "neoforge")
                 throw new InvalidOperationException("Forge ve NeoForge paketlerinin oyun dosyaları telefonda denetlenemiyor.");
 

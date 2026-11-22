@@ -44,6 +44,8 @@ namespace VuluLauncher
             _bridge.On("settings.get", _ => Task.FromResult<object?>(GetSettings()));
             _bridge.On("settings.save", args => Task.FromResult<object?>(SaveSettings(args)));
             _bridge.On("settings.pickJava", async _ => await PickJavaAsync());
+            _bridge.On("instances.gameSettings", args => Task.FromResult<object?>(GetInstanceGameSettings(args.Str("id"))));
+            _bridge.On("instances.saveGameSettings", args => Task.FromResult<object?>(SaveInstanceGameSettings(args)));
             _bridge.On("settings.removeJava", _ => Task.FromResult<object?>(RemoveDownloadedJava()));
             _bridge.On("storage.usage", async _ => await Task.Run(Storage.Usage));
             _bridge.On("storage.clear", async _ => await Task.Run(Storage.Clear));
@@ -200,12 +202,12 @@ namespace VuluLauncher
                 var pack = PackCatalog.Find(id[PackPrefix.Length..])
                     ?? throw new InvalidOperationException("Lütfen bir sürüm seçin!");
 
-                return (new LaunchTarget(pack.Name, pack.FolderName, pack.McVersion, pack.Loader, pack.LoaderVersion),
+                return (new LaunchTarget(pack.Name, pack.FolderName, pack.McVersion, pack.Loader, pack.LoaderVersion, InstanceSettingsStore.Get(id)),
                     pack.RecommendedRamGb);
             }
 
             var meta = RequireCustomInstance(id);
-            return (new LaunchTarget(meta.Name, meta.Folder, meta.McVersion, meta.Loader, meta.LoaderVersion),
+            return (new LaunchTarget(meta.Name, meta.Folder, meta.McVersion, meta.Loader, meta.LoaderVersion, InstanceSettingsStore.Get(id)),
                 meta.Loader == "vanilla" ? 4 : 8);
         }
 
@@ -260,6 +262,7 @@ namespace VuluLauncher
             DeleteLogoFiles(id);
             DeleteIconFiles(id);
             PlayTimeStore.Remove(id);
+            InstanceSettingsStore.Remove(id);
             Log($"{meta.Name} silindi.", "muted");
             return new { success = true };
         }
@@ -638,6 +641,50 @@ namespace VuluLauncher
             if (playtimeChanged) _ = SyncPlaytimeAsync();
             SignalPresence();   // "görünmez" seçilince arkadaş listesinden hemen düşülür
             return new { settings = AppSettings.Current };
+        }
+
+        /// <summary>Paketin kendi oyun ayarları ve karşılaştırma için genel ayarlar.</summary>
+        private object GetInstanceGameSettings(string id)
+        {
+            RequireLogin();
+            ResolveTarget(id);   // paket var mı
+            var own = InstanceSettingsStore.Get(id) ?? new InstanceSettings();
+            var g = AppSettings.Current;
+            return new
+            {
+                javaPath = own.JavaPath ?? "",
+                jvmArgs = own.JvmArgs ?? "",
+                gameWidth = own.GameWidth, gameHeight = own.GameHeight, fullscreen = own.Fullscreen,
+                global = new { javaPath = g.JavaMode == "custom" ? g.CustomJavaPath : "", jvmArgs = g.JvmArgs, gameWidth = g.GameWidth, gameHeight = g.GameHeight, fullscreen = g.Fullscreen },
+            };
+        }
+
+        private object SaveInstanceGameSettings(JsonElement args)
+        {
+            RequireLogin();
+            string id = args.Str("id");
+            ResolveTarget(id);
+            string java = args.Str("javaPath").Trim().Trim('"');
+            if (java.Length > 0 && (!File.Exists(java) || !java.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && OperatingSystem.IsWindows()))
+                throw new InvalidOperationException("Seçilen Java dosyası bulunamadı. Geçerli bir java.exe seç ya da genel ayara dön.");
+            string jvm = args.Str("jvmArgs").Trim();
+            if (jvm.Length > 2000) throw new InvalidOperationException("JVM argümanları çok uzun.");
+            int? Size(string key)
+            {
+                if (!args.TryGetProperty(key, out var v) || v.ValueKind != JsonValueKind.Number) return null;
+                int n = v.GetInt32();
+                return n == 0 ? 0 : Math.Clamp(n, 320, 7680);
+            }
+            var settings = new InstanceSettings
+            {
+                JavaPath = java.Length > 0 ? java : null,
+                JvmArgs = jvm.Length > 0 ? jvm : null,
+                GameWidth = Size("gameWidth"),
+                GameHeight = Size("gameHeight"),
+                Fullscreen = (args.TryGetProperty("fullscreen", out var fs) ? fs.ValueKind : JsonValueKind.Null) switch { JsonValueKind.True => true, JsonValueKind.False => false, _ => null },
+            };
+            InstanceSettingsStore.Set(id, settings);
+            return new { custom = !settings.IsEmpty };
         }
 
         private async Task<object?> PickJavaAsync()

@@ -546,6 +546,128 @@ namespace VuluLauncher.ViewModels
         [RelayCommand] private Task Rollback() => _owner.RollbackAsync(this);
     }
 
+    /// <summary>
+    /// Paketin kendi oyun ayarları: Java, ek JVM argümanları, oyun penceresi. Boş bırakılan genel ayarı kullanır.
+    /// Kaydedince yeni özet metni döner.
+    /// </summary>
+    internal sealed partial class GameSettingsModal : ModalViewModel
+    {
+        private static readonly (string Key, string Label)[] WindowChoices =
+            { ("global", "Genel ayar"), ("0x0", "Oyunun boyutu"), ("1280x720", "1280×720"), ("1600x900", "1600×900"), ("1920x1080", "1920×1080"), ("full", "Tam ekran"), ("custom", "Özel") };
+        private readonly string _id;
+
+        public GameSettingsModal(string id, string name, JsonElement data)
+        {
+            _id = id;
+            Title = $"{name} — oyun ayarları";
+            _javaPath = data.Text("javaPath") ?? "";
+            _jvmArgs = data.Text("jvmArgs") ?? "";
+            var g = data.Get("global");
+            GlobalJava = string.IsNullOrEmpty(g.Text("javaPath")) ? "Genel ayar: otomatik (gereken sürüm indirilir)" : "Genel ayar: " + g.Text("javaPath");
+            GlobalJvm = string.IsNullOrWhiteSpace(g.Text("jvmArgs")) ? "Genel ayarda ek argüman yok." : "Genel argümanlardan sonra eklenir: " + g.Text("jvmArgs");
+            int? w = data.Get("gameWidth").ValueKind == JsonValueKind.Number ? data.Int("gameWidth") : null;
+            int? h = data.Get("gameHeight").ValueKind == JsonValueKind.Number ? data.Int("gameHeight") : null;
+            string key = data.Get("fullscreen").ValueKind == JsonValueKind.True ? "full"
+                : w == null && h == null ? "global"
+                : WindowChoices.Any(c => c.Key == $"{w}x{h}") ? $"{w}x{h}" : "custom";
+            _sizeW = w > 0 ? w.ToString()! : "";
+            _sizeH = h > 0 ? h.ToString()! : "";
+            foreach (var (k, label) in WindowChoices) Window.Add(new WindowChoice(this, k, label, k == key));
+            _windowKey = key;
+            _isCustomSize = key == "custom";
+        }
+
+        public override double Width => 600;
+        public string Title { get; }
+        public string GlobalJava { get; }
+        public string GlobalJvm { get; }
+        public ObservableCollection<WindowChoice> Window { get; } = new();
+        [ObservableProperty] private string _javaPath;
+        [ObservableProperty] private string _jvmArgs;
+        [ObservableProperty] private string _sizeW;
+        [ObservableProperty] private string _sizeH;
+        [ObservableProperty] private bool _isCustomSize;
+        [ObservableProperty] private string? _error;
+        private string _windowKey;
+
+        internal void PickWindow(string key)
+        {
+            _windowKey = key;
+            foreach (var c in Window) c.IsSelected = c.Key == key;
+            IsCustomSize = key == "custom";
+        }
+
+        [RelayCommand]
+        private async Task BrowseJava()
+        {
+            try
+            {
+                var picked = await CoreClient.Instance.Call("settings.pickJava");
+                if (picked.Text("path") is { Length: > 0 } path) JavaPath = path;
+            }
+            catch (Exception ex) { Error = ex.Message; }
+        }
+
+        [RelayCommand] private void ClearJava() => JavaPath = "";
+
+        [RelayCommand]
+        private void ResetAll()
+        {
+            JavaPath = "";
+            JvmArgs = "";
+            PickWindow("global");
+        }
+
+        [RelayCommand]
+        private async Task Save()
+        {
+            Error = null;
+            int? w = null, h = null;
+            bool? full = null;
+            switch (_windowKey)
+            {
+                case "global": break;
+                case "full": full = true; break;
+                case "custom":
+                    if (!int.TryParse(SizeW, out int cw) || !int.TryParse(SizeH, out int ch) || cw < 320 || ch < 240)
+                    { Error = "Genişlik ve yükseklik geçerli bir sayı olmalı (en az 320×240)."; return; }
+                    (w, h, full) = (cw, ch, false);
+                    break;
+                default:
+                    var parts = _windowKey.Split('x');
+                    (w, h, full) = (int.Parse(parts[0]), int.Parse(parts[1]), false);
+                    break;
+            }
+            try
+            {
+                await CoreClient.Instance.Call("instances.saveGameSettings", new { id = _id, javaPath = JavaPath.Trim(), jvmArgs = JvmArgs.Trim(), gameWidth = w, gameHeight = h, fullscreen = full });
+                Close(Summary(JavaPath.Trim().Length > 0, JvmArgs.Trim().Length > 0, _windowKey != "global"));
+            }
+            catch (Exception ex) { Error = ex.Message; }
+        }
+
+        public static string Summary(JsonElement data) => Summary(
+            !string.IsNullOrEmpty(data.Text("javaPath")), !string.IsNullOrWhiteSpace(data.Text("jvmArgs")),
+            data.Get("fullscreen").ValueKind == JsonValueKind.True || data.Get("gameWidth").ValueKind == JsonValueKind.Number);
+
+        private static string Summary(bool java, bool jvm, bool window)
+        {
+            var parts = new List<string>();
+            if (java) parts.Add("Java");
+            if (jvm) parts.Add("JVM argümanları");
+            if (window) parts.Add("pencere");
+            return parts.Count == 0 ? "Genel ayarlar kullanılıyor" : "Bu pakete özel: " + string.Join(", ", parts);
+        }
+    }
+
+    internal sealed partial class WindowChoice(GameSettingsModal owner, string key, string label, bool selected) : ObservableObject
+    {
+        public string Key { get; } = key;
+        public string Label { get; } = label;
+        [ObservableProperty] private bool _isSelected = selected;
+        [RelayCommand] private void Pick() => owner.PickWindow(Key);
+    }
+
     /// <summary>Mod güncellemesinin değişiklik notları; "Güncelle" ile kapanınca true döner.</summary>
     internal sealed partial class ChangelogModal(string title, string subtitle) : ModalViewModel
     {

@@ -326,6 +326,7 @@
                                             <Separator />
                                             <MenuItem Header="Görünüm" IsVisible="{Binding SelectedCanEditLook}" Command="{Binding AppearanceCommand}" />
                                             <MenuItem Header="Düzenle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding EditInstanceCommand}" />
+                                            <MenuItem Header="Oyun ayarları" Command="{Binding GameSettingsCommand}" />
                                             <MenuItem Header="Çoğalt" IsVisible="{Binding SelectedIsCustom}" Command="{Binding DuplicateCommand}" />
                                             <MenuItem Header="Masaüstüne kısayol" Command="{Binding CreateShortcutCommand}" />
                                             <Separator IsVisible="{Binding SelectedIsCustom}" />
@@ -412,6 +413,7 @@
                         <Button.Flyout>
                             <MenuFlyout Placement="TopEdgeAlignedLeft">
                                 <MenuItem Header="Düzenle" IsVisible="{Binding SelectedIsCustom}" Command="{Binding EditInstanceCommand}" />
+                                <MenuItem Header="Oyun ayarları" Command="{Binding GameSettingsCommand}" />
                                 <MenuItem Header="Görünüm" IsVisible="{Binding SelectedCanEditLook}" Command="{Binding AppearanceCommand}" />
                                 <MenuItem Header="İçeriği yönet" IsVisible="{Binding SelectedIsCustom}" Command="{Binding ManageContentCommand}" />
                                 <MenuItem Header="Dünyalar ve yedekler" Command="{Binding OpenWorldsCommand}" />

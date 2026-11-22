@@ -33,8 +33,16 @@ namespace VuluLauncher
         };
 
         /// <summary>Verilen Java sürümünü çalıştıracak java.exe yolunu döner; gerekirse indirir.</summary>
-        public async Task<string> EnsureAsync(int requiredMajor, CancellationToken cancellation = default)
+        /// <param name="ownPath">Paketin kendi ayarlarında seçilen java.exe (genel ayarın önüne geçer).</param>
+        public async Task<string> EnsureAsync(int requiredMajor, CancellationToken cancellation = default, string? ownPath = null)
         {
+            if (!string.IsNullOrWhiteSpace(ownPath))
+            {
+                string own = ownPath.Trim().Trim('"');
+                if (!File.Exists(own))
+                    throw new FileNotFoundException($"Bu paketin ayarlarında seçilen Java bulunamadı: {own}. Paketin Ayarlar › Oyun ayarları bölümünden değiştirebilirsin.");
+                return own;
+            }
             var settings = AppSettings.Current;
             if (settings.JavaMode == "custom")
             {
