@@ -50,8 +50,10 @@ namespace VuluLauncher.ViewModels
         public string Subtitle => Kind == "server" ? Name : $"{LoaderLabel} {McVersion}";
 
         [ObservableProperty] private Bitmap? _thumbnail;
-        /// <summary>Kütüphane temasındaki kapak: paketin arka planı, kapak boyunda (küçük simge kapağa büyütülünce bulanıklaşıyordu).</summary>
+        /// <summary>Kütüphane kapağının zemini: paketin arka planı (yoksa simgesi) çok bulanık, renk dokusu olarak.</summary>
         [ObservableProperty] private Bitmap? _poster;
+        /// <summary>Kütüphane kapağının ortasındaki net simge (kapak boyunda büyütülmez; simge yoksa arka plandan kesit, o da yoksa baş harf).</summary>
+        [ObservableProperty] private Bitmap? _icon;
         /// <summary>Paketin yeni revizyonu var (vulu Packs).</summary>
         [ObservableProperty] private bool _hasUpdate;
         /// <summary>Bu paketin oyunu açık (aynı anda birden çok paket açılabilir).</summary>
@@ -585,7 +587,10 @@ namespace VuluLauncher.ViewModels
         private static async Task LoadThumbnailAsync(InstanceItem item)
         {
             item.Thumbnail = await Images.LoadAsync(item.ThumbnailUrl ?? item.BackgroundUrl, 96);
-            item.Poster = await Images.LoadAsync(item.BackgroundUrl ?? item.ThumbnailUrl, 420);
+            // Kapak: bulanık zemin + ortada net simge (arka plan resmi kapağa sığdırılınca kötü kırpılıyordu, simge büyütülünce bulanıklaşıyordu)
+            // Simgesi olmayan pakette karede arka plan resminden kare bir kesit (baş harf yalnızca ikisi de yoksa)
+            item.Icon = await Images.LoadAsync(item.ThumbnailUrl ?? item.BackgroundUrl, 256);
+            item.Poster = await Images.LoadBlurredAsync(item.BackgroundUrl ?? item.ThumbnailUrl, 200, 9f);
             // Bulanık ortam zemini önceden hazırlanır: pakete ilk tıklayınca da arka plan beklemeden değişsin
             _ = Images.LoadBlurredAsync(item.BackgroundUrl);
         }

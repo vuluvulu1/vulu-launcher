@@ -89,6 +89,16 @@
             <Setter Property="RenderTransform" Value="translateY(-5px) scale(1.015)" />
             <Setter Property="BoxShadow" Value="0 14 28 -6 #A6000000" />
         </Style>
+        <!-- Üstüne gelince ortadaki simge hafifçe büyür -->
+        <Style Selector="ListBox.posters Border.picon">
+            <Setter Property="RenderTransform" Value="scale(1)" />
+            <Setter Property="Transitions">
+                <Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" /></Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ListBox.posters ListBoxItem:pointerover Border.picon">
+            <Setter Property="RenderTransform" Value="scale(1.06)" />
+        </Style>
         <Style Selector="ListBox.posters ListBoxItem:selected Border.art">
             <Setter Property="BoxShadow" Value="0 0 0 2 #0B0A09, 0 0 0 4 #F2A33A" />
         </Style>
@@ -322,9 +332,29 @@
                                 </StackPanel.ContextFlyout>
                                 <Border Classes="art" Height="{DynamicResource PosterH}" CornerRadius="14" ClipToBounds="True" Background="{Binding Name, Converter={x:Static v:KutBrushes.CoverFor}}">
                                     <Panel>
-                                        <TextBlock Text="{Binding Initial}" FontSize="44" FontWeight="Bold" Foreground="{StaticResource Dim}"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <!-- Hibrit kapak: arkada paketin resminden bulanık renk zemini, ortada net simge -->
                                         <Image Classes="poster" Source="{Binding Poster}" Opacity="{Binding Poster, Converter={x:Static v:KutBrushes.Shown}}" Stretch="UniformToFill" />
+                                        <Border IsHitTestVisible="False">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                                    <GradientStop Offset="0" Color="#26000000" />
+                                                    <GradientStop Offset="1" Color="#8C000000" />
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                        <Border Classes="picon" Width="96" Height="96" CornerRadius="22" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Margin="0,0,0,10" BoxShadow="0 12 30 0 #99000000">
+                                            <Panel>
+                                                <Border CornerRadius="22" ClipToBounds="True" Background="#59000000">
+                                                    <Panel>
+                                                        <TextBlock Text="{Binding Initial}" FontSize="40" FontWeight="Bold" Foreground="{StaticResource TextSoft}"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        <Image Source="{Binding Icon}" Stretch="UniformToFill" />
+                                                    </Panel>
+                                                </Border>
+                                                <Border CornerRadius="22" BorderBrush="#2EFFFFFF" BorderThickness="1" IsHitTestVisible="False" />
+                                            </Panel>
+                                        </Border>
                                         <Border IsVisible="{Binding HasUpdate}" Background="#CC0B0A09" CornerRadius="6" Padding="8,3" Margin="10"
                                                 HorizontalAlignment="Left" VerticalAlignment="Top">
                                             <TextBlock Text="Güncelleme" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentHi}" />
