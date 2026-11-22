@@ -272,9 +272,9 @@
                         </Border>
                         <Border x:Name="ProfileHost">
                         <Button Classes="flat chip" IsVisible="{Binding ShowShell}" Command="{Binding OpenMyProfileCommand}"
-                                ToolTip.Tip="Profilim" Padding="8,4" Margin="0,0,6,0">
+                                ToolTip.Tip="Profilim" Padding="8,4" Margin="6,0,8,0">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Border Width="24" Height="24" Background="{StaticResource Raised}"
+                                <Border Width="24" Height="24" Background="{StaticResource Raised}" CornerRadius="12" ClipToBounds="True"
                                         BorderBrush="{StaticResource LineStrong}" BorderThickness="1">
                                     <Grid>
                                         <TextBlock Text="{Binding UserInitial}" FontWeight="Bold" FontSize="12"

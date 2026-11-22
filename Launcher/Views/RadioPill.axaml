@@ -23,7 +23,7 @@
     </UserControl.Styles>
 
     <Border x:Name="Pill" Height="34" CornerRadius="17" Background="{StaticResource Surface}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1"
-            VerticalAlignment="Center" Margin="0,0,6,0">
+            VerticalAlignment="Center" Margin="6,0">
         <StackPanel Orientation="Horizontal" Spacing="2">
             <Button Classes="rpill" ToolTip.Tip="Radyo: istasyonlar, türler, favoriler" AutomationProperties.Name="Radyo">
                 <StackPanel Orientation="Horizontal" Spacing="8">
