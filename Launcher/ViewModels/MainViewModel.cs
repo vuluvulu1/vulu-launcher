@@ -56,26 +56,24 @@ namespace VuluLauncher.ViewModels
         public ObservableCollection<ModalViewModel> Modals { get; } = new();
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowShell), nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave), nameof(ShowAmbient))]
+        [NotifyPropertyChangedFor(nameof(ShowShell), nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowAmbient))]
         private bool _loggedIn;
         /// <summary>
         /// Kayıtlı hesapla açılışta ana ekran, perdenin animasyonu başlamadan önce perdenin arkasında kurulur: kurulum arayüzü
         /// bir süre meşgul eder ve bu, animasyonun ortası yerine henüz hiçbir şeyin oynamadığı ilk ana denk gelir.
         /// </summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowShell), nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave), nameof(ShowAmbient))]
+        [NotifyPropertyChangedFor(nameof(ShowShell), nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowAmbient))]
         private bool _warming;
         /// <summary>Ana ekran (sekmeler, sayfa) görünür: giriş yapıldı ya da perde arkasında önceden kuruluyor.</summary>
         public bool ShowShell => LoggedIn || Warming;
         /// <summary>Oyna açık: paketin resmi başlık çubuğunun altına kadar uzanır (Meşale).</summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(HomeOverlay), nameof(ShowBackdrop), nameof(ShowSynthwave))]
+        [NotifyPropertyChangedFor(nameof(HomeOverlay), nameof(ShowBackdrop))]
         private bool _isHomePage = true;
         public bool HomeOverlay => ShowShell && IsHomePage;
         /// <summary>Oyna dışındaki sayfaların zemini: seçili paketin resmi, bulanık ve karartılmış.</summary>
-        public bool ShowBackdrop => ShowShell && !IsHomePage && !Themes.HasScene && !Themes.IsGrafit && !Themes.IsKutuphane;
-        /// <summary>Ufkun öbür ucu teması: Oyna dışındaki sayfalarda (girişte de) paket resmi yerine synthwave sahnesi.</summary>
-        public bool ShowSynthwave => Themes.HasScene && !(ShowShell && IsHomePage);
+        public bool ShowBackdrop => ShowShell && !IsHomePage && !Themes.IsKutuphane;
         /// <summary>Kütüphane: bütün sayfaların arkasında seçili paketin resmi, çok bulanık ve koyu; üstten aşağı sönen sıcak renk.</summary>
         public bool ShowAmbient => ShowShell && Themes.IsKutuphane;
 
@@ -113,7 +111,6 @@ namespace VuluLauncher.ViewModels
         public void ThemeChanged()
         {
             OnPropertyChanged(nameof(ShowBackdrop));
-            OnPropertyChanged(nameof(ShowSynthwave));
             OnPropertyChanged(nameof(ShowAmbient));
         }
         [ObservableProperty] private string _username = "";
@@ -284,7 +281,7 @@ namespace VuluLauncher.ViewModels
                         spam.Tick += (_, _) =>
                         {
                             if (++n > 100) { spam.Stop(); LogFile.Write("[tema] art arda değiştirme denemesi bitti"); return; }
-                            _ = SwitchThemeAsync(new[] { Themes.Mesale, Themes.Ufuk, Themes.Derin, Themes.Grafit, Themes.Kutuphane }[n % 5]);
+                            _ = SwitchThemeAsync(new[] { Themes.Mesale, Themes.Kutuphane }[n % 2]);
                         };
                         spam.Start();
                     }, TimeSpan.FromSeconds(3));

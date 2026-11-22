@@ -9,7 +9,7 @@ namespace VuluLauncher.Views
         public ToastCard()
         {
             InitializeComponent();
-            Themes.Attach(this);   // Ufkun öbür ucu / Derin Karanlık: kartın kendi stillerinin üstüne
+            Themes.Attach(this);   // temaya özgü stiller kartın kendi stillerinin üstüne
         }
 
         /// <summary>Kartın üstüne gelince süresi durur.</summary>

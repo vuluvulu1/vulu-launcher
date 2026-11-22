@@ -13,7 +13,6 @@ namespace Updater
         {
             AvaloniaXamlLoader.Load(this);
             VuluShared.UiTranslator.Install();
-            UpdaterTheme.Apply(Resources, UpdaterTheme.ReadThemeName());
         }
 
         public override void OnFrameworkInitializationCompleted()

@@ -56,7 +56,6 @@ namespace Updater
         {
             const string notes = "- **Pelerinler** ve dolap\n- Liderlik tablosu\n- Sezonlar ve haftalık görevler\n"
                 + "- Sosyal'de canlı harita\n- Profilde 3D skin görüntüleyici\n- Admin › İlerleme düzenleyicisi\n- Küçük düzeltmeler";
-            string theme = UpdaterTheme.ReadThemeName();
             var samples = new (string Name, UpdateStatus Status)[]
             {
                 ("1-checking", new("checking", "Güncellemeler denetleniyor…")),
@@ -81,7 +80,7 @@ namespace Updater
                 var size = new PixelSize((int)Bounds.Width, (int)Bounds.Height);
                 using var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(size);
                 rtb.Render(this);
-                rtb.Save(Path.Combine(dir, $"{theme}-{name}.png"));
+                rtb.Save(Path.Combine(dir, $"{name}.png"));
             }
             Environment.Exit(0);
         }

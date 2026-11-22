@@ -19,7 +19,7 @@ namespace Updater
         [STAThread]
         private static void Main(string[] args)
         {
-            VuluShared.L.Init(UpdaterTheme.ReadSetting("Language", ""));
+            VuluShared.L.Init(UpdaterSettings.ReadSetting("Language", ""));
             string installDir = AppContext.BaseDirectory;
             bool uninstallMode = args.Contains(VuluShared.InstallInfo.UninstallSwitch, StringComparer.OrdinalIgnoreCase);
 

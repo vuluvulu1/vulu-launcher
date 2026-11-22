@@ -11,7 +11,6 @@ namespace VuluLauncher
             AvaloniaXamlLoader.Load(this);
             VuluShared.UiTranslator.Install();
             try { Themes.Apply(AppSettings.Current.Theme); } catch { /* tema uygulanamazsa Meşale kalır */ }
-            Views.SynthwaveBackdrop.Animated = AppSettings.Current.AnimatedBackground;
         }
     }
 }

@@ -95,7 +95,7 @@ namespace VuluLauncher
             await Task.Delay(1500);
             await NextFrame(window); await NextFrame(window);
             Line($"kabuk hazır       {SinceStart(),8:0} ms");
-            Line($"tema              {Themes.Current} (hareketli: {Views.SynthwaveBackdrop.Animated}, sahne çizimi: {Views.SynthwaveBackdrop.Backend ?? "-"})");
+            Line($"tema              {Themes.Current}");
             Line("");
             await Task.Delay(2500);
             var host = window.FindControl<Views.PageHost>("PageHost")!;

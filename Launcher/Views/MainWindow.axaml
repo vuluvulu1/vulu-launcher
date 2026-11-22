@@ -303,8 +303,6 @@
             <!-- Sayfa değişince yeni sayfa yumuşakça belirir (web: .view animation view-in .18s) -->
             <!-- Sayfa değişince yeni sayfa hafifçe aşağıdan yükselerek belirir (web: .page-enter .18s); MainWindow.axaml.cs -->
             <!-- Oyna dışındaki sayfaların zemini: seçili paketin dünyası, bulanık ve karartılmış (mesale.css #view-main::before) -->
-            <!-- Ufkun öbür ucu teması: Oyna dışındaki sayfaların (ve girişin) arkasında hareketli synthwave sahnesi -->
-            <v:SynthwaveBackdrop Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding ShowSynthwave}" />
             <Panel Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding ShowBackdrop}" IsHitTestVisible="False" ClipToBounds="True">
                 <!-- Önceden bulanıklaştırılmış küçük kopya (canlı BlurEffect her yeniden çizimde baştan hesaplanıyordu) -->
                 <Image Source="{Binding Home.BackgroundBlurred}" Stretch="UniformToFill" Margin="-40" RenderOptions.BitmapInterpolationMode="MediumQuality" />

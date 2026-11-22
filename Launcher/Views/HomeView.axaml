@@ -248,17 +248,6 @@
         <!-- Arka planı olmayan pakette: karanlıkta sıcak bir ışık (mesale.css .stage-bg.plain) -->
         <Border Background="{StaticResource StagePlain}" />
         <Border Background="{StaticResource StageGlow}" />
-        <!-- Ufkun öbür ucu teması: arka planı olmayan pakette synthwave sahnesi (resmi olan pakette resim üstünü örter) -->
-        <!-- Resim varsa sahne tamamen onun arkasında kalır: o zaman hiç çizilmez (görünmezken de saniyede 25 kare çizip
-             bütün Oyna sayfasını yeniden çizdiriyordu) -->
-        <v:SynthwaveBackdrop>
-            <v:SynthwaveBackdrop.IsVisible>
-                <MultiBinding Converter="{x:Static BoolConverters.And}">
-                    <Binding Path="HasScene" Source="{x:Static local:ThemeState.Instance}" />
-                    <Binding Path="Background" Converter="{x:Static ObjectConverters.IsNull}" />
-                </MultiBinding>
-            </v:SynthwaveBackdrop.IsVisible>
-        </v:SynthwaveBackdrop>
         <v:CrossfadeImage Source="{Binding Background}" Stretch="UniformToFill" />
         <!-- Yazılar okunsun: kenarlardan ve alttan karartma (mesale.css .stage-bg::after) -->
         <Border x:Name="ShadeSide" IsHitTestVisible="False">
@@ -483,7 +472,7 @@
 
             <!-- ── Sağ panel: dünyalar, ekran görüntüleri, içerik, konsol ── -->
             <!-- Sağ sütun: kenarsız, gölgeli kart; en fazla 560 yüksekliğinde, alta yaslı (mesale.css #console) -->
-            <Border x:Name="InfoPanel" Grid.Column="2" Margin="0,8,18,16" Classes="mcard console" Classes.open="{Binding DetailsOpen}" MaxHeight="560" VerticalAlignment="Bottom">
+            <Border x:Name="InfoPanel" Grid.Column="2" Margin="0,8,18,16" Classes="mcard console" Classes.open="{Binding DetailsOpen}" VerticalAlignment="Stretch">
                 <Grid RowDefinitions="40,*">
                     <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="6,0">
                         <Grid ColumnDefinitions="*,Auto">

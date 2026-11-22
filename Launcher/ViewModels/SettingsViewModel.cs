@@ -232,18 +232,11 @@ namespace VuluLauncher.ViewModels
 
         private SettingSection LookSection() =>
             new SettingSection("Ses ve görünüm")
-                .Add(new ChoiceRow("Tema", "Ufkun öbür ucu: vulu-web'deki gizli sayfanın synthwave dünyası. Derin Karanlık: sculk mağarası; damarlar ışıldar, sensörler nabız gibi atar. Grafit: sade gri ve limon yeşili, her şey ayrı kartlarda. Kütüphane: vulu renkleri, yepyeni düzen: solda simgeler, paketler kapak kapak.",
-                    new[] { ("mesale", "Meşale"), ("ufuk", "Ufkun öbür ucu"), ("derin", "Derin Karanlık"), ("grafit", "Grafit"), ("kutuphane", "Kütüphane") }, S("theme", "mesale"), async value =>
+                .Add(new ChoiceRow("Tema", "Kütüphane: solda simgeler, paketler kapak kapak. Meşale: üstte sekmeler, paketin dünyası tam ekran.",
+                    new[] { ("kutuphane", "Kütüphane"), ("mesale", "Meşale") }, S("theme", "kutuphane"), async value =>
                     {
                         if (!await Change(("theme", value))) return false;
                         await main.SwitchThemeAsync(value);
-                        return true;
-                    }))
-                .Add(new ToggleRow("Hareketli arka plan", "Ufkun öbür ucu ve Derin Karanlık temalarında arka plan hareket eder. Kapatırsan sahne sabit durur; launcher yavaşlıyorsa kapat.",
-                    B("animatedBackground", true), async value =>
-                    {
-                        if (!await Change(("animatedBackground", value))) return false;
-                        Views.SynthwaveBackdrop.SetAnimated(value);
                         return true;
                     }))
                 .Add(new ChoiceRow("Yazı ve arayüz boyutu", "Pencere aynı kalır, içindeki bütün yazılar ve düğmeler büyür ya da küçülür. Büyük ekranlarda \"Büyük\" daha rahat okunur.",

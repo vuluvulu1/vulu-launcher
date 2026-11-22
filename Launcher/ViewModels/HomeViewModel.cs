@@ -311,7 +311,6 @@ namespace VuluLauncher.ViewModels
             _runningIds.Clear();
             foreach (var id in ids) _runningIds.Add(id);
             foreach (var i in Instances) i.IsRunning = _runningIds.Contains(i.Id);
-            Views.SynthwaveBackdrop.GameRunning = AnyGameRunning;
             GameRunning = Selected != null && _runningIds.Contains(Selected.Id);
             Refresh();
         }
@@ -784,7 +783,6 @@ namespace VuluLauncher.ViewModels
 
         partial void OnGameRunningChanged(bool value)
         {
-            Views.SynthwaveBackdrop.GameRunning = AnyGameRunning;   // oyun açıkken tema arka planı durur
             Refresh();
         }
         partial void OnLaunchingChanged(bool value) => Refresh();
@@ -1152,7 +1150,6 @@ namespace VuluLauncher.ViewModels
                 {
                     _runningIds.Add(instance.Id);
                     instance.IsRunning = true;
-                    Views.SynthwaveBackdrop.GameRunning = true;
                 }
                 GameRunning = Selected != null && _runningIds.Contains(Selected.Id);
             }

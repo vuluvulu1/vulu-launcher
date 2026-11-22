@@ -35,9 +35,7 @@ namespace VuluLauncher.Views
                         }
                         var size = new Avalonia.PixelSize((int)Bounds.Width, (int)Bounds.Height);
                         using var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(size);
-                        // Tema sahnesi compositor görseli; görüntüye girsin diye o an normal çizimle de verilir
-                        SynthwaveBackdrop.Snapshotting = true;
-                        try { rtb.Render(this); } finally { SynthwaveBackdrop.Snapshotting = false; }
+                        rtb.Render(this);
                         // VULU_UI_TOUR=1: her görüntüden sonra sıradaki sekmeye geçer (tek pencereyle bütün sayfalar)
                         if (Environment.GetEnvironmentVariable("VULU_UI_TOUR") == "1" && DataContext is MainViewModel tour)
                         {

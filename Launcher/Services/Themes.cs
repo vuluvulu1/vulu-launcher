@@ -5,288 +5,35 @@ using Avalonia.Styling;
 
 namespace VuluLauncher
 {
-    /// <summary>Arayüzden bağlanabilen tema durumu (ör. IsVisible="{Binding HasScene, Source={x:Static local:ThemeState.Instance}}").</summary>
+    /// <summary>Arayüzden bağlanabilen tema durumu (ör. IsVisible="{Binding IsKutuphane, Source={x:Static local:ThemeState.Instance}}").</summary>
     internal sealed partial class ThemeState : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
     {
         public static ThemeState Instance { get; } = new();
-        [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _isUfuk;
-        /// <summary>Temanın hareketli bir arka plan sahnesi var mı (Ufkun öbür ucu, Derin Karanlık).</summary>
-        [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _hasScene;
-        /// <summary>Grafit: kartlı düzen (Oyna sayfası başka yerleşir).</summary>
-        [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _isGrafit;
         /// <summary>Kütüphane: simge rayı, kapak ızgarası; başlık çubuğunda sekme yok.</summary>
         [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty] private bool _isKutuphane;
     }
 
     /// <summary>
-    /// Launcher temaları. Arayüzün renkleri App.axaml'daki fırçalardır; tema değişince yeni fırça konmaz, aynı fırçaların
-    /// rengi değiştirilir. Böylece StaticResource ile bağlı her yer anında yeni rengi alır, yeniden başlatmak gerekmez.
-    ///   mesale: varsayılan, amber ve koyu kahve (vulu'nun kendi rengi)
-    ///   ufuk:   "Ufkun öbür ucu" (vulu-web'deki /vulusalufuk sürprizi): synthwave, mor gökyüzü, pembe ve camgöbeği neon
-    ///   derin:  "Derin Karanlık": Minecraft'ın sculk mağarası; neredeyse siyah zemin, biyolüminesans camgöbeği damarlar
-    ///   kutuphane: "Kütüphane": vulu'nun renkleri (Meşale paleti) ama bambaşka bir iskelet: solda simge rayı, Oyna'da
-    ///           paketler kapak ızgarasında, seçilenin ayrıntısı ve OYNA sağdaki çekmecede; başlık çubuğunda sekme yok
-    ///   grafit: nötr grafit ve limon yeşili; sahne yok, her şey ayrı kartlarda (Oyna sayfası kartlı düzene geçer)
-    /// Sahnesi olan temalarda sayfaların arkasında <see cref="Views.SynthwaveBackdrop"/> çizer (sahne temaya göre seçilir).
-    /// Fırça olmayan değerler (BoxShadow ışıltıları) her temanın stil dosyasındadır; pencere tema adıyla aynı sınıfı
-    /// taşıdığında geçerli olurlar (Views/UfukStyles.axaml, Views/DerinStyles.axaml).
+    /// Launcher temaları. İkisi de vulu'nun renklerini (App.axaml'daki fırçalar) kullanır; ayrılan düzenleridir:
+    ///   kutuphane: varsayılan; solda simge rayı, Oyna'da paketler kapak ızgarasında, seçilenin ayrıntısı ve OYNA sağdaki
+    ///              çekmecede; başlık çubuğunda sekme yok (Views/LibraryView, Views/KutuphaneStyles.axaml)
+    ///   mesale:    üstte sekmeler, Oyna'da paketin dünyası tam ekran, solda paket şeridi, altta oyun çubuğu (Views/HomeView)
+    /// Temaya özgü stiller pencere tema adıyla aynı sınıfı taşıdığında geçerli olur.
     /// </summary>
     internal static class Themes
     {
         public const string Mesale = "mesale";
-        public const string Ufuk = "ufuk";
-        public const string Derin = "derin";
-        public const string Grafit = "grafit";
         public const string Kutuphane = "kutuphane";
-        private static readonly string[] All = { Mesale, Ufuk, Derin, Grafit, Kutuphane };
+        private static readonly string[] All = { Mesale, Kutuphane };
 
-        public static string Current { get; private set; } = Mesale;
-        public static bool IsUfuk => Current == Ufuk;
-        public static bool IsDerin => Current == Derin;
-        public static bool IsGrafit => Current == Grafit;
+        public static string Current { get; private set; } = Kutuphane;
         public static bool IsKutuphane => Current == Kutuphane;
-        /// <summary>Hareketli arka plan sahnesi olan tema.</summary>
-        public static bool HasScene => Current is Ufuk or Derin;
         public static event Action? Changed;
 
-        /// <summary>İlk uygulamada Meşale renkleri buradan alınır (App.axaml'daki değerler).</summary>
-        private static Dictionary<string, Color[]>? _mesale;
-        private static Dictionary<string, Color>? _mesaleSystem;
+        /// <summary>Köşe yuvarlaklığı: Meşale köşeli, Kütüphane yumuşak.</summary>
+        private static (double Control, double Overlay) Corners(string name) => name == Kutuphane ? (10, 14) : (0, 0);
 
-        private static readonly Dictionary<string, Color[]> UfukColors = new()
-        {
-            ["Bg"] = [C("#07000F")],
-            ["Panel"] = [C("#F0100022")],
-            ["SidePanel"] = [C("#8C080016")],
-            ["Surface"] = [C("#E61A0533")],
-            ["Raised"] = [C("#F02A0A4A")],
-            ["Card"] = [C("#C4140030")],
-            ["Glass"] = [C("#E0100024")],
-            ["Hover"] = [C("#1FFF2DF1")],
-            ["Line"] = [C("#38FF2DF1")],
-            ["LineStrong"] = [C("#6600D7FF")],
-            ["ButtonBg"] = [C("#C7140030")],
-            ["ButtonLine"] = [C("#8000D7FF")],
-            ["Text"] = [C("#F1E8FF")],
-            ["Muted"] = [C("#D2C3EE")],
-            ["Dim"] = [C("#A391C4")],
-            ["Accent"] = [C("#FF2DF1")],
-            ["AccentHi"] = [C("#9FF4FF")],
-            ["AccentSoft"] = [C("#33FF2DF1")],
-            ["AccentInk"] = [C("#FFFFFF")],
-            ["PrimaryFill"] = [C("#FF2DF1"), C("#5800FF")],
-            ["PrimaryFillHover"] = [C("#FF5CF5"), C("#7A2BFF")],
-            ["Ok"] = [C("#9FF4FF")],
-            ["Warn"] = [C("#FFD77A")],
-            ["Error"] = [C("#FF5A7A")],
-            // Kütüphane iskeletinin tonları: bu temanın kendi renklerinden
-            ["CardLine"] = [C("#38FF2DF1")],
-            ["ControlLine"] = [C("#38FF2DF1")],
-            ["CardLineHover"] = [C("#6600D7FF")],
-            ["CardLineStrong"] = [C("#6600D7FF")],
-            ["AccentTint"] = [C("#33FF2DF1")],
-            ["AccentTintHover"] = [C("#40FF2DF1")],
-            ["AccentTintStrong"] = [C("#4DFF2DF1")],
-            ["HoverFill"] = [C("#1FFF2DF1")],
-            ["RailBg"] = [C("#07000F")],
-            ["RailLine"] = [C("#38FF2DF1")],
-            ["TextSoft"] = [C("#D2C3EE")],
-            ["AccentHover"] = [C("#149FF4FF")],
-            ["TitleBarBg"] = [C("#E60A001A")],
-            ["StagePlain"] = [C("#00000000"), C("#00000000")],
-            ["StageGlow"] = [C("#00000000"), C("#00000000")],
-            ["BarBg"] = [C("#F00C001E"), C("#07000F")],
-            ["ChipBg"] = [C("#A0100024")],
-            ["HeroBg"] = [C("#E6140030")],
-            ["HeroHoverBg"] = [C("#F52A0A4A")],
-            ["HeroLine"] = [C("#8000D7FF")],
-            ["TileBg"] = [C("#A0100024")],
-            ["TileLine"] = [C("#8000D7FF")],
-            ["SoftFill"] = [C("#24FF2DF1")],
-            ["SoftFillHover"] = [C("#38FF2DF1")],
-            ["LoginBg"] = [C("#00000000"), C("#00000000"), C("#55000000")],
-            ["BannerFallback"] = [C("#5800FF"), C("#FF2DF1")],
-            ["TabGlow"] = [C("#4D00D7FF"), C("#0000D7FF")],
-            ["ToggleSwitchFillOn"] = [C("#FF2DF1")],
-            ["ToggleSwitchFillOnPointerOver"] = [C("#FF8CF0")],
-            ["ToggleSwitchFillOnPressed"] = [C("#B000C8")],
-            ["ToggleSwitchKnobFillOn"] = [C("#FFFFFF")],
-            ["ToggleSwitchKnobFillOnPointerOver"] = [C("#FFFFFF")],
-            ["ToggleSwitchKnobFillOnPressed"] = [C("#FFFFFF")],
-            ["ToggleSwitchStrokeOff"] = [C("#8000D7FF")],
-            ["ToggleSwitchKnobFillOff"] = [C("#D2C3EE")],
-        };
-
-        /// <summary>Derin Karanlık: kömür siyahı ve koyu deniz yeşili yüzeyler, sculk camgöbeği (#2FE6D8) vurgu.</summary>
-        private static readonly Dictionary<string, Color[]> DerinColors = new()
-        {
-            ["Bg"] = [C("#030809")],
-            ["Panel"] = [C("#F2061416")],
-            ["SidePanel"] = [C("#99020A0C")],
-            ["Surface"] = [C("#E6081C1F")],
-            ["Raised"] = [C("#F00C2629")],
-            ["Card"] = [C("#CC051315")],
-            ["Glass"] = [C("#E6061416")],
-            ["Hover"] = [C("#1A2FE6D8")],
-            ["Line"] = [C("#2E2FE6D8")],
-            ["LineStrong"] = [C("#5C2FE6D8")],
-            ["ButtonBg"] = [C("#D1061618")],
-            ["ButtonLine"] = [C("#662FE6D8")],
-            ["Text"] = [C("#DCF6F2")],
-            ["Muted"] = [C("#A9CBC7")],
-            ["Dim"] = [C("#7AA19D")],
-            ["Accent"] = [C("#2FE6D8")],
-            ["AccentHi"] = [C("#8FF7EE")],
-            ["AccentSoft"] = [C("#262FE6D8")],
-            ["AccentInk"] = [C("#021F1D")],
-            ["PrimaryFill"] = [C("#45F0E2"), C("#1FBFB3")],
-            ["PrimaryFillHover"] = [C("#7AF5EB"), C("#2FD6CA")],
-            ["Ok"] = [C("#8FF7EE")],
-            ["Warn"] = [C("#F2D27A")],
-            ["Error"] = [C("#FF6B6B")],
-            // Kütüphane iskeletinin tonları: bu temanın kendi renklerinden
-            ["CardLine"] = [C("#2E2FE6D8")],
-            ["ControlLine"] = [C("#2E2FE6D8")],
-            ["CardLineHover"] = [C("#5C2FE6D8")],
-            ["CardLineStrong"] = [C("#5C2FE6D8")],
-            ["AccentTint"] = [C("#262FE6D8")],
-            ["AccentTintHover"] = [C("#402FE6D8")],
-            ["AccentTintStrong"] = [C("#4D2FE6D8")],
-            ["HoverFill"] = [C("#1A2FE6D8")],
-            ["RailBg"] = [C("#030809")],
-            ["RailLine"] = [C("#2E2FE6D8")],
-            ["TextSoft"] = [C("#A9CBC7")],
-            ["AccentHover"] = [C("#148FF7EE")],
-            ["TitleBarBg"] = [C("#E6030A0C")],
-            ["StagePlain"] = [C("#00000000"), C("#00000000")],
-            ["StageGlow"] = [C("#00000000"), C("#00000000")],
-            ["BarBg"] = [C("#F0030C0E"), C("#020607")],
-            ["ChipBg"] = [C("#A6041012")],
-            ["HeroBg"] = [C("#E6061618")],
-            ["HeroHoverBg"] = [C("#F50C2A2C")],
-            ["HeroLine"] = [C("#662FE6D8")],
-            ["TileBg"] = [C("#A6041012")],
-            ["TileLine"] = [C("#662FE6D8")],
-            ["SoftFill"] = [C("#1F2FE6D8")],
-            ["SoftFillHover"] = [C("#332FE6D8")],
-            ["LoginBg"] = [C("#00000000"), C("#00000000"), C("#66000000")],
-            ["BannerFallback"] = [C("#0C3A3C"), C("#031012")],
-            ["TabGlow"] = [C("#3D2FE6D8"), C("#002FE6D8")],
-            ["ToggleSwitchFillOn"] = [C("#2FE6D8")],
-            ["ToggleSwitchFillOnPointerOver"] = [C("#8FF7EE")],
-            ["ToggleSwitchFillOnPressed"] = [C("#1FA89F")],
-            ["ToggleSwitchKnobFillOn"] = [C("#021F1D")],
-            ["ToggleSwitchKnobFillOnPointerOver"] = [C("#021F1D")],
-            ["ToggleSwitchKnobFillOnPressed"] = [C("#021F1D")],
-            ["ToggleSwitchStrokeOff"] = [C("#662FE6D8")],
-            ["ToggleSwitchKnobFillOff"] = [C("#A9CBC7")],
-        };
-
-        /// <summary>Grafit: nötr koyu gri yüzeyler, tek vurgu limon yeşili (#C5F04A); ışıltı ve gölge yok.</summary>
-        private static readonly Dictionary<string, Color[]> GrafitColors = new()
-        {
-            ["Bg"] = [C("#101112")],
-            ["Panel"] = [C("#18191B")],
-            ["SidePanel"] = [C("#141516")],
-            ["Surface"] = [C("#1F2124")],
-            ["Raised"] = [C("#26282B")],
-            ["Card"] = [C("#18191B")],
-            ["Glass"] = [C("#18191B")],
-            ["Hover"] = [C("#14FFFFFF")],
-            ["Line"] = [C("#2C2F33")],
-            ["LineStrong"] = [C("#3A3D42")],
-            ["ButtonBg"] = [C("#1F2124")],
-            ["ButtonLine"] = [C("#3A3D42")],
-            ["Text"] = [C("#EDEEEF")],
-            ["Muted"] = [C("#B9BCC1")],
-            ["Dim"] = [C("#A3A7AD")],
-            ["Accent"] = [C("#C5F04A")],
-            ["AccentHi"] = [C("#DAFF7A")],
-            ["AccentSoft"] = [C("#29C5F04A")],
-            ["AccentInk"] = [C("#101112")],
-            ["PrimaryFill"] = [C("#C5F04A"), C("#C5F04A")],
-            ["PrimaryFillHover"] = [C("#D6FF66"), C("#D6FF66")],
-            ["Ok"] = [C("#C5F04A")],
-            ["Warn"] = [C("#F2C14E")],
-            ["Error"] = [C("#FF6B5E")],
-            // Kütüphane iskeletinin tonları: bu temanın kendi renklerinden
-            ["CardLine"] = [C("#2C2F33")],
-            ["ControlLine"] = [C("#2C2F33")],
-            ["CardLineHover"] = [C("#3A3D42")],
-            ["CardLineStrong"] = [C("#3A3D42")],
-            ["AccentTint"] = [C("#29C5F04A")],
-            ["AccentTintHover"] = [C("#40C5F04A")],
-            ["AccentTintStrong"] = [C("#4DC5F04A")],
-            ["HoverFill"] = [C("#14FFFFFF")],
-            ["RailBg"] = [C("#101112")],
-            ["RailLine"] = [C("#2C2F33")],
-            ["TextSoft"] = [C("#B9BCC1")],
-            ["AccentHover"] = [C("#14DAFF7A")],
-            ["TitleBarBg"] = [C("#101112")],
-            ["StagePlain"] = [C("#1F2124"), C("#18191B")],
-            ["StageGlow"] = [C("#00000000"), C("#00000000")],
-            ["BarBg"] = [C("#00000000"), C("#00000000")],
-            ["ChipBg"] = [C("#1F2124")],
-            ["HeroBg"] = [C("#00000000")],
-            ["HeroHoverBg"] = [C("#1F2124")],
-            ["HeroLine"] = [C("#3A3D42")],
-            ["TileBg"] = [C("#00000000")],
-            ["TileLine"] = [C("#3A3D42")],
-            ["SoftFill"] = [C("#1F2124")],
-            ["SoftFillHover"] = [C("#2C2F33")],
-            ["LoginBg"] = [C("#00000000"), C("#00000000"), C("#00000000")],
-            ["BannerFallback"] = [C("#2C2F33"), C("#18191B")],
-            ["TabGlow"] = [C("#00000000"), C("#00000000")],
-            ["ToggleSwitchFillOn"] = [C("#C5F04A")],
-            ["ToggleSwitchFillOnPointerOver"] = [C("#D6FF66")],
-            ["ToggleSwitchFillOnPressed"] = [C("#A8D134")],
-            ["ToggleSwitchKnobFillOn"] = [C("#101112")],
-            ["ToggleSwitchKnobFillOnPointerOver"] = [C("#101112")],
-            ["ToggleSwitchKnobFillOnPressed"] = [C("#101112")],
-            ["ToggleSwitchStrokeOff"] = [C("#3A3D42")],
-            ["ToggleSwitchKnobFillOff"] = [C("#B9BCC1")],
-        };
-
-        private static readonly Dictionary<string, Color> GrafitSystem = new()
-        {
-            ["SystemAccentColor"] = C("#C5F04A"),
-            ["SystemAccentColorLight1"] = C("#D6FF66"),
-            ["SystemAccentColorDark1"] = C("#A8D134"),
-            ["AccentColor"] = C("#C5F04A"),
-            ["BgColor"] = C("#101112"),
-        };
-
-        private static readonly Dictionary<string, Color> UfukSystem = new()
-        {
-            ["SystemAccentColor"] = C("#FF2DF1"),
-            ["SystemAccentColorLight1"] = C("#FF8CF0"),
-            ["SystemAccentColorDark1"] = C("#B000C8"),
-            ["AccentColor"] = C("#FF2DF1"),
-            ["BgColor"] = C("#07000F"),
-        };
-
-        private static readonly Dictionary<string, Color> DerinSystem = new()
-        {
-            ["SystemAccentColor"] = C("#2FE6D8"),
-            ["SystemAccentColorLight1"] = C("#8FF7EE"),
-            ["SystemAccentColorDark1"] = C("#1FA89F"),
-            ["AccentColor"] = C("#2FE6D8"),
-            ["BgColor"] = C("#030809"),
-        };
-
-        /// <summary>Köşe yuvarlaklığı: Meşale köşeli, Ufuk yumuşak, Derin Karanlık hafif (taş gibi).</summary>
-        private static (double Control, double Overlay) Corners(string name) => name switch
-        {
-            Ufuk => (8, 12),
-            Derin => (6, 8),
-            Grafit => (8, 12),
-            Kutuphane => (10, 14),
-            _ => (0, 0),
-        };
-
-        private static Color C(string hex) => Color.Parse(hex);
-
-        public static string Normalize(string? name) => All.Contains(name) ? name! : Mesale;
+        public static string Normalize(string? name) => All.Contains(name) ? name! : Kutuphane;
 
         public static void Apply(string? name)
         {
@@ -294,29 +41,6 @@ namespace VuluLauncher
             if (app == null) return;
             name = Normalize(name);
             var res = app.Resources;
-
-            // Meşale'nin kendi renkleri bir kez saklanır (geri dönmek için)
-            if (_mesale == null)
-            {
-                _mesale = new();
-                foreach (var key in UfukColors.Keys)
-                    if (res.TryGetResource(key, null, out var value) && Read(value) is { } colors) _mesale[key] = colors;
-                _mesaleSystem = new();
-                foreach (var key in UfukSystem.Keys)
-                    if (res.TryGetResource(key, null, out var value) && value is Color c) _mesaleSystem[key] = c;
-            }
-
-            var (palette, system) = name switch
-            {
-                Ufuk => (UfukColors, UfukSystem),
-                Derin => (DerinColors, DerinSystem),
-                Grafit => (GrafitColors, GrafitSystem),
-                _ => (_mesale, _mesaleSystem!),
-            };
-            foreach (var (key, colors) in palette)
-                if (res.TryGetResource(key, null, out var value)) Write(value, colors);
-            // Fluent'in vurgu renkleri Color değeridir (fırça değil): yeniden konur, DynamicResource ile bağlı olanlar güncellenir
-            foreach (var (key, color) in system) res[key] = color;
             var (control, overlay) = Corners(name);
             res["ControlCornerRadius"] = new CornerRadius(control);
             res["OverlayCornerRadius"] = new CornerRadius(overlay);
@@ -331,17 +55,14 @@ namespace VuluLauncher
 
             bool changed = Current != name;
             Current = name;
-            ThemeState.Instance.IsUfuk = name == Ufuk;
-            ThemeState.Instance.HasScene = name is Ufuk or Derin;
-            ThemeState.Instance.IsGrafit = name == Grafit;
             ThemeState.Instance.IsKutuphane = name == Kutuphane;
             if (changed) Changed?.Invoke();
         }
 
         private static Styles? _appStyles;
 
-        /// <summary>Bütün temaların stil dosyaları; her biri yalnızca pencere kendi sınıfını taşırken geçerlidir.</summary>
-        private static Styles ThemeStyles() => new() { new Views.UfukStyles(), new Views.DerinStyles(), new Views.GrafitStyles(), new Views.KutuphaneStyles() };
+        /// <summary>Temaların stil dosyaları; her biri yalnızca pencere kendi sınıfını taşırken geçerlidir.</summary>
+        private static Styles ThemeStyles() => new() { new Views.KutuphaneStyles() };
 
         /// <summary>
         /// Kendi stilleri olan sayfalar (Oyna) için: sayfanın stilleri uygulamanınkinden önce geldiği için temaya özel
@@ -355,24 +76,6 @@ namespace VuluLauncher
         private static void MarkWith(Window window, string name)
         {
             foreach (var theme in All) if (theme != Mesale) window.Classes.Set(theme, theme == name);
-        }
-
-        private static Color[]? Read(object? brush) => brush switch
-        {
-            SolidColorBrush s => [s.Color],
-            GradientBrush g => g.GradientStops.Select(x => x.Color).ToArray(),
-            _ => null,
-        };
-
-        private static void Write(object? brush, Color[] colors)
-        {
-            switch (brush)
-            {
-                case SolidColorBrush s when colors.Length > 0: s.Color = colors[0]; break;
-                case GradientBrush g:
-                    for (int i = 0; i < g.GradientStops.Count && i < colors.Length; i++) g.GradientStops[i].Color = colors[i];
-                    break;
-            }
         }
     }
 }
