@@ -463,6 +463,7 @@ namespace VuluLauncher
                 await Task.Run(() =>
                 {
                     using var zip = ZipFile.OpenRead(zipPath);
+                    ZipGuard.Check(zip);
                     foreach (var entry in zip.Entries)
                     {
                         if (entry.FullName.EndsWith('/')) continue;

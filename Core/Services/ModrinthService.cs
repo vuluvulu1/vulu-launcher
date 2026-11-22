@@ -614,6 +614,7 @@ namespace VuluLauncher
 
         internal static void ExtractOverrides(ZipArchive zip, string prefix, string instanceDir)
         {
+            ZipGuard.Check(zip);
             foreach (var entry in zip.Entries)
             {
                 if (!entry.FullName.StartsWith(prefix, StringComparison.Ordinal) || entry.FullName.EndsWith('/')) continue;

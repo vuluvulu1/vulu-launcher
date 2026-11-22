@@ -64,6 +64,15 @@ namespace VuluLauncher.Tests
         }
 
         [Fact]
+        public void ZipGuardRejectsHugeUnpackedSize()
+        {
+            string path = Zip("Buyuk.zip", ("a.txt", new string('x', 5000)));
+            using var zip = ZipFile.OpenRead(path);
+            ZipGuard.Check(zip);                                                   // varsayılan sınırın çok altında
+            Assert.Throws<InvalidDataException>(() => ZipGuard.Check(zip, maxBytes: 1000));
+        }
+
+        [Fact]
         public async Task ImportsPrismExport()
         {
             string pack = Zip("Prism.zip",

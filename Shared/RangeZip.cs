@@ -91,15 +91,26 @@ namespace VuluShared
                 if (end > block.Length) throw new InvalidDataException($"Zip'te {entry.Name} eksik okundu.");
             }
 
-            long before = output.CanSeek ? output.Position : 0;
             using var data = new MemoryStream(block, start, (int)entry.CompressedSize, writable: false);
-            if (entry.Method == 0) await data.CopyToAsync(output, token);
-            else
+            Stream source = entry.Method == 0 ? data : new DeflateStream(data, CompressionMode.Decompress);
+            try
             {
-                await using var inflate = new DeflateStream(data, CompressionMode.Decompress);
-                await inflate.CopyToAsync(output, token);
+                // Açılan veri girdinin bildirdiği boyutu aşamaz (küçük parçanın açılınca diski doldurmasına karşı)
+                var buffer = new byte[81920];
+                long written = 0;
+                int read;
+                while ((read = await source.ReadAsync(buffer, token)) > 0)
+                {
+                    written += read;
+                    if (written > entry.Size) throw new InvalidDataException($"{entry.Name} beklenenden büyük.");
+                    await output.WriteAsync(buffer.AsMemory(0, read), token);
+                }
+                if (written != entry.Size) throw new InvalidDataException($"{entry.Name} beklenen boyutta değil.");
             }
-            if (output.CanSeek && output.Position - before != entry.Size) throw new InvalidDataException($"{entry.Name} beklenen boyutta değil.");
+            finally
+            {
+                if (source != data) await source.DisposeAsync();
+            }
         }
 
         /// <summary>HTTP ile bir bayt aralığı; sunucu aralık yerine bütün dosyayı gönderirse (Range yok) hata.</summary>

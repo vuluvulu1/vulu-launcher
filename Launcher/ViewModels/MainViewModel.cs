@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -728,7 +728,7 @@ namespace VuluLauncher.ViewModels
         /// <summary>Arkadaşın mesajla gönderdiği paketi kurar; kurulunca Kütüphane'de seçilir. Karta yazılacak not döner.</summary>
         public async Task<string?> InstallFriendPackAsync(string shareId, string name)
         {
-            if (!await ConfirmAsync("Paketi kur", L.F("{0} yeni bir paket olarak kurulsun mu? Modlar CurseForge ve Modrinth'ten iner.", name), "Kur")) return null;
+            if (!await ConfirmAsync("Paketi kur", L.F("{0} yeni bir paket olarak kurulsun mu? Modlar CurseForge ve Modrinth'ten iner. Paketteki modlar bilgisayarında çalışır; yalnızca tanıdığın ve güvendiğin kişilerden gelen paketleri kur.", name), "Kur")) return null;
             Home.AppendLog($"{name} kuruluyor…", "accent");
             try
             {
