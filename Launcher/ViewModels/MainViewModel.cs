@@ -336,7 +336,7 @@ namespace VuluLauncher.ViewModels
                 if (init.Get("session") is { ValueKind: JsonValueKind.Object } session)
                 {
                     // Pencere bildirim alanından geri açıldı: oturum açık, perde ve rehber atlanır
-                    Home.GameRunning = init.Bool("gameRunning");
+                    Home.SetRunning(init.Items("runningIds").Select(r => r.GetString() ?? ""));
                     await EnterAsync(session, resume: true);
                     return;
                 }
@@ -538,7 +538,7 @@ namespace VuluLauncher.ViewModels
             JsonElement action;
             try { action = await _core.Call("app.takeAction"); } catch { return; }
             if (action.ValueKind != JsonValueKind.Object) return;
-            if (Home.GameRunning) { Home.AppendLog("Oyun zaten açık.", "warn"); return; }
+            if (Home.Launching) { Home.AppendLog("Bir paket açılıyor; bitince yeniden dene.", "warn"); return; }
             string id = action.Text("id") ?? "";
             if (action.Text("kind") == "play")
             {

@@ -62,7 +62,7 @@ namespace VuluLauncher
         private async Task<object?> SwitchModpackAsync(string id, string versionId)
         {
             RequireLogin();
-            if (_game.IsRunning) throw new InvalidOperationException("Oyun açıkken paketin sürümü değiştirilemez.");
+            if (_game.IsRunningFor(id)) throw new InvalidOperationException("Paket açıkken sürümü değiştirilemez.");
             var meta = RequireCustomInstance(id);
             List<ManualDownload> manual = new();
             if (IsCurseForgePack(meta)) manual = await _curseforge.SwitchAsync(meta, RequireCfId(versionId, "sürüm"));

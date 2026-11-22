@@ -15,8 +15,8 @@ namespace VuluLauncher
         private static readonly TimeSpan PackCheckInterval = TimeSpan.FromMinutes(20);
 
         private readonly object _playGate = new();
-        private string? _playId;
-        private DateTime _playMark;
+        /// <summary>Açık oyunlar ve sürelerinin son kaydedildiği an (aynı anda birden çok oyun olabilir).</summary>
+        private readonly Dictionary<string, DateTime> _playMarks = new();
         private Timer? _playTimer;
 
         private readonly object _actionGate = new();
@@ -168,13 +168,12 @@ namespace VuluLauncher
         /// <summary>Oyun açıldı: süre dakikada bir kaydedilir (launcher beklenmedik kapanırsa da kaybolmasın).</summary>
         private void StartPlayTime(string instanceId)
         {
-            StopPlayTime();
+            StopPlayTime(instanceId);
             lock (_playGate)
             {
-                _playId = instanceId;
-                _playMark = DateTime.UtcNow;
+                _playMarks[instanceId] = DateTime.UtcNow;
                 PlayTimeStore.Add(instanceId, TimeSpan.Zero, newSession: true);
-                _playTimer = new Timer(_ => FlushPlayTime(), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                _playTimer ??= new Timer(_ => FlushPlayTime(), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             }
         }
 
@@ -182,23 +181,25 @@ namespace VuluLauncher
         {
             lock (_playGate)
             {
-                if (_playId == null) return;
                 var now = DateTime.UtcNow;
-                try { PlayTimeStore.Add(_playId, now - _playMark, newSession: false); _playMark = now; }
-                catch { /* bir sonraki dakikada yeniden denenir */ }
+                foreach (var (id, mark) in _playMarks.ToList())
+                {
+                    try { PlayTimeStore.Add(id, now - mark, newSession: false); _playMarks[id] = now; }
+                    catch { /* bir sonraki dakikada yeniden denenir */ }
+                }
             }
         }
 
-        private void StopPlayTime()
+        /// <summary>Paketin süresi kaydedilip sayaçtan çıkar; kimlik yoksa bütün açık oyunlarınki.</summary>
+        private void StopPlayTime(string? instanceId = null)
         {
             FlushPlayTime();
             bool wasPlaying;
             lock (_playGate)
             {
-                wasPlaying = _playId != null;
-                _playTimer?.Dispose();
-                _playTimer = null;
-                _playId = null;
+                wasPlaying = instanceId == null ? _playMarks.Count > 0 : _playMarks.ContainsKey(instanceId);
+                if (instanceId == null) _playMarks.Clear(); else _playMarks.Remove(instanceId);
+                if (_playMarks.Count == 0) { _playTimer?.Dispose(); _playTimer = null; }
             }
             if (wasPlaying) _ = SyncPlaytimeAsync();
         }

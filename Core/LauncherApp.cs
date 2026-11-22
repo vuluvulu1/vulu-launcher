@@ -18,9 +18,12 @@ namespace VuluLauncher
         private readonly ModrinthService _modrinth;
         private readonly CurseForgeService _curseforge;
         private readonly RadioService _radio = new();
-        private readonly GameLauncher _game;
+        private readonly GameSet _game;
         /// <summary>Süren açılışın iptali (game.stop).</summary>
-        private CancellationTokenSource? _playCancel;
+        /// <summary>Açılmakta olan paketlerin Durdur'u (paket kimliğine göre).</summary>
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, CancellationTokenSource> _playCancel = new();
+        /// <summary>Açık oyunların bilgisi: biri kapanınca presence ve Discord açık kalan oyunu gösterir.</summary>
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, (LaunchTarget Target, string? PackId, string? Join)> _playing = new();
         private readonly DiscordPresence _discord = new();
 
         private VuluShared.ReleaseManifest? _latestLauncher;
@@ -37,14 +40,25 @@ namespace VuluLauncher
             _java = new JavaManager(Log);
             _modrinth = new ModrinthService(Log);
             _curseforge = new CurseForgeService(_api, Log);
-            _game = new GameLauncher(Log, _java, host.GameRunner);
-            _game.BootProgress += status => _bridge.Emit("gameBoot", new { phase = status.Phase, elapsedMs = status.ElapsedMs, expectedMs = status.ExpectedMs });
-            _game.Ready += ms => { _bridge.Emit("gameReady", new { ms }); OnGameWindow(); };
-            _game.Exited += () =>
+            _game = new GameSet(Log, _java, host.GameRunner);
+            _game.BootProgress += (id, status) => _bridge.Emit("gameBoot", new { instanceId = id, phase = status.Phase, elapsedMs = status.ElapsedMs, expectedMs = status.ExpectedMs });
+            _game.Ready += (id, ms) => { _bridge.Emit("gameReady", new { instanceId = id, ms }); OnGameWindow(); };
+            _game.Exited += (id, exit) =>
             {
+                StopPlayTime(id);
+                _playing.TryRemove(id, out _);
+                _bridge.Emit("gameExited", new { instanceId = id, running = _game.RunningIds });
+                _ = ReportCrashIfAnyAsync(exit);
+                // Başka oyun açık kaldıysa presence ve Discord onu gösterir
+                if (_playing.Values.LastOrDefault() is { Target: not null } other)
+                {
+                    PresencePlaying(other.Target, other.PackId, other.Join);
+                    _discord.ShowPlaying(other.Target.Name, other.Target.McVersion, other.Target.Loader, null, null, other.Join != null);
+                    return;
+                }
                 Interlocked.Exchange(ref _afterWindow, null);
-                StopPlayTime(); _bridge.Emit("gameExited"); _discord.ShowIdle(); PresenceIdle(); _ = ReportCrashIfAnyAsync();
-                // Bellek için simge durumuna alındıysa oyun kapanınca launcher geri gelir
+                _discord.ShowIdle(); PresenceIdle();
+                // Bellek için simge durumuna alındıysa son oyun kapanınca launcher geri gelir
                 if (Interlocked.Exchange(ref _hidForMemory, 0) == 1) _host.BringToFront();
             };
             // Arayüz hangi sayfada olunduğunu (ve Oyna'da seçili instance'ı) bildirir
@@ -92,7 +106,14 @@ namespace VuluLauncher
 
             _bridge.On("game.play", async args => await PlayAsync(args.Str("instanceId"), args.Int("ramGb"), args.Str("mcVersion"), args.Bool("ignoreMissing"), args.Str("join"), args.Bool("ignoreFiles")));
             _bridge.On("mods.installMissing", async args => await InstallMissingAsync(RequireGameDevice(args.Str("instanceId")), args));
-            _bridge.On("game.stop", _ => { _playCancel?.Cancel(); _game.Stop(); return Task.FromResult<object?>(null); });
+            // Durdur: paketin açılışı ya da oyunu; kimlik verilmezse hepsi
+            _bridge.On("game.stop", args =>
+            {
+                string id = args.Str("instanceId");
+                foreach (var (key, cts) in _playCancel) if (id.Length == 0 || key == id) cts.Cancel();
+                _game.Stop(id.Length == 0 ? null : id);
+                return Task.FromResult<object?>(null);
+            });
             _bridge.On("game.versions", async _ => { RequireLogin(); return await LoaderCatalog.MinecraftVersionsAsync(); });
 
             RegisterInstanceCommands();
@@ -255,7 +276,8 @@ namespace VuluLauncher
                 settings = AppSettings.Current,
                 // Pencere bildirim alanından geri açıldıysa oturum hâlâ açıktır: arayüz giriş ekranını atlayıp devam eder
                 session = string.IsNullOrEmpty(_login.Token) ? null : new { username = _login.Username, isAdmin = _login.IsAdmin },
-                gameRunning = _game.IsRunning
+                gameRunning = _game.IsRunning,
+                runningIds = _game.RunningIds
             };
         }
 
@@ -558,10 +580,11 @@ namespace VuluLauncher
                 return new { started = false, error = "Bu cihazda oyun başlatma henüz desteklenmiyor." };
 
             // Durdur: açılışın her aşaması (dosya kontrolü, bağımlılıklar, oturum, skin) iptal edilebilir; indirmede GameLauncher.Stop
+            if (_game.IsRunningFor(instanceId)) return new { started = false, error = "Bu paket zaten açık." };
             var cancel = new CancellationTokenSource();   // bırakılmaz: Durdur sonradan basılsa da (açılış bittikten sonra) Cancel güvenli
-            _playCancel = cancel;
+            _playCancel[instanceId] = cancel;
             var token = cancel.Token;
-            using var stopOnCancel = token.Register(() => _game.Stop());
+            using var stopOnCancel = token.Register(() => _game.Stop(instanceId));
             var timer = new PhaseTimer("Oyun açılışı");
             // vulu paketleri vulu oturumu ve skinleriyle açılır; diğerleri Microsoft hesabı bağlıysa gerçek oturumla
             var microsoftTask = UsesVuluSession(instanceId) ? Task.FromResult<MicrosoftSession?>(null) : MicrosoftSessionForGameAsync();
@@ -603,11 +626,12 @@ namespace VuluLauncher
                     throw new InvalidOperationException("Sunucu adresi geçersiz.");
 
                 token.ThrowIfCancellationRequested();
-                await _game.LaunchAsync(target, _login.Username, ramGb, skins, join, timer, microsoft);
+                await _game.LaunchAsync(instanceId, target, _login.Username, ramGb, skins, join, timer, microsoft, token);
                 timer.Write();
                 StartPlayTime(instanceId);
-                if (!_game.IsRunning) StopPlayTime();   // oyun hemen kapandıysa kapanış olayı sayaçtan önce gelmiş olabilir
+                if (!_game.IsRunningFor(instanceId)) StopPlayTime(instanceId);   // oyun hemen kapandıysa kapanış olayı sayaçtan önce gelmiş olabilir
                 string? packId = instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(instanceId[InstancePrefix.Length..])?.SharedPackId : null;
+                if (_game.IsRunningFor(instanceId)) _playing[instanceId] = (target, packId, join);
                 PresencePlaying(target, packId, join);
                 _discord.ShowPlaying(target.Name, target.McVersion, target.Loader, await PackImageUrlAsync(instanceId), await ServerNameAsync(join), join != null);
 
@@ -656,6 +680,10 @@ namespace VuluLauncher
             {
                 Log(ex.Message, "error");
                 return new { started = false, error = ex.Message };
+            }
+            finally
+            {
+                _playCancel.TryRemove(new KeyValuePair<string, CancellationTokenSource>(instanceId, cancel));
             }
         }
 

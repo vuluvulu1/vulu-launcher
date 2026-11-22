@@ -329,6 +329,14 @@
                                                 HorizontalAlignment="Left" VerticalAlignment="Top">
                                             <TextBlock Text="Güncelleme" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentHi}" />
                                         </Border>
+                                        <!-- Bu paketin oyunu açık -->
+                                        <Border IsVisible="{Binding IsRunning}" Background="#CC0B0A09" CornerRadius="6" Padding="8,3" Margin="10"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top">
+                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                <Ellipse Width="7" Height="7" Fill="#4ADE80" VerticalAlignment="Center" />
+                                                <TextBlock Text="Açık" FontSize="11" FontWeight="SemiBold" Foreground="#C8F7D6" />
+                                            </StackPanel>
+                                        </Border>
                                         <!-- Üstüne gelince: doğrudan başlat (kapağın kendisi sayfayı açar) -->
                                         <Button Classes="pplay" Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).PlayItemCommand}" CommandParameter="{Binding}"
                                                 ToolTip.Tip="Oyna" AutomationProperties.Name="Oyna">

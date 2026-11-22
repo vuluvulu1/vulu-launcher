@@ -22,7 +22,7 @@ namespace VuluLauncher
         private async Task<object?> VerifyInstanceAsync(string id)
         {
             RequireLogin();
-            if (_game.IsRunning) throw new InvalidOperationException("Oyun açıkken dosyalar doğrulanamaz.");
+            if (_game.IsRunning) throw new InvalidOperationException("Oyun açıkken dosyalar doğrulanamaz (oyun dosyaları paketler arasında ortak).");
             var (target, _) = ResolveTarget(id);
             var meta = id.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(id[InstancePrefix.Length..]) : null;
             string dir = Path.Combine(AppPaths.Instances, target.Folder);

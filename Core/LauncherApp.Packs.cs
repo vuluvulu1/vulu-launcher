@@ -327,13 +327,12 @@ namespace VuluLauncher
         private async Task<object?> UpdatePackAsync(string id)
         {
             RequireLogin();
-            if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken paket güncellenemez.");
-
             var store = Packs;
             var pack = await store.GetAsync(id) ?? throw new InvalidOperationException("Paket bulunamadı.");
             ValidatePackVersions(pack);
             var meta = InstanceStore.List().FirstOrDefault(m => m.SharedPackId == id)
                 ?? throw new InvalidOperationException($"{pack.Name} kurulu değil.");
+            if (_game.IsRunningFor(InstancePrefix + meta.Folder)) throw new InvalidOperationException("Paket açıkken güncellenemez; önce oyunu kapat.");
 
             Log($"{pack.Name} güncelleniyor (rev {meta.SharedPackRevision} → {pack.Revision})...", "accent");
             // Paket config'leri ve modları değiştirebilir: önce dünyalar otomatik yedeklenir

@@ -87,7 +87,7 @@ namespace VuluLauncher
         private async Task<object?> InstallMissingAsync(string instanceId, JsonElement args)
         {
             var meta = RequireCustomInstance(instanceId);
-            if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken mod kurulamaz.");
+            if (_game.IsRunningFor(instanceId)) throw new InvalidOperationException("Paket açıkken mod kurulamaz.");
 
             var queue = new List<(string Source, string ProjectId)>();
             if (args.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array)

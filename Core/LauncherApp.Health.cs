@@ -34,9 +34,8 @@ namespace VuluLauncher
 
         // ── Çökme yardımcısı ──────────────────────────────────────────────
         /// <summary>Oyun kapanınca çağrılır: çöktüyse nedenini bulup arayüze sade bir özet gönderir.</summary>
-        private async Task ReportCrashIfAnyAsync()
+        private async Task ReportCrashIfAnyAsync(GameExit? exit)
         {
-            var exit = _game.LastExit;
             if (exit == null) return;
             try
             {
@@ -142,7 +141,7 @@ namespace VuluLauncher
         private object SetContentEnabled(string id, string file, bool enabled)
         {
             var meta = RequireCustomInstance(id);
-            if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken modlar açılıp kapatılamaz.");
+            if (_game.IsRunningFor(id)) throw new InvalidOperationException("Paket açıkken modlar açılıp kapatılamaz.");
             string normalized = file.Replace('\\', '/');
             string dir = InstanceStore.PathOf(meta.Folder);
             string baseFile = normalized.EndsWith(DisabledSuffix, StringComparison.OrdinalIgnoreCase) ? normalized[..^DisabledSuffix.Length] : normalized;
@@ -265,7 +264,7 @@ namespace VuluLauncher
         private async Task<object?> UpdateModAsync(string instanceId, string projectId, string versionId, string source = "")
         {
             var meta = RequireCustomInstance(instanceId);
-            if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken mod güncellenemez.");
+            if (_game.IsRunningFor(instanceId)) throw new InvalidOperationException("Paket açıkken mod güncellenemez.");
             bool cf = source == CurseForgeService.Source;
             if (!cf && (!Regex.IsMatch(projectId, "^[A-Za-z0-9]{6,16}$") || !Regex.IsMatch(versionId, "^[A-Za-z0-9]{6,16}$")))
                 throw new InvalidOperationException("Geçersiz sürüm.");
@@ -307,7 +306,7 @@ namespace VuluLauncher
         private object RollbackMod(string instanceId, string projectId, string source)
         {
             var meta = RequireCustomInstance(instanceId);
-            if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken mod değiştirilemez.");
+            if (_game.IsRunningFor(instanceId)) throw new InvalidOperationException("Paket açıkken mod değiştirilemez.");
             var record = ModBackups.Rollback(InstanceStore.PathOf(meta.Folder), meta, projectId, source);
             InstanceStore.Save(meta);
             Log($"{record.Title} eski sürümüne döndü ({record.From}).", "ok");

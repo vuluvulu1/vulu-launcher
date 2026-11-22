@@ -63,7 +63,7 @@ namespace VuluLauncher
                         backups,
                     };
                 }).ToList();
-            return new { worlds, running = _game.IsRunning };
+            return new { worlds, running = _game.IsRunningFor(id) };
         }
 
         private static long DirSize(DirectoryInfo dir) =>
@@ -72,7 +72,7 @@ namespace VuluLauncher
         private object BackupWorld(string id, string world, string kind)
         {
             RequireLogin();
-            if (_game.IsRunning && kind != "otomatik") throw new InvalidOperationException("Oyun açıkken dünya yedeklenemez; önce oyunu kapat.");
+            if (_game.IsRunningFor(id) && kind != "otomatik") throw new InvalidOperationException("Oyun açıkken dünya yedeklenemez; önce oyunu kapat.");
             string name = WorldBackups.Backup(Path.Combine(InstanceDirOf(id), "saves", SafeWorld(world)), BackupDirOf(id, world), kind);
             Log($"{world} yedeklendi ({name}).", "ok");
             return new { name };
@@ -81,7 +81,7 @@ namespace VuluLauncher
         private object RestoreWorld(string id, string world, string backup)
         {
             RequireLogin();
-            if (_game.IsRunning) throw new InvalidOperationException("Oyun açıkken dünya geri yüklenemez; önce oyunu kapat.");
+            if (_game.IsRunningFor(id)) throw new InvalidOperationException("Bu paket açıkken dünya geri yüklenemez; önce oyunu kapat.");
             if (!BackupName.IsMatch(backup)) throw new InvalidOperationException("Geçersiz yedek.");
             string backupDir = BackupDirOf(id, world);
             WorldBackups.Restore(Path.Combine(backupDir, backup), Path.Combine(InstanceDirOf(id), "saves", SafeWorld(world)), backupDir);
@@ -125,7 +125,7 @@ namespace VuluLauncher
         private object DuplicateInstance(string id, string name)
         {
             var source = RequireCustomInstance(id);
-            if (_game.IsRunning) throw new InvalidOperationException("Oyun açıkken instance çoğaltılamaz.");
+            if (_game.IsRunningFor(id)) throw new InvalidOperationException("Bu paket açıkken çoğaltılamaz.");
             var copy = InstanceStore.Create(string.IsNullOrWhiteSpace(name) ? source.Name + " (kopya)" : name, source.McVersion, source.Loader, source.LoaderVersion);
             string from = InstanceStore.PathOf(source.Folder), to = InstanceStore.PathOf(copy.Folder);
 

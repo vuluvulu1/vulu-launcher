@@ -54,6 +54,8 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private Bitmap? _poster;
         /// <summary>Paketin yeni revizyonu var (vulu Packs).</summary>
         [ObservableProperty] private bool _hasUpdate;
+        /// <summary>Bu paketin oyunu açık (aynı anda birden çok paket açılabilir).</summary>
+        [ObservableProperty] private bool _isRunning;
         /// <summary>Şeritteki ipucu: adı; o pakette oynayan varsa "Şu an oynayan: …" (web: pack-card title).</summary>
         [ObservableProperty] private string _tip = "";
 
@@ -292,8 +294,27 @@ namespace VuluLauncher.ViewModels
             McVersion = current;
             _settingVersion = false;
         }
+        /// <summary>Seçili paketin oyunu açık. Öbür paketler ayrıca açık olabilir (<see cref="_runningIds"/>).</summary>
         [ObservableProperty] private bool _gameRunning;
+        /// <summary>Bir paket açılıyor (hazırlık sürerken ikinci bir açılış başlatılmaz).</summary>
         [ObservableProperty] private bool _launching;
+        private readonly HashSet<string> _runningIds = new();
+        private readonly Dictionary<string, BootInfo> _boots = new();
+        /// <summary>Açılmakta olan paket.</summary>
+        private string? _launchingId;
+        private bool LaunchingHere => Launching && _launchingId == Selected?.Id;
+        public bool AnyGameRunning => _runningIds.Count > 0;
+
+        /// <summary>Açık oyunların listesi core'dan gelince (pencere geri açıldı, bir oyun kapandı) eşitlenir.</summary>
+        public void SetRunning(IEnumerable<string> ids)
+        {
+            _runningIds.Clear();
+            foreach (var id in ids) _runningIds.Add(id);
+            foreach (var i in Instances) i.IsRunning = _runningIds.Contains(i.Id);
+            Views.SynthwaveBackdrop.GameRunning = AnyGameRunning;
+            GameRunning = Selected != null && _runningIds.Contains(Selected.Id);
+            Refresh();
+        }
         [ObservableProperty] private bool _canLaunchGame = true;
 
         [ObservableProperty]
@@ -390,19 +411,21 @@ namespace VuluLauncher.ViewModels
         [RelayCommand] private void ToggleDetails() { DetailsOpen = !DetailsOpen; _detailsAutoOpened = false; }
 
         /// <summary>Durdur: açılış sürerken (hazırlık ya da oyun penceresi açılana kadar) ya da oyun çalışırken.</summary>
-        public bool CanStop => Launching || GameRunning;
-        public string StopText => Launching || _boot != null ? "Durdur" : "Oyunu kapat";
+        public bool CanStop => LaunchingHere || GameRunning;
+        public string StopText => LaunchingHere || _boot != null ? "Durdur" : "Oyunu kapat";
 
         [RelayCommand]
         private async Task StopGame()
         {
             // Oyun tamamen açıldıysa kaydedilmemiş ilerleme gidebilir: önce sorulur
-            if (!Launching && _boot == null && GameRunning &&
+            if (!LaunchingHere && _boot == null && GameRunning &&
                 !await Main.ConfirmAsync("Oyunu kapat", "Oyun hemen kapatılır; kaydedilmemiş ilerleme kaybolabilir. Normalde oyunun içinden çıkmak daha iyidir.", "Kapat", danger: true))
                 return;
+            string? id = GameRunning ? Selected?.Id : _launchingId;
+            if (id == null) return;
             _stopping = true;
             Refresh();
-            try { await _core.Call("game.stop"); } catch (Exception ex) { AppendLog(ex.Message, "error"); }
+            try { await _core.Call("game.stop", new { instanceId = id }); } catch (Exception ex) { AppendLog(ex.Message, "error"); }
         }
 
         /// <summary>Durdur'a basıldı, açılış daha kapanmadı: düğmede "Durduruluyor…".</summary>
@@ -547,6 +570,7 @@ namespace VuluLauncher.ViewModels
             foreach (var item in ordered)
             {
                 item.HasUpdate = _packUpdates.ContainsKey(item.Id);
+                item.IsRunning = _runningIds.Contains(item.Id);
                 item.Tip = item.Name;
                 Instances.Add(item);
                 _ = LoadThumbnailAsync(item);
@@ -631,6 +655,7 @@ namespace VuluLauncher.ViewModels
             HasLogo = false;
             ModCount = Size = Updated = PlayTime = "–";
             Installed = null;
+            GameRunning = value != null && _runningIds.Contains(value.Id);
             OnPropertyChanged(nameof(SelectedIsCustom));
             OnPropertyChanged(nameof(SelectedCanEditLook));
             OnPropertyChanged(nameof(SelectedIsModpack));
@@ -759,7 +784,7 @@ namespace VuluLauncher.ViewModels
 
         partial void OnGameRunningChanged(bool value)
         {
-            Views.SynthwaveBackdrop.GameRunning = value;   // oyun açıkken tema arka planı durur
+            Views.SynthwaveBackdrop.GameRunning = AnyGameRunning;   // oyun açıkken tema arka planı durur
             Refresh();
         }
         partial void OnLaunchingChanged(bool value) => Refresh();
@@ -1064,7 +1089,8 @@ namespace VuluLauncher.ViewModels
                 if (boot.ExpectedMs > 0) Progress = Math.Min(95, boot.ElapsedMs * 100.0 / boot.ExpectedMs);
                 else Indeterminate = true;
             }
-            else if (Launching)
+            else if (Launching && !LaunchingHere && !GameRunning) { StatusText = "Başka bir paket açılıyor…"; Progress = 0; Indeterminate = true; }
+            else if (Launching && !GameRunning)
             {
                 StatusText = _activityText.Length > 0 ? _activityText : "Başlatılıyor…";
                 var pct = ProgressOf(StatusText);
@@ -1078,10 +1104,10 @@ namespace VuluLauncher.ViewModels
             else if (Installed == false) { StatusText = "İlk açılışta oyun dosyaları indirilecek"; Progress = 0; }
             else { StatusText = "Hazır"; Progress = 100; }
 
-            if (!Launching && !GameRunning) _stopping = false;
+            if (!LaunchingHere && !GameRunning) _stopping = false;
             OnPropertyChanged(nameof(CanStop));
             OnPropertyChanged(nameof(StopText));
-            PlayLabel = _stopping ? "Durduruluyor…" : Launching ? "Başlatılıyor…" : _boot != null && GameRunning ? "Açılıyor…" : GameRunning ? "Oyun çalışıyor" : !CanLaunchGame ? "Telefonda oyun yakında" : "OYNA";
+            PlayLabel = _stopping ? "Durduruluyor…" : LaunchingHere ? "Başlatılıyor…" : _boot != null && GameRunning ? "Açılıyor…" : GameRunning ? "Oyun çalışıyor" : Launching ? "Bekle…" : !CanLaunchGame ? "Telefonda oyun yakında" : "OYNA";
             CanPlay = !Launching && !GameRunning && CanLaunchGame && Selected != null;
             PlayCommand.NotifyCanExecuteChanged();
         }
@@ -1110,8 +1136,10 @@ namespace VuluLauncher.ViewModels
             if (Selected is not { } instance || GameRunning || Launching) return;
             if (_switchingPack) { AppendLog("Paketin sürümü değişiyor; bitince oynayabilirsin.", "warn"); return; }
             _lastJoin = join;
-            if (!ignoreMissing && !ignoreFiles) { Console.Clear(); _lastLineWasProgress = false; }
+            // Başka bir oyun açıkken konsol temizlenmez (onun çıktısı da orada)
+            if (!ignoreMissing && !ignoreFiles && !AnyGameRunning) { Console.Clear(); _lastLineWasProgress = false; }
             _activityText = "";
+            _launchingId = instance.Id;
             Launching = true;
             // Açılış sırasında konsol görünsün (seçilen sekme hatırlanmaya devam eder)
             InfoTab = "log";
@@ -1120,12 +1148,19 @@ namespace VuluLauncher.ViewModels
             try
             {
                 result = await _core.Call("game.play", new { instanceId = instance.Id, ramGb = RamGb, mcVersion = CanPickVersion ? McVersion ?? "" : "", ignoreMissing, ignoreFiles, join });
-                GameRunning = result.Bool("started");
+                if (result.Bool("started"))
+                {
+                    _runningIds.Add(instance.Id);
+                    instance.IsRunning = true;
+                    Views.SynthwaveBackdrop.GameRunning = true;
+                }
+                GameRunning = Selected != null && _runningIds.Contains(Selected.Id);
             }
             catch (Exception ex)
             {
                 AppendLog(ex.Message, "error");
             }
+            _launchingId = null;
             Launching = false;
 
             // Boş/bozuk ya da kopya jar'lar, yerine konmamış elle indirilecekler
@@ -1236,19 +1271,20 @@ namespace VuluLauncher.ViewModels
 
         /// <summary>Oyunun açılış durumu (süreç başladı, pencere açılmadı); null: açılış bitti ya da yok.</summary>
         private sealed record BootInfo(string Phase, long ElapsedMs, long ExpectedMs);
-        private BootInfo? _boot;
+        /// <summary>Seçili paketin açılış durumu (oyun süreci başladı, penceresi henüz açılmadı).</summary>
+        private BootInfo? _boot => Selected != null && _boots.TryGetValue(Selected.Id, out var b) ? b : null;
 
         public void OnCoreEvent(string name, JsonElement data)
         {
             switch (name)
             {
                 case "gameBoot":
-                    _boot = new BootInfo(data.Text("phase") ?? "Oyun açılıyor", (long)data.Num("elapsedMs"), (long)data.Num("expectedMs"));
+                    _boots[data.Text("instanceId") ?? ""] = new BootInfo(data.Text("phase") ?? "Oyun açılıyor", (long)data.Num("elapsedMs"), (long)data.Num("expectedMs"));
                     if (GameRunning) Refresh();
                     break;
                 case "gameReady":
-                    _boot = null;
-                    Progress = 100;
+                    _boots.Remove(data.Text("instanceId") ?? "");
+                    if (data.Text("instanceId") == Selected?.Id) Progress = 100;
                     Refresh();
                     break;
                 case "log":
@@ -1256,8 +1292,9 @@ namespace VuluLauncher.ViewModels
                         AppendLog(line.Text("text") ?? "", line.Text("level") ?? "info", line.Bool("replace"), line.Text("time"));
                     break;
                 case "gameExited":
-                    _boot = null;
-                    GameRunning = false;
+                    _boots.Remove(data.Text("instanceId") ?? "");
+                    if (data.Get("running").ValueKind == JsonValueKind.Array) SetRunning(data.Items("running").Select(r => r.GetString() ?? ""));
+                    else SetRunning(Array.Empty<string>());   // eski core: tek oyun
                     _infoCache.Clear();
                     InfoTab = UiState.Get("infoTab") is { } t && InfoTabs.Contains(t) ? t : "worlds";
                     if (_detailsAutoOpened && !LogAlert) DetailsOpen = false;

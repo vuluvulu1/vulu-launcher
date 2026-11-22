@@ -58,7 +58,7 @@ namespace VuluLauncher
             _bridge.On("mods.backupFiles", async args =>
             {
                 var instance = RequireCustomInstance(args.Str("instanceId"));
-                if (_game.IsRunning) throw new InvalidOperationException("Oyun çalışırken dosyalar taşınamaz.");
+                if (_game.IsRunningFor(args.Str("instanceId"))) throw new InvalidOperationException("Paket açıkken dosyalar taşınamaz.");
                 var moved = await Task.Run(() => ManualFiles.MoveToBackup(InstanceStore.PathOf(instance.Folder), args.StrList("files")));
                 // Taşınanlar artık kurulu sayılmaz
                 if (instance.Content.RemoveAll(c => moved.Contains(c.File, StringComparer.OrdinalIgnoreCase)) > 0) InstanceStore.Save(instance);
