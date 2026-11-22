@@ -171,8 +171,10 @@
     <Style Selector="Button.rail-btn Path.icon">
         <Setter Property="Stroke" Value="{StaticResource AccentHi}" />
     </Style>
+    <!-- Büyüyen resim düğmenin sınırında kırpılmasın diye içte pay (yerleşim aynı kalsın diye eksi kenar boşluğu) -->
     <Style Selector="Button.rail-avatar">
-        <Setter Property="Padding" Value="0" />
+        <Setter Property="Padding" Value="3" />
+        <Setter Property="Margin" Value="-3" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="22" />
