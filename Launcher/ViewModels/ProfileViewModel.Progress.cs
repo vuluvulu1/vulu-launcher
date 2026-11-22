@@ -30,7 +30,7 @@ namespace VuluLauncher.ViewModels
         public Bitmap? Preview { get; } = preview;
         public IBrush Swatch { get; } = Color.TryParse(color, out var c) ? new SolidColorBrush(c) : Brushes.Gray;
         [ObservableProperty] private bool _isWorn;
-        public string Tip => Owned ? (IsWorn ? $"{Name} — takılı. Çıkarmak için tıkla." : $"{Name} — takmak için tıkla.") : $"{Name} — {Earn}";
+        public string Tip => Owned ? (IsWorn ? L.F("{0} — takılı. Çıkarmak için tıkla.", Name) : L.F("{0} — takmak için tıkla.", Name)) : $"{Name} — {Earn}";
         partial void OnIsWornChanged(bool value) => OnPropertyChanged(nameof(Tip));
         [RelayCommand] private Task Toggle() => owner.ToggleCapeAsync(this);
     }
@@ -82,7 +82,7 @@ namespace VuluLauncher.ViewModels
         public string BadgesTitle => $"Rozetler ({Badges.Count})";
         partial void OnSeasonNameChanged(string? value) => OnPropertyChanged(nameof(HasSeason));
 
-        private static readonly CultureInfo Tr = CultureInfo.GetCultureInfo("tr-TR");
+        private static readonly CultureInfo Tr = L.Culture;
 
         /// <summary>Seviye, sezon, görevler, rozetler ve pelerinler (sunucu istatistiklerinden).</summary>
         private async Task LoadProgressAsync(int request)
@@ -98,7 +98,7 @@ namespace VuluLauncher.ViewModels
             LevelText = $"{xp.ToString("N0", Tr)} / {to.ToString("N0", Tr)} XP";
             var t = p.Get("totals");
             StatsText = p.Bool("played")
-                ? $"{t.Text("playtime")} oynadı · {t.Int("diamonds")} elmas · {t.Text("distance")} yol · {t.Int("advancements")} başarım · {t.Int("deaths")} ölüm"
+                ? L.F("{0} oynadı · {1} elmas · {2} yol · {3} başarım · {4} ölüm", t.Text("playtime"), t.Int("diamonds"), t.Text("distance"), t.Int("advancements"), t.Int("deaths"))
                 : IsOwn ? "vulu sunucusunda oynayınca seviyen ve istatistiklerin burada görünür." : "Henüz vulu sunucusunda oynamamış.";
             HasProgress = true;
 
@@ -112,7 +112,7 @@ namespace VuluLauncher.ViewModels
                 SeasonFraction = st > sf ? Math.Clamp((sx - sf) / (st - sf), 0, 1) : 0;
                 string ends = DateTime.TryParse(s.Text("endsAt"), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var end)
                     ? end.ToLocalTime().ToString("d MMMM", Tr) : "";
-                SeasonText = $"Sezon seviyesi {SeasonLevel} · {ends} tarihinde biter · seviye {s.Int("capeLevel")} ya da bütün görevler: sezon pelerini";
+                SeasonText = L.F("Sezon seviyesi {0} · {1} tarihinde biter · seviye {2} ya da bütün görevler: sezon pelerini", SeasonLevel, ends, s.Int("capeLevel"));
                 foreach (var q in s.Items("quests"))
                 {
                     double value = q.Num("value"), target = Math.Max(1, q.Num("target"));
@@ -167,7 +167,7 @@ namespace VuluLauncher.ViewModels
             {
                 await _core.Call("progress.setCape", new { key });
                 foreach (var c in Capes) c.IsWorn = c.Key == key;
-                CapeNote = key.Length > 0 ? $"{cape.Name} takıldı ✓ Oyunda bir sonraki girişinde herkes görür." : "Pelerin çıkarıldı.";
+                CapeNote = key.Length > 0 ? L.F("{0} takıldı ✓ Oyunda bir sonraki girişinde herkes görür.", cape.Name) : "Pelerin çıkarıldı.";
                 main.ForgetMembers();
                 var hash = key.Length > 0 ? (await _core.Call("progress.capes")).Items().FirstOrDefault(c => c.Text("key") == key).Text("hash") : null;
                 CapeBytes = hash != null ? await Images.LoadBytesAsync($"{Avatars.ApiBase}/yggdrasil/textures/{hash}?c=1") : null;
@@ -192,11 +192,11 @@ namespace VuluLauncher.ViewModels
         private async Task RevokeCapeFromUser()
         {
             if (GrantCape == null || !_capeNames.TryGetValue(GrantCape, out var key)) { GrantNote = "Bir pelerin seç."; return; }
-            if (!await main.ConfirmAsync("Pelerini geri al", $"{Username} kullanıcısının {GrantCape} pelerini geri alınsın mı?", "Geri al")) return;
+            if (!await main.ConfirmAsync("Pelerini geri al", L.F("{0} kullanıcısının {1} pelerini geri alınsın mı?", Username, GrantCape), "Geri al")) return;
             try
             {
                 await _core.Call("progress.revokeCape", new { username = Username, key });
-                GrantNote = $"{GrantCape} geri alındı.";
+                GrantNote = L.F("{0} geri alındı.", GrantCape);
                 await LoadProgressAsync(_requestId);
             }
             catch (Exception ex) { GrantNote = ex.Message; }
@@ -236,7 +236,7 @@ namespace VuluLauncher.ViewModels
 
         public async Task RemoveFromWardrobeAsync(WardrobeItem item)
         {
-            if (!await main.ConfirmAsync("Dolaptan çıkar", $"\"{item.Name}\" dolabından çıkarılsın mı?" + (item.IsWorn ? " Şu an giydiğin skin olarak kalır." : ""), "Çıkar")) return;
+            if (!await main.ConfirmAsync("Dolaptan çıkar", L.F("\"{0}\" dolabından çıkarılsın mı?", item.Name) + (item.IsWorn ? " Şu an giydiğin skin olarak kalır." : ""), "Çıkar")) return;
             try { await _core.Call("wardrobe.remove", new { hash = item.Hash }); await LoadWardrobeAsync(); }
             catch (Exception ex) { await main.AlertAsync("Çıkarılamadı", ex.Message); }
         }

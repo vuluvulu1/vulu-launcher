@@ -185,7 +185,7 @@ namespace VuluLauncher
         {
             var installed = new List<string>();
             var manual = new List<ManualDownload>();
-            using var job = new DownloadJob($"{instance.Name} · içerik kuruluyor") { Phase = "İndiriliyor" };
+            using var job = new DownloadJob(L.F("{0} · içerik kuruluyor", instance.Name)) { Phase = "İndiriliyor" };
             try
             {
                 await InstallRecursiveAsync(instance, modId, new HashSet<int>(), installed, manual, isDependency: false, fileId);
@@ -202,7 +202,7 @@ namespace VuluLauncher
                 instance.PendingManual.Add(m);
             }
             InstanceStore.Save(instance);
-            job.Complete(installed.Count == 0 ? "Elle indirilmesi gerekiyor" : installed.Count == 1 ? $"{installed[0]} kuruldu" : $"{installed.Count} içerik kuruldu");
+            job.Complete(installed.Count == 0 ? "Elle indirilmesi gerekiyor" : installed.Count == 1 ? $"{installed[0]} kuruldu" : L.F("{0} içerik kuruldu", installed.Count));
             return (installed, manual);
         }
 
@@ -219,7 +219,7 @@ namespace VuluLauncher
             if (folder == null)
             {
                 if (isDependency) return;
-                throw new InvalidOperationException($"{mod.Name}: bu içerik türü instance'a kurulamıyor.");
+                throw new InvalidOperationException(L.F("{0}: bu içerik türü instance'a kurulamıyor.", mod.Name));
             }
             bool isMod = type == "mod";
             if (isMod && instance.Loader == "vanilla")
@@ -232,24 +232,24 @@ namespace VuluLauncher
             if (file == null)
             {
                 string target = isMod ? $"{instance.McVersion} / {instance.Loader}" : instance.McVersion;
-                if (isDependency) { _log($"{mod.Name} {target} için yok, atlandı.", "muted"); return; }
-                throw new InvalidOperationException($"{mod.Name}: {target} için uyumlu sürüm yok.");
+                if (isDependency) { _log(L.F("{0} {1} için yok, atlandı.", mod.Name, target), "muted"); return; }
+                throw new InvalidOperationException(L.F("{0}: {1} için uyumlu sürüm yok.", mod.Name, target));
             }
 
             var newest = files.FirstOrDefault();
             if (fileId == null && newest != null && newest.Id != file.Id && newest.ReleaseType != 1 && newest.FileDate > file.FileDate)
-                _log($"Not: {mod.Name} için daha yeni bir {ReleaseTypeName(newest.ReleaseType)} sürümü var ({newest.DisplayName}). Oyun açılmazsa sürüm seçiciden onu deneyebilirsin.", "muted");
+                _log(L.F("Not: {0} için daha yeni bir {1} sürümü var ({2}). Oyun açılmazsa sürüm seçiciden onu deneyebilirsin.", mod.Name, ReleaseTypeName(newest.ReleaseType), newest.DisplayName), "muted");
 
             string instanceDir = InstanceStore.PathOf(instance.Folder);
             string relative = $"{folder}/{Path.GetFileName(file.FileName)}";
             string path = Downloader.ResolveInside(instanceDir, relative)
-                ?? throw new InvalidOperationException($"{mod.Name}: geçersiz dosya adı.");
+                ?? throw new InvalidOperationException(L.F("{0}: geçersiz dosya adı.", mod.Name));
 
             if (string.IsNullOrEmpty(file.DownloadUrl))
             {
                 // Yapımcı başka uygulamalardan indirmeye izin vermiyor: kullanıcı CurseForge'dan indirecek
                 manual.Add(ManualDownload.Of(mod, file, folder));
-                _log($"{mod.Name}: yapımcısı başka uygulamalardan indirilmesine izin vermiyor; CurseForge sitesinden indirilmeli.", "warn");
+                _log(L.F("{0}: yapımcısı başka uygulamalardan indirilmesine izin vermiyor; CurseForge sitesinden indirilmeli.", mod.Name), "warn");
             }
             else
             {
@@ -346,13 +346,13 @@ namespace VuluLauncher
         public async Task<(InstanceMeta Instance, List<ManualDownload> Manual)> InstallModpackAsync(int modId, int? fileId)
         {
             var mod = await ModAsync(modId);
-            if (mod.ClassId != 4471) throw new InvalidOperationException($"{mod.Name} bir modpack değil.");
+            if (mod.ClassId != 4471) throw new InvalidOperationException(L.F("{0} bir modpack değil.", mod.Name));
             var files = await FilesAsync(mod.Id);
             var packFile = (fileId is { } wanted ? files.FirstOrDefault(f => f.Id == wanted) : null)
                 ?? files.FirstOrDefault(f => f.ReleaseType == 1) ?? files.FirstOrDefault()
-                ?? throw new InvalidOperationException($"{mod.Name}: yayınlanmış sürüm yok.");
+                ?? throw new InvalidOperationException(L.F("{0}: yayınlanmış sürüm yok.", mod.Name));
             if (string.IsNullOrEmpty(packFile.DownloadUrl))
-                throw new InvalidOperationException($"{mod.Name}: yapımcısı modpack'in başka uygulamalardan indirilmesine izin vermiyor. CurseForge uygulamasıyla kurulabilir.");
+                throw new InvalidOperationException(L.F("{0}: yapımcısı modpack'in başka uygulamalardan indirilmesine izin vermiyor. CurseForge uygulamasıyla kurulabilir.", mod.Name));
 
             string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-{Guid.NewGuid():N}.zip");
             using var job = new DownloadJob($"{mod.Name} kuruluyor") { Phase = "Modpack indiriliyor" };
@@ -419,7 +419,7 @@ namespace VuluLauncher
                 instance.PackFiles = PackContent(downloads, manual, zip, manifest);   // sürüm değişince eşitlenecek dosyalar
                 InstanceStore.Save(instance);
 
-                _log(manual.Count == 0 ? $"{name} kuruldu." : $"{name} kuruldu; {manual.Count} dosyanın CurseForge'dan elle indirilmesi gerekiyor.", manual.Count == 0 ? "ok" : "warn");
+                _log(manual.Count == 0 ? $"{name} kuruldu." : L.F("{0} kuruldu; {1} dosyanın CurseForge'dan elle indirilmesi gerekiyor.", name, manual.Count), manual.Count == 0 ? "ok" : "warn");
                 job.Complete($"{name} kuruldu");
                 return (instance, manual);
             }
@@ -467,10 +467,10 @@ namespace VuluLauncher
             await Parallel.ForEachAsync(downloads, new ParallelOptions { MaxDegreeOfParallelism = 6, CancellationToken = job.Token }, async (d, cancellation) =>
             {
                 string path = Downloader.ResolveInside(instanceDir, d.Relative)
-                    ?? throw new InvalidDataException($"Modpack geçersiz bir dosya yolu içeriyor: {d.Relative}");
-                if (!IsCurseForgeCdn(d.File.DownloadUrl!)) throw new InvalidDataException($"Modpack izin verilmeyen bir adresten indirme istiyor: {d.Relative}");
+                    ?? throw new InvalidDataException(L.F("Modpack geçersiz bir dosya yolu içeriyor: {0}", d.Relative));
+                if (!IsCurseForgeCdn(d.File.DownloadUrl!)) throw new InvalidDataException(L.F("Modpack izin verilmeyen bir adresten indirme istiyor: {0}", d.Relative));
                 await items[d.File.Id].DownloadAsync(d.File.DownloadUrl!, path, d.File.Hashes.FirstOrDefault(h => h.Algo == 1)?.Value, null, cancellation);
-                _log($"Modpack dosyaları indiriliyor... {Interlocked.Increment(ref done)}/{downloads.Count}", "replace");
+                _log(L.F("Modpack dosyaları indiriliyor... {0}/{1}", Interlocked.Increment(ref done), downloads.Count), "replace");
             });
         }
 
@@ -544,7 +544,7 @@ namespace VuluLauncher
                 job.Phase = "Ayarlar yedekleniyor";
                 ModpackFiles.BackupConfigs(dir, instance.ModpackVersion);
                 int removed = ModpackFiles.RemoveOld(dir, oldFiles, newFiles);
-                _log($"{instance.Name}: eski sürümden {removed} dosya kaldırıldı.", "muted");
+                _log(L.F("{0}: eski sürümden {1} dosya kaldırıldı.", instance.Name, removed), "muted");
 
                 await DownloadManifestFilesAsync(downloads, dir, job);
                 job.Phase = "Ayarlar yerleştiriliyor";
@@ -561,8 +561,8 @@ namespace VuluLauncher
                 instance.ModpackVersion = target.DisplayName;
                 instance.PackFiles = newFiles;
                 InstanceStore.Save(instance);
-                _log($"{instance.Name} artık {target.DisplayName}.", "ok");
-                job.Complete($"{instance.Name} {target.DisplayName} sürümünde");
+                _log(L.F("{0} artık {1}.", instance.Name, target.DisplayName), "ok");
+                job.Complete(L.F("{0} {1} sürümünde", instance.Name, target.DisplayName));
                 return manual;
             }
             catch (Exception ex) { job.Fail(ex.Message); throw; }

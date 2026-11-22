@@ -95,7 +95,7 @@ namespace VuluLauncher.Views
             _shownKey = key;
             if (searching)
                 foreach (var s in _kutVm.Sections)
-                    foreach (var row in s.Rows) row.Category = s.Title.ToUpper(System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
+                    foreach (var row in s.Rows) row.Category = s.Title.ToUpper(L.Culture);
             KutCards.ItemsSource = searching ? _kutVm.Sections.SelectMany(s => s.Rows).ToList() : current?.Rows.ToList();
             KutScroll.Offset = default;
         }

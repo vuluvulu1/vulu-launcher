@@ -94,13 +94,13 @@ namespace VuluLauncher
                     case "curseforge": (instance, manual) = await _curseforge.ImportZipAsync(path); break;
                     default: instance = await ImportPrismAsync(path); break;
                 }
-                Log($"{instance.Name} içe aktarıldı.", "ok");
+                Log(L.F("{0} içe aktarıldı.", instance.Name), "ok");
                 return new { success = true, error = (string?)null, id = InstancePrefix + instance.Folder, name = instance.Name, manual = ManualList(manual) };
             }
             catch (InvalidDataException) { throw new InvalidOperationException("Dosya bozuk ya da yarım (zip açılamadı)."); }
             catch (Exception ex) when (ex is not InvalidOperationException)
             {
-                Log($"İçe aktarılamadı: {ex.Message}", "error");
+                Log(L.F("İçe aktarılamadı: {0}", ex.Message), "error");
                 throw;
             }
         }
@@ -125,7 +125,7 @@ namespace VuluLauncher
         {
             using var zip = ZipFile.OpenRead(path);
             string root = FindPrismRoot(zip) ?? "";
-            using var job = new DownloadJob($"{Path.GetFileNameWithoutExtension(path)} içe aktarılıyor") { Phase = "Paket okunuyor" };
+            using var job = new DownloadJob(L.F("{0} içe aktarılıyor", Path.GetFileNameWithoutExtension(path))) { Phase = "Paket okunuyor" };
 
             JsonDocument pack;
             using (var s = zip.GetEntry(root + "mmc-pack.json")!.Open()) pack = await JsonDocument.ParseAsync(s);
@@ -153,7 +153,7 @@ namespace VuluLauncher
                     if (line.StartsWith("name=", StringComparison.Ordinal) && line.Length > 5) { name = line[5..].Trim(); break; }
             }
             if (name.Length > 40) name = name[..40];
-            job.Title = $"{name} içe aktarılıyor";
+            job.Title = L.F("{0} içe aktarılıyor", name);
 
             var instance = InstanceStore.Create(name, mc, loader ?? "vanilla", loader == null ? null : loaderVersion);
             try
@@ -162,7 +162,7 @@ namespace VuluLauncher
                 job.Phase = "Dosyalar açılıyor";
                 string game = zip.Entries.Any(e => e.FullName.StartsWith(root + ".minecraft/", StringComparison.Ordinal)) ? root + ".minecraft/" : root + "minecraft/";
                 await Task.Run(() => ModrinthService.ExtractOverrides(zip, game, dir));
-                job.Complete($"{name} içe aktarıldı");
+                job.Complete(L.F("{0} içe aktarıldı", name));
                 return instance;
             }
             catch (Exception ex)

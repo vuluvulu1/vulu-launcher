@@ -30,8 +30,8 @@ namespace VuluLauncher
             var repaired = new List<string>();
             var notes = new List<string>();
             int checkedCount = 0;
-            using var job = new DownloadJob($"{target.Name} doğrulanıyor") { Phase = "İçerikler denetleniyor" };
-            Log($"{target.Name}: dosyalar doğrulanıyor...", "accent");
+            using var job = new DownloadJob(L.F("{0} doğrulanıyor", target.Name)) { Phase = "İçerikler denetleniyor" };
+            Log(L.F("{0}: dosyalar doğrulanıyor...", target.Name), "accent");
 
             // 1. Kurulu içerikler
             if (meta != null && meta.Content.Count > 0)
@@ -64,7 +64,7 @@ namespace VuluLauncher
                         if (check.ManualOnly || check.Url == null)
                         {
                             if (check.ManualOnly && check.Content.Source == CurseForgeService.Source) manualChecks.Add(check);
-                            else notes.Add($"{check.Content.Title}: dosya bozuk ya da eksik ve kaynağında artık bulunamıyor.");
+                            else notes.Add(L.F("{0}: dosya bozuk ya da eksik ve kaynağında artık bulunamıyor.", check.Content.Title));
                             continue;
                         }
                         await job.Add(check.Content.Title, check.Size).DownloadAsync(check.Url, actual, check.Sha1);
@@ -113,11 +113,11 @@ namespace VuluLauncher
             var pending = meta == null ? new List<ManualDownload>()
                 : meta.PendingManual.Where(m => Downloader.ResolveInside(dir, $"{m.Folder}/{m.FileName}") is not { } p || !File.Exists(p)).ToList();
 
-            if (gameError == null) job.Complete($"{target.Name} doğrulandı");
+            if (gameError == null) job.Complete(L.F("{0} doğrulandı", target.Name));
             else job.Fail(gameError);
             Log(repaired.Count + moved.Count == 0 && gameError == null
-                    ? $"{target.Name}: dosyalarda sorun bulunmadı."
-                    : $"{target.Name}: {repaired.Count} içerik yeniden indirildi, {moved.Count} dosya yedeğe taşındı.",
+                    ? L.F("{0}: dosyalarda sorun bulunmadı.", target.Name)
+                    : L.F("{0}: {1} içerik yeniden indirildi, {2} dosya yedeğe taşındı.", target.Name, repaired.Count, moved.Count),
                 gameError == null ? "ok" : "warn");
 
             return new

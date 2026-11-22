@@ -389,7 +389,7 @@ namespace VuluLauncher
             var card = CleanCard(rawCard);
             if (rawCard != null && card == null) throw new InvalidOperationException("Paylaşılan paket ya da sunucu geçersiz.");
             if (text.Length == 0 && card == null && media == null) throw new InvalidOperationException("Boş mesaj gönderilemez.");
-            if (text.Length > DmMaxLength) throw new InvalidOperationException($"Mesaj en fazla {DmMaxLength} karakter olabilir.");
+            if (text.Length > DmMaxLength) throw new InvalidOperationException(L.F("Mesaj en fazla {0} karakter olabilir.", DmMaxLength));
             // Zarf gibi başlayan düz metin de zarfa konur; yoksa alıcıda yanlışlıkla zarf sanılır
             string plain = card == null && media == null && !text.StartsWith("{\"v\":", StringComparison.Ordinal)
                 ? text : JsonSerializer.Serialize(new DmPayload(1, text, card, media), DmJson);
@@ -442,7 +442,7 @@ namespace VuluLauncher
             {
                 int count = group.Count();
                 string body, tag = "dm:" + group.Key;
-                if (!settings.DmNotificationPreview) body = count > 1 ? $"{count} yeni mesaj" : "Yeni mesaj";
+                if (!settings.DmNotificationPreview) body = count > 1 ? L.F("{0} yeni mesaj", count) : "Yeni mesaj";
                 else
                 {
                     var last = group.Last();
@@ -452,8 +452,8 @@ namespace VuluLauncher
                     body = !string.IsNullOrWhiteSpace(text) ? text!
                         : image ? "🖼 Bir resim gönderdi"
                         : card is { } k ? (k.GetProperty("type").GetString() == "pack"
-                            ? $"📦 Bir paket paylaştı: {k.GetProperty("name").GetString()}"
-                            : $"🎮 Sunucuya davet etti: {k.GetProperty("name").GetString()}")
+                            ? L.F("📦 Bir paket paylaştı: {0}", k.GetProperty("name").GetString())
+                            : L.F("🎮 Sunucuya davet etti: {0}", k.GetProperty("name").GetString()))
                         : "Yeni şifreli mesaj";
                     if (count > 1) body = $"({count} yeni) " + body;
                     // Sunucu daveti: kartta "Katıl" düğmesi olur (kart kimliği yalnızca güvenli karakterlerdir)

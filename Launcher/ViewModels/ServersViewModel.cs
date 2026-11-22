@@ -60,8 +60,8 @@ namespace VuluLauncher.ViewModels
             Time = DateTime.TryParse(m.Text("at"), null, System.Globalization.DateTimeStyles.RoundtripKind, out var at) ? at.ToLocalTime().ToString("HH:mm") : "";
             (Tag, Text, IsEvent) = kind switch
             {
-                "join" => ("", $"{Name} oyuna girdi", true),
-                "leave" => ("", $"{Name} oyundan çıktı", true),
+                "join" => ("", L.F("{0} oyuna girdi", Name), true),
+                "leave" => ("", L.F("{0} oyundan çıktı", Name), true),
                 "server" => ("[Sunucu] ", m.Text("text") ?? "", false),
                 "launcher" => ("[Launcher] ", m.Text("text") ?? "", false),
                 _ => ("", m.Text("text") ?? "", false),
@@ -318,7 +318,7 @@ namespace VuluLauncher.ViewModels
             if (_main.Tabs.FirstOrDefault(t => t.Key == "servers") is not { } tab) return;
             int open = Servers.Count(s => s.IsOnline);
             tab.Live = open > 0;
-            tab.Tip = open > 0 ? $"Sunucular · {open} açık" : "Sunucular";
+            tab.Tip = open > 0 ? L.F("Sunucular · {0} açık", open) : "Sunucular";
         }
         /// <summary>Sunucular sekmesi şu an açık mı (sohbet yoklaması yalnızca açıkken).</summary>
         public bool IsVisible => _main.SelectedTab?.Page == this;
@@ -379,7 +379,7 @@ namespace VuluLauncher.ViewModels
                 (person.Game, person.Rest) = Describe(p);
                 Online.Add(person);
             }
-            OnlineCount = Online.Count > 0 ? $"{Online.Count} çevrimiçi" : "";
+            OnlineCount = Online.Count > 0 ? L.F("{0} çevrimiçi", Online.Count) : "";
             NobodyOnline = Online.Count == 0;
             MarkFriendsHere();
         }
@@ -406,7 +406,7 @@ namespace VuluLauncher.ViewModels
             foreach (var card in Servers)
             {
                 var here = _presence.Items().Where(p => p.Text("state") == "playing" && p.Text("server") == card.Address).Select(p => p.Text("username")).ToList();
-                card.FriendsHere = here.Count > 0 ? $"{here.Count} arkadaş burada" : null;
+                card.FriendsHere = here.Count > 0 ? L.F("{0} arkadaş burada", here.Count) : null;
             }
         }
 
@@ -448,7 +448,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 await _core.Call("shortcuts.create", new { kind = "join", id = s.Id, name = s.Name, iconDataUrl = ShortcutIcon.ToDataUrl(s.Favicon) });
-                await _main.AlertAsync("Kısayol eklendi", $"Masaüstündeki \"{s.Name}\" kısayolu launcher'ı açıp doğrudan {s.Name} sunucusuna bağlanır.");
+                await _main.AlertAsync("Kısayol eklendi", L.F("Masaüstündeki \"{0}\" kısayolu launcher'ı açıp doğrudan {1} sunucusuna bağlanır.", s.Name, s.Name));
             }
             catch (Exception ex) { await _main.AlertAsync("Kısayol oluşturulamadı", ex.Message); }
         }
@@ -457,7 +457,7 @@ namespace VuluLauncher.ViewModels
 
         /// <summary>"Davet et": sunucu kartı mesajla bir arkadaşa gönderilir.</summary>
         public Task InviteAsync(ServerCard s) =>
-            _main.Social.ShareCardAsync(new { type = "server", id = s.Id, name = s.Name, address = s.Address }, $"{s.Name} davetini gönder");
+            _main.Social.ShareCardAsync(new { type = "server", id = s.Id, name = s.Name, address = s.Address }, L.F("{0} davetini gönder", s.Name));
 
         public async Task EditAsync(ServerCard? s)
         {
@@ -468,7 +468,7 @@ namespace VuluLauncher.ViewModels
 
         public async Task DeleteAsync(ServerCard s)
         {
-            if (!await _main.ConfirmAsync("Sunucuyu sil", $"'{s.Name}' listeden kaldırılsın mı? Sunucunun kendisine dokunulmaz.", "Sil", danger: true)) return;
+            if (!await _main.ConfirmAsync("Sunucuyu sil", L.F("'{0}' listeden kaldırılsın mı? Sunucunun kendisine dokunulmaz.", s.Name), "Sil", danger: true)) return;
             try { await _core.Call("servers.delete", new { id = s.Id }); }
             catch (Exception ex) { await _main.AlertAsync("Silinemedi", ex.Message); }
             await LoadAsync();

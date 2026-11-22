@@ -138,7 +138,7 @@ namespace VuluLauncher.ViewModels
             _instance = instance;
             _full = full;
             _thumb = thumb;
-            Info = $"{instance.Name} · {full.Width}×{full.Height} · {HomeViewModel.FormatSize(full.Bytes / 1048576.0)}. Bütün vulu üyeleri görebilir.";
+            Info = L.F("{0} · {1}×{2} · {3}. Bütün vulu üyeleri görebilir.", instance.Name, full.Width, full.Height, HomeViewModel.FormatSize(full.Bytes / 1048576.0));
             _ = LoadPreview();
         }
 
@@ -196,7 +196,7 @@ namespace VuluLauncher.ViewModels
 
         private void Filter()
         {
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             string q = Search.Trim().ToLower(tr);
             People.Clear();
             foreach (var p in _all.Where(p => q.Length == 0 || p.Username.ToLower(tr).Contains(q)).Take(50)) People.Add(p);
@@ -239,8 +239,8 @@ namespace VuluLauncher.ViewModels
     /// <summary>Güvenlik kodu: iki tarafta aynıysa doğrulanır. Sonuç true ise "doğrula".</summary>
     internal sealed partial class SafetyModal(string user, string code, bool verified) : ModalViewModel
     {
-        public string Title { get; } = $"{user} ile güvenlik kodu";
-        public string Intro { get; } = $"Bu kodu {user} ile karşılaştırın (yüz yüze, sesli sohbette ya da başka bir uygulamada). İki tarafta da aynıysa mesajlarınızı yalnızca siz okuyabilirsiniz.";
+        public string Title { get; } = L.F("{0} ile güvenlik kodu", user);
+        public string Intro { get; } = L.F("Bu kodu {0} ile karşılaştırın (yüz yüze, sesli sohbette ya da başka bir uygulamada). İki tarafta da aynıysa mesajlarınızı yalnızca siz okuyabilirsiniz.", user);
         public string Code { get; } = code;
         public bool Verified { get; } = verified;
         [RelayCommand] private void Verify() => Close(true);

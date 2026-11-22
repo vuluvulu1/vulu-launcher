@@ -28,6 +28,8 @@
     <!-- Updater ile ortak: release bilgisi ve sürüm karşılaştırma -->
     <Compile Include="..\Shared\Releases.cs" Link="Shared\Releases.cs" />
     <Compile Include="..\Shared\RangeZip.cs" Link="Shared\RangeZip.cs" />
+    <Compile Include="..\Shared\Lang.cs" Link="Shared\Lang.cs" />
+    <EmbeddedResource Include="..\Shared\i18n\en.json" LogicalName="i18n.en.json" Link="Shared\i18n\en.json" />
     <Compile Include="..\Shared\ServerConnection.cs" Link="Shared\ServerConnection.cs" />
   </ItemGroup>
 

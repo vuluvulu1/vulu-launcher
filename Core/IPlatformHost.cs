@@ -44,6 +44,8 @@ namespace VuluLauncher
         void BringToFront();
         void Minimize();
         void Close();
+        /// <summary>Launcher'ı kapatıp yeniden açar (ör. dil değişince). Desteklemeyen platformda etkisiz.</summary>
+        void Restart() { }
 
         /// <summary>Çerçevesiz pencereyi sürükleme (Windows). Diğer platformlarda etkisizdir.</summary>
         void BeginWindowDrag();

@@ -337,7 +337,7 @@ namespace VuluLauncher.ViewModels
         public bool ChatNote => ChatMessage != null && !ChatLoading;
         [ObservableProperty] private bool _sending;
         public string LockText => Verified ? "🔒 Doğrulandı" : "🔒 Uçtan uca şifreli";
-        public string Placeholder => $"{Active} kişisine yaz…";
+        public string Placeholder => L.F("{0} kişisine yaz…", Active);
         public string Counter => Draft.Length > DmMax - 200 ? $"{Draft.Length}/{DmMax}" : "";
         partial void OnVerifiedChanged(bool value) => OnPropertyChanged(nameof(LockText));
         partial void OnActiveChanged(string? value)
@@ -467,7 +467,7 @@ namespace VuluLauncher.ViewModels
             var online = _friends.Where(f => PresenceOf(f).ValueKind == JsonValueKind.Object).ToList();
             int playing = online.Count(f => PresenceOf(f).Text("state") == "playing");
             tab.Tip = online.Count == 0 ? "Sosyal"
-                : playing > 0 ? $"Sosyal · {online.Count} arkadaş çevrimiçi, {playing} oyunda" : $"Sosyal · {online.Count} arkadaş çevrimiçi";
+                : playing > 0 ? L.F("Sosyal · {0} arkadaş çevrimiçi, {1} oyunda", online.Count, playing) : L.F("Sosyal · {0} arkadaş çevrimiçi", online.Count);
         }
 
         /// <summary>Şu an bu pakette oynayanlar (kendin hariç; web: playingHere).</summary>
@@ -494,7 +494,7 @@ namespace VuluLauncher.ViewModels
         /// <summary>Akış, istekler, kişiler (okunmamışlar, oyundakiler, çevrimiçiler önce), gönderilen istekler; arama varsa diğer üyeler.</summary>
         public void RenderList()
         {
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             string query = Search.Trim().ToLower(tr);
             bool Match(string name) => query.Length == 0 || name.ToLower(tr).Contains(query);
             JsonElement Conv(string name) => _conversations.FirstOrDefault(c => c.Text("username") == name);
@@ -570,11 +570,11 @@ namespace VuluLauncher.ViewModels
         /// <summary>İstek gönder / kabul et / reddet / geri al / çıkar; sonra liste yenilenir.</summary>
         public async Task FriendActionAsync(string action, string username)
         {
-            if (action == "remove" && !await Main.ConfirmAsync("Arkadaşlıktan çıkar", $"{username} arkadaşlarından çıkarılsın mı?", "Çıkar", danger: true)) return;
+            if (action == "remove" && !await Main.ConfirmAsync("Arkadaşlıktan çıkar", L.F("{0} arkadaşlarından çıkarılsın mı?", username), "Çıkar", danger: true)) return;
             try
             {
                 var result = await _core.Call("friends." + action, new { username });
-                if (action == "request" && result.Text("status") == "accepted") Main.ShowToast("Arkadaş", $"{username} ile artık arkadaşsınız.");
+                if (action == "request" && result.Text("status") == "accepted") Main.ShowToast("Arkadaş", L.F("{0} ile artık arkadaşsınız.", username));
             }
             catch (Exception ex) { await Main.AlertAsync("Olmadı", ex.Message); }
             await RefreshFriendsAsync();
@@ -678,7 +678,7 @@ namespace VuluLauncher.ViewModels
             {
                 var names = s.Sample.Length > 0 ? s.Sample.Split(", ") : Array.Empty<string>();
                 int count = int.TryParse(s.Players.Split('/')[0], out int n) ? n : 0;
-                Live.Add(new LiveServer(s, count > 0 ? $"{count} kişi oyunda" : "Şu an kimse yok · ilk giren sen ol",
+                Live.Add(new LiveServer(s, count > 0 ? L.F("{0} kişi oyunda", count) : "Şu an kimse yok · ilk giren sen ol",
                     names.Take(8).Select(x => new PersonItem(x, members.GetValueOrDefault(x))).ToList(), () => Main.Servers.JoinAsync(s)));
             }
             var playing = _presence.Items().Where(p => p.Text("username") != Main.Username && p.Text("state") == "playing" && _friends.Contains(p.Text("username") ?? "")).Take(6).ToList();
@@ -721,7 +721,7 @@ namespace VuluLauncher.ViewModels
         {
             bool own = shot.Author.Username == Main.Username;
             if (!await Main.ConfirmAsync("Ekran görüntüsünü kaldır",
-                    own ? "Bu ekran görüntüsü Sosyal'den kaldırılsın mı? Bilgisayarındaki dosyaya dokunulmaz." : $"{shot.Author.Username} kişisinin ekran görüntüsü kaldırılsın mı?",
+                    own ? "Bu ekran görüntüsü Sosyal'den kaldırılsın mı? Bilgisayarındaki dosyaya dokunulmaz." : L.F("{0} kişisinin ekran görüntüsü kaldırılsın mı?", shot.Author.Username),
                     "Kaldır", danger: true)) return;
             try
             {
@@ -777,7 +777,7 @@ namespace VuluLauncher.ViewModels
                 SetMessages(result.Items("messages").Select(m => new ChatMessage(this, m)).ToList());
                 _reachedStart = result.Items("messages").Count() < 50;
                 PeerReady = result.Get("peerReady").ValueKind != JsonValueKind.False;
-                PeerNotice = PeerReady ? null : result.Text("peerError") ?? $"{user} henüz mesajlaşmayı kullanmadı; launcher'ın yeni sürümüyle bir kez giriş yaptığında yazabilirsin.";
+                PeerNotice = PeerReady ? null : result.Text("peerError") ?? L.F("{0} henüz mesajlaşmayı kullanmadı; launcher'ın yeni sürümüyle bir kez giriş yaptığında yazabilirsin.", user);
                 Verified = result.Bool("verified");
                 KeyChanged = result.Bool("keyChanged");
                 ScrollToEnd?.Invoke();
@@ -803,7 +803,7 @@ namespace VuluLauncher.ViewModels
             string last = "";
             foreach (var m in list)
             {
-                string day = m.CreatedAt.ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR"));
+                string day = m.CreatedAt.ToString("d MMMM yyyy", L.Culture);
                 m.Day = day != last ? day : null;
                 last = day;
                 Messages.Add(m);

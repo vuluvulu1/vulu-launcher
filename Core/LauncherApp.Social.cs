@@ -120,7 +120,7 @@ namespace VuluLauncher
                                 string shotId = e.GetProperty("shotId").GetString()!;
                                 _bridge.Emit("shotEvent", new { from, kind, text, shotId });
                                 if (AppSettings.Current.SocialNotifications)
-                                    ShowNotification(kind == "like" ? $"{from} ekran görüntünü beğendi" : $"{from} yorum yaptı",
+                                    ShowNotification(kind == "like" ? L.F("{0} ekran görüntünü beğendi", from) : L.F("{0} yorum yaptı", from),
                                         kind == "like" ? "Sosyal'de görmek için tıkla." : text, "shot:" + shotId);
                             }
                         }
@@ -194,7 +194,7 @@ namespace VuluLauncher
             {
                 int comma = dataUrl.IndexOf(',');
                 string b64 = comma >= 0 && dataUrl.StartsWith("data:image/", StringComparison.Ordinal) ? dataUrl[(comma + 1)..] : "";
-                if (b64.Length == 0 || b64.Length > (max + 2) / 3 * 4) throw new InvalidOperationException($"{what} hazırlanamadı ya da çok büyük.");
+                if (b64.Length == 0 || b64.Length > (max + 2) / 3 * 4) throw new InvalidOperationException(L.F("{0} hazırlanamadı ya da çok büyük.", what));
                 return b64;
             }
             string image = Base64Of(args.Str("image"), UploadImageMax, "Resim");

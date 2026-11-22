@@ -133,7 +133,7 @@ namespace VuluLauncher
                     try
                     {
                         File.Delete(path);
-                        _log($"Yarım kalmış dosya yeniden indirilecek: {Path.GetFileName(path)}", "warn");
+                        _log(L.F("Yarım kalmış dosya yeniden indirilecek: {0}", Path.GetFileName(path)), "warn");
                     }
                     catch { /* kullanımdaysa kurulum yine de denenir */ }
                 }
@@ -206,13 +206,13 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Oyun zaten çalışıyor.");
 
             // Her şey kuruluysa iş hızla biter ve panelde görünmez; ilk açılışta indirilenler panelde izlenir
-            using var job = new DownloadJob($"{target.Name} hazırlanıyor") { Phase = "Hazırlanıyor" };
+            using var job = new DownloadJob(L.F("{0} hazırlanıyor", target.Name)) { Phase = "Hazırlanıyor" };
             _launchJob = job;
             _process = null;
             try
             {
                 var settings = EffectiveGameSettings.Of(AppSettings.Current, target.Own);
-                _log($"{target.Name} hazırlanıyor...", "accent");
+                _log(L.F("{0} hazırlanıyor...", target.Name), "accent");
 
                 string instanceDir = Path.Combine(AppPaths.Instances, target.Folder);
                 Directory.CreateDirectory(instanceDir);
@@ -360,7 +360,7 @@ namespace VuluLauncher
                     if (await boot.WaitForWindowAsync(status => BootProgress?.Invoke(status)))
                     {
                         long ms = boot.Status.ElapsedMs;
-                        _log($"Oyun açıldı ({ms / 1000.0:0.#} sn). İyi oyunlar!", "ok");
+                        _log(L.F("Oyun açıldı ({0:0.#} sn). İyi oyunlar!", ms / 1000.0), "ok");
                         LogFile.Write($"[açılış] Oyun penceresi {ms} ms'de açıldı ({target.Name})");
                         Ready?.Invoke(ms);
                     }
@@ -501,7 +501,7 @@ namespace VuluLauncher
                     // Aynı adla kurulmuş eski NeoForge profili Forge sanılmasın
                     bool reuse = !LegacyNeoForge.ProfileIsNeoForge(launcher, mc, loaderVersion);
                     if (reuse && InstalledBefore(launcher, $"{mc}-forge-{loaderVersion}") is { } installed) return installed;
-                    _log($"Forge {loaderVersion} kontrol ediliyor...", "accent");
+                    _log(L.F("Forge {0} kontrol ediliyor...", loaderVersion), "accent");
                     return MarkInstalled(launcher,
                         await new ForgeInstaller(launcher, Downloader.Http).Install(mc, loaderVersion, InstallOptions(javaPath, reuse)));
                 }
@@ -510,7 +510,7 @@ namespace VuluLauncher
                 {
                     bool reuse = LegacyNeoForge.ProfileIsNeoForge(launcher, mc, loaderVersion);
                     if (reuse && InstalledBefore(launcher, $"{mc}-forge-{loaderVersion}") is { } installed) return installed;
-                    _log($"NeoForge {loaderVersion} kontrol ediliyor...", "accent");
+                    _log(L.F("NeoForge {0} kontrol ediliyor...", loaderVersion), "accent");
                     return MarkInstalled(launcher, await new ForgeInstaller(launcher, Downloader.Http)
                         .Install(LegacyNeoForge.CreateVersion(mc, loaderVersion), InstallOptions(javaPath, reuse)));
                 }
@@ -518,13 +518,13 @@ namespace VuluLauncher
                 case "neoforge":
                 {
                     if (InstalledBefore(launcher, $"neoforge-{loaderVersion}") is { } installed) return installed;
-                    _log($"NeoForge {loaderVersion} kontrol ediliyor...", "accent");
+                    _log(L.F("NeoForge {0} kontrol ediliyor...", loaderVersion), "accent");
                     return MarkInstalled(launcher,
                         await new NeoForgeInstaller(launcher, Downloader.Http).Install(mc, loaderVersion, InstallOptions(javaPath)));
                 }
 
                 default:
-                    throw new InvalidOperationException($"Bilinmeyen mod yükleyici: {target.Loader}");
+                    throw new InvalidOperationException(L.F("Bilinmeyen mod yükleyici: {0}", target.Loader));
             }
         }
 
@@ -668,7 +668,7 @@ namespace VuluLauncher
                 }
 
                 default:
-                    throw new InvalidOperationException($"Bilinmeyen mod yükleyici: {loader}");
+                    throw new InvalidOperationException(L.F("Bilinmeyen mod yükleyici: {0}", loader));
             }
         }
     }
@@ -707,7 +707,7 @@ namespace VuluLauncher
         public static CmlLib.Core.Installer.Forge.Versions.ForgeVersion CreateVersion(string mcVersion, string loaderVersion)
         {
             if (!Version.TryParse(loaderVersion, out _))
-                throw new InvalidOperationException($"Geçersiz NeoForge sürümü: {loaderVersion}");
+                throw new InvalidOperationException(L.F("Geçersiz NeoForge sürümü: {0}", loaderVersion));
 
             string full = $"{mcVersion}-{loaderVersion}";
             return new CmlLib.Core.Installer.Forge.Versions.ForgeVersion(mcVersion, loaderVersion)

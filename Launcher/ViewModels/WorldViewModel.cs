@@ -102,7 +102,7 @@ namespace VuluLauncher.ViewModels
             catch (Exception ex) { if (id == _loadId) { Error = "Liderlik tablosu alınamadı. " + Errors.Friendly(ex); Loading = false; } return; }
             if (id != _loadId) return;
 
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             Categories.Clear();
             foreach (var c in data.Items("categories"))
             {
@@ -129,11 +129,11 @@ namespace VuluLauncher.ViewModels
                 DateTime.TryParse(iso, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var d) ? d.ToLocalTime().ToString(format, tr) : "";
             Subtitle = Period switch
             {
-                "week" => $"Bu hafta · {Date(data.Text("weekEnd"), "d MMMM dddd HH:mm")}'de sıfırlanır. Her dalın birincisi rozet ve \"Haftanın Şampiyonu\" pelerinini alır.",
-                "season" => data.Get("season") is { ValueKind: JsonValueKind.Object } s ? $"{s.Text("name")} · {Date(s.Text("endsAt"), "d MMMM yyyy")} tarihinde biter." : "Şu an süren bir sezon yok.",
+                "week" => L.F("Bu hafta · {0}'de sıfırlanır. Her dalın birincisi rozet ve \"Haftanın Şampiyonu\" pelerinini alır.", Date(data.Text("weekEnd"), "d MMMM dddd HH:mm")),
+                "season" => data.Get("season") is { ValueKind: JsonValueKind.Object } s ? L.F("{0} · {1} tarihinde biter.", s.Text("name"), Date(s.Text("endsAt"), "d MMMM yyyy")) : "Şu an süren bir sezon yok.",
                 _ => "vulu sunucusunda bugüne kadar.",
             };
-            if (data.Text("updatedAt") is { } updated) Subtitle += $" Son güncelleme: {Names.Ago(updated)}.";
+            if (data.Text("updatedAt") is { } updated) Subtitle += L.F(" Son güncelleme: {0}.", Names.Ago(updated));
             Loading = false;
         }
 
@@ -201,7 +201,7 @@ namespace VuluLauncher.ViewModels
                 int online = data.Int("online");
                 int elsewhere = data.Items("players").Count() - list.Count;
                 MapStatus = online == 0 ? "Sunucuda şu an kimse yok."
-                    : $"Sunucuda {online} kişi · haritada sen ve arkadaşların görünür" + (elsewhere > 0 ? $" ({elsewhere} kişi Nether/End'de)" : "") + ".";
+                    : L.F("Sunucuda {0} kişi · haritada sen ve arkadaşların görünür", online) + (elsewhere > 0 ? L.F(" ({0} kişi Nether/End'de)", elsewhere) : "") + ".";
                 if (!_centered && list.FirstOrDefault(m => m.You) is { } me) { Map?.CenterOn(me.X, me.Z, 1); _centered = true; }
             }
             catch (Exception ex) { MapStatus = "Oyuncular alınamadı: " + ex.Message; }

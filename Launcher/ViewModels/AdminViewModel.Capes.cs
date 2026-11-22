@@ -24,7 +24,7 @@ namespace VuluLauncher.ViewModels
             get
             {
                 string source = Data.Bool("custom") ? "PNG" : Data.Get("art").ValueKind == JsonValueKind.String ? "Hazır çizim" : "Desen";
-                string owners = AdminOnly ? "adminlere özel" : $"{Data.Int("owners")} kişide";
+                string owners = AdminOnly ? "adminlere özel" : L.F("{0} kişide", Data.Int("owners"));
                 return $"{source} · {owners}";
             }
         }
@@ -87,7 +87,7 @@ namespace VuluLauncher.ViewModels
         public bool IsDesign => CapeSource == "design";
         public bool IsArt => CapeSource == "art";
         public bool IsPng => CapeSource == "png";
-        public string EditorTitle => CapeIsNew ? "Yeni pelerin" : $"{CapeName} düzenleniyor";
+        public string EditorTitle => CapeIsNew ? "Yeni pelerin" : L.F("{0} düzenleniyor", CapeName);
         public bool CanDeleteCape => !CapeIsNew;
         public bool ShowOwners => !CapeIsNew && !CapeAdminOnly;
         partial void OnCapeAdminOnlyChanged(bool value) => OnPropertyChanged(nameof(ShowOwners));
@@ -286,8 +286,8 @@ namespace VuluLauncher.ViewModels
         private async Task DeleteCape()
         {
             var row = CapeRows.FirstOrDefault(c => c.Key == CapeKey);
-            string who = row is { AdminOnly: false } ? $" {row.Data.Int("owners")} kişiden alınır, takanlarda çıkarılır." : "";
-            if (!await main.ConfirmAsync("Pelerini sil", $"\"{CapeName}\" silinsin mi?{who} Bu geri alınamaz.", "Sil", danger: true)) return;
+            string who = row is { AdminOnly: false } ? L.F(" {0} kişiden alınır, takanlarda çıkarılır.", row.Data.Int("owners")) : "";
+            if (!await main.ConfirmAsync("Pelerini sil", L.F("\"{0}\" silinsin mi?{1} Bu geri alınamaz.", CapeName, who), "Sil", danger: true)) return;
             try
             {
                 var r = await _core.Call("admin.deleteCape", new { key = CapeKey });
@@ -304,7 +304,7 @@ namespace VuluLauncher.ViewModels
             if (CapeIsNew || CapeAdminOnly) return;
             try
             {
-                var tr = CultureInfo.GetCultureInfo("tr-TR");
+                var tr = L.Culture;
                 var list = await _core.Call("admin.capeOwners", new { key = CapeKey });
                 foreach (var o in list.Items())
                 {
@@ -312,7 +312,7 @@ namespace VuluLauncher.ViewModels
                     string meta = string.Join(" · ", new[] { date, o.Text("note") ?? "", o.Bool("worn") ? "takılı" : "" }.Where(x => x.Length > 0));
                     CapeOwners.Add(new CapeOwner(this, o.Text("username") ?? "", meta, o.Bool("worn")));
                 }
-                OwnersTitle = CapeOwners.Count == 0 ? "Henüz kimsede yok." : $"{CapeOwners.Count} kişide var";
+                OwnersTitle = CapeOwners.Count == 0 ? "Henüz kimsede yok." : L.F("{0} kişide var", CapeOwners.Count);
             }
             catch (Exception ex) { OwnersTitle = ex.Message; }
         }
@@ -326,7 +326,7 @@ namespace VuluLauncher.ViewModels
             {
                 var r = await _core.Call("progress.grantCape", new { username = name, key = CapeKey, note = "" });
                 CapeOk = true;
-                CapeNote = r.Bool("added") ? $"{name} kullanıcısına verildi ✓" : $"{name} kullanıcısında zaten var.";
+                CapeNote = r.Bool("added") ? L.F("{0} kullanıcısına verildi ✓", name) : L.F("{0} kullanıcısında zaten var.", name);
                 GrantUsername = "";
                 await LoadCapeOwnersAsync();
                 await FillCapeRowsAsync(await _core.Call("admin.capes"));
@@ -336,7 +336,7 @@ namespace VuluLauncher.ViewModels
 
         public async Task RevokeCapeOwnerAsync(CapeOwner o)
         {
-            if (!await main.ConfirmAsync("Pelerini geri al", $"{o.Username} kullanıcısının \"{CapeName}\" pelerini geri alınsın mı?", "Geri al")) return;
+            if (!await main.ConfirmAsync("Pelerini geri al", L.F("{0} kullanıcısının \"{1}\" pelerini geri alınsın mı?", o.Username, CapeName), "Geri al")) return;
             try
             {
                 await _core.Call("progress.revokeCape", new { username = o.Username, key = CapeKey });
@@ -349,7 +349,7 @@ namespace VuluLauncher.ViewModels
         private static string SlugKey(string text)
         {
             var map = new Dictionary<char, char> { ['ç'] = 'c', ['ğ'] = 'g', ['ı'] = 'i', ['ö'] = 'o', ['ş'] = 's', ['ü'] = 'u', ['â'] = 'a', ['î'] = 'i', ['û'] = 'u' };
-            var chars = text.ToLower(CultureInfo.GetCultureInfo("tr-TR")).Select(ch => map.TryGetValue(ch, out var r) ? r : ch)
+            var chars = text.ToLower(L.Culture).Select(ch => map.TryGetValue(ch, out var r) ? r : ch)
                 .Select(ch => char.IsAsciiLetterOrDigit(ch) ? ch : '-');
             string s = string.Join("-", new string(chars.ToArray()).Split('-', StringSplitOptions.RemoveEmptyEntries));
             return s.Length > 32 ? s[..32].Trim('-') : s;

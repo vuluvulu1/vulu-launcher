@@ -42,14 +42,14 @@ namespace VuluLauncher.ViewModels
         {
             var names = Roles.Where(r => r.IsSelected).Select(r => r.Name).ToList();
             Everyone = names.Count == 0;
-            Hint = names.Count > 0 ? $"Yalnızca {string.Join(", ", names)} rolündekiler ve adminler görür." : "Bütün vulu kullanıcıları görür.";
+            Hint = names.Count > 0 ? L.F("Yalnızca {0} rolündekiler ve adminler görür.", string.Join(", ", names)) : "Bütün vulu kullanıcıları görür.";
         }
     }
 
     /// <summary>Paketi kimlerin görebileceği (admin). Yeni revizyon açılmaz; kuranların paketi değişmez. Sonuç true ise kaydedildi.</summary>
     internal sealed partial class PackAccessModal(string packId, string packName, JsonElement roles, IEnumerable<string> chosen) : ModalViewModel
     {
-        public string Title { get; } = $"{packName} · Kimler erişebilir";
+        public string Title { get; } = L.F("{0} · Kimler erişebilir", packName);
         public RoleChooser Chooser { get; } = new(roles, chosen);
         [ObservableProperty] private string? _error;
 
@@ -101,8 +101,8 @@ namespace VuluLauncher.ViewModels
             _instance = instance;
             var existing = info.Get("existing");
             IsUpdate = existing.ValueKind == JsonValueKind.Object;
-            Title = IsUpdate ? $"{info.Text("name")} paketini güncelle" : "vulu Packs'te paylaş";
-            SubmitText = IsUpdate ? $"Güncelle (rev {existing.Int("revision") + 1})" : "Yayınla";
+            Title = IsUpdate ? L.F("{0} paketini güncelle", info.Text("name")) : "vulu Packs'te paylaş";
+            SubmitText = IsUpdate ? L.F("Güncelle (rev {0})", existing.Int("revision") + 1) : "Yayınla";
             CoverText = IsUpdate && existing.Bool("hasCover") ? "Mevcut kapak kalacak · değiştirmek için tıkla" : "Kapak resmi seç";
             _name = info.Text("name") ?? instance.Name;
             _description = info.Text("description") ?? "";
@@ -111,7 +111,7 @@ namespace VuluLauncher.ViewModels
             {
                 string path = e.Text("path") ?? "";
                 Entries.Add(new ShareEntry(path + (e.Bool("isDir") ? "/" : ""), Labels.GetValueOrDefault(path.ToLowerInvariant()), e.Text("note"),
-                    $"{e.Int("files")} dosya · {HomeViewModel.FormatSize(e.Num("sizeMb"))}", e.Bool("checkedByDefault")));
+                    L.F("{0} dosya · {1}", e.Int("files"), HomeViewModel.FormatSize(e.Num("sizeMb"))), e.Bool("checkedByDefault")));
             }
             var ram = info.Items("ramOptionsGb").Select(g => g.GetInt32()).ToList();
             if (ram.Count == 0) ram = main.Home.RamOptions.ToList();
@@ -137,7 +137,7 @@ namespace VuluLauncher.ViewModels
         public bool HasCheck { get; }
         public bool CheckOk => HasCheck && Issues.Count == 0;
         public bool HasIssues => Issues.Count > 0;
-        public string IssuesTitle => $"Paylaşmadan önce bak ({Issues.Count})";
+        public string IssuesTitle => L.F("Paylaşmadan önce bak ({0})", Issues.Count);
         public bool NoEntries => Entries.Count == 0;
         [ObservableProperty] private string _coverText;
         [ObservableProperty] private Bitmap? _cover;

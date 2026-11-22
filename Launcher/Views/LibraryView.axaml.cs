@@ -176,7 +176,7 @@ namespace VuluLauncher.Views
             if (_dragging) return;   // sürüklerken sıra elle değişiyor
             WatchItems();
             string q = SearchBox.Text?.Trim() ?? "";
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             var list = _vm.Instances.Where(i => _filter switch
                 {
                     // Kişisel: kendi oluşturduğun ya da CurseForge/Modrinth'ten kurduğun; vulu paketleri: vulu Packs'ten kurulanlar.
@@ -266,7 +266,7 @@ namespace VuluLauncher.Views
                 }, DispatcherPriority.Background);
             _syncing = false;
             NoMatch.IsVisible = _items.Count == 0 && _vm.Instances.Count > 0;
-            NoMatch.Title = q.Length > 0 ? $"“{q}” ile eşleşen paket yok" : "Bu süzgeçte paket yok";
+            NoMatch.Title = q.Length > 0 ? L.F("“{0}” ile eşleşen paket yok", q) : "Bu süzgeçte paket yok";
 
             // Süzgeç haplarında sayılar; güncellemesi olan yoksa o hap gizlenir (seçiliyken kalır)
             int all = _vm.Instances.Count, mine = _vm.Instances.Count(i => i.IsCustom && !i.IsVuluPack), vulu = _vm.Instances.Count(i => i.IsVuluPack),

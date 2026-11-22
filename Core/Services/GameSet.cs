@@ -43,7 +43,7 @@ namespace VuluLauncher
         {
             if (_runner != null && IsRunning) throw new InvalidOperationException("Oyun zaten çalışıyor.");
             var game = new GameLauncher(LogFor(instanceId), _java, _runner);
-            if (!_games.TryAdd(instanceId, game)) throw new InvalidOperationException($"{target.Name} zaten açık.");
+            if (!_games.TryAdd(instanceId, game)) throw new InvalidOperationException(L.F("{0} zaten açık.", target.Name));
             _names[instanceId] = target.Name;
             game.BootProgress += status => BootProgress?.Invoke(instanceId, status);
             game.Ready += ms => Ready?.Invoke(instanceId, ms);

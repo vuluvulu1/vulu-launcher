@@ -34,7 +34,7 @@ namespace VuluLauncher
             string? bearer = null)
         {
             if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !(uri.Scheme == Uri.UriSchemeHttps || IsLocalTestServer(uri)))
-                throw new InvalidOperationException($"Geçersiz indirme adresi: {url}");
+                throw new InvalidOperationException(L.F("Geçersiz indirme adresi: {0}", url));
 
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             string partPath = path + ".part";
@@ -114,7 +114,7 @@ namespace VuluLauncher
         {
             using var stream = File.OpenRead(path);
             if (!string.Equals(Convert.ToHexString(hash(stream)), expected, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException($"Dosya doğrulanamadı (hash uyuşmuyor): {Path.GetFileName(path)}");
+                throw new InvalidDataException(L.F("Dosya doğrulanamadı (hash uyuşmuyor): {0}", Path.GetFileName(path)));
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ namespace VuluLauncher.ViewModels
         /// <summary>Bütün geçmiş: önce son beşi, istenince hepsi.</summary>
         [ObservableProperty] private bool _showAll;
         public bool CanShowAll => Card.Changelog.Count > 5 && !ShowAll;
-        public string ShowAllText => $"Bütün geçmiş ({Card.Changelog.Count})";
+        public string ShowAllText => L.F("Bütün geçmiş ({0})", Card.Changelog.Count);
         public IReadOnlyList<ChangeEntry> Changes => ShowAll ? Card.Changelog : RecentChanges;
 
         partial void OnShowAllChanged(bool value)
@@ -38,7 +38,7 @@ namespace VuluLauncher.ViewModels
     internal sealed partial class PackUpdateModal(PackCard card, IReadOnlyList<ChangeEntry> changes) : ModalViewModel
     {
         public override double Width => changes.Count > 0 ? 600 : 440;
-        public string Title => $"{card.Name} güncellensin mi?";
+        public string Title => L.F("{0} güncellensin mi?", card.Name);
         public string Revisions => card.InstalledRevision > 0 ? $"rev {card.InstalledRevision} → rev {card.Revision}" : $"rev {card.Revision}";
         public IReadOnlyList<ChangeEntry> Changes { get; } = changes;
 
@@ -50,7 +50,7 @@ namespace VuluLauncher.ViewModels
     internal sealed partial class ModpackVersionModal(string packName) : ModalViewModel
     {
         public override double Width => 640;
-        public string Title => $"{packName} — sürüm değiştir";
+        public string Title => L.F("{0} — sürüm değiştir", packName);
         public string Note => "Paketin modları seçtiğin sürümünkilerle değişir; sonradan eklediğin modlar ve dünyalar kalır. Ayarlar (config) önce yedeklenir.";
         public ObservableCollection<ModpackVersionRow> Versions { get; } = new();
         [ObservableProperty] private string? _message = "Sürümler yükleniyor...";
@@ -95,7 +95,7 @@ namespace VuluLauncher.ViewModels
         private static readonly Dictionary<string, string> TypeNames = new() { ["release"] = "Kararlı", ["beta"] = "Beta", ["alpha"] = "Alfa" };
 
         public override double Width => 640;
-        public string Title => $"{hit.Title} — sürüm seç";
+        public string Title => L.F("{0} — sürüm seç", hit.Title);
         public ObservableCollection<VersionRow> Versions { get; } = new();
         [ObservableProperty] private string? _message = "Sürümler yükleniyor...";
         [ObservableProperty] private bool _isError;
@@ -144,7 +144,7 @@ namespace VuluLauncher.ViewModels
     {
         public TargetPickerModal(ContentHit hit, IReadOnlyList<InstanceItem> customs)
         {
-            Title = $"{hit.Title} nereye kurulsun?";
+            Title = L.F("{0} nereye kurulsun?", hit.Title);
             foreach (var row in customs.Select(i => new TargetRow(this, i, Problem(hit, i))).OrderBy(r => r.Problem != null ? 1 : 0))
                 Rows.Add(row);
         }
@@ -187,7 +187,7 @@ namespace VuluLauncher.ViewModels
         {
             _instanceId = instanceId;
             foreach (var m in manual.Items())
-                Rows.Add(new ManualRow(m.Get("fileId").ToString(), m.Text("title") ?? "", $"{m.Text("folder")}/ · tam olarak bu dosya: {m.Text("fileName")}", m.Text("url") ?? "")
+                Rows.Add(new ManualRow(m.Get("fileId").ToString(), m.Text("title") ?? "", L.F("{0}/ · tam olarak bu dosya: {1}", m.Text("folder"), m.Text("fileName")), m.Text("url") ?? "")
                 {
                     Status = instanceId != null ? "İndirilmesi bekleniyor…" : "",
                 });
@@ -199,7 +199,7 @@ namespace VuluLauncher.ViewModels
                 _watch.Start();
                 _ = Result.ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() => _watch.Stop()));
             }
-            Title = Rows.Count == 1 ? $"{Rows[0].Title} elle indirilmeli" : $"{Rows.Count} dosya elle indirilmeli";
+            Title = Rows.Count == 1 ? L.F("{0} elle indirilmeli", Rows[0].Title) : L.F("{0} dosya elle indirilmeli", Rows.Count);
             Intro = Rows.Count == 1
                 ? "Bu modun yapımcısı, modun başka uygulamalardan indirilmesine izin vermiyor. CurseForge sayfasından yazan dosyayı indir; sayfadaki en yeni sürümü değil, tam olarak bu dosyayı."
                 : "Bu dosyaların yapımcıları başka uygulamalardan indirilmelerine izin vermiyor. Her birini CurseForge sayfasından indir; sayfadaki en yeni sürümü değil, tam olarak yazan dosyayı.";

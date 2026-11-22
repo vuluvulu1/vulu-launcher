@@ -30,7 +30,7 @@ namespace VuluLauncher.ViewModels
         private readonly string? _wantedMc;
 
         public bool IsEdit => _existing != null;
-        public string Title => IsEdit ? $"{_existing!.Name} — düzenle" : "Yeni instance";
+        public string Title => IsEdit ? L.F("{0} — düzenle", _existing!.Name) : "Yeni instance";
         public string SubmitText => IsEdit ? "Kaydet" : "Oluştur";
         public string Hint => IsEdit
             ? "Dünyalar, modlar ve ayarlar yerinde kalır. Sürümü ya da yükleyiciyi değiştirirsen kurulu modlar uyumsuz kalabilir."
@@ -104,7 +104,7 @@ namespace VuluLauncher.ViewModels
                     .Items().Select(v => v.GetString() ?? "").ToList();
                 if (current != _requestId) return;
                 if (versions.Count == 0) { Error = "Bu Minecraft sürümü için bu yükleyici yok."; return; }
-                for (int i = 0; i < versions.Count; i++) LoaderVersions.Add(new Option(versions[i], i == 0 ? $"{versions[i]} (önerilen)" : versions[i]));
+                for (int i = 0; i < versions.Count; i++) LoaderVersions.Add(new Option(versions[i], i == 0 ? L.F("{0} (önerilen)", versions[i]) : versions[i]));
                 // Düzenlerken sürüm ve yükleyici değişmediyse şu an kurulu olan seçili gelir
                 if (_existing is { LoaderVersion: { Length: > 0 } installed } && Loader == _existing.Loader && McVersion == _existing.McVersion)
                 {
@@ -176,7 +176,7 @@ namespace VuluLauncher.ViewModels
         }
 
         public override double Width => 600;
-        public string Title => $"{_item.Name} — görünüm";
+        public string Title => L.F("{0} — görünüm", _item.Name);
         public bool IsCustom => _item.Kind == "custom";
         public bool IsShared => _item.SharedPackId != null;
         public string LogoReset => _item.Kind == "server" ? "Kaldırırsan paketin kendi logosuna dönülür." : "Kaldırırsan ad yazıyla gösterilir.";
@@ -264,7 +264,7 @@ namespace VuluLauncher.ViewModels
         }
 
         public override double Width => 720;
-        public string Title => $"{_item.Name} — içerik";
+        public string Title => L.F("{0} — içerik", _item.Name);
         /// <summary>Görünen satırlar (süzgeç ve aramaya göre); bütün liste <see cref="_all"/>.</summary>
         public ObservableCollection<ContentRow> Rows { get; } = new();
         private readonly List<ContentRow> _all = new();
@@ -288,7 +288,7 @@ namespace VuluLauncher.ViewModels
         [NotifyPropertyChangedFor(nameof(HasSelection), nameof(SelectionText))]
         private int _selectedCount;
         public bool HasSelection => SelectedCount > 0;
-        public string SelectionText => $"{SelectedCount} seçili";
+        public string SelectionText => L.F("{0} seçili", SelectedCount);
         [ObservableProperty] private bool _noMatch;
 
         partial void OnFilterChanged(string value) => ApplyFilter();
@@ -299,7 +299,7 @@ namespace VuluLauncher.ViewModels
 
         private void ApplyFilter()
         {
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             string q = Query.Trim();
             var show = _all.Where(r => Filter switch { "on" => r.Enabled, "off" => !r.Enabled, "updates" => r.HasUpdate, _ => true })
                 .Where(r => q.Length == 0 || tr.CompareInfo.IndexOf(r.Title, q, CompareOptions.IgnoreCase) >= 0
@@ -309,10 +309,10 @@ namespace VuluLauncher.ViewModels
             foreach (var r in show) Rows.Add(r);
             NoMatch = show.Count == 0 && _all.Count > 0;
             int on = _all.Count(r => r.Enabled), upd = _all.Count(r => r.HasUpdate);
-            AllText = $"Tümü {_all.Count}";
-            OnText = $"Açık {on}";
-            OffText = $"Kapalı {_all.Count - on}";
-            UpdatesText = $"Güncellemesi olan {upd}";
+            AllText = L.F("Tümü {0}", _all.Count);
+            OnText = L.F("Açık {0}", on);
+            OffText = L.F("Kapalı {0}", _all.Count - on);
+            UpdatesText = L.F("Güncellemesi olan {0}", upd);
             HasAnyUpdates = upd > 0;
         }
 
@@ -353,8 +353,8 @@ namespace VuluLauncher.ViewModels
         {
             var rows = _all.Where(r => r.IsSelected).ToList();
             if (rows.Count == 0) return;
-            string what = rows.Count == 1 ? $"'{rows[0].Title}'" : $"{rows.Count} dosya";
-            if (!await _main.ConfirmAsync("Dosyaları kaldır", $"{what} bu instance'tan kaldırılsın mı?", "Kaldır", danger: true)) return;
+            string what = rows.Count == 1 ? $"'{rows[0].Title}'" : L.F("{0} dosya", rows.Count);
+            if (!await _main.ConfirmAsync("Dosyaları kaldır", L.F("{0} bu instance'tan kaldırılsın mı?", what), "Kaldır", danger: true)) return;
             foreach (var r in rows)
             {
                 try { await _core.Call("instances.removeContent", new { id = _item.Id, file = r.File }); }
@@ -374,7 +374,7 @@ namespace VuluLauncher.ViewModels
         public bool HasLoadError => LoadError != null;
         [RelayCommand] private Task Retry() => LoadAsync();
         public bool HasStableUpdates => StableUpdates > 0;
-        public string UpdateAllText => $"Tümünü güncelle ({StableUpdates})";
+        public string UpdateAllText => L.F("Tümünü güncelle ({0})", StableUpdates);
 
         partial void OnStableUpdatesChanged(int value)
         {
@@ -396,7 +396,7 @@ namespace VuluLauncher.ViewModels
                 string file = i.Text("file") ?? "";
                 var update = _updates != null && _updates.TryGetValue(file, out var u) ? u : (JsonElement?)null;
                 var row = new ContentRow(this, file, i.Text("title") ?? file,
-                    string.Join(" · ", new[] { TypeNames.GetValueOrDefault(i.Text("type") ?? ""), i.Text("version"), i.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR")) + " MB" }.Where(s => !string.IsNullOrEmpty(s))),
+                    string.Join(" · ", new[] { TypeNames.GetValueOrDefault(i.Text("type") ?? ""), i.Text("version"), i.Num("sizeMb").ToString("0.#", L.Culture) + " MB" }.Where(s => !string.IsNullOrEmpty(s))),
                     i.Get("enabled").ValueKind != JsonValueKind.False, i.Text("iconUrl"), update, i.Text("projectId"), i.Text("source"), i.Text("previous"));
                 if (selected.Contains(file)) row.SetSelected(true);
                 _all.Add(row);
@@ -404,7 +404,7 @@ namespace VuluLauncher.ViewModels
             ApplyFilter();
             SelectionChanged();
             IsEmpty = _all.Count == 0;
-            Summary = $"{_all.Count} dosya · Minecraft {content.Text("mcVersion")} · {Names.Loader(content.Text("loader"))}";
+            Summary = L.F("{0} dosya · Minecraft {1} · {2}", _all.Count, content.Text("mcVersion"), Names.Loader(content.Text("loader")));
             StableUpdates = _updates?.Values.Count(u => u.Bool("stable")) ?? 0;
         }
 
@@ -446,7 +446,7 @@ namespace VuluLauncher.ViewModels
         /// <summary>Güncellemenin değişiklik notları (kurulu sürümden seçilen sürüme kadar).</summary>
         public async Task ShowChangelogAsync(ContentRow row, JsonElement update)
         {
-            var modal = new ChangelogModal($"{row.Title} — neler değişti", $"{update.Text("from")} → {update.Text("to")}");
+            var modal = new ChangelogModal(L.F("{0} — neler değişti", row.Title), $"{update.Text("from")} → {update.Text("to")}");
             _ = modal.LoadAsync(new { instanceId = _item.Id, projectId = update.Text("projectId"), versionId = update.Text("versionId"), source = update.Text("source") ?? "" });
             if (await _main.ShowAsync(modal) is true) await UpdateAsync(new List<JsonElement> { update });
         }
@@ -455,7 +455,7 @@ namespace VuluLauncher.ViewModels
         public async Task RollbackAsync(ContentRow row)
         {
             if (row.ProjectId == null || row.Previous == null) return;
-            if (!await _main.ConfirmAsync("Güncellemeyi geri al", $"{row.Title} eski sürümüne ({row.Previous}) dönsün mü?", "Geri al")) return;
+            if (!await _main.ConfirmAsync("Güncellemeyi geri al", L.F("{0} eski sürümüne ({1}) dönsün mü?", row.Title, row.Previous), "Geri al")) return;
             try
             {
                 await _core.Call("mods.rollback", new { instanceId = _item.Id, projectId = row.ProjectId, source = row.Source ?? "" });
@@ -478,7 +478,7 @@ namespace VuluLauncher.ViewModels
 
         public async Task RemoveAsync(ContentRow row)
         {
-            if (!await _main.ConfirmAsync("Dosyayı kaldır", $"'{row.Title}' bu instance'tan kaldırılsın mı?", "Kaldır", danger: true)) return;
+            if (!await _main.ConfirmAsync("Dosyayı kaldır", L.F("'{0}' bu instance'tan kaldırılsın mı?", row.Title), "Kaldır", danger: true)) return;
             try { await _core.Call("instances.removeContent", new { id = _item.Id, file = row.File }); }
             catch (Exception ex) { await _main.AlertAsync("Kaldırılamadı", ex.Message); }
             await LoadAsync();
@@ -511,7 +511,7 @@ namespace VuluLauncher.ViewModels
             Meta = meta;
             _enabled = enabled;
             _update = update;
-            UpdateText = update is { } u ? (u.Bool("stable") ? $"Güncelle ({u.Text("to")})" : $"Güncelle ({u.Text("to")} · {u.Text("type")})") : null;
+            UpdateText = update is { } u ? (u.Bool("stable") ? L.F("Güncelle ({0})", u.Text("to")) : L.F("Güncelle ({0} · {1})", u.Text("to"), u.Text("type"))) : null;
             _loading = false;
             _ = LoadIcon(iconUrl);
         }
@@ -526,7 +526,7 @@ namespace VuluLauncher.ViewModels
         /// <summary>Son güncellemeden önceki sürüm; varsa "Geri al" görünür.</summary>
         public string? Previous { get; }
         public bool CanRollback => Previous != null && ProjectId != null;
-        public string RollbackTip => $"Güncellemeyi geri al ({Previous} sürümüne dön)";
+        public string RollbackTip => L.F("Güncellemeyi geri al ({0} sürümüne dön)", Previous);
         [ObservableProperty] private bool _enabled;
         /// <summary>Toplu işlem için seçili (satırın solundaki kutu).</summary>
         [ObservableProperty] private bool _isSelected;
@@ -559,7 +559,7 @@ namespace VuluLauncher.ViewModels
         public GameSettingsModal(string id, string name, JsonElement data)
         {
             _id = id;
-            Title = $"{name} — oyun ayarları";
+            Title = L.F("{0} — oyun ayarları", name);
             _javaPath = data.Text("javaPath") ?? "";
             _jvmArgs = data.Text("jvmArgs") ?? "";
             var g = data.Get("global");
@@ -717,7 +717,7 @@ namespace VuluLauncher.ViewModels
         }
 
         public override double Width => 680;
-        public string Title => $"{_item.Name} — dünyalar";
+        public string Title => L.F("{0} — dünyalar", _item.Name);
         public ObservableCollection<WorldRow> Worlds { get; } = new();
         [ObservableProperty] private string _summary = "Yükleniyor...";
         [ObservableProperty] private bool _running;
@@ -733,7 +733,7 @@ namespace VuluLauncher.ViewModels
             foreach (var w in data.Items("worlds").OrderByDescending(w => w.Text("lastPlayed")))
                 Worlds.Add(new WorldRow(this, w));
             IsEmpty = Worlds.Count == 0;
-            Summary = Worlds.Count > 0 ? $"{Worlds.Count} dünya" : "";
+            Summary = Worlds.Count > 0 ? L.F("{0} dünya", Worlds.Count) : "";
         }
 
         public async Task Act(Func<Task<JsonElement>> run, string? done)
@@ -747,8 +747,8 @@ namespace VuluLauncher.ViewModels
 
         public async Task Restore(WorldRow w, BackupRow b)
         {
-            if (!await _main.ConfirmAsync("Geri yükle", $"'{w.Name}' bu yedekteki hâline döndürülsün mü? Şimdiki hâli önce ayrıca yedeklenir.", "Geri yükle")) return;
-            await Act(() => _core.Call("worlds.restore", new { id = _item.Id, world = w.Name, backup = b.Name }), $"{w.Name} geri yüklendi.");
+            if (!await _main.ConfirmAsync("Geri yükle", L.F("'{0}' bu yedekteki hâline döndürülsün mü? Şimdiki hâli önce ayrıca yedeklenir.", w.Name), "Geri yükle")) return;
+            await Act(() => _core.Call("worlds.restore", new { id = _item.Id, world = w.Name, backup = b.Name }), L.F("{0} geri yüklendi.", w.Name));
         }
 
         public async Task DeleteBackup(WorldRow w, BackupRow b)
@@ -772,7 +772,7 @@ namespace VuluLauncher.ViewModels
         {
             _owner = owner;
             Name = w.Text("name") ?? "";
-            Meta = $"Son oynanma: {Names.Ago(w.Text("lastPlayed"))} · {w.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR"))} MB";
+            Meta = $"Son oynanma: {Names.Ago(w.Text("lastPlayed"))} · {w.Num("sizeMb").ToString("0.#", L.Culture)} MB";
             foreach (var b in w.Items("backups")) Backups.Add(new BackupRow(this, b));
             _ = LoadIcon(w.Text("icon"));
         }
@@ -793,7 +793,7 @@ namespace VuluLauncher.ViewModels
     internal sealed partial class BackupRow(WorldRow world, JsonElement b)
     {
         public string Name { get; } = b.Text("name") ?? "";
-        public string Text { get; } = $"{Names.Ago(b.Text("createdAt"))} · {b.Num("sizeMb").ToString("0.#", CultureInfo.GetCultureInfo("tr-TR"))} MB"
+        public string Text { get; } = $"{Names.Ago(b.Text("createdAt"))} · {b.Num("sizeMb").ToString("0.#", L.Culture)} MB"
             + (b.Bool("auto") ? " · otomatik" : (b.Text("name") ?? "").Contains("-geri-yukleme-oncesi-") ? " · geri yükleme öncesi" : "");
         public bool Running => world.Running;
 
@@ -817,7 +817,7 @@ namespace VuluLauncher.ViewModels
         }
 
         public override double Width => 860;
-        public string Title => IsPick ? "Paylaşılacak ekran görüntüsünü seç" : $"{_item.Name} — ekran görüntüleri";
+        public string Title => IsPick ? "Paylaşılacak ekran görüntüsünü seç" : L.F("{0} — ekran görüntüleri", _item.Name);
         /// <summary>Seçim için açıldıysa tıklanan görüntünün adı sonuç olur (paylaşmak için).</summary>
         public bool IsPick { get; }
         public bool NotPick => !IsPick;
@@ -834,8 +834,8 @@ namespace VuluLauncher.ViewModels
             foreach (var s in data.Items("shots")) Shots.Add(new ShotItem(this, s.Text("name") ?? "", s.Text("url"), s.Text("takenAt")));
             int total = data.Int("total");
             IsEmpty = total == 0;
-            Summary = total == 0 ? "" : $"{total} ekran görüntüsü · {HomeViewModel.FormatSize(data.Num("totalMb"))}"
-                + (total > Shots.Count ? $" · en yeni {Shots.Count} tanesi gösteriliyor" : "");
+            Summary = total == 0 ? "" : L.F("{0} ekran görüntüsü · {1}", total, HomeViewModel.FormatSize(data.Num("totalMb")))
+                + (total > Shots.Count ? L.F(" · en yeni {0} tanesi gösteriliyor", Shots.Count) : "");
         }
 
         public async Task Run(string command, ShotItem shot)
@@ -895,17 +895,17 @@ namespace VuluLauncher.ViewModels
             int fixedCount = repaired.Count + moved.Count;
             bool clean = fixedCount == 0 && gameError == null && missing.Count == 0 && manual.Count == 0 && notes.Count == 0;
 
-            Title = clean ? $"{name}: sorun yok" : $"{name} doğrulandı";
+            Title = clean ? L.F("{0}: sorun yok", name) : L.F("{0} doğrulandı", name);
             Intro = clean ? "Dosyalarda bir sorun bulunmadı." : fixedCount > 0 ? "Bulunan sorunlar onarıldı. Aşağıda kalanlar varsa onlara bak." : "Bazı şeyler kendiliğinden onarılamadı:";
             int checkedCount = r.Int("checkedCount");
-            Items.Add(new VerifyLine(true, checkedCount > 0 ? $"{checkedCount} içerik denetlendi" : "İçerik listesi denetlendi",
+            Items.Add(new VerifyLine(true, checkedCount > 0 ? L.F("{0} içerik denetlendi", checkedCount) : "İçerik listesi denetlendi",
                 repaired.Count > 0 ? "Yeniden indirilenler: " + string.Join(", ", repaired) : "Hepsi sağlam."));
-            if (moved.Count > 0) Items.Add(new VerifyLine(true, $"{moved.Count} sorunlu dosya mods-yedek klasörüne taşındı", string.Join(", ", moved)));
+            if (moved.Count > 0) Items.Add(new VerifyLine(true, L.F("{0} sorunlu dosya mods-yedek klasörüne taşındı", moved.Count), string.Join(", ", moved)));
             Items.Add(new VerifyLine(gameError == null, gameError == null ? "Oyun dosyaları denetlendi" : "Oyun dosyaları denetlenemedi",
                 gameError ?? "Minecraft, mod yükleyici ve kütüphaneler; eksik ya da bozuk olan yeniden indirildi."));
             foreach (var n in notes) Items.Add(new VerifyLine(false, "Onarılamadı", n));
             if (missing.Count > 0) Items.Add(new VerifyLine(false, "Eksik bağımlılıklar", string.Join(", ", missing) + " — oyunu açarken kurmanı önerecek."));
-            if (manual.Count > 0) Items.Add(new VerifyLine(false, $"{manual.Count} dosya elle indirilmeli", string.Join(", ", manual)));
+            if (manual.Count > 0) Items.Add(new VerifyLine(false, L.F("{0} dosya elle indirilmeli", manual.Count), string.Join(", ", manual)));
         }
 
         public override double Width => 560;

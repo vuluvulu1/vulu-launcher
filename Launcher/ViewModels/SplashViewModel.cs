@@ -30,7 +30,7 @@ namespace VuluLauncher.ViewModels
         /// <param name="play">false: perde görünür ama sahne karanlıkta bekler; <see cref="Play"/> ile başlar.</param>
         public void Begin(string username, bool play = true)
         {
-            Greeting = $"Hoş geldin, {username}";
+            Greeting = L.F("Hoş geldin, {0}", username);
             Status = "";
             _clock.Restart();
             IsVisible = true;

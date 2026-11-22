@@ -27,7 +27,7 @@ namespace VuluLauncher
                 case UnauthorizedAccessException:
                     return "Bir dosyaya erişim izni yok. Klasör salt okunur olabilir ya da antivirüs engelliyor olabilir.";
                 case FileNotFoundException f:
-                    return $"Dosya bulunamadı{Name(f.FileName)}.";
+                    return L.F("Dosya bulunamadı{0}.", Name(f.FileName));
                 case DirectoryNotFoundException:
                     return "Klasör bulunamadı; taşınmış ya da silinmiş olabilir.";
                 case PathTooLongException:
@@ -52,8 +52,8 @@ namespace VuluLauncher
                 HttpStatusCode.Forbidden => "Sunucu bu dosyaya erişime izin vermedi (403).",
                 HttpStatusCode.Unauthorized => "Oturumun kapalı ya da süresi dolmuş. Yeniden giriş yap.",
                 HttpStatusCode.TooManyRequests => "Kısa sürede çok fazla istek gitti. Biraz bekleyip tekrar dene.",
-                { } code when (int)code >= 500 => $"Sunucu şu an hata veriyor ({(int)code}). Biraz sonra tekrar dene.",
-                { } code => $"Sunucu isteği kabul etmedi ({(int)code}).",
+                { } code when (int)code >= 500 => L.F("Sunucu şu an hata veriyor ({0}). Biraz sonra tekrar dene.", (int)code),
+                { } code => L.F("Sunucu isteği kabul etmedi ({0}).", (int)code),
                 null => "Sunucuya ulaşılamadı. İnternet bağlantını kontrol edip tekrar dene.",
             };
         }

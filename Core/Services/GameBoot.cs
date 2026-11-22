@@ -42,7 +42,11 @@ namespace VuluLauncher
         /// <summary>Bu paketin bir önceki açılış süresi (ms); bilinmiyorsa 0.</summary>
         public long ExpectedMs { get; }
 
-        public BootStatus Status => new(_phase, _clock.ElapsedMilliseconds, ExpectedMs);
+        /// <summary>Aşama içeride Türkçe tutulur (sıralama metne bakar); gösterilirken seçili dile çevrilir.</summary>
+        public BootStatus Status => new(Shown(_phase), _clock.ElapsedMilliseconds, ExpectedMs);
+
+        private static string Shown(string phase) =>
+            Regex.Match(phase, @"^Modlar yükleniyor \((\d+) mod\)$") is { Success: true } m ? L.F("Modlar yükleniyor ({0} mod)", m.Groups[1].Value) : L.T(phase);
 
         /// <summary>Oyunun bir çıktı satırı: aşamayı ilerletir (geri gitmez).</summary>
         public void OnOutput(string line)

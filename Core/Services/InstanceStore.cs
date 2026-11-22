@@ -105,7 +105,7 @@ namespace VuluLauncher
         }
 
         public static InstanceMeta Get(string folder) =>
-            TryLoad(folder) ?? throw new InvalidOperationException($"Instance bulunamadı: {folder}");
+            TryLoad(folder) ?? throw new InvalidOperationException(L.F("Instance bulunamadı: {0}", folder));
 
         public static InstanceMeta? TryLoad(string folder)
         {
@@ -183,7 +183,7 @@ namespace VuluLauncher
             if (name.Length is 0 or > 40)
                 throw new InvalidOperationException("Instance adı 1-40 karakter olmalı.");
             if (!PackCatalog.Loaders.Contains(loader))
-                throw new InvalidOperationException($"Bilinmeyen mod yükleyici: {loader}");
+                throw new InvalidOperationException(L.F("Bilinmeyen mod yükleyici: {0}", loader));
             if (string.IsNullOrWhiteSpace(mcVersion))
                 throw new InvalidOperationException("Minecraft sürümü seçilmedi.");
             if (loader != "vanilla" && string.IsNullOrWhiteSpace(loaderVersion))

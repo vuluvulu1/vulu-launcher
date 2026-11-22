@@ -15,7 +15,7 @@ namespace VuluLauncher.ViewModels
     {
         public string Name { get; } = name;
         public Bitmap? Cover { get; } = cover;
-        public string Initial => Name.Length > 0 ? Name[..1].ToUpper(CultureInfo.GetCultureInfo("tr-TR")) : "?";
+        public string Initial => Name.Length > 0 ? Name[..1].ToUpper(L.Culture) : "?";
 
         /// <summary>0..1</summary>
         [ObservableProperty] private double _progress;

@@ -300,7 +300,7 @@ namespace VuluLauncher
             ValidatePackVersions(pack);
 
             if (InstanceStore.List().Any(m => m.SharedPackId == id))
-                throw new InvalidOperationException($"{pack.Name} zaten kurulu.");
+                throw new InvalidOperationException(L.F("{0} zaten kurulu.", pack.Name));
 
             var meta = InstanceStore.Create(pack.Name, pack.McVersion, pack.Loader, pack.LoaderVersion);
             using var job = new DownloadJob($"{pack.Name} kuruluyor");
@@ -331,13 +331,13 @@ namespace VuluLauncher
             var pack = await store.GetAsync(id) ?? throw new InvalidOperationException("Paket bulunamadı.");
             ValidatePackVersions(pack);
             var meta = InstanceStore.List().FirstOrDefault(m => m.SharedPackId == id)
-                ?? throw new InvalidOperationException($"{pack.Name} kurulu değil.");
+                ?? throw new InvalidOperationException(L.F("{0} kurulu değil.", pack.Name));
             if (_game.IsRunningFor(InstancePrefix + meta.Folder)) throw new InvalidOperationException("Paket açıkken güncellenemez; önce oyunu kapat.");
 
-            Log($"{pack.Name} güncelleniyor (rev {meta.SharedPackRevision} → {pack.Revision})...", "accent");
+            Log(L.F("{0} güncelleniyor (rev {1} → {2})...", pack.Name, meta.SharedPackRevision, pack.Revision), "accent");
             // Paket config'leri ve modları değiştirebilir: önce dünyalar otomatik yedeklenir
             await Task.Run(() => AutoBackupWorlds(meta, "paket güncellemesi"));
-            using var job = new DownloadJob($"{pack.Name} güncelleniyor");
+            using var job = new DownloadJob(L.F("{0} güncelleniyor", pack.Name));
             try
             {
                 await ApplyPackAsync(store, pack, meta, job);
@@ -349,8 +349,8 @@ namespace VuluLauncher
                 job.Fail(ex.Message);
                 throw;
             }
-            Log($"{pack.Name} güncellendi.", "ok");
-            job.Complete($"{pack.Name} güncellendi · rev {pack.Revision}");
+            Log(L.F("{0} güncellendi.", pack.Name), "ok");
+            job.Complete(L.F("{0} güncellendi · rev {1}", pack.Name, pack.Revision));
             return new { id = InstancePrefix + meta.Folder };
         }
 
@@ -366,7 +366,7 @@ namespace VuluLauncher
         {
             if (!PackVersion.IsMatch(pack.McVersion) || !PackCatalog.Loaders.Contains(pack.Loader) ||
                 (pack.Loader != "vanilla" && !PackVersion.IsMatch(pack.LoaderVersion ?? "")))
-                throw new InvalidDataException($"{pack.Name}: paketin sürüm bilgisi geçersiz.");
+                throw new InvalidDataException(L.F("{0}: paketin sürüm bilgisi geçersiz.", pack.Name));
         }
 
         /// <summary>Paketteki elle indirilecek dosyayı instance'ın bekleyenlerine ekler (yerinde ve sağlamsa eklemez).</summary>
@@ -379,7 +379,7 @@ namespace VuluLauncher
                 if (string.Equals(Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(stream)), mod.Sha1, StringComparison.OrdinalIgnoreCase)) return;
             }
             if (!Uri.TryCreate(mod.Url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps || uri.Host != "www.curseforge.com")
-                throw new InvalidDataException($"Paket izin verilmeyen bir sayfa adresi içeriyor: {mod.Title}");
+                throw new InvalidDataException(L.F("Paket izin verilmeyen bir sayfa adresi içeriyor: {0}", mod.Title));
             meta.PendingManual.RemoveAll(p => p.FileId == mod.VersionId || p.ProjectId == mod.ProjectId);
             string folder = mod.File.Contains('/') ? mod.File[..mod.File.IndexOf('/')] : "mods";
             meta.PendingManual.Add(new ManualDownload(mod.Title, mod.Url, folder, Path.GetFileName(mod.File),
@@ -415,14 +415,14 @@ namespace VuluLauncher
             await Parallel.ForEachAsync(downloads, new ParallelOptions { MaxDegreeOfParallelism = 6 }, async (mod, cancel) =>
             {
                 string path = Downloader.ResolveInside(dir, mod.File)
-                    ?? throw new InvalidDataException($"Paket geçersiz bir dosya yolu içeriyor: {mod.File}");
+                    ?? throw new InvalidDataException(L.F("Paket geçersiz bir dosya yolu içeriyor: {0}", mod.File));
                 if (!Uri.TryCreate(mod.Url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps
                     || !(uri.Host == "cdn.modrinth.com" || CurseForgeService.IsCurseForgeCdn(mod.Url)))
-                    throw new InvalidDataException($"Paket izin verilmeyen bir adresten indirme istiyor: {mod.Title}");
+                    throw new InvalidDataException(L.F("Paket izin verilmeyen bir adresten indirme istiyor: {0}", mod.Title));
 
                 await DownloadPackFileAsync(items[mod], mod.Sha1, mod.Sha512, mod.Mirrored, mod.Url, path, cancel);
                 int current = Interlocked.Increment(ref done);
-                Log($"Modlar indiriliyor... {current}/{downloads.Count}", "replace");
+                Log(L.F("Modlar indiriliyor... {0}/{1}", current, downloads.Count), "replace");
             });
 
             foreach (var mod in missing)
@@ -513,10 +513,10 @@ namespace VuluLauncher
                 catch (Exception ex) when (ex is not OperationCanceledException && sourceUrl != null)
                 {
                     item.Reset();
-                    Log($"{item.Name}: vulu sunucusundan inmedi ({ex.Message}), asıl kaynağından deneniyor.", "muted");
+                    Log(L.F("{0}: vulu sunucusundan inmedi ({1}), asıl kaynağından deneniyor.", item.Name, ex.Message), "muted");
                 }
             }
-            if (sourceUrl == null) throw new InvalidOperationException($"{item.Name}: dosyanın indirilebileceği bir adres yok.");
+            if (sourceUrl == null) throw new InvalidOperationException(L.F("{0}: dosyanın indirilebileceği bir adres yok.", item.Name));
             await item.DownloadAsync(sourceUrl, path, sha1, sha512, cancel);
         }
 
@@ -643,7 +643,7 @@ namespace VuluLauncher
             if (args.Bool("update") && meta.SharedPackId != null)
                 pack.Id = meta.SharedPackId;
 
-            Log($"{name} hazırlanıyor...", "accent");
+            Log(L.F("{0} hazırlanıyor...", name), "accent");
             string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-share-{Guid.NewGuid():N}.zip");
             try
             {
@@ -666,7 +666,7 @@ namespace VuluLauncher
                 pack.Roles = args.TryGetProperty("roles", out var roles) && roles.ValueKind == JsonValueKind.Array
                     ? args.StrList("roles").Distinct().ToList() : null;
 
-                Log($"{name} yükleniyor ({fileCount} dosya, {mods.Count} Modrinth içeriği)...", "replace");
+                Log(L.F("{0} yükleniyor ({1} dosya, {2} Modrinth içeriği)...", name, fileCount, mods.Count), "replace");
                 // Instance'a logo atandıysa paketle paylaşılır; logo seçilmediyse paketin logosu da kalkar
                 string? logo = LogoFile(InstancePrefix + meta.Folder);
                 if (logo != null && !CoverExtensions.Contains(Path.GetExtension(logo).ToLowerInvariant())) logo = null;
@@ -681,7 +681,7 @@ namespace VuluLauncher
                 foreach (var content in meta.Content) content.FromPack = true;
                 InstanceStore.Save(meta);
 
-                Log($"{name} vulu Packs'te yayınlandı (rev {pack.Revision}).", "ok");
+                Log(L.F("{0} vulu Packs'te yayınlandı (rev {1}).", name, pack.Revision), "ok");
                 return new { id = pack.Id, revision = pack.Revision };
             }
             finally
@@ -730,8 +730,8 @@ namespace VuluLauncher
                 ? new DirectoryInfo(dir).EnumerateFileSystemInfos().Select(e => e.Name).Where(n => SharedByDefault.Contains(n) && !NeverShared.Contains(n)).ToList()
                 : new List<string>();
 
-            Log($"{meta.Name} {user} için hazırlanıyor...", "accent");
-            using var job = new DownloadJob($"{meta.Name} gönderiliyor") { Phase = "Hazırlanıyor" };
+            Log(L.F("{0} {1} için hazırlanıyor...", meta.Name, user), "accent");
+            using var job = new DownloadJob(L.F("{0} gönderiliyor", meta.Name)) { Phase = "Hazırlanıyor" };
             string zipPath = Path.Combine(Path.GetTempPath(), $"vulu-friend-{Guid.NewGuid():N}.zip");
             try
             {
@@ -749,8 +749,8 @@ namespace VuluLauncher
                     Mods = mods,
                 };
                 var share = await Packs.CreateShareAsync(pack, zipPath, user);
-                Log($"{meta.Name} {user} adlı kişiye gönderildi ({mods.Count} mod bağlantısı, {fileCount} dosya).", "ok");
-                job.Complete($"{meta.Name} gönderildi");
+                Log(L.F("{0} {1} adlı kişiye gönderildi ({2} mod bağlantısı, {3} dosya).", meta.Name, user, mods.Count, fileCount), "ok");
+                job.Complete(L.F("{0} gönderildi", meta.Name));
                 return new { id = share.Id, name = share.Name };
             }
             catch (Exception ex)
@@ -776,11 +776,11 @@ namespace VuluLauncher
             using var job = new DownloadJob($"{pack.Name} kuruluyor");
             try
             {
-                Log($"{pack.Name} kuruluyor ({pack.Author} gönderdi)...", "accent");
+                Log(L.F("{0} kuruluyor ({1} gönderdi)...", pack.Name, pack.Author), "accent");
                 await ApplyPackAsync(store, pack, meta, job);
                 meta.SharedPackId = null;
                 meta.SharedPackRevision = 0;
-                meta.Description = $"{pack.Author} gönderdi";
+                meta.Description = L.F("{0} gönderdi", pack.Author);
                 foreach (var content in meta.Content) content.FromPack = false;
                 InstanceStore.Save(meta);
                 Log($"{pack.Name} kuruldu.", "ok");
@@ -920,7 +920,7 @@ namespace VuluLauncher
             try { found = await _modrinth.VersionsByHashesAsync(hashes.Values); }
             catch (Exception ex)
             {
-                Log($"Modrinth'te arama yapılamadı, dosyalar pakete gömülecek: {ex.Message}", "warn");
+                Log(L.F("Modrinth'te arama yapılamadı, dosyalar pakete gömülecek: {0}", ex.Message), "warn");
                 return new();
             }
 
@@ -948,7 +948,7 @@ namespace VuluLauncher
                 tracked.Add(candidate.Relative);
             }
 
-            if (mods.Count > 0) Log($"{mods.Count} dosya Modrinth'te bulundu, bağlantı olarak eklendi.", "muted");
+            if (mods.Count > 0) Log(L.F("{0} dosya Modrinth'te bulundu, bağlantı olarak eklendi.", mods.Count), "muted");
             return mods;
         }
 

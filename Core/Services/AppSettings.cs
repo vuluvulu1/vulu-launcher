@@ -24,6 +24,9 @@ namespace VuluLauncher
 
         /// <summary>Yazı ve arayüz boyutu, yüzde: 90 | 100 | 110 | 125. Pencerenin yakınlaştırmasıyla çarpılır.</summary>
         public int UiScale { get; set; } = 100;
+
+        /// <summary>Arayüz dili: "tr", "en" ya da "" (sistem diline göre). Değişince launcher yeniden başlatılır.</summary>
+        public string Language { get; set; } = "";
         public static readonly int[] UiScales = { 90, 100, 110, 125 };
 
         // ── Launcher davranışı ────────────────────────────────────────────

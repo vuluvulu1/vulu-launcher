@@ -83,7 +83,7 @@ namespace VuluLauncher.ViewModels
             PercentText = pct is { } p ? $"{Math.Floor(p)}%" : "";
 
             var stats = new List<string>();
-            if (filesTotal > 0) stats.Add($"{filesDone:0} / {filesTotal:0} dosya");
+            if (filesTotal > 0) stats.Add(L.F("{0:0} / {1:0} dosya", filesDone, filesTotal));
             if (bytesTotal > 0) stats.Add($"{Bytes(bytesDone)} / {Bytes(bytesTotal)}");
             else if (bytesDone > 0) stats.Add(Bytes(bytesDone));
             if (Running && job.Num("speed") > 0) stats.Add(Bytes(job.Num("speed")) + "/sn");
@@ -105,7 +105,7 @@ namespace VuluLauncher.ViewModels
             Recent.Clear();
             foreach (var r in job.Items("recent")) Recent.Add(new DownloadRow(r.Text("name") ?? "", r.Num("size") > 0 ? Bytes(r.Num("size")) : "", null, null));
             int queued = job.Int("queued");
-            ActiveTitle = (Running ? "Şu an" : "Son işlenen") + (queued > 0 ? $" · sırada {queued}" : "");
+            ActiveTitle = (Running ? "Şu an" : "Son işlenen") + (queued > 0 ? L.F(" · sırada {0}", queued) : "");
             Empty = Failed.Count + Active.Count + Recent.Count == 0 ? (Running ? "Dosyalar hazırlanıyor…" : "İndirilecek dosya yoktu.") : null;
             OnPropertyChanged(nameof(HasFailed));
             OnPropertyChanged(nameof(HasActive));
@@ -139,13 +139,13 @@ namespace VuluLauncher.ViewModels
         [RelayCommand]
         private async Task Cancel()
         {
-            if (!await main.ConfirmAsync("İndirme iptal edilsin mi?", $"{Title} durdurulur; yarım inen dosyalar silinir.", "İptal et", "Devam et", danger: true)) return;
+            if (!await main.ConfirmAsync("İndirme iptal edilsin mi?", L.F("{0} durdurulur; yarım inen dosyalar silinir.", Title), "İptal et", "Devam et", danger: true)) return;
             try { await CoreClient.Instance.Call("downloads.cancel", new { id = _jobId }); } catch { /* iş bitmiş olabilir */ }
         }
 
         public static string Bytes(double bytes)
         {
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             if (bytes <= 0) return "0 MB";
             double mb = bytes / 1024 / 1024;
             if (mb < 1) return Math.Max(1, Math.Round(bytes / 1024)) + " KB";

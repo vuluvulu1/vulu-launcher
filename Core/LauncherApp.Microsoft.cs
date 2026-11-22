@@ -35,7 +35,7 @@ namespace VuluLauncher
                     {
                         var session = await MicrosoftAuth.CompleteAsync(clientId, code, vuluUser, cancel.Token);
                         await _api.PostAsync<JsonElement>("/users/me/minecraft", new { accessToken = session.AccessToken });
-                        Log($"Microsoft hesabı bağlandı: {session.Name}", "ok");
+                        Log(L.F("Microsoft hesabı bağlandı: {0}", session.Name), "ok");
                         _bridge.Emit("msLogin", new { state = "done", name = session.Name });
                     }
                     catch (OperationCanceledException) { _bridge.Emit("msLogin", new { state = "cancelled" }); }
@@ -133,7 +133,7 @@ namespace VuluLauncher
                 if (clientId == null) return null;
                 using var cancel = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 var session = await MicrosoftAuth.GetSessionAsync(clientId, _login.Username, cancel.Token);
-                if (session != null) Log($"Microsoft hesabıyla açılıyor: {session.Name}", "muted");
+                if (session != null) Log(L.F("Microsoft hesabıyla açılıyor: {0}", session.Name), "muted");
                 return session;
             }
             catch (Exception ex)

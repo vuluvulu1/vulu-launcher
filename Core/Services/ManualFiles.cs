@@ -80,13 +80,13 @@ namespace VuluLauncher
                     }
                     else if (problem != null) { }
                     else if (candidates.FirstOrDefault(c => SameName(c.Name, file.FileName)) is { } named)
-                        problem = named.Length == 0 ? $"İndirilenler'deki {named.Name} boş: indirme yarım kalmış, yeniden indir."
-                            : $"İndirilenler'deki {named.Name} beklenen dosya değil; bozuk ya da başka bir sürüm.";
+                        problem = named.Length == 0 ? L.F("İndirilenler'deki {0} boş: indirme yarım kalmış, yeniden indir.", named.Name)
+                            : L.F("İndirilenler'deki {0} beklenen dosya değil; bozuk ya da başka bir sürüm.", named.Name);
                     else if (File.Exists(target))
                         problem = new FileInfo(target).Length == 0 ? "Instance'taki dosya boş: indirme yarım kalmış, yeniden indir."
                             : "Instance'taki dosya beklenen sürüm değil; sayfadaki dosyayı indir.";
                     else if (StemMatch(candidates, file) is { } other)
-                        problem = $"İndirilenler'de {other.Name} var ama beklenen {file.FileName}; başka bir sürüm indirilmiş.";
+                        problem = L.F("İndirilenler'de {0} var ama beklenen {1}; başka bir sürüm indirilmiş.", other.Name, file.FileName);
                 }
 
                 if (placed)

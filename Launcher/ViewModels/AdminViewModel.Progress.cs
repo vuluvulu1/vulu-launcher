@@ -46,7 +46,7 @@ namespace VuluLauncher.ViewModels
         {
             get
             {
-                var tr = CultureInfo.GetCultureInfo("tr-TR");
+                var tr = L.Culture;
                 string range = Start is { } s && End is { } e ? $"{s.ToString("d MMM yyyy", tr)} – {e.ToString("d MMM yyyy", tr)}" : "tarih yok";
                 string state = Start is { } a && End is { } b ? (DateTime.Today < a ? "yaklaşan" : DateTime.Today < b ? "sürüyor" : "bitti") : "";
                 return $"{(Name.Length > 0 ? Name : "Yeni sezon")} · {range}{(state.Length > 0 ? " · " + state : "")}";
@@ -128,7 +128,7 @@ namespace VuluLauncher.ViewModels
             get
             {
                 double b = (double)(LevelBase ?? 50), perMin = Math.Max(0.0001, (double)(XpMinute ?? 1));
-                string Line(int l) { double xp = b * l * (l + 1); return $"Seviye {l}: {xp:N0} XP (yalnızca oynayarak ~{xp / perMin / 60:0.#} saat)"; }
+                string Line(int l) { double xp = b * l * (l + 1); return L.F("Seviye {0}: {1:N0} XP (yalnızca oynayarak ~{2:0.#} saat)", l, xp, xp / perMin / 60); }
                 return string.Join("\n", new[] { 1, 5, 10, 20, 50 }.Select(Line));
             }
         }
@@ -209,7 +209,7 @@ namespace VuluLauncher.ViewModels
 
         public async Task RemoveSeasonAsync(SeasonEdit season)
         {
-            if (!await main.ConfirmAsync("Sezonu sil", $"\"{season.Name}\" ve görevleri silinsin mi? Kazanılmış rozetler ve pelerinler oyuncularda kalır. Değişiklik \"Kaydet\"e basınca geçerli olur.", "Sil", danger: true)) return;
+            if (!await main.ConfirmAsync("Sezonu sil", L.F("\"{0}\" ve görevleri silinsin mi? Kazanılmış rozetler ve pelerinler oyuncularda kalır. Değişiklik \"Kaydet\"e basınca geçerli olur.", season.Name), "Sil", danger: true)) return;
             Seasons.Remove(season);
         }
 
@@ -218,7 +218,7 @@ namespace VuluLauncher.ViewModels
         {
             var map = new Dictionary<char, string> { ['ç'] = "c", ['ğ'] = "g", ['ı'] = "i", ['İ'] = "i", ['ö'] = "o", ['ş'] = "s", ['ü'] = "u", ['â'] = "a", ['î'] = "i", ['û'] = "u" };
             var sb = new StringBuilder();
-            foreach (char ch in text.ToLower(CultureInfo.GetCultureInfo("tr-TR")))
+            foreach (char ch in text.ToLower(L.Culture))
             {
                 if (map.TryGetValue(ch, out var r)) sb.Append(r);
                 else if (char.IsAsciiLetterOrDigit(ch)) sb.Append(ch);

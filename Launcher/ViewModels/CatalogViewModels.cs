@@ -55,14 +55,14 @@ namespace VuluLauncher.ViewModels
         public static string Category(string name) =>
             Categories.TryGetValue(name, out var tr) ? tr : name.Length > 0 ? char.ToUpper(name[0], CultureInfo.InvariantCulture) + name[1..] : name;
 
-        public static string Count(double n) => n >= 1e6 ? (n / 1e6).ToString("0.#", CultureInfo.GetCultureInfo("tr-TR")) + " Mn"
-            : n >= 1e3 ? (n / 1e3).ToString("0.#", CultureInfo.GetCultureInfo("tr-TR")) + " B" : Math.Round(n).ToString(CultureInfo.InvariantCulture);
+        public static string Count(double n) => n >= 1e6 ? (n / 1e6).ToString("0.#", L.Culture) + " Mn"
+            : n >= 1e3 ? (n / 1e3).ToString("0.#", L.Culture) + " B" : Math.Round(n).ToString(CultureInfo.InvariantCulture);
 
         public static string Ago(string? iso)
         {
             if (iso == null || !DateTime.TryParse(iso, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at)) return "";
             int days = (int)(DateTime.UtcNow - at.ToUniversalTime()).TotalDays;
-            return days < 1 ? "bugün" : days < 30 ? $"{days} gün önce" : days < 365 ? $"{days / 30} ay önce" : $"{days / 365} yıl önce";
+            return days < 1 ? "bugün" : days < 30 ? L.F("{0} gün önce", days) : days < 365 ? L.F("{0} ay önce", days / 30) : L.F("{0} yıl önce", days / 365);
         }
 
         /// <summary>Desteklenen sürümler: "1.21.1" ya da "1.20.1 – 1.21.4".</summary>
@@ -86,7 +86,7 @@ namespace VuluLauncher.ViewModels
             static List<string> Cap(IEnumerable<string> items)
             {
                 var list = items.ToList();
-                return list.Count > 40 ? list.Take(40).Append($"…ve {list.Count - 40} tane daha").ToList() : list;
+                return list.Count > 40 ? list.Take(40).Append(L.F("…ve {0} tane daha", list.Count - 40)).ToList() : list;
             }
             int revision = c.Int("revision");
             var added = Cap(c.Items("added").Select(a => "+  " + a.GetString()));
@@ -96,7 +96,7 @@ namespace VuluLauncher.ViewModels
             bool files = c.Bool("filesChanged");
             bool empty = string.IsNullOrEmpty(note) && added.Count == 0 && updated.Count == 0 && removed.Count == 0 && !files;
             string date = c.Text("at") is { } at && DateTime.TryParse(at, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var d)
-                ? d.ToLocalTime().ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")) : "";
+                ? d.ToLocalTime().ToString("d MMMM yyyy", L.Culture) : "";
             return new ChangeEntry($"rev {revision}", string.Join(" · ", new[] { date, c.Text("by") }.Where(s => !string.IsNullOrEmpty(s))),
                 note, added, updated, removed, files, empty ? (revision == 1 ? "İlk sürüm." : "İçerik değişmedi.") : null);
         }
@@ -166,7 +166,7 @@ namespace VuluLauncher.ViewModels
         public List<string> RoleIds { get; }
         public bool CanEditAccess => _owner.IsAdmin && _owner.Roles.ValueKind == JsonValueKind.Array;
         public bool FeedbackEnabled => _owner.FeedbackEnabled;
-        public string FeedbackText => OpenFeedback > 0 ? $"Geri bildirim ({OpenFeedback})" : "Geri bildirim";
+        public string FeedbackText => OpenFeedback > 0 ? L.F("Geri bildirim ({0})", OpenFeedback) : "Geri bildirim";
 
         /// <summary>Ana düğme: Kur / Güncelle / Kurulu · Aç.</summary>
         public string ActionText => Busy ? (IsOutdated ? "Güncelleniyor…" : "Kuruluyor…") : !IsInstalled ? "Kur" : IsOutdated ? "Güncelle" : "Kurulu · Aç";
@@ -197,7 +197,7 @@ namespace VuluLauncher.ViewModels
         /// <summary>Roller (yalnızca admin için gelir): paketlerin "Kimler erişebilir" seçimi.</summary>
         public JsonElement Roles { get; private set; }
         [ObservableProperty] private int _generalFeedback;
-        public string RequestText => GeneralFeedback > 0 ? $"Paket isteği ({GeneralFeedback})" : "Paket isteği";
+        public string RequestText => GeneralFeedback > 0 ? L.F("Paket isteği ({0})", GeneralFeedback) : "Paket isteği";
         partial void OnGeneralFeedbackChanged(int value) => OnPropertyChanged(nameof(RequestText));
 
         [RelayCommand]
@@ -228,7 +228,7 @@ namespace VuluLauncher.ViewModels
                 Cards.Clear();
                 foreach (var p in result.Items("packs")) Cards.Add(new PackCard(this, p));
                 IsEmpty = Cards.Count == 0;
-                Status = Cards.Count > 0 ? $"{Cards.Count} paket" : "";
+                Status = Cards.Count > 0 ? L.F("{0} paket", Cards.Count) : "";
             }
             catch (Exception ex)
             {
@@ -283,14 +283,14 @@ namespace VuluLauncher.ViewModels
                     if (await main.ShowAsync(new PackAccessModal(card.Id, card.Name, Roles, card.RoleIds)) is true) await LoadAsync();
                     break;
                 case "feedback": await main.OpenFeedbackAsync(card.Id, card.Name); await LoadAsync(); break;
-                case "send": await main.Social.ShareCardAsync(new { type = "pack", id = card.Id, name = card.Name }, $"{card.Name} paketini gönder"); break;
+                case "send": await main.Social.ShareCardAsync(new { type = "pack", id = card.Id, name = card.Name }, L.F("{0} paketini gönder", card.Name)); break;
             }
         }
 
         private async Task DeleteAsync(PackCard card)
         {
             if (!await main.ConfirmAsync("Paketi kaldır",
-                    $"'{card.Name}' vulu Packs'ten kaldırılsın mı?\nKuranların instance'ları silinmez ama artık güncelleme alamazlar.", "Kaldır", danger: true))
+                    L.F("'{0}' vulu Packs'ten kaldırılsın mı?\nKuranların instance'ları silinmez ama artık güncelleme alamazlar.", card.Name), "Kaldır", danger: true))
                 return;
             try { await _core.Call("packs.delete", new { id = card.Id }); }
             catch (Exception ex) { await main.AlertAsync("Kaldırılamadı", ex.Message); }
@@ -444,7 +444,7 @@ namespace VuluLauncher.ViewModels
         public bool IsCurseForge => Source == "curseforge";
         public bool IsPack => Type == "modpack";
         public string SourceLabel => IsCurseForge ? "CurseForge" : "Modrinth";
-        public string SearchHint => IsPack ? $"{SourceLabel}'da modpack ara…" : $"{SourceLabel}'da ara…";
+        public string SearchHint => IsPack ? L.F("{0}'da modpack ara…", SourceLabel) : $"{SourceLabel}'da ara…";
         /// <summary>Instance seçilmediyse (ya da modpack aranıyorsa) sürüm ve yükleyici filtresi gösterilir.</summary>
         public bool FreeBrowse => IsPack || string.IsNullOrEmpty(Target?.Key);
         public bool ShowTarget => !IsPack;
@@ -697,7 +697,7 @@ namespace VuluLauncher.ViewModels
                     id = title, title, author, description, type = Type, downloads = 1_284_000, follows = 3_400,
                     gameVersions = new[] { "1.20.1" }, loaders = new[] { "forge" },
                 }), IsCurseForge));
-            Status = $"{Hits.Count} sonuç";
+            Status = L.F("{0} sonuç", Hits.Count);
             Groups.Clear();
             Groups.Add(new CategoryGroup("Kategoriler", new[] { "adventure", "magic", "technology", "storage", "food", "worldgen", "optimization", "library" }
                 .Select((n, i) => new CategoryChip(n) { IsSelected = i == 2 }).ToList()));
@@ -752,12 +752,12 @@ namespace VuluLauncher.ViewModels
             // Paketin getirdiği ya da elle konan modlar da "kurulu" görünsün (dosya hash'leriyle bulunur)
             if (!IsPack && targetId.Length > 0) _ = MarkInstalledAsync(targetId);
 
-            string count = _total.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) + " sonuç";
+            string count = _total.ToString("N0", L.Culture) + " sonuç";
             var target = Customs.FirstOrDefault(i => i.Id == targetId);
             Status = _total == 0 ? "Sonuç bulunamadı. Filtreleri gevşetmeyi dene."
                 : !IsPack && target != null
-                    ? $"{count} · {target.Name} ile uyumlu olanlar (Minecraft {target.McVersion}{(target.Loader != "vanilla" && Type == "mod" ? ", " + Names.Loader(target.Loader) : "")})"
-                    : !IsPack ? $"{count} · \"Kur\"a basınca nereye kurulacağını seçersin" : count;
+                    ? L.F("{0} · {1} ile uyumlu olanlar (Minecraft {2}{3})", count, target.Name, target.McVersion, (target.Loader != "vanilla" && Type == "mod" ? ", " + Names.Loader(target.Loader) : ""))
+                    : !IsPack ? L.F("{0} · \"Kur\"a basınca nereye kurulacağını seçersin", count) : count;
         }
 
         private async Task MarkInstalledAsync(string instanceId)

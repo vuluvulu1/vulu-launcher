@@ -117,8 +117,8 @@ namespace VuluLauncher.ViewModels
         {
             double minutes = (DateTime.UtcNow - utc).TotalMinutes;
             if (minutes < 1) return "az önce";
-            if (minutes < 60) return $"{(int)minutes} dk önce";
-            if (minutes < 24 * 60) return $"{(int)(minutes / 60)} sa önce";
+            if (minutes < 60) return L.F("{0} dk önce", (int)minutes);
+            if (minutes < 24 * 60) return L.F("{0} sa önce", (int)(minutes / 60));
             return Names.Ago(utc.ToString("o"));
         }
     }

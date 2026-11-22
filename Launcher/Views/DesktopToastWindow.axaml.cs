@@ -57,7 +57,7 @@ namespace VuluLauncher.Views
                         rtb.Save(System.IO.Path.Combine(dir, $"desktop-toast-{_stack.Items.Count}.png"));
                         var own = TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
                         LogFile.Write($"[bildirim] konum {Position}, boyut {Bounds.Width}x{Bounds.Height}, saydamlık {ActualTransparencyLevel}, " +
-                                      $"öndeki pencere bildirim mi: {GetForegroundWindow() == own}, exstyle 0x{GetWindowLongPtr(own, GWL_EXSTYLE).ToInt64():X}");
+                                      L.F("öndeki pencere bildirim mi: {0}, exstyle 0x{1:X}", GetForegroundWindow() == own, GetWindowLongPtr(own, GWL_EXSTYLE).ToInt64()));
                     }
                     catch (Exception ex) { LogFile.Write("[ui] bildirim görüntüsü alınamadı: " + ex.Message); }
                 }, TimeSpan.FromMilliseconds(900));

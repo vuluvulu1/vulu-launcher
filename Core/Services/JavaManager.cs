@@ -40,14 +40,14 @@ namespace VuluLauncher
             {
                 string own = ownPath.Trim().Trim('"');
                 if (!File.Exists(own))
-                    throw new FileNotFoundException($"Bu paketin ayarlarında seçilen Java bulunamadı: {own}. Paketin Ayarlar › Oyun ayarları bölümünden değiştirebilirsin.");
+                    throw new FileNotFoundException(L.F("Bu paketin ayarlarında seçilen Java bulunamadı: {0}. Paketin Ayarlar › Oyun ayarları bölümünden değiştirebilirsin.", own));
                 return own;
             }
             var settings = AppSettings.Current;
             if (settings.JavaMode == "custom")
             {
                 if (!File.Exists(settings.CustomJavaPath))
-                    throw new FileNotFoundException($"Ayarlarda seçilen Java bulunamadı: {settings.CustomJavaPath}");
+                    throw new FileNotFoundException(L.F("Ayarlarda seçilen Java bulunamadı: {0}", settings.CustomJavaPath));
                 return settings.CustomJavaPath;
             }
 
@@ -64,11 +64,11 @@ namespace VuluLauncher
                 var system = Detect().FirstOrDefault(j => j.Major == major);
                 if (system != null)
                 {
-                    _log($"Bilgisayardaki Java {major} kullanılıyor ({system.Source}).", "muted");
+                    _log(L.F("Bilgisayardaki Java {0} kullanılıyor ({1}).", major, system.Source), "muted");
                     return system.Path;
                 }
 
-                _log($"Java {major} bulunamadı, Adoptium'dan indiriliyor...", "accent");
+                _log(L.F("Java {0} bulunamadı, Adoptium'dan indiriliyor...", major), "accent");
                 // Oyun başlatılırken o işe eklenir; ayarlardan istenince kendi işi olur
                 var parent = DownloadJob.Current;
                 using var own = parent == null ? new DownloadJob($"Java {major} kuruluyor") : null;
@@ -86,7 +86,7 @@ namespace VuluLauncher
                 own?.Complete($"Java {major} kuruldu");
 
                 return FindJavaExe(installDir)
-                    ?? throw new FileNotFoundException($"Java {major} kuruldu ama java.exe bulunamadı: {installDir}");
+                    ?? throw new FileNotFoundException(L.F("Java {0} kuruldu ama java.exe bulunamadı: {1}", major, installDir));
             }
             finally
             {

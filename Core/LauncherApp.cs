@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace VuluLauncher
 {
@@ -89,6 +89,12 @@ namespace VuluLauncher
             _bridge.On("debug.notify", args => { ShowNotification(args.Str("title"), args.Str("body"), args.Str("tag")); return Task.FromResult<object?>(null); });
 #endif
             _bridge.On("app.wake", async _ => await WakeServerAsync());
+            _bridge.On("app.restart", _ =>
+            {
+                if (_game.IsRunning) throw new InvalidOperationException("Oyun açıkken launcher yeniden başlatılamaz; önce oyunu kapat.");
+                _host.Restart();
+                return Task.FromResult<object?>(null);
+            });
 
             _bridge.On("auth.login", async args => await LoginAsync(args));
 
@@ -330,7 +336,7 @@ namespace VuluLauncher
                     // Oyun açıkken ya da bir şey inerken launcher kapatılmaz; bir sonraki açılışta yeniden denenir
                     if (_game.IsRunning || DownloadJob.AnyRunning) { _lastUpdateCheck = DateTime.MinValue; return; }
                     _latestLauncher = latest;
-                    Log($"Yeni launcher sürümü: v{VuluShared.Releases.Clean(latest.Version)}; güncelleniyor.", "warn");
+                    Log(L.F("Yeni launcher sürümü: v{0}; güncelleniyor.", VuluShared.Releases.Clean(latest.Version)), "warn");
                     _host.StartLauncherUpdate();
                 }
                 catch (Exception ex) { LogFile.Write("[güncelleme] pencere açılınca denetlenemedi: " + ex.Message); }
@@ -443,7 +449,7 @@ namespace VuluLauncher
 
             _latestLauncher = latest;
             string version = VuluShared.Releases.Clean(latest.Version);
-            Log($"Yeni launcher sürümü mevcut: v{version}", "warn");
+            Log(L.F("Yeni launcher sürümü mevcut: v{0}", version), "warn");
 
             // Zip ve açılmış hali için yer gerekir; boyut bilinmiyorsa güncelleme yine de önerilir
             double? sizeMb = latest.Size > 0 ? Math.Round(latest.Size / 1024.0 / 1024.0, 1) : null;
@@ -478,7 +484,7 @@ namespace VuluLauncher
 
             _androidUpdate = latest;
             string version = VuluShared.Releases.Clean(latest.Version);
-            Log($"Yeni launcher sürümü mevcut: v{version}", "warn");
+            Log(L.F("Yeni launcher sürümü mevcut: v{0}", version), "warn");
             double? sizeMb = latest.Size > 0 ? Math.Round(latest.Size / 1024.0 / 1024.0, 1) : null;
             // Arayüz Wi-Fi'de sormadan indirir, mobil veride önce sorar
             return new { status = "available", version, notes = latest.Notes, sizeMb, diskOk = true, neededMb = 0, freeMb = 0,
@@ -495,10 +501,10 @@ namespace VuluLauncher
         {
             var update = _androidUpdate ?? throw new InvalidOperationException("Bekleyen launcher güncellemesi yok.");
             string version = VuluShared.Releases.Clean(update.Version);
-            string apk = await AndroidUpdateFeed.DownloadAsync(update, percent => Log($"Güncelleme indiriliyor: v{version} · %{percent}", "replace"));
+            string apk = await AndroidUpdateFeed.DownloadAsync(update, percent => Log(L.F("Güncelleme indiriliyor: v{0} · %{1}", version, percent), "replace"));
             var result = await _host.InstallPackageAsync(apk);
             if (result == PackageInstallResult.NeedsPermission) return new { started = false, needsPermission = true };
-            Log($"v{version} kuruluyor; kurulum bitince launcher kapanıp yeni sürüm açılır.", "ok");
+            Log(L.F("v{0} kuruluyor; kurulum bitince launcher kapanıp yeni sürüm açılır.", version), "ok");
             return new { started = true, needsPermission = false };
         }
 
@@ -552,7 +558,7 @@ namespace VuluLauncher
                 var meta = instanceId.StartsWith(InstancePrefix, StringComparison.Ordinal) ? InstanceStore.Get(instanceId[InstancePrefix.Length..]) : null;
                 var problems = await Task.Run(() => ManualFiles.Check(Path.Combine(AppPaths.Instances, target.Folder), meta, target.Loader, target.McVersion, includeHarmless: false));
                 if (problems == null) return null;
-                Log($"Sorunlu dosyalar: {problems.Broken.Count} bozuk, {problems.Duplicates.Count} kopya, {problems.PendingManual.Count} elle indirilecek.", "warn");
+                Log(L.F("Sorunlu dosyalar: {0} bozuk, {1} kopya, {2} elle indirilecek.", problems.Broken.Count, problems.Duplicates.Count, problems.PendingManual.Count), "warn");
                 return new
                 {
                     broken = problems.Broken.Select(b => new { file = b.File, reason = b.Reason }),
@@ -606,7 +612,7 @@ namespace VuluLauncher
                     target.Loader == "vanilla" && instanceId.StartsWith(PackPrefix, StringComparison.Ordinal))
                 {
                     if (!(await LoaderCatalog.MinecraftVersionsAsync()).Contains(mcVersion))
-                        throw new InvalidOperationException($"Bilinmeyen Minecraft sürümü: {mcVersion}");
+                        throw new InvalidOperationException(L.F("Bilinmeyen Minecraft sürümü: {0}", mcVersion));
                     target = target with { McVersion = mcVersion };
                 }
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -45,7 +45,7 @@ namespace VuluLauncher.ViewModels
         public bool CanEditLook => IsCustom && !IsVuluPack && !IsModpack;
         /// <summary>vulu Packs'ten kurulmuş paket (kişisel instance olarak saklanır ama ekibin paketidir).</summary>
         public bool IsVuluPack => !string.IsNullOrEmpty(SharedPackId);
-        public string Initial => Name.Length > 0 ? Name[..1].ToUpper(CultureInfo.GetCultureInfo("tr-TR")) : "?";
+        public string Initial => Name.Length > 0 ? Name[..1].ToUpper(L.Culture) : "?";
         public string LoaderLabel => Names.Loader(Loader);
         public string Subtitle => Kind == "server" ? Name : $"{LoaderLabel} {McVersion}";
 
@@ -226,13 +226,13 @@ namespace VuluLauncher.ViewModels
                 foreach (var instance in Instances)
                 {
                     var here = Main.Social.PlayingIn(instance.SharedPackId ?? instance.PackId, instance.Name).ToList();
-                    instance.Tip = here.Count > 0 ? $"{instance.Name}\nŞu an oynayan: {string.Join(", ", here)}" : instance.Name;
+                    instance.Tip = here.Count > 0 ? L.F("{0}\nŞu an oynayan: {1}", instance.Name, string.Join(", ", here)) : instance.Name;
                 }
             PlayingHere.Clear();
             if (Main == null || Selected is not { } item) { PlayingHereText = ""; return; }
             var names = Main.Social.PlayingIn(item.SharedPackId ?? item.PackId, item.Name).ToList();
             foreach (var name in names.Take(3)) PlayingHere.Add(Main.Social.Person(name));
-            PlayingHereText = names.Count > 0 ? $"{names.Count} kişi burada oynuyor" : "";
+            PlayingHereText = names.Count > 0 ? L.F("{0} kişi burada oynuyor", names.Count) : "";
         }
 
         [RelayCommand]
@@ -366,8 +366,8 @@ namespace VuluLauncher.ViewModels
                 AppendLog("Günlük paylaşıldı: " + url, "ok");
                 if (to != null)
                 {
-                    string text = $"{s.Name} ({s.LoaderLabel} {s.McVersion}) günlüğüm, bakabilir misin? {url}";
-                    if (await Main.Social.SendToAsync(to, text, null)) Main.ShowToast("Gönderildi", $"Günlük {to} adlı kişiye gönderildi.");
+                    string text = L.F("{0} ({1} {2}) günlüğüm, bakabilir misin? {3}", s.Name, s.LoaderLabel, s.McVersion, url);
+                    if (await Main.Social.SendToAsync(to, text, null)) Main.ShowToast("Gönderildi", L.F("Günlük {0} adlı kişiye gönderildi.", to));
                     return;
                 }
                 if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime { MainWindow: { } w }
@@ -504,10 +504,10 @@ namespace VuluLauncher.ViewModels
             {
                 if (Selected is not { } item) return "";
                 int rec = RecommendedRamFor(item);
-                string machine = _totalRamGb > 0 ? $"bilgisayarda {Math.Round(_totalRamGb):0} GB RAM var" : "";
-                if (RamGb > SafeMaxRamGb) return $"{RamGb} GB bu bilgisayar için fazla ({machine}); oyun en çok {SafeMaxRamGb} GB ile açılır.";
-                if (RamGb < rec) return $"Bu paket için önerilen {rec} GB; daha azıyla takılabilir" + (machine.Length > 0 ? $" · {machine}" : "");
-                return $"Önerilen {rec} GB" + (machine.Length > 0 ? $" · {machine}" : "");
+                string machine = _totalRamGb > 0 ? L.F("bilgisayarda {0:0} GB RAM var", Math.Round(_totalRamGb)) : "";
+                if (RamGb > SafeMaxRamGb) return L.F("{0} GB bu bilgisayar için fazla ({1}); oyun en çok {2} GB ile açılır.", RamGb, machine, SafeMaxRamGb);
+                if (RamGb < rec) return L.F("Bu paket için önerilen {0} GB; daha azıyla takılabilir", rec) + (machine.Length > 0 ? $" · {machine}" : "");
+                return L.F("Önerilen {0} GB", rec) + (machine.Length > 0 ? $" · {machine}" : "");
             }
         }
         public bool RamWarn => Selected is { } item && (RamGb > SafeMaxRamGb || RamGb < RecommendedRamFor(item));
@@ -707,14 +707,14 @@ namespace VuluLauncher.ViewModels
         private async Task SendToFriend()
         {
             if (Selected is not { IsCustom: true } item) return;
-            if (await Main.Social.PickUserAsync($"{item.Name} paketini kime gönderelim?") is not { } user) return;
-            AppendLog($"{item.Name} {user} için hazırlanıyor…", "accent");
+            if (await Main.Social.PickUserAsync(L.F("{0} paketini kime gönderelim?", item.Name)) is not { } user) return;
+            AppendLog(L.F("{0} {1} için hazırlanıyor…", item.Name, user), "accent");
             try
             {
                 var r = await _core.Call("packs.sendToFriend", new { instanceId = item.Id, user });
                 var card = JsonSerializer.SerializeToElement(new { type = "packshare", id = r.Text("id"), name = r.Text("name") ?? item.Name });
-                if (await Main.Social.SendToAsync(user, $"{item.Name} paketimi gönderdim ({item.LoaderLabel} {item.McVersion}).", card))
-                    Main.ShowToast("Paket gönderildi", $"{user} mesajdaki karttan kurabilir.");
+                if (await Main.Social.SendToAsync(user, L.F("{0} paketimi gönderdim ({1} {2}).", item.Name, item.LoaderLabel, item.McVersion), card))
+                    Main.ShowToast("Paket gönderildi", L.F("{0} mesajdaki karttan kurabilir.", user));
             }
             catch (Exception ex) { await Main.AlertAsync("Paket gönderilemedi", ex.Message); }
         }
@@ -744,14 +744,14 @@ namespace VuluLauncher.ViewModels
             var modal = new ModpackVersionModal(item.Name);
             _ = modal.LoadAsync(item.Id);
             if (await Main.ShowAsync(modal) is not string versionId) return;
-            if (!await Main.ConfirmAsync("Sürümü değiştir", $"{item.Name} seçtiğin sürüme geçirilsin mi? Paketin modları değişir; dünyaların ve sonradan eklediğin modlar kalır, ayar klasörleri önce yedeklenir.", "Geçir")) return;
+            if (!await Main.ConfirmAsync("Sürümü değiştir", L.F("{0} seçtiğin sürüme geçirilsin mi? Paketin modları değişir; dünyaların ve sonradan eklediğin modlar kalır, ayar klasörleri önce yedeklenir.", item.Name), "Geçir")) return;
             _switchingPack = true;   // bu sırada oyun açılmaz
-            AppendLog($"{item.Name} sürümü değiştiriliyor…", "accent");
+            AppendLog(L.F("{0} sürümü değiştiriliyor…", item.Name), "accent");
             try
             {
                 var r = await _core.Call("instances.switchModpack", new { id = item.Id, versionId });
                 await ReloadInstancesAsync(item.Id);
-                Main.ShowToast("Sürüm değişti", $"{item.Name} artık {r.Text("version")}.");
+                Main.ShowToast("Sürüm değişti", L.F("{0} artık {1}.", item.Name, r.Text("version")));
                 if (r.Items("manual").Any()) await Main.ShowAsync(new ManualDownloadsModal(r.Get("manual"), item.Id));
             }
             catch (Exception ex) { await Main.AlertAsync("Sürüm değiştirilemedi", ex.Message); }
@@ -772,7 +772,7 @@ namespace VuluLauncher.ViewModels
             catch (Exception ex) { await Main.AlertAsync("Paylaşılamıyor", ex.Message); return; }
             if (await Main.ShowAsync(new ShareModal(Main, s, info)) is not true) return;
             await ReloadInstancesAsync(s.Id);
-            AppendLog($"{s.Name} paylaşıldı. vulu Packs sekmesinde görünüyor.", "ok");
+            AppendLog(L.F("{0} paylaşıldı. vulu Packs sekmesinde görünüyor.", s.Name), "ok");
         }
 
         partial void OnRamGbChanged(int value)
@@ -847,7 +847,7 @@ namespace VuluLauncher.ViewModels
         [NotifyPropertyChangedFor(nameof(HasManual), nameof(ManualText))]
         private int _manualCount;
         public bool HasManual => ManualCount > 0;
-        public string ManualText => ManualCount == 1 ? "1 mod elle indirilmeli" : $"{ManualCount} mod elle indirilmeli";
+        public string ManualText => ManualCount == 1 ? "1 mod elle indirilmeli" : L.F("{0} mod elle indirilmeli", ManualCount);
 
         [RelayCommand]
         private async Task OpenManual()
@@ -858,12 +858,12 @@ namespace VuluLauncher.ViewModels
         }
 
         public static string FormatSize(double mb) =>
-            mb >= 1024 ? (mb / 1024).ToString("0.#", CultureInfo.GetCultureInfo("tr-TR")) + " GB" : Math.Round(mb).ToString(CultureInfo.InvariantCulture) + " MB";
+            mb >= 1024 ? (mb / 1024).ToString("0.#", L.Culture) + " GB" : Math.Round(mb).ToString(CultureInfo.InvariantCulture) + " MB";
 
         public static string FormatAgo(DateTime at)
         {
             var days = (DateTime.Now.Date - at.ToLocalTime().Date).Days;
-            return days <= 0 ? "Bugün" : days == 1 ? "Dün" : days < 30 ? $"{days} gün önce" : at.ToLocalTime().ToString("d MMM yyyy", CultureInfo.GetCultureInfo("tr-TR"));
+            return days <= 0 ? "Bugün" : days == 1 ? "Dün" : days < 30 ? L.F("{0} gün önce", days) : at.ToLocalTime().ToString("d MMM yyyy", L.Culture);
         }
 
         public static string FormatPlayTime(double seconds)
@@ -905,7 +905,7 @@ namespace VuluLauncher.ViewModels
                 {
                     if (seq != _infoSeq) return;
                     Worlds.Clear(); Shots.Clear(); ContentTags.Clear();
-                    InfoMessage = Installed == false || ex.Message.Contains("kurul", StringComparison.OrdinalIgnoreCase)
+                    InfoMessage = Installed == false || ex.Message.Contains("kurul", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("install", StringComparison.OrdinalIgnoreCase)
                         ? "Paket kurulunca dünyaları ve ekran görüntüleri burada görünür." : ex.Message;
                     return;
                 }
@@ -924,7 +924,7 @@ namespace VuluLauncher.ViewModels
                 case "shots":
                     Shots.Clear();
                     foreach (var s in data.Items("shots").Take(10)) Shots.Add(new ShotTile(s.Text("url")));
-                    ShotsMore = $"Tümü ({data.Int("total")}) ›";
+                    ShotsMore = L.F("Tümü ({0}) ›", data.Int("total"));
                     if (Shots.Count == 0) InfoMessage = "Henüz ekran görüntüsü yok. Oyunda F2 tuşuna basınca burada görünür.";
                     break;
                 case "content":
@@ -1011,7 +1011,7 @@ namespace VuluLauncher.ViewModels
             try
             {
                 await _core.Call("shortcuts.create", new { kind = "play", id = s.Id, name = s.Name, iconDataUrl = ShortcutIcon.ToDataUrl(s.Thumbnail ?? s.Poster) });
-                await Main.AlertAsync("Kısayol eklendi", $"Masaüstündeki \"{s.Name}\" kısayolu launcher'ı açıp {s.Name} paketini doğrudan başlatır.");
+                await Main.AlertAsync("Kısayol eklendi", L.F("Masaüstündeki \"{0}\" kısayolu launcher'ı açıp {1} paketini doğrudan başlatır.", s.Name, s.Name));
             }
             catch (Exception ex) { await Main.AlertAsync("Kısayol oluşturulamadı", ex.Message); }
         }
@@ -1045,7 +1045,7 @@ namespace VuluLauncher.ViewModels
         private async Task DeleteInstance()
         {
             if (Selected is not { IsCustom: true } s) return;
-            if (!await Main.ConfirmAsync("Instance'ı sil", $"'{s.Name}' ve içindeki her şey (dünyalar, modlar, ayarlar) silinecek.\nBu işlem geri alınamaz.", "Sil", danger: true)) return;
+            if (!await Main.ConfirmAsync("Instance'ı sil", L.F("'{0}' ve içindeki her şey (dünyalar, modlar, ayarlar) silinecek.\nBu işlem geri alınamaz.", s.Name), "Sil", danger: true)) return;
             try
             {
                 await _core.Call("instances.delete", new { id = s.Id });

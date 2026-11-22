@@ -243,7 +243,7 @@ namespace VuluLauncher.ViewModels
         {
             var words = name.Split(new[] { ' ', '-', '_', '.' }, StringSplitOptions.RemoveEmptyEntries).Where(w => char.IsLetterOrDigit(w[0])).ToList();
             if (words.Count == 0) return "R";
-            return (words.Count == 1 ? words[0][..Math.Min(2, words[0].Length)] : $"{words[0][0]}{words[1][0]}").ToUpper(CultureInfo.GetCultureInfo("tr-TR"));
+            return (words.Count == 1 ? words[0][..Math.Min(2, words[0].Length)] : $"{words[0][0]}{words[1][0]}").ToUpper(L.Culture);
         }
 
         /// <summary>Çalan istasyonu favorilere ekler ya da çıkarır.</summary>
@@ -291,7 +291,7 @@ namespace VuluLauncher.ViewModels
 
         private void RenderStations()
         {
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             string q = Search.Trim().ToLower(tr);
             var favorites = LoadFavorites();
             Stations.Clear();

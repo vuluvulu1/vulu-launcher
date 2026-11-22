@@ -28,7 +28,7 @@ namespace VuluLauncher
                     var lookup = ResolveMissingAsync(meta, scan, scan.Missing);
                     if (await Task.WhenAny(lookup, Task.Delay(TimeSpan.FromSeconds(20))) == lookup) resolved = await lookup;
                 }
-                Log($"Eksik bağımlılık: {string.Join(", ", scan.Missing.Select(m => m.Id))}", "warn");
+                Log(L.F("Eksik bağımlılık: {0}", string.Join(", ", scan.Missing.Select(m => m.Id))), "warn");
                 return scan.Missing.Select(m =>
                 {
                     resolved.TryGetValue(m.Id, out var r);
@@ -122,7 +122,7 @@ namespace VuluLauncher
             }
 
             var remaining = (await Task.Run(() => ModScanner.Scan(dir, meta.Loader))).Missing.Select(m => m.Id).ToList();
-            if (installed.Count > 0) Log($"Eksik bağımlılıklar kuruldu: {string.Join(", ", installed.Distinct())}", "ok");
+            if (installed.Count > 0) Log(L.F("Eksik bağımlılıklar kuruldu: {0}", string.Join(", ", installed.Distinct())), "ok");
             return new { installed = installed.Distinct().ToList(), manual = ManualList(manual), remaining };
         }
     }

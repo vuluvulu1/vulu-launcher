@@ -31,14 +31,14 @@ namespace VuluLauncher
                 .GroupBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
                 .Where(g => g.Select(x => x.Mod.File).Distinct().Count() > 1))
             {
-                issues.Add(new PackIssue("duplicate", $"{group.First().Mod.Name} iki kez var",
-                    $"Aynı modun birden çok dosyası: {string.Join(", ", group.Select(x => x.Mod.File).Distinct())}. Oyun açılmaz ya da yanlış sürümü yükler; eskisini sil."));
+                issues.Add(new PackIssue("duplicate", L.F("{0} iki kez var", group.First().Mod.Name),
+                    L.F("Aynı modun birden çok dosyası: {0}. Oyun açılmaz ya da yanlış sürümü yükler; eskisini sil.", string.Join(", ", group.Select(x => x.Mod.File).Distinct()))));
             }
 
             // ── Eksik bağımlılık ──────────────────────────────────────────
             foreach (var missing in scan.Missing)
                 issues.Add(new PackIssue("missing", $"{missing.Id} eksik",
-                    $"{string.Join(", ", missing.RequiredBy)} bu modu istiyor ama pakette yok. Kuranların oyunu açılmaz."));
+                    L.F("{0} bu modu istiyor ama pakette yok. Kuranların oyunu açılmaz.", string.Join(", ", missing.RequiredBy))));
 
             // ── Aynı dünya oluşturma dosyasını değiştiren modlar ──────────
             var owners = new Dictionary<string, List<string>>(StringComparer.Ordinal);
@@ -61,8 +61,8 @@ namespace VuluLauncher
                 .OrderByDescending(g => g.Count()))
             {
                 var files = clash.Select(o => Path.GetFileNameWithoutExtension(o.Key)).Take(4).ToList();
-                issues.Add(new PackIssue("override", $"{clash.Key} aynı dünya dosyalarını değiştiriyor",
-                    $"{clash.Count()} dosyada ({string.Join(", ", files)}{(clash.Count() > files.Count ? "…" : "")}) yalnızca birinin değişikliği geçerli olur; "
+                issues.Add(new PackIssue("override", L.F("{0} aynı dünya dosyalarını değiştiriyor", clash.Key),
+                    L.F("{0} dosyada ({1}{2}) yalnızca birinin değişikliği geçerli olur; ", clash.Count(), string.Join(", ", files), (clash.Count() > files.Count ? "…" : ""))
                     + "diğerinin o kısmı boşa gider. Birlikte çalışmak için yapılmamışlarsa birini kaldır."));
             }
 

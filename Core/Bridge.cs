@@ -58,7 +58,7 @@ namespace VuluLauncher
 
                 if (!_asyncHandlers.TryGetValue(command, out var handler))
                 {
-                    Respond(id, false, null, $"Bilinmeyen komut: {command}");
+                    Respond(id, false, null, L.F("Bilinmeyen komut: {0}", command));
                     return;
                 }
 
@@ -96,7 +96,7 @@ namespace VuluLauncher
                 return default;
             }
             if (!_asyncHandlers.TryGetValue(command, out var handler))
-                throw new InvalidOperationException($"Bilinmeyen komut: {command}");
+                throw new InvalidOperationException(L.F("Bilinmeyen komut: {0}", command));
             try
             {
                 var result = await Task.Run(() => handler(element));

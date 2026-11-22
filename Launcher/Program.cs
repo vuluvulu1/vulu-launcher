@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -24,6 +24,14 @@ namespace VuluLauncher
             if (Environment.GetEnvironmentVariable("VULU_APP_DATA") is { Length: > 0 } testData)
                 AppPaths.Initialize(testData, AppContext.BaseDirectory);
 #endif
+
+            // Yeniden başlatma (dil değişti): önceki kopya kapanana kadar beklenir, kilidi o bırakınca bu alır
+            int waitIndex = Array.IndexOf(args, "--wait-pid");
+            if (waitIndex >= 0 && waitIndex + 1 < args.Length && int.TryParse(args[waitIndex + 1], out int waitPid))
+            {
+                try { using var old = System.Diagnostics.Process.GetProcessById(waitPid); old.WaitForExit(15000); }
+                catch { /* zaten kapanmış */ }
+            }
 
             // Launcher zaten açıksa yeni kopya açılmaz; istek açık olana gider ve o öne gelir
             using var single = new SingleInstance();

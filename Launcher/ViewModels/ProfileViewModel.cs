@@ -70,7 +70,7 @@ namespace VuluLauncher.ViewModels
         [ObservableProperty] private bool _emailOk;
         public string CurrentEmailText => string.IsNullOrEmpty(CurrentEmail) ? "Kayıtlı bir e-posta adresin yok." : "Şu anki adresin: " + CurrentEmail;
         public bool HasPendingEmail => !string.IsNullOrEmpty(PendingEmail);
-        public string PendingEmailText => $"{PendingEmail} adresine bir onay bağlantısı gönderdik. Bağlantı açılınca adresin değişir.";
+        public string PendingEmailText => L.F("{0} adresine bir onay bağlantısı gönderdik. Bağlantı açılınca adresin değişir.", PendingEmail);
         partial void OnCurrentEmailChanged(string? value) => OnPropertyChanged(nameof(CurrentEmailText));
         partial void OnPendingEmailChanged(string? value) { OnPropertyChanged(nameof(HasPendingEmail)); OnPropertyChanged(nameof(PendingEmailText)); }
 
@@ -136,7 +136,7 @@ namespace VuluLauncher.ViewModels
         public bool ShowPlaytimeHint => !HasPlaytime && IsOwn;
         public string PlaytimeHint => AppSettings.Current.ShowPlaytimeOnProfile ? "Biraz oynadıktan sonra toplam süren burada görünür." : "Oynama süren profilinde gizli (Ayarlar).";
         public bool HasPacks => Packs.Count > 0;
-        public string PacksTitle => $"Paylaştığı paketler ({Packs.Count})";
+        public string PacksTitle => L.F("Paylaştığı paketler ({0})", Packs.Count);
         public string BioCounter => $"{BioDraft.Length}/300";
         public bool CanSaveBio => BioDraft.Trim() != _savedBio;
         public string FriendText => FriendState switch { "friend" => "✓ Arkadaş", "outgoing" => "İstek gönderildi", "incoming" => "Kabul et", _ => "+ Arkadaş ekle" };
@@ -170,7 +170,7 @@ namespace VuluLauncher.ViewModels
             IsAdminUser = user.Bool("isAdmin");
             var parts = new List<string>();
             if (user.Text("createdAt") is { } created && DateTime.TryParse(created, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at))
-                parts.Add("Katıldı: " + at.ToLocalTime().ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")));
+                parts.Add("Katıldı: " + at.ToLocalTime().ToString("d MMMM yyyy", L.Culture));
             parts.Add(user.Text("lastSeenAt") is { } seen ? "Son görülme: " + Names.Ago(seen) : "Henüz giriş yapmadı");
             Meta = string.Join(" · ", parts);
             Roles.Clear();
@@ -242,14 +242,14 @@ namespace VuluLauncher.ViewModels
             int minutes = (int)(seconds / 60), hours = minutes / 60;
             if (hours == 0) return $"{minutes} dk";
             if (hours < 10) return $"{hours} sa {minutes % 60} dk";
-            return hours.ToString("N0", CultureInfo.GetCultureInfo("tr-TR")) + " sa";
+            return hours.ToString("N0", L.Culture) + " sa";
         }
 
         private async Task LoadMembersAsync(bool force)
         {
             if (force) main.ForgetMembers();
             var members = await main.MembersAsync();
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             string q = MemberSearch.Trim().ToLower(tr);
             Members.Clear();
             // Çevrimiçi olanlar (önce oynayanlar) üstte; altta oyunda olduğu yer, biyografi ya da son görülme (web: renderMembers)
@@ -263,7 +263,7 @@ namespace VuluLauncher.ViewModels
                     : info.Text("bio") is { Length: > 0 } bio ? bio.ReplaceLineEndings(" ") : main.LastSeenText(person.Username);
                 Members.Add(person);
             }
-            MembersCount = $"{members.Count} üye";
+            MembersCount = L.F("{0} üye", members.Count);
         }
 
         [RelayCommand] private Task OpenMember(PersonItem person) => OpenAsync(person.Username);

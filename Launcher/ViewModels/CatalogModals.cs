@@ -98,8 +98,8 @@ namespace VuluLauncher.ViewModels
         public ContentSearchViewModel Search { get; }
         public ObservableCollection<Choice> Sources { get; } = new();
         public override double Width => 1200;
-        public string Title => $"İçerik ekle: {Target.Name}";
-        public string Subtitle => $"Minecraft {Target.McVersion}{(Target.Loader != "vanilla" ? " · " + Names.Loader(Target.Loader) : "")} ile uyumlu olanlar";
+        public string Title => L.F("İçerik ekle: {0}", Target.Name);
+        public string Subtitle => L.F("Minecraft {0}{1} ile uyumlu olanlar", Target.McVersion, (Target.Loader != "vanilla" ? " · " + Names.Loader(Target.Loader) : ""));
 
         [RelayCommand]
         private void Select(Choice choice)

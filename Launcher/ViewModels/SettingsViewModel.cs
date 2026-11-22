@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
@@ -109,7 +109,7 @@ namespace VuluLauncher.ViewModels
         {
             // "Önerilen": her paketin önerdiği bellek, bilgisayara sığacak kadar; bilgisayardaki RAM yanında yazar
             double totalRam = info.Num("totalRamGb");
-            var ram = new List<(string, string)> { ("0", totalRam > 0 ? $"Önerilen (bilgisayarda {Math.Round(totalRam):0} GB)" : "Önerilen") };
+            var ram = new List<(string, string)> { ("0", totalRam > 0 ? L.F("Önerilen (bilgisayarda {0:0} GB)", Math.Round(totalRam)) : "Önerilen") };
             ram.AddRange(info.Items("ramOptionsGb").Select(gb => (gb.GetInt32().ToString(CultureInfo.InvariantCulture), gb.GetInt32() + " GB")));
 
             var javaPath = new TextRow("Java dosyası", "Elle seçilen java.exe.", S("customJavaPath"), @"C:\...\bin\java.exe",
@@ -187,6 +187,19 @@ namespace VuluLauncher.ViewModels
             Func<bool, Task<bool>> toggle(string key) => value => Change((key, value));
 
             return new SettingSection("Launcher")
+                .Add(new ChoiceRow("Dil", "Language. Değişince launcher yeniden başlar.",
+                    new[] { ("tr", "Türkçe"), ("en", "English") }, VuluShared.L.Language, async value =>
+                    {
+                        if (value == VuluShared.L.Language) return true;
+                        if (!await Change(("language", value))) return false;
+                        string question = value == "en" ? "Restart vulu Launcher now to switch to English?" : "Türkçeye geçmek için vulu Launcher şimdi yeniden başlatılsın mı?";
+                        if (await main.ConfirmAsync(value == "en" ? "Language" : "Dil", question, value == "en" ? "Restart" : "Yeniden başlat"))
+                        {
+                            try { await _core.Call("app.restart"); }
+                            catch (Exception ex) { await main.AlertAsync("Yeniden başlatılamadı", ex.Message); }
+                        }
+                        return true;
+                    }))
                 .Add(new ActionRow("Yenilikler", "Kurulu sürümle gelen değişiklikler.") { Value = main.Version }
                     .With(new RowAction("Göster", () => main.ShowWhatsNewAsync(auto: false))))
                 .Add(new ChoiceRow("Oyun açılınca", "\"Kapat\" seçilirse oyun çıktısı konsolda görünmez ve oynama süresi sayılmaz.",
@@ -264,7 +277,7 @@ namespace VuluLauncher.ViewModels
                     var usage = await _core.Call("storage.usage");
                     double shared = usage.Num("modCacheShared");
                     cache.Hint = "Silinmiş ya da güncellenmiş paketlerden kalan modlar ve ekran görüntüsü önizlemeleri."
-                        + (shared > 0 ? $" Kurulu paketlerinle paylaşılan {FormatBytes(shared)} mod ek yer kaplamaz, sayılmadı." : "");
+                        + (shared > 0 ? L.F(" Kurulu paketlerinle paylaşılan {0} mod ek yer kaplamaz, sayılmadı.", FormatBytes(shared)) : "");
                     cache.Value = FormatBytes(usage.Num("cache"));
                     instances.Value = FormatBytes(usage.Num("instances"));
                     game.Value = FormatBytes(usage.Num("game"));
@@ -347,7 +360,7 @@ namespace VuluLauncher.ViewModels
         private async Task ConnectMicrosoftAsync()
         {
             var result = await main.ShowAsync(new MicrosoftLoginModal());
-            if (result is string name) Flash($"{name} bağlandı ✓");
+            if (result is string name) Flash(L.F("{0} bağlandı ✓", name));
             await LoadMicrosoftAsync();
         }
 
@@ -366,10 +379,10 @@ namespace VuluLauncher.ViewModels
             string licenses = Path.Combine(AppContext.BaseDirectory, "licenses");
 
             return new SettingSection("Hesap ve dosyalar")
-                .Add(new ActionRow("Hesap", $"{main.Username} olarak giriş yapıldı.").With(new RowAction("Çıkış yap", main.LogoutAsync)))
+                .Add(new ActionRow("Hesap", L.F("{0} olarak giriş yapıldı.", main.Username)).With(new RowAction("Çıkış yap", main.LogoutAsync)))
                 .Add(_microsoftRow)
                 .Add(_offlineRow)
-                .Add(new ActionRow("Kayıtlı şifre", hasPassword ? $"{info.Text("savedUsername")} için şifre bu bilgisayarda kayıtlı." : "Kayıtlı şifre yok.")
+                .Add(new ActionRow("Kayıtlı şifre", hasPassword ? L.F("{0} için şifre bu bilgisayarda kayıtlı.", info.Text("savedUsername")) : "Kayıtlı şifre yok.")
                     .With(new RowAction("Sil", async () =>
                     {
                         await _core.Call("auth.forgetPassword");
@@ -400,7 +413,7 @@ namespace VuluLauncher.ViewModels
 
         public static string FormatBytes(double bytes)
         {
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             if (bytes >= 1024d * 1024 * 1024) return (bytes / 1024 / 1024 / 1024).ToString("0.0", tr) + " GB";
             if (bytes >= 1024d * 1024) return (bytes / 1024 / 1024).ToString("0", tr) + " MB";
             if (bytes >= 1024) return (bytes / 1024).ToString("0", tr) + " KB";
@@ -411,7 +424,7 @@ namespace VuluLauncher.ViewModels
         /// <summary>Aramaya uyan satırlar kalır; hiç satırı kalmayan bölüm gizlenir.</summary>
         private void Filter()
         {
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             string query = Search.Trim().ToLower(tr);
             bool any = false;
             foreach (var section in Sections)

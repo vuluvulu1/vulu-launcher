@@ -43,7 +43,7 @@ namespace VuluLauncher
             var incoming = list.Incoming.ToHashSet(StringComparer.Ordinal);
             if (_knownFriendRequests != null)
                 foreach (var name in incoming.Where(n => !_knownFriendRequests.Contains(n)))
-                    ShowNotification("Arkadaşlık isteği", $"{name} seni arkadaş olarak eklemek istiyor.", "friend:" + name);
+                    ShowNotification("Arkadaşlık isteği", L.F("{0} seni arkadaş olarak eklemek istiyor.", name), "friend:" + name);
             _knownFriendRequests = incoming;
             return new { friends = list.Friends, incoming = list.Incoming, outgoing = list.Outgoing };
         }

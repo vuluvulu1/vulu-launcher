@@ -91,8 +91,8 @@ namespace VuluLauncher
             {
                 var m = mismatch[0];
                 Add("mismatch", "Bir modun sürümü uymuyor",
-                    $"{m.Groups[1].Value}, {m.Groups[2].Value} için {m.Groups[3].Value.Trim()} istiyor; kurulu olan {m.Groups[4].Value}.",
-                    $"{m.Groups[2].Value} modunu uygun sürüme güncelle ya da {m.Groups[1].Value} modunun başka bir sürümünü dene.",
+                    L.F("{0}, {1} için {2} istiyor; kurulu olan {3}.", m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value.Trim(), m.Groups[4].Value),
+                    L.F("{0} modunu uygun sürüme güncelle ya da {1} modunun başka bir sürümünü dene.", m.Groups[2].Value, m.Groups[1].Value),
                     new[] { m.Groups[2].Value, m.Groups[1].Value });
             }
 
@@ -100,7 +100,7 @@ namespace VuluLauncher
             if (Regex.Match(text, @"UnsupportedClassVersionError.*?class file version (\d+)\.0") is { Success: true } jv)
             {
                 int need = int.Parse(jv.Groups[1].Value) - 44;
-                Add("java", $"Java {need} gerekiyor", $"Bir dosya Java {need} ile derlenmiş, ama oyun daha eski bir Java ile açıldı.",
+                Add("java", $"Java {need} gerekiyor", L.F("Bir dosya Java {0} ile derlenmiş, ama oyun daha eski bir Java ile açıldı.", need),
                     "Ayarlar → Oyun → Java'yı \"Otomatik\" yap.");
             }
 
@@ -120,7 +120,7 @@ namespace VuluLauncher
                     .Select(x => x.Groups[1].Value)
                     .Concat(Regex.Matches(text, @"Mixin apply (?:for mod|failed) (" + Id + ")").Select(x => x.Groups[1].Value))
                     .Where(x => !NotMods.Contains(x)).Distinct().ToList();
-                Add("mixin", mods.Count > 0 ? $"{string.Join(", ", mods)} bu sürümle uyumsuz" : "Modlar arasında uyumsuzluk (Mixin hatası)",
+                Add("mixin", mods.Count > 0 ? L.F("{0} bu sürümle uyumsuz", string.Join(", ", mods)) : "Modlar arasında uyumsuzluk (Mixin hatası)",
                     "Mod, Minecraft'ın ya da yükleyicinin kodunu değiştiremedi. Genelde modun bu Minecraft/yükleyici sürümüne uymadığını gösterir.",
                     "Modun daha yeni (gerekirse beta) bir sürümünü kur ya da modu geçici olarak kapat.", mods);
             }
@@ -136,7 +136,7 @@ namespace VuluLauncher
                     culprit = Regex.Match(suspected.Groups[1].Value, @"\((" + Id + @")\)") is { Success: true } sm ? sm.Groups[1].Value : null;
                 culprit ??= CulpritFromStack(head, classOwner);
                 if (culprit != null)
-                    Add("modError", $"{culprit} modu çöktü",
+                    Add("modError", L.F("{0} modu çöktü", culprit),
                         "Çökme bu modun kodunda başladı. Genelde modun bir hatasıdır ya da başka bir modla/sürümle uyuşmazlıktır.",
                         "Modu güncelle; düzelmezse geçici olarak kapatıp dene.", new[] { culprit });
             }
@@ -158,7 +158,7 @@ namespace VuluLauncher
             string? description = Regex.Match(report, @"^Description: ([^\n]{1,200})", RegexOptions.Multiline) is { Success: true } d ? d.Groups[1].Value.Trim() : null;
             if (found.Count == 0)
                 Add("unknown", "Oyun beklenmedik şekilde kapandı",
-                    description != null ? $"Çökme raporu: \"{description}\"." : $"Çıkış kodu {exit.ExitCode}; bilinen bir neden bulunamadı.",
+                    description != null ? L.F("Çökme raporu: \"{0}\".", description) : L.F("Çıkış kodu {0}; bilinen bir neden bulunamadı.", exit.ExitCode),
                     "Çökme raporunu aç; son eklediğin modu kapatıp tekrar dene.");
             return new CrashAnalysis(true, reportName, description, found);
         }

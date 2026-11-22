@@ -141,8 +141,8 @@ namespace VuluLauncher
 
             string argument = kind == "play" ? $"--play \"{id}\"" : $"--join {id}";
             string path = _host.CreateShortcut(name, argument,
-                kind == "play" ? $"{name} · vulu Launcher ile oyna" : $"{name} sunucusuna vulu Launcher ile bağlan", icon);
-            Log($"Masaüstüne kısayol eklendi: {name}", "ok");
+                kind == "play" ? L.F("{0} · vulu Launcher ile oyna", name) : L.F("{0} sunucusuna vulu Launcher ile bağlan", name), icon);
+            Log(L.F("Masaüstüne kısayol eklendi: {0}", name), "ok");
             return new { path };
         }
 
@@ -362,8 +362,8 @@ namespace VuluLauncher
                                 bool fresh;
                                 lock (_packUpdatesNotified) fresh = _packUpdatesNotified.Add(key);
                                 if (fresh && AppSettings.Current.PackUpdateNotifications)
-                                    ShowNotification($"{u.GetProperty("name").GetString()} güncellendi",
-                                        $"Paketin yeni sürümü (rev {u.GetProperty("to").GetInt32()}) hazır. Güncellemek için tıkla.",
+                                    ShowNotification(L.F("{0} güncellendi", u.GetProperty("name").GetString()),
+                                        L.F("Paketin yeni sürümü (rev {0}) hazır. Güncellemek için tıkla.", u.GetProperty("to").GetInt32()),
                                         "pack:" + u.GetProperty("instanceId").GetString());
                             }
                         }

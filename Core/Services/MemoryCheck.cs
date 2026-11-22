@@ -51,22 +51,22 @@ namespace VuluLauncher
             if (requestedGb <= limit) return new(requestedGb, null);
 
             string reason = byCommit < byPhysical
-                ? $"şu an yalnızca yaklaşık {status.AvailCommitGb + status.GrowableGb:0.#} GB boş bellek var (RAM + sanal bellek)"
-                : $"bilgisayarda toplam {status.TotalGb:0.#} GB RAM var, Windows'a da yer kalmalı";
+                ? L.F("şu an yalnızca yaklaşık {0:0.#} GB boş bellek var (RAM + sanal bellek)", status.AvailCommitGb + status.GrowableGb)
+                : L.F("bilgisayarda toplam {0:0.#} GB RAM var, Windows'a da yer kalmalı", status.TotalGb);
             string hint = byCommit < byPhysical ? " Açık programları (tarayıcı, Discord vb.) kapatmak işe yarar." : "";
             if (byCommit < byPhysical && systemDriveFreeGb is < 5 and var free)
-                hint += $" Sistem diskinde yalnızca {free:0.#} GB yer kaldığı için Windows sanal belleği büyütemiyor; orada yer açmak da işe yarar.";
+                hint += L.F(" Sistem diskinde yalnızca {0:0.#} GB yer kaldığı için Windows sanal belleği büyütemiyor; orada yer açmak da işe yarar.", free);
 
             if (limit < MinimumGb)
-                return new(MinimumGb, $"Bellek çok az: {reason}. Oyun {MinimumGb} GB ile deneniyor ama açılmayabilir.{hint}", Tight: true);
+                return new(MinimumGb, L.F("Bellek çok az: {0}. Oyun {1} GB ile deneniyor ama açılmayabilir.{2}", reason, MinimumGb, hint), Tight: true);
             int need = Math.Min(requestedGb, MinimumHeapGb(modded, modCount));
             int ram = limit;
             if (ram < need)
             {
-                string pack = modCount > 0 ? $"Bu paket ({modCount} mod) en az {need} GB ister" : $"Oyun en az {need} GB ister";
-                return new(ram, $"{pack}, ama {reason}. {ram} GB ile deneniyor; açılırken ya da oynarken bellek yetmeyip kapanabilir.{hint}", Tight: true);
+                string pack = modCount > 0 ? L.F("Bu paket ({0} mod) en az {1} GB ister", modCount, need) : L.F("Oyun en az {0} GB ister", need);
+                return new(ram, L.F("{0}, ama {1}. {2} GB ile deneniyor; açılırken ya da oynarken bellek yetmeyip kapanabilir.{3}", pack, reason, ram, hint), Tight: true);
             }
-            return new(ram, $"{requestedGb} GB yerine {ram} GB ile açılıyor: {reason}.{hint}");
+            return new(ram, L.F("{0} GB yerine {1} GB ile açılıyor: {2}.{3}", requestedGb, ram, reason, hint));
         }
 
         /// <param name="GrowableGb">Pagefile'ın diskteki boş yerle daha ne kadar büyüyebileceği.</param>

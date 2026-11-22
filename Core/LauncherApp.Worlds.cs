@@ -85,7 +85,7 @@ namespace VuluLauncher
             if (!BackupName.IsMatch(backup)) throw new InvalidOperationException("Geçersiz yedek.");
             string backupDir = BackupDirOf(id, world);
             WorldBackups.Restore(Path.Combine(backupDir, backup), Path.Combine(InstanceDirOf(id), "saves", SafeWorld(world)), backupDir);
-            Log($"{world}, {backup} yedeğinden geri yüklendi.", "ok");
+            Log(L.F("{0}, {1} yedeğinden geri yüklendi.", world, backup), "ok");
             return new { restored = true };
         }
 
@@ -153,7 +153,7 @@ namespace VuluLauncher
                 string? file = ImageFile(folder, id);
                 if (file != null) File.Copy(file, Path.Combine(folder, BackgroundKey(InstancePrefix + copy.Folder) + Path.GetExtension(file)), overwrite: true);
             }
-            Log($"{source.Name} çoğaltıldı: {copy.Name}.", "ok");
+            Log(L.F("{0} çoğaltıldı: {1}.", source.Name, copy.Name), "ok");
             return new { id = InstancePrefix + copy.Folder };
         }
 
@@ -180,7 +180,7 @@ namespace VuluLauncher
             var meta = RequireCustomInstance(id);
             if (meta.Loader == "vanilla") throw new InvalidOperationException("Vanilla instance'ın dışa aktarılacak modu yok.");
             string dir = InstanceStore.PathOf(meta.Folder);
-            Log($"{meta.Name} dışa aktarılıyor...", "accent");
+            Log(L.F("{0} dışa aktarılıyor...", meta.Name), "accent");
 
             var (mods, fallback) = await ResolvePackModsAsync(meta, dir);
             var tracked = TrackedFiles(meta);
@@ -233,7 +233,7 @@ namespace VuluLauncher
                 return added;
             });
 
-            Log($"{meta.Name} dışa aktarıldı: {Path.GetFileName(target)} ({files.Count} Modrinth bağlantısı, {count} dosya).", "ok");
+            Log(L.F("{0} dışa aktarıldı: {1} ({2} Modrinth bağlantısı, {3} dosya).", meta.Name, Path.GetFileName(target), files.Count, count), "ok");
             _host.ShowInFolder(target, selectFile: true);
             return new { path = target, links = files.Count, files = count };
         }

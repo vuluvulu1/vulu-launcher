@@ -233,7 +233,7 @@ namespace VuluLauncher
         {
             RequireLogin();
             var meta = InstanceStore.Create(args.Str("name"), args.Str("mcVersion"), args.Str("loader"), args.Str("loaderVersion"));
-            Log($"{meta.Name} oluşturuldu ({meta.McVersion}, {meta.Loader}). İlk açılışta oyun dosyaları indirilecek.", "ok");
+            Log(L.F("{0} oluşturuldu ({1}, {2}). İlk açılışta oyun dosyaları indirilecek.", meta.Name, meta.McVersion, meta.Loader), "ok");
             return new { id = InstancePrefix + meta.Folder };
         }
 
@@ -476,7 +476,7 @@ namespace VuluLauncher
             }
             catch (Exception ex)
             {
-                Log($"Modpack kurulamadı: {ex.Message}", "error");
+                Log(L.F("Modpack kurulamadı: {0}", ex.Message), "error");
                 return new { success = false, error = ex.Message, id = (string?)null, name = (string?)null };
             }
         }
@@ -551,7 +551,7 @@ namespace VuluLauncher
                 throw new InvalidOperationException("Desteklenen biçimler: " +
                     string.Join(", ", extensions.Where(e => e != ".jpeg").Select(e => e.TrimStart('.').ToUpperInvariant())) + ".");
             if (new FileInfo(source).Length > maxBytes)
-                throw new InvalidOperationException($"Resim {maxBytes / 1024 / 1024} MB'tan büyük olamaz.");
+                throw new InvalidOperationException(L.F("Resim {0} MB'tan büyük olamaz.", maxBytes / 1024 / 1024));
 
             Directory.CreateDirectory(folder);
             DeleteImageFiles(folder, id);

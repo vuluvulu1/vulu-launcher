@@ -62,7 +62,7 @@ namespace VuluLauncher
                 var moved = await Task.Run(() => ManualFiles.MoveToBackup(InstanceStore.PathOf(instance.Folder), args.StrList("files")));
                 // Taşınanlar artık kurulu sayılmaz
                 if (instance.Content.RemoveAll(c => moved.Contains(c.File, StringComparer.OrdinalIgnoreCase)) > 0) InstanceStore.Save(instance);
-                if (moved.Count > 0) Log($"{instance.Name}: {moved.Count} dosya {ManualFiles.BackupFolder} klasörüne taşındı.", "ok");
+                if (moved.Count > 0) Log(L.F("{0}: {1} dosya {2} klasörüne taşındı.", instance.Name, moved.Count, ManualFiles.BackupFolder), "ok");
                 return new { moved };
             });
         }
@@ -75,7 +75,7 @@ namespace VuluLauncher
             string? downloads = OperatingSystem.IsWindows() && Directory.Exists(_host.DownloadsDirectory) ? _host.DownloadsDirectory : null;
             var results = await Task.Run(() => ManualFiles.Place(instance, downloads));
             int placed = results.Count(r => r.Status == "placed");
-            if (placed > 0) Log($"{instance.Name}: elle indirilen {placed} dosya yerine kondu.", "ok");
+            if (placed > 0) Log(L.F("{0}: elle indirilen {1} dosya yerine kondu.", instance.Name, placed), "ok");
             return new
             {
                 downloads,
@@ -85,7 +85,7 @@ namespace VuluLauncher
         }
 
         private static int RequireCfId(string value, string what) =>
-            int.TryParse(value, out var id) && id > 0 ? id : throw new InvalidOperationException($"Geçersiz {what}.");
+            int.TryParse(value, out var id) && id > 0 ? id : throw new InvalidOperationException(L.F("Geçersiz {0}.", what));
 
         private static string ContentType(string type) => type is "mod" or "modpack" or "resourcepack" or "shader" ? type : "mod";
 
@@ -233,7 +233,7 @@ namespace VuluLauncher
             }
             catch (Exception ex)
             {
-                Log($"Modpack kurulamadı: {ex.Message}", "error");
+                Log(L.F("Modpack kurulamadı: {0}", ex.Message), "error");
                 return new { success = false, error = ex.Message, id = (string?)null, name = (string?)null, manual = ManualList(Array.Empty<ManualDownload>()) };
             }
         }

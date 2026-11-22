@@ -140,7 +140,7 @@ namespace VuluLauncher.ViewModels
                 if (e.PropertyName == nameof(HomeViewModel.PackUpdateCount))
             {
                 Tabs[0].Badge = Home.PackUpdateCount;
-                Tabs[0].Tip = Home.PackUpdateCount > 0 ? $"Oyna · {Home.PackUpdateCount} paket güncellemesi" : "Oyna";
+                Tabs[0].Tip = Home.PackUpdateCount > 0 ? L.F("Oyna · {0} paket güncellemesi", Home.PackUpdateCount) : "Oyna";
             }
             };
             Settings = new SettingsViewModel(this);
@@ -300,7 +300,7 @@ namespace VuluLauncher.ViewModels
                             if (++tick < 5) return;
                             pending.Indeterminate = false;
                             pending.Progress = Math.Min(1, (tick - 5) / 40.0);
-                            pending.Phase = $"Modpack indiriliyor · %{Math.Round(pending.Progress * 100)}";
+                            pending.Phase = L.F("Modpack indiriliyor · %{0}", Math.Round(pending.Progress * 100));
                             if (pending.Progress >= 1) tick = 4;   // döngü: baştan
                         };
                         timer.Start();
@@ -324,7 +324,7 @@ namespace VuluLauncher.ViewModels
                         Packs.Cards.Clear();
                         foreach (var (name, loader) in new[] { ("Örnek Paket", "fabric"), ("Macera", "forge"), ("Sade", "vanilla"), ("Teknik", "neoforge") })
                             Packs.Cards.Add(new PackCard(Packs, JsonDocument.Parse(
-                                $"{{\"id\":\"{name}\",\"name\":\"{name}\",\"description\":\"Önizleme için örnek paket açıklaması.\",\"loader\":\"{loader}\",\"author\":\"vulu\"}}").RootElement));
+                                L.F("{{\"id\":\"{0}\",\"name\":\"{1}\",\"description\":\"Önizleme için örnek paket açıklaması.\",\"loader\":\"{2}\",\"author\":\"vulu\"}}", name, name, loader)).RootElement));
                     }, TimeSpan.FromSeconds(4));
                 return;
             }
@@ -532,8 +532,8 @@ namespace VuluLauncher.ViewModels
                     System.Globalization.DateTimeStyles.RoundtripKind, out var at)) return "";
             var local = at.ToLocalTime().Date;
             int days = (int)Math.Round((DateTime.Today - local).TotalDays);
-            return days <= 0 ? "bugün" : days == 1 ? "dün" : days < 30 ? $"{days} gün önce"
-                : local.ToString("d MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"));
+            return days <= 0 ? "bugün" : days == 1 ? "dün" : days < 30 ? L.F("{0} gün önce", days)
+                : local.ToString("d MMMM yyyy", L.Culture);
         }
 
         /// <summary>Masaüstü bildirimine tıklandıysa ilgili sayfa açılır.</summary>
@@ -691,7 +691,7 @@ namespace VuluLauncher.ViewModels
                 string file = path;
                 var result = await InstallInLibraryAsync(name, null, () => _core.Call("instances.import", new { path = file }));
                 if (result.Items("manual").Any()) await ShowAsync(new ManualDownloadsModal(result.Get("manual"), result.Text("id")));
-                ShowToast("İçe aktarıldı", $"{result.Text("name") ?? name} kütüphanene eklendi.");
+                ShowToast("İçe aktarıldı", L.F("{0} kütüphanene eklendi.", result.Text("name") ?? name));
             }
             catch (Exception ex) { await AlertAsync("İçe aktarılamadı", ex.Message); }
         }
@@ -722,13 +722,13 @@ namespace VuluLauncher.ViewModels
             }
             if (auto && Modals.Count > 0) return;   // başka bir kutu açıksa üstüne binmesin; sonraki açılışta gösterilir
             UiState.Set("whatsNewSeen", Version);
-            await AlertAsync($"v{version} ile gelenler", notes.Trim());
+            await AlertAsync(L.F("v{0} ile gelenler", version), notes.Trim());
         }
 
         /// <summary>Arkadaşın mesajla gönderdiği paketi kurar; kurulunca Kütüphane'de seçilir. Karta yazılacak not döner.</summary>
         public async Task<string?> InstallFriendPackAsync(string shareId, string name)
         {
-            if (!await ConfirmAsync("Paketi kur", $"{name} yeni bir paket olarak kurulsun mu? Modlar CurseForge ve Modrinth'ten iner.", "Kur")) return null;
+            if (!await ConfirmAsync("Paketi kur", L.F("{0} yeni bir paket olarak kurulsun mu? Modlar CurseForge ve Modrinth'ten iner.", name), "Kur")) return null;
             Home.AppendLog($"{name} kuruluyor…", "accent");
             try
             {
@@ -736,7 +736,7 @@ namespace VuluLauncher.ViewModels
                 string id = r.Text("id") ?? "";
                 await Home.ReloadInstancesAsync(id);
                 SelectedTab = Tabs[0];
-                ShowToast("Paket kuruldu", $"{name} Kütüphane'de.");
+                ShowToast("Paket kuruldu", L.F("{0} Kütüphane'de.", name));
                 return r.Int("manual") > 0 ? "Kuruldu; birkaç dosyanın elle indirilmesi gerekiyor (paketin sayfasında)." : "Kuruldu ✓";
             }
             catch (Exception ex) { return ex.Message; }
@@ -822,7 +822,7 @@ namespace VuluLauncher.ViewModels
                     _ = RunStartupActionAsync();
                     break;
                 case "shotEvent":
-                    Home.AppendLog(data.Text("kind") == "like" ? $"♥ {data.Text("from")} ekran görüntünü beğendi." : $"💬 {data.Text("from")}: {data.Text("text")}", "accent");
+                    Home.AppendLog(data.Text("kind") == "like" ? L.F("♥ {0} ekran görüntünü beğendi.", data.Text("from")) : $"💬 {data.Text("from")}: {data.Text("text")}", "accent");
                     break;
                 default:
                     Home.OnCoreEvent(name, data);

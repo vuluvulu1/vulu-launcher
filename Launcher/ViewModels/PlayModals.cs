@@ -59,9 +59,9 @@ namespace VuluLauncher.ViewModels
             }
             Intro = total == 1
                 ? "Bir mod, kurulu olmayan başka bir modu istiyor. Oyun bu hâliyle büyük ihtimalle \"Error loading mods\" hatasıyla açılmaz."
-                : $"{total} mod eksik. Oyun bu hâliyle büyük ihtimalle \"Error loading mods\" hatasıyla açılmaz.";
+                : L.F("{0} mod eksik. Oyun bu hâliyle büyük ihtimalle \"Error loading mods\" hatasıyla açılmaz.", total);
             CanInstall = instance.Kind == "custom" && installable > 0;
-            InstallText = installable == total ? "Eksikleri kur ve oyna" : $"Bulunanları kur ({installable}) ve oyna";
+            InstallText = installable == total ? "Eksikleri kur ve oyna" : L.F("Bulunanları kur ({0}) ve oyna", installable);
         }
 
         public override double Width => 520;
@@ -103,15 +103,15 @@ namespace VuluLauncher.ViewModels
                 severe |= !picksOne || d.Text("reason") != "version";
                 string copyOf = d.Text("copyOf") ?? "";
                 Add(d.Text("file") ?? "", d.Text("reason") == "version"
-                    ? picksOne ? $"{copyOf} ile aynı mod (ikisi de aynı kimliği kullanıyor). Oyun yalnızca yeni sürümü yükler; bu dosya boşuna duruyor."
-                               : $"{copyOf} ile aynı mod; aynı modun iki sürümü birlikte yüklenemez."
-                    : $"{copyOf} dosyasının kopyası; aynı mod iki kez yüklenir.");
+                    ? picksOne ? L.F("{0} ile aynı mod (ikisi de aynı kimliği kullanıyor). Oyun yalnızca yeni sürümü yükler; bu dosya boşuna duruyor.", copyOf)
+                               : L.F("{0} ile aynı mod; aynı modun iki sürümü birlikte yüklenemez.", copyOf)
+                    : L.F("{0} dosyasının kopyası; aynı mod iki kez yüklenir.", copyOf));
             }
             foreach (var m in _manual.Items()) Manual.Add(new HealthItem(m.Text("title") ?? "", m.Text("fileName"), iconUrl: m.Text("iconUrl")));
 
             // Yalnızca elle indirilecek dosya varsa bozuk dosya anlatımı yerine ne yapılacağı söylenir
             bool onlyManual = Bad.Count == 0 && Manual.Count > 0;
-            Title = onlyManual ? (Manual.Count == 1 ? "Bir mod elle indirilmeli" : $"{Manual.Count} mod elle indirilmeli")
+            Title = onlyManual ? (Manual.Count == 1 ? "Bir mod elle indirilmeli" : L.F("{0} mod elle indirilmeli", Manual.Count))
                 : severe ? "Mod dosyalarında sorun var" : "Gereksiz mod dosyası var";
             Intro = onlyManual
                 ? "Yapımcıları bu modların başka uygulamalardan indirilmesine izin vermiyor. \"Elle indir…\"e bas, açılan sayfalardan indir; launcher dosyaları kendiliğinden yerine koyar ve oyun açılmaya devam eder."
@@ -174,7 +174,7 @@ namespace VuluLauncher.ViewModels
             _main = main;
             InstanceId = crash.Text("instanceId") ?? "";
             Report = crash.Text("report");
-            Title = $"{crash.Text("name")} çöktü";
+            Title = L.F("{0} çöktü", crash.Text("name"));
             var findings = crash.Items("findings").ToList();
             Intro = findings.Count == 1 && findings[0].Text("kind") == "unknown" ? "Oyun beklenmedik şekilde kapandı." : "Oyunun kapanma nedeni büyük ihtimalle şu:";
             foreach (var f in findings) Findings.Add(new CrashFinding(this, f));

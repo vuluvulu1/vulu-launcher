@@ -108,7 +108,7 @@ namespace VuluLauncher.ViewModels
         }
 
         private string SentToText() =>
-            $"{_sentEmail} adresine bir doğrulama bağlantısı gönderdik. " +
+            L.F("{0} adresine bir doğrulama bağlantısı gönderdik. ", _sentEmail) +
             (_sentAutoApprove ? "Bağlantıyı açınca hesabın açılır ve buradan giriş yapabilirsin" : "Kaydını tamamlamak için bağlantıyı aç; ardından bir admin onaylayınca hesabın açılır") +
             ". Birkaç dakika içinde gelmezse spam klasörüne de bak.";
 
@@ -129,7 +129,7 @@ namespace VuluLauncher.ViewModels
             else
             {
                 SentTitle = "İsteğin gönderildi";
-                SentText = $"{_sentUsername} için isteğin bize ulaştı. Bir admin onayladığında giriş yapabilirsin.";
+                SentText = L.F("{0} için isteğin bize ulaştı. Bir admin onayladığında giriş yapabilirsin.", _sentUsername);
             }
             Card = "sent";
         }

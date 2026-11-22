@@ -118,7 +118,7 @@ namespace VuluLauncher
             {
                 using var response = await Downloader.Http.PostAsJsonAsync($"{Api}/version_files", new { hashes = chunk, algorithm = "sha1" });
                 if (!response.IsSuccessStatusCode)
-                    throw new HttpRequestException($"Modrinth isteği başarısız oldu ({(int)response.StatusCode}).");
+                    throw new HttpRequestException(L.F("Modrinth isteği başarısız oldu ({0}).", (int)response.StatusCode));
 
                 var found = await response.Content.ReadFromJsonAsync<Dictionary<string, MrVersion>>(Json);
                 foreach (var (hash, version) in found ?? new()) result[hash] = version;
@@ -140,7 +140,7 @@ namespace VuluLauncher
         public async Task<List<string>> InstallAsync(InstanceMeta instance, string projectId, string? versionId = null)
         {
             var installed = new List<string>();
-            using var job = new DownloadJob($"{instance.Name} · içerik kuruluyor") { Phase = "İndiriliyor" };
+            using var job = new DownloadJob(L.F("{0} · içerik kuruluyor", instance.Name)) { Phase = "İndiriliyor" };
             try
             {
                 await InstallRecursiveAsync(instance, projectId, new HashSet<string>(), installed, isDependency: false, versionId);
@@ -151,7 +151,7 @@ namespace VuluLauncher
                 throw;
             }
             InstanceStore.Save(instance);
-            job.Complete(installed.Count == 1 ? $"{installed[0]} kuruldu" : $"{installed.Count} içerik kuruldu");
+            job.Complete(installed.Count == 1 ? $"{installed[0]} kuruldu" : L.F("{0} içerik kuruldu", installed.Count));
             return installed;
         }
 
@@ -167,7 +167,7 @@ namespace VuluLauncher
             string? folder = FolderFor(project.ProjectType);
             if (folder == null && isDependency) return;
             if (folder == null)
-                throw new InvalidOperationException($"{project.Title}: bu içerik türü ({project.ProjectType}) instance'a kurulamıyor.");
+                throw new InvalidOperationException(L.F("{0}: bu içerik türü ({1}) instance'a kurulamıyor.", project.Title, project.ProjectType));
 
             bool isMod = project.ProjectType == "mod";
             if (isMod && instance.Loader == "vanilla")
@@ -187,26 +187,26 @@ namespace VuluLauncher
                 // bildirir; Fabric API gibi başka yükleyiciye ait olanların burada sürümü yoktur ve gerekmez.
                 if (isDependency)
                 {
-                    _log($"{project.Title} {target} için yok, atlandı (bu yükleyicide gerekmiyor).", "muted");
+                    _log(L.F("{0} {1} için yok, atlandı (bu yükleyicide gerekmiyor).", project.Title, target), "muted");
                     return;
                 }
-                throw new InvalidOperationException($"{project.Title}: {target} için uyumlu sürüm yok.");
+                throw new InvalidOperationException(L.F("{0}: {1} için uyumlu sürüm yok.", project.Title, target));
             }
 
             var file = version.Files.FirstOrDefault(f => f.Primary) ?? version.Files.FirstOrDefault()
-                ?? throw new InvalidOperationException($"{project.Title}: indirilecek dosya yok.");
+                ?? throw new InvalidOperationException(L.F("{0}: indirilecek dosya yok.", project.Title));
 
             // Kararlı sürüm seçildi ama daha yeni bir beta/alpha varsa haber verilir: yeni yükleyici sürümlerinde
             // düzeltme çoğu zaman yalnızca betada olur (ör. Sodium 0.9.2 ↔ NeoForge 26.3.0.65+)
             var newest = versions.OrderByDescending(v => v.DatePublished).FirstOrDefault();
             if (string.IsNullOrEmpty(versionId) && newest != null && newest.Id != version.Id && newest.VersionType != "release"
                 && string.CompareOrdinal(newest.DatePublished, version.DatePublished) > 0)
-                _log($"Not: {project.Title} için daha yeni bir {newest.VersionType} sürümü var ({newest.VersionNumber}). Oyun açılmazsa sürüm seçiciden onu deneyebilirsin.", "muted");
+                _log(L.F("Not: {0} için daha yeni bir {1} sürümü var ({2}). Oyun açılmazsa sürüm seçiciden onu deneyebilirsin.", project.Title, newest.VersionType, newest.VersionNumber), "muted");
 
             string instanceDir = InstanceStore.PathOf(instance.Folder);
             string relative = $"{folder}/{Path.GetFileName(file.Filename)}";
             string path = Downloader.ResolveInside(instanceDir, relative)
-                ?? throw new InvalidOperationException($"{project.Title}: geçersiz dosya adı.");
+                ?? throw new InvalidOperationException(L.F("{0}: geçersiz dosya adı.", project.Title));
 
             _log($"{project.Title} indiriliyor ({version.VersionNumber})...", "accent");
             var item = DownloadJob.Current?.Add($"{project.Title} {version.VersionNumber}", file.Size);
@@ -255,7 +255,7 @@ namespace VuluLauncher
                 using var response = await Downloader.Http.PostAsJsonAsync($"{Api}/version_files/update",
                     new { hashes = chunk, algorithm = "sha1", loaders, game_versions = new[] { mcVersion } });
                 if (!response.IsSuccessStatusCode)
-                    throw new HttpRequestException($"Modrinth isteği başarısız oldu ({(int)response.StatusCode}).");
+                    throw new HttpRequestException(L.F("Modrinth isteği başarısız oldu ({0}).", (int)response.StatusCode));
                 var found = await response.Content.ReadFromJsonAsync<Dictionary<string, MrVersion>>(Json);
                 foreach (var (hash, version) in found ?? new()) result[hash] = version;
             }
@@ -386,17 +386,17 @@ namespace VuluLauncher
         {
             var project = await ProjectAsync(projectId);
             if (project.ProjectType != "modpack")
-                throw new InvalidOperationException($"{project.Title} bir modpack değil.");
+                throw new InvalidOperationException(L.F("{0} bir modpack değil.", project.Title));
 
             var versions = await VersionsAsync(project.Id);
             var version = (string.IsNullOrEmpty(versionId) ? null : versions.FirstOrDefault(v => v.Id == versionId))
                 ?? versions.FirstOrDefault(v => v.VersionType == "release")
                 ?? versions.FirstOrDefault()
-                ?? throw new InvalidOperationException($"{project.Title}: yayınlanmış sürüm yok.");
+                ?? throw new InvalidOperationException(L.F("{0}: yayınlanmış sürüm yok.", project.Title));
 
             var packFile = version.Files.FirstOrDefault(f => f.Primary && f.Filename.EndsWith(".mrpack", StringComparison.OrdinalIgnoreCase))
                 ?? version.Files.FirstOrDefault(f => f.Filename.EndsWith(".mrpack", StringComparison.OrdinalIgnoreCase))
-                ?? throw new InvalidOperationException($"{project.Title}: .mrpack dosyası bulunamadı.");
+                ?? throw new InvalidOperationException(L.F("{0}: .mrpack dosyası bulunamadı.", project.Title));
 
             string packPath = Path.Combine(Path.GetTempPath(), $"vulu-{Guid.NewGuid():N}.mrpack");
             using var job = new DownloadJob($"{project.Title} kuruluyor") { Phase = "Modpack indiriliyor" };
@@ -514,7 +514,7 @@ namespace VuluLauncher
         {
             var packFile = version.Files.FirstOrDefault(f => f.Primary && f.Filename.EndsWith(".mrpack", StringComparison.OrdinalIgnoreCase))
                 ?? version.Files.FirstOrDefault(f => f.Filename.EndsWith(".mrpack", StringComparison.OrdinalIgnoreCase))
-                ?? throw new InvalidOperationException($"{version.VersionNumber}: .mrpack dosyası bulunamadı.");
+                ?? throw new InvalidOperationException(L.F("{0}: .mrpack dosyası bulunamadı.", version.VersionNumber));
             string packPath = Path.Combine(Path.GetTempPath(), $"vulu-{Guid.NewGuid():N}.mrpack");
             await job.Add(packFile.Filename, packFile.Size).DownloadAsync(packFile.Url, packPath, packFile.Hashes?.Sha1, packFile.Hashes?.Sha512);
             return packPath;
@@ -564,7 +564,7 @@ namespace VuluLauncher
                 ModpackFiles.BackupConfigs(dir, instance.ModpackVersion);
                 var newFiles = PackContent(index, zip);
                 int removed = ModpackFiles.RemoveOld(dir, oldFiles, newFiles);
-                _log($"{instance.Name}: eski sürümden {removed} dosya kaldırıldı.", "muted");
+                _log(L.F("{0}: eski sürümden {1} dosya kaldırıldı.", instance.Name, removed), "muted");
 
                 await DownloadPackFilesAsync(index, dir, job);
                 job.Phase = "Ayarlar yerleştiriliyor";
@@ -577,8 +577,8 @@ namespace VuluLauncher
                 instance.ModpackVersion = target.VersionNumber;
                 instance.PackFiles = newFiles;
                 InstanceStore.Save(instance);
-                _log($"{instance.Name} artık {target.VersionNumber}.", "ok");
-                job.Complete($"{instance.Name} {target.VersionNumber} sürümünde");
+                _log(L.F("{0} artık {1}.", instance.Name, target.VersionNumber), "ok");
+                job.Complete(L.F("{0} {1} sürümünde", instance.Name, target.VersionNumber));
             }
             catch (Exception ex) { job.Fail(ex.Message); throw; }
             finally { foreach (var t in temp) try { File.Delete(t); } catch { } }
@@ -595,15 +595,15 @@ namespace VuluLauncher
             await Parallel.ForEachAsync(files, new ParallelOptions { MaxDegreeOfParallelism = 6 }, async (file, cancellation) =>
             {
                 string path = Downloader.ResolveInside(instanceDir, file.Path)
-                    ?? throw new InvalidDataException($"Modpack geçersiz bir dosya yolu içeriyor: {file.Path}");
+                    ?? throw new InvalidDataException(L.F("Modpack geçersiz bir dosya yolu içeriyor: {0}", file.Path));
 
                 string url = file.Downloads.FirstOrDefault(IsAllowedPackUrl)
-                    ?? throw new InvalidDataException($"Modpack izin verilmeyen bir adresten indirme istiyor: {file.Path}");
+                    ?? throw new InvalidDataException(L.F("Modpack izin verilmeyen bir adresten indirme istiyor: {0}", file.Path));
 
                 await items[file].DownloadAsync(url, path, file.Hashes?.Sha1, file.Hashes?.Sha512, cancellation);
 
                 int current = Interlocked.Increment(ref done);
-                _log($"Modpack dosyaları indiriliyor... {current}/{files.Count}", "replace");
+                _log(L.F("Modpack dosyaları indiriliyor... {0}/{1}", current, files.Count), "replace");
             });
         }
 
@@ -635,7 +635,7 @@ namespace VuluLauncher
         {
             using var response = await Downloader.Http.GetAsync(url);
             if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException($"Modrinth isteği başarısız oldu ({(int)response.StatusCode}).");
+                throw new HttpRequestException(L.F("Modrinth isteği başarısız oldu ({0}).", (int)response.StatusCode));
 
             return await response.Content.ReadFromJsonAsync<T>(Json)
                 ?? throw new InvalidDataException("Modrinth boş cevap döndü.");

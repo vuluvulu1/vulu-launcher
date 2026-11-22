@@ -53,7 +53,7 @@ namespace VuluLauncher
                 foreach (var f in analysis.Findings)
                     findings.Add(new { kind = f.Kind, title = f.Title, detail = f.Detail, fix = f.Fix, actions = await CrashActionsAsync(f, meta, scan, exit) });
 
-                Log($"Oyun çöktü: {string.Join(" · ", analysis.Findings.Select(f => f.Title))}", "error");
+                Log(L.F("Oyun çöktü: {0}", string.Join(" · ", analysis.Findings.Select(f => f.Title))), "error");
                 var crash = new
                 {
                     instanceId,
@@ -68,7 +68,7 @@ namespace VuluLauncher
                 else
                 {
                     lock (_actionGate) _pendingCrash = crash;
-                    ShowNotification($"{exit.Target.Name} çöktü", "Nedenini görmek için tıkla.", "crash");
+                    ShowNotification(L.F("{0} çöktü", exit.Target.Name), "Nedenini görmek için tıkla.", "crash");
                 }
             }
             catch (Exception ex) { Log("Çökme raporu okunamadı: " + ex.Message, "muted"); }
@@ -89,7 +89,7 @@ namespace VuluLauncher
                     if (await Task.WhenAny(lookup, Task.Delay(TimeSpan.FromSeconds(12))) != lookup) return actions;
                     var projects = (await lookup).Values.Where(p => p != null).Select(p => p!).ToList();
                     if (projects.Count > 0)
-                        actions.Add(new { type = "install", label = projects.Count == 1 ? $"{projects[0].Title} kur" : $"Eksikleri kur ({projects.Count})", projectIds = projects.Select(p => p.Id).ToList() });
+                        actions.Add(new { type = "install", label = projects.Count == 1 ? $"{projects[0].Title} kur" : L.F("Eksikleri kur ({0})", projects.Count), projectIds = projects.Select(p => p.Id).ToList() });
                     return actions;
                 }
 
@@ -103,7 +103,7 @@ namespace VuluLauncher
                         actions.Add(new
                         {
                             type = "update", projectId = n.Version.ProjectId, versionId = n.Version.Id,
-                            label = $"{mod.Name} güncelle ({n.Version.VersionNumber}{(n.Version.VersionType == "release" ? "" : " · " + n.Version.VersionType)})",
+                            label = L.F("{0} güncelle ({1}{2})", mod.Name, n.Version.VersionNumber, (n.Version.VersionType == "release" ? "" : " · " + n.Version.VersionType)),
                         });
                     actions.Add(new { type = "disable", file = "mods/" + mod.File, label = $"{mod.Name} kapat" });
                 }
@@ -309,7 +309,7 @@ namespace VuluLauncher
             if (_game.IsRunningFor(instanceId)) throw new InvalidOperationException("Paket açıkken mod değiştirilemez.");
             var record = ModBackups.Rollback(InstanceStore.PathOf(meta.Folder), meta, projectId, source);
             InstanceStore.Save(meta);
-            Log($"{record.Title} eski sürümüne döndü ({record.From}).", "ok");
+            Log(L.F("{0} eski sürümüne döndü ({1}).", record.Title, record.From), "ok");
             return new { title = record.Title, version = record.From };
         }
 

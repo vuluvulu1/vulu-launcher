@@ -200,12 +200,12 @@ namespace VuluLauncher.ViewModels
                 packFeedback > 0 ? string.Join(", ", packList.Where(p => p.Int("openFeedback") > 0).Select(p => $"{p.Text("name")} ({p.Int("openFeedback")})")) : "Açık bildirim yok.",
                 packFeedback > 0, "Paketlere git", () => main.OpenNewPackAsync("packs")));
             Cards.Add(new AdminCard("Çevrimiçi", online.Count.ToString(CultureInfo.InvariantCulture),
-                online.Count > 0 ? $"{playing} kişi oyunda · {members.Count} üye" : $"{members.Count} üye, şu an kimse çevrimiçi değil.", false, "Kullanıcılar", () => SelectAsync("users")));
+                online.Count > 0 ? L.F("{0} kişi oyunda · {1} üye", playing, members.Count) : L.F("{0} üye, şu an kimse çevrimiçi değil.", members.Count), false, "Kullanıcılar", () => SelectAsync("users")));
             Cards.Add(new AdminCard("Duyuru", announcement.ValueKind == JsonValueKind.Object ? "Yayında" : "Yok",
                 announcement.ValueKind == JsonValueKind.Object ? announcement.Text("text") ?? "" : "Oyna sayfasının üstünde herkese bir mesaj gösterebilirsin.",
                 false, announcement.ValueKind == JsonValueKind.Object ? "Düzenle" : "Duyuru yaz", () => SelectAsync("announcement")));
             Cards.Add(new AdminCard("Sunucular", servers.Count.ToString(CultureInfo.InvariantCulture),
-                servers.Count == 0 ? "Henüz sunucu eklenmemiş." : $"{servers.Count(s => s.IsOnline)} açık · {servers.Sum(s => int.TryParse(s.Players.Split('/')[0], out int n) ? n : 0)} oyuncu",
+                servers.Count == 0 ? "Henüz sunucu eklenmemiş." : L.F("{0} açık · {1} oyuncu", servers.Count(s => s.IsOnline), servers.Sum(s => int.TryParse(s.Players.Split('/')[0], out int n) ? n : 0)),
                 false, "Sunuculara git", () => { main.SelectedTab = main.Tabs.First(t => t.Key == "servers"); return Task.CompletedTask; }));
 
             static async Task Try(Func<Task> run) { try { await run(); } catch { /* kart boş kalır */ } }
@@ -218,7 +218,7 @@ namespace VuluLauncher.ViewModels
             try { await LoadRoleListAsync(); } catch { _roles = new(); }
             Users.Clear();
             foreach (var u in users.Items()) Users.Add(new AdminUserRow(this, u, _roles, main.Username));
-            Summary = $"{Users.Count} kullanıcı";
+            Summary = L.F("{0} kullanıcı", Users.Count);
         }
 
         private async Task LoadRoleListAsync()
@@ -236,7 +236,7 @@ namespace VuluLauncher.ViewModels
 
         public async Task DeleteUserAsync(AdminUserRow user)
         {
-            if (!await main.ConfirmAsync("Kullanıcı sil", $"'{user.Username}' silinsin mi? Hesap ve profil resmi silinir; paylaştığı paketler yerinde kalır. Bu işlem geri alınamaz.", "Sil", danger: true)) return;
+            if (!await main.ConfirmAsync("Kullanıcı sil", L.F("'{0}' silinsin mi? Hesap ve profil resmi silinir; paylaştığı paketler yerinde kalır. Bu işlem geri alınamaz.", user.Username), "Sil", danger: true)) return;
             try { await _core.Call("admin.deleteUser", new { id = user.Id, username = user.Username }); }
             catch (Exception ex) { await main.AlertAsync("Silinemedi", ex.Message); }
             await LoadUsersAsync();
@@ -262,7 +262,7 @@ namespace VuluLauncher.ViewModels
         [RelayCommand]
         private async Task DeleteRole(AdminRole role)
         {
-            if (!await main.ConfirmAsync("Rolü sil", $"\"{role.Name}\" silinsin mi? {(role.Members > 0 ? $"{role.Members} kişiden kaldırılır. " : "")}Bir paketin erişimini belirleyen rol silinemez.", "Sil", danger: true)) return;
+            if (!await main.ConfirmAsync("Rolü sil", L.F("\"{0}\" silinsin mi? {1}Bir paketin erişimini belirleyen rol silinemez.", role.Name, (role.Members > 0 ? L.F("{0} kişiden kaldırılır. ", role.Members) : "")), "Sil", danger: true)) return;
             try { await _core.Call("admin.deleteRole", new { id = role.Id }); }
             catch (Exception ex) { await main.AlertAsync("Silinemedi", ex.Message); }
             await LoadRolesAsync();
@@ -322,13 +322,13 @@ namespace VuluLauncher.ViewModels
         {
             Registrations.Clear();
             foreach (var r in _registrations) Registrations.Add(new RegistrationRow(this, r));
-            Summary = Registrations.Count > 0 ? $"{Registrations.Count} bekleyen istek" : "";
+            Summary = Registrations.Count > 0 ? L.F("{0} bekleyen istek", Registrations.Count) : "";
             NoRegistrations = Registrations.Count == 0;
         }
 
         public async Task DecideAsync(RegistrationRow row, bool approve)
         {
-            if (!approve && !await main.ConfirmAsync("Kayıt isteğini reddet", $"{row.Username} ({row.Email}) isteği silinsin mi? Bu kişi isterse tekrar kayıt olabilir.", "Reddet", danger: true)) return;
+            if (!approve && !await main.ConfirmAsync("Kayıt isteğini reddet", L.F("{0} ({1}) isteği silinsin mi? Bu kişi isterse tekrar kayıt olabilir.", row.Username, row.Email), "Reddet", danger: true)) return;
             row.Busy = true;
             try { await _core.Call(approve ? "admin.approveRegistration" : "admin.rejectRegistration", new { id = row.Id, username = row.Username }); }
             catch (Exception ex) { await main.AlertAsync(approve ? "Onaylanamadı" : "Reddedilemedi", ex.Message); }
@@ -346,7 +346,7 @@ namespace VuluLauncher.ViewModels
             _currentAnnouncementId = a.Text("id");
             CurrentAnnouncement = a.Text("text");
             CurrentAnnouncementMeta = "Şu anki duyuru" + (a.Text("expiresAt") is { } exp && DateTime.TryParse(exp, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var at)
-                ? $" · {at.ToLocalTime().ToString("d MMMM HH:mm", CultureInfo.GetCultureInfo("tr-TR"))} tarihine kadar" : "");
+                ? L.F(" · {0} tarihine kadar", at.ToLocalTime().ToString("d MMMM HH:mm", L.Culture)) : "");
         }
 
         [RelayCommand]
@@ -383,7 +383,7 @@ namespace VuluLauncher.ViewModels
             Songs.Clear();
             foreach (var s in data.Items("songs")) Songs.Add(new SongRow(this, s));
             double used = data.Num("usedBytes"), cap = data.Num("capBytes");
-            RadioUsage = $"{Songs.Count} şarkı · {SettingsViewModel.FormatBytes(used)} / {SettingsViewModel.FormatBytes(cap)}";
+            RadioUsage = L.F("{0} şarkı · {1} / {2}", Songs.Count, SettingsViewModel.FormatBytes(used), SettingsViewModel.FormatBytes(cap));
             RadioFraction = cap > 0 ? Math.Min(1, used / cap) : 0;
             RadioReady = data.Get("ready").ValueKind != JsonValueKind.False;
         }
@@ -421,7 +421,7 @@ namespace VuluLauncher.ViewModels
 
         public async Task DeleteSongAsync(SongRow song)
         {
-            if (!await main.ConfirmAsync("Şarkıyı sil", $"\"{song.Title}\" vulu Radyo'dan silinsin mi?", "Sil", danger: true)) return;
+            if (!await main.ConfirmAsync("Şarkıyı sil", L.F("\"{0}\" vulu Radyo'dan silinsin mi?", song.Title), "Sil", danger: true)) return;
             try { await _core.Call("radio.deleteSong", new { id = song.Id }); await LoadRadioAsync(); }
             catch (Exception ex) { await main.AlertAsync("Silinemedi", ex.Message); }
         }
@@ -435,7 +435,7 @@ namespace VuluLauncher.ViewModels
             double known = parts.Sum(p => p.Num("bytes"));
             double used = s.Get("usedBytes").ValueKind == JsonValueKind.Number ? Math.Max(s.Num("usedBytes"), known) : known;
             double ratio = used / limit;
-            StorageTotal = $"{SettingsViewModel.FormatBytes(used)} / {SettingsViewModel.FormatBytes(limit)} kullanılıyor (%{Math.Round(ratio * 100)})";
+            StorageTotal = L.F("{0} / {1} kullanılıyor (%{2})", SettingsViewModel.FormatBytes(used), SettingsViewModel.FormatBytes(limit), Math.Round(ratio * 100));
             StorageWarning = ratio >= 0.9 ? "Alan neredeyse dolu. Dolarsa paket yayınlama ve resim yüklemeleri hata vermeye başlar; kullanılmayan paketleri kaldırmayı düşün."
                 : ratio >= 0.7 ? "Alanın çoğu doldu. Büyük paketleri ve eski ekran görüntülerini gözden geçirmek iyi olabilir." : null;
             StorageParts.Clear();
@@ -468,7 +468,7 @@ namespace VuluLauncher.ViewModels
         public bool IsNew => !IsEdit;
         public bool IsSelf { get; }
         public bool CanChangeFlags => !IsSelf;
-        public string Title => IsEdit ? $"Düzenle — {_user!.Username}" : "Yeni kullanıcı";
+        public string Title => IsEdit ? L.F("Düzenle — {0}", _user!.Username) : "Yeni kullanıcı";
         public string SaveText => IsEdit ? "Kaydet" : "Ekle";
         public string PasswordLabel => IsEdit ? "Yeni şifre" : "Şifre";
         public string PasswordHint => IsEdit ? "Boş bırakırsan değişmez" : "En az 6 karakter";
@@ -522,7 +522,7 @@ namespace VuluLauncher.ViewModels
             _color = role?.Color ?? AdminViewModel.RoleColors[0];
         }
 
-        public string Title => _role != null ? $"Rolü düzenle — {_role.Name}" : "Yeni rol";
+        public string Title => _role != null ? L.F("Rolü düzenle — {0}", _role.Name) : "Yeni rol";
         public string SaveText => _role != null ? "Kaydet" : "Ekle";
         public List<string> Colors { get; } = AdminViewModel.RoleColors.ToList();
         [ObservableProperty]

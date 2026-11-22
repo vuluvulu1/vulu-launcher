@@ -27,7 +27,7 @@ namespace VuluLauncher
 
                 // Sunucunun cevabı (verifyEmail dahil) olduğu gibi arayüze gider
                 var result = await _api.PostAsync<JsonElement>("/auth/register", new { username, email, password });
-                Log($"{username} için kayıt isteği gönderildi.", "ok");
+                Log(L.F("{0} için kayıt isteği gönderildi.", username), "ok");
                 return result;
             });
 
@@ -82,14 +82,14 @@ namespace VuluLauncher
             {
                 RequireAdmin();
                 var result = await _api.PostAsync<JsonElement>($"/admin/registrations/{Uri.EscapeDataString(args.Str("id"))}/approve", new { });
-                Log($"{args.Str("username")} kaydı onaylandı.", "ok");
+                Log(L.F("{0} kaydı onaylandı.", args.Str("username")), "ok");
                 return result;
             });
             _bridge.On("admin.rejectRegistration", async args =>
             {
                 RequireAdmin();
                 var result = await _api.PostAsync<JsonElement>($"/admin/registrations/{Uri.EscapeDataString(args.Str("id"))}/reject", new { });
-                Log($"{args.Str("username")} kaydı reddedildi.", "muted");
+                Log(L.F("{0} kaydı reddedildi.", args.Str("username")), "muted");
                 return result;
             });
         }

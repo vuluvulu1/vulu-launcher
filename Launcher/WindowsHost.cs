@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Avalonia;
@@ -197,6 +197,22 @@ namespace VuluLauncher
             _active = false;
             EnterTray();
         });
+
+        /// <summary>Yeni kopyayı açar (bu süreç kapanınca kilidi alır) ve bu kopyayı kapatır.</summary>
+        public void Restart()
+        {
+            if (Environment.ProcessPath is not { } exe) return;
+            try
+            {
+                var start = new System.Diagnostics.ProcessStartInfo(exe) { UseShellExecute = false };
+                start.ArgumentList.Add("--from-updater");
+                start.ArgumentList.Add("--wait-pid");
+                start.ArgumentList.Add(Environment.ProcessId.ToString());
+                System.Diagnostics.Process.Start(start);
+            }
+            catch (Exception ex) { LogFile.Write("[yeniden başlat] " + ex.Message); return; }
+            Exit();
+        }
 
         /// <summary>Launcher'ı tamamen kapatır (simgenin "Çıkış"ı ya da ayarda kapat tuşu "Kapat" ise).</summary>
         private void Exit()

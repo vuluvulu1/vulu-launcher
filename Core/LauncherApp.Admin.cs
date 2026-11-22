@@ -31,7 +31,7 @@ namespace VuluLauncher
                         isAdmin = args.Bool("isAdmin"),
                         isActive = args.Bool("isActive")
                     });
-                    Log($"{args.Str("username").Trim()} kullanıcısı eklendi.", "ok");
+                    Log(L.F("{0} kullanıcısı eklendi.", args.Str("username").Trim()), "ok");
                     // Yeni kullanıcının rolleri ayrıca yazılır
                     if (args.StrList("roles").Count == 0) return created;
                     return await _api.PatchAsync<JsonElement>($"/admin/users/{Uri.EscapeDataString(created.GetProperty("id").GetString()!)}",
@@ -76,7 +76,7 @@ namespace VuluLauncher
             {
                 RequireAdmin();
                 var result = await _api.DeleteAsync<JsonElement>($"/admin/users/{Uri.EscapeDataString(args.Str("id"))}");
-                Log($"{args.Str("username")} kullanıcısı silindi.", "muted");
+                Log(L.F("{0} kullanıcısı silindi.", args.Str("username")), "muted");
                 return result;
             });
         }

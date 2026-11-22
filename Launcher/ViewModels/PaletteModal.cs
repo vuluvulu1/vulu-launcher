@@ -36,7 +36,7 @@ namespace VuluLauncher.ViewModels
             _all.Add(new PaletteItem("Eylem", "vulu Packs'ten paket kur", null, () => main.OpenNewPackAsync("packs")));
             _all.Add(new PaletteItem("Eylem", "Modpack ara (CurseForge / Modrinth)", null, () => main.OpenNewPackAsync("curseforge")));
             if (main.Home.Selected is { IsCustom: true } target)
-                _all.Add(new PaletteItem("Eylem", $"{target.Name}: mod ekle", null, () => main.OpenAddContentAsync(target)));
+                _all.Add(new PaletteItem("Eylem", L.F("{0}: mod ekle", target.Name), null, () => main.OpenAddContentAsync(target)));
             Page("servers", "Sunucular");
             _all.Add(new PaletteItem("Sayfa", "Liderlik tablosu", null, () => { main.SelectedTab = main.Tabs.First(t => t.Key == "social"); main.Social.ShowWorld("board"); return Task.CompletedTask; }));
             _all.Add(new PaletteItem("Harita", "vulu resmi sunucusunun haritası", "Canlı dünya haritası: kim nerede (yalnızca vulu resmi)", () => main.Servers.OpenMapAsync()));
@@ -47,7 +47,7 @@ namespace VuluLauncher.ViewModels
                 _all.Add(new PaletteItem("Kişi", name, main.Social.FriendState(name) == "friend" ? "Arkadaş" : "Üye", () => main.Social.OpenConversationAsync(name)));
             _all.Add(new PaletteItem("Eylem", "Profilim", null, () => main.OpenProfileAsync(main.Username)));
             if (main.Home.Selected is { IsCustom: true } selected)
-                _all.Add(new PaletteItem("Eylem", $"{selected.Name}: içeriği yönet", null, () => main.Home.ManageContentCommand.ExecuteAsync(null)));
+                _all.Add(new PaletteItem("Eylem", L.F("{0}: içeriği yönet", selected.Name), null, () => main.Home.ManageContentCommand.ExecuteAsync(null)));
             _all.Add(new PaletteItem("Eylem", "Yeni paket", null, () => main.OpenNewPackAsync()));
             _all.Add(new PaletteItem("Eylem", "Geri bildirim: hata bildir ya da öneri yaz", null, () => main.OpenFeedbackAsync("launcher")));
             Render();
@@ -63,7 +63,7 @@ namespace VuluLauncher.ViewModels
 
         private void Render()
         {
-            var tr = CultureInfo.GetCultureInfo("tr-TR");
+            var tr = L.Culture;
             string q = Query.Trim().ToLower(tr);
             var list = (q.Length > 0 ? _all.Where(i => i.Label.ToLower(tr).Contains(q)) : _all.Where(i => i.Kind != "Kişi")).Take(40).ToList();
             Shown.Clear();

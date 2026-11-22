@@ -143,7 +143,7 @@ namespace VuluLauncher
                 HttpStatusCode.NotFound => "Bulunamadı.",
                 HttpStatusCode.Unauthorized => "Oturum süresi doldu, tekrar giriş yapın.",
                 HttpStatusCode.RequestEntityTooLarge => "Dosya çok büyük.",
-                _ => $"Sunucu hatası ({(int)response.StatusCode})."
+                _ => L.F("Sunucu hatası ({0}).", (int)response.StatusCode)
             };
             try
             {
